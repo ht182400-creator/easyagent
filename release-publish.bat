@@ -232,14 +232,18 @@ if %AUTO_MODE%==0 (
 echo   Running: build.bat --release
 echo   ----------------------------------------
 call build.bat --release
-if errorlevel 1 (
-    echo.
-    echo   [FAIL] Build failed (exit code: %errorlevel%)
-    pause
-    exit /b 1
-)
-echo [DEBUG release-publish] Build completed successfully
+echo [DEBUG A] errorlevel=%errorlevel%
+if errorlevel 1 goto :BUILD_FAILED
+goto :BUILD_OK
 
+:BUILD_FAILED
+echo.
+echo   [FAIL] Build failed (errorlevel=%errorlevel%)
+pause
+exit /b 1
+
+:BUILD_OK
+echo [DEBUG B] Build OK, proceeding to Step 5
 echo   [OK] Build complete
 
 rem Show output files
