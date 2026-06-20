@@ -234,10 +234,11 @@ echo   ----------------------------------------
 call build.bat --release
 set BUILD_EXIT_CODE=%errorlevel%
 echo [DEBUG release-publish] build.bat exit code: !BUILD_EXIT_CODE!
-if !BUILD_EXIT_CODE! neq 0 (
+if "!BUILD_EXIT_CODE!" neq "0" (
     echo.
-    echo   [FAIL] Build failed! (exit code: !BUILD_EXIT_CODE!) Check errors above.
-    pause & exit /b 1
+    echo   [FAIL] Build failed (exit code: !BUILD_EXIT_CODE!)
+    pause
+    exit /b 1
 )
 
 echo   [OK] Build complete

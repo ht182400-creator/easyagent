@@ -126,45 +126,32 @@ echo   All modules built.
 :: Phase 3: Package
 :: ============================================================
 echo.
-echo [DEBUG] Entering packaging phase, MODE=%MODE%
+echo [5/5] Packaging...
 
-rem Use goto to completely avoid if/else bracket nesting
-if /i "%MODE%"=="release" goto PKG_RELEASE
-goto PKG_FAST
+rem Use pushd/popd to ensure directory is restored after electron-builder
+pushd "%~dp0packages\desktop"
 
-:PKG_RELEASE
-echo [DEBUG] Release branch - building NSIS installer
-setlocal disabledelayedexpansion
-echo [DEBUG] Running: pnpm exec electron-builder --win --x64
-call pnpm exec electron-builder --win --x64
-set _EB_ERR=%errorlevel%
-echo [DEBUG] electron-builder finished, raw exit code: %_EB_ERR%
-endlocal & set _EB_EXIT=%_EB_ERR%
-echo [DEBUG] After endlocal, _EB_EXIT=!_EB_EXIT!
-goto PKG_CHECK
+rem No setlocal needed - electron-builder output has no ! issues (only Vite did)
+if /i "%MODE%"=="release" (
+    echo   Building full NSIS installer...
+    call pnpm exec electron-builder --win --x64
+) else (
+    echo   Building fast test package (--dir)...
+    call pnpm exec electron-builder --dir --win
+)
 
-:PKG_FAST
-echo [DEBUG] Fast branch - building dir package
-setlocal disabledelayedexpansion
-echo [DEBUG] Running: pnpm exec electron-builder --dir --win
-call pnpm exec electron-builder --dir --win
-set _EB_ERR=%errorlevel%
-echo [DEBUG] electron-builder finished, raw exit code: %_EB_ERR%
-endlocal & set _EB_EXIT=%_EB_ERR%
-echo [DEBUG] After endlocal, _EB_EXIT=!_EB_EXIT!
-goto PKG_CHECK
+set _PKG_ERR=%errorlevel%
+echo [DEBUG] Packaging exit code: %_PKG_ERR%
 
-:PKG_CHECK
-echo [DEBUG] Checking packaging result, _EB_EXIT=!_EB_EXIT!
-if !_EB_EXIT! neq 0 (
-    echo [FAIL] electron-builder packaging failed (exit code: !_EB_EXIT!)
+popd
+
+if %_PKG_ERR% neq 0 (
+    echo [FAIL] electron-builder packaging failed
     cd ..\..
     pause
     exit /b 1
 )
-echo [DEBUG] Packaging successful, exit code: !_EB_EXIT!
-
-cd ..\..
+echo [DEBUG] Packaging successful
 
 :: ============================================================
 :: Phase 4: Verify Output
