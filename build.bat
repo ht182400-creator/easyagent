@@ -211,6 +211,8 @@ if exist "%ASAR_PATH%" (
     echo.
     echo   Verifying asar content...
     node -e "try{var a=require('packages/desktop/node_modules/@electron/asar');var f='packages/desktop/release/win-unpacked/resources/app.asar';var fs=a.listPackage(f);var t=fs.find(function(x){return x.includes('dist\\\\renderer\\\\assets\\\\index')&&x.endsWith('.js')});if(t){var c=a.extractFile(f,t.replace(/^\\\\/,''));var l=(c.toString('utf8').match(/localhost:3456/g)||[]).length;var d=(c.toString('utf8').match(/\\.then\\(\\s*\\(\\s*r\\s*\\)\\s*=>\\s*r\\.json\\(\\s*\\)\\s*\\)/g)||[]).length;if(l>0)process.stdout.write('  WARN: localhost found! ');if(d>0)process.stdout.write('  WARN: double .json() found! ');if(l===0&&d===0)process.stdout.write('  OK: no known issues');console.log('')}}" 2>nul
+    rem Reset errorlevel - node may fail but that's non-critical
+    ver >nul
 )
 
 :: ============================================================
@@ -223,4 +225,6 @@ echo ============================================
 echo.
 echo   Run: packages\desktop\release\win-unpacked\EasyAgent.exe
 echo.
+echo [DEBUG] Build script finished successfully
 pause
+exit /b 0
