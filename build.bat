@@ -221,5 +221,4 @@ echo.
 echo   Run: packages\desktop\release\win-unpacked\EasyAgent.exe
 echo.
 echo [DEBUG] Build script finished successfully
-pause
 exit /b 0
