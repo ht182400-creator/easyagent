@@ -112,9 +112,8 @@ echo   - vite (renderer)...
 rem 临时关闭延迟展开，避免 vite 输出中的 ! 字符干扰
 setlocal disabledelayedexpansion
 call pnpm exec vite build
-set VITE_ERR=%errorlevel%
-endlocal & set VITE_ERR=%VITE_ERR%
-if %VITE_ERR% neq 0 (
+endlocal
+if errorlevel 1 (
     echo [FAIL] vite build failed
     cd ..\..
     pause
@@ -133,9 +132,8 @@ if /i "%MODE%"=="release" (
     echo   Building full NSIS installer...
     setlocal disabledelayedexpansion
     call pnpm exec electron-builder --win --x64
-    set EB_ERR=%errorlevel%
-    endlocal & set EB_ERR=%EB_ERR%
-    if %EB_ERR% neq 0 (
+    endlocal
+    if errorlevel 1 (
         echo [FAIL] electron-builder packaging failed
         cd ..\..
         pause
@@ -145,9 +143,8 @@ if /i "%MODE%"=="release" (
     echo   Building fast test package (--dir)...
     setlocal disabledelayedexpansion
     call pnpm exec electron-builder --dir --win
-    set EB_ERR=%errorlevel%
-    endlocal & set EB_ERR=%EB_ERR%
-    if %EB_ERR% neq 0 (
+    endlocal
+    if errorlevel 1 (
         echo [FAIL] electron-builder packaging failed
         cd ..\..
         pause
