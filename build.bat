@@ -109,7 +109,7 @@ if %errorlevel% neq 0 (
 )
 
 echo   - vite (renderer)...
-rem 临时关闭延迟展开，避免 vite 输出中的 ! 字符干扰
+rem Temporarily disable delayed expansion to avoid ! chars in Vite output
 setlocal disabledelayedexpansion
 call pnpm exec vite build
 endlocal
@@ -126,24 +126,43 @@ echo   All modules built.
 :: Phase 3: Package
 :: ============================================================
 echo.
-echo [5/5] Packaging...
+echo [DEBUG] Entering packaging phase, MODE=%MODE%
 
-rem setlocal/endlocal 必须在 if 块外面，否则会扰乱括号解析
+rem Use goto to completely avoid if/else bracket nesting
+if /i "%MODE%"=="release" goto PKG_RELEASE
+goto PKG_FAST
+
+:PKG_RELEASE
+echo [DEBUG] Release branch - building NSIS installer
 setlocal disabledelayedexpansion
-if /i "%MODE%"=="release" (
-    echo   Building full NSIS installer...
-    call pnpm exec electron-builder --win --x64
-) else (
-    echo   Building fast test package (--dir)...
-    call pnpm exec electron-builder --dir --win
-)
-endlocal
-if errorlevel 1 (
-    echo [FAIL] electron-builder packaging failed
+echo [DEBUG] Running: pnpm exec electron-builder --win --x64
+call pnpm exec electron-builder --win --x64
+set _EB_ERR=%errorlevel%
+echo [DEBUG] electron-builder finished, raw exit code: %_EB_ERR%
+endlocal & set _EB_EXIT=%_EB_ERR%
+echo [DEBUG] After endlocal, _EB_EXIT=!_EB_EXIT!
+goto PKG_CHECK
+
+:PKG_FAST
+echo [DEBUG] Fast branch - building dir package
+setlocal disabledelayedexpansion
+echo [DEBUG] Running: pnpm exec electron-builder --dir --win
+call pnpm exec electron-builder --dir --win
+set _EB_ERR=%errorlevel%
+echo [DEBUG] electron-builder finished, raw exit code: %_EB_ERR%
+endlocal & set _EB_EXIT=%_EB_ERR%
+echo [DEBUG] After endlocal, _EB_EXIT=!_EB_EXIT!
+goto PKG_CHECK
+
+:PKG_CHECK
+echo [DEBUG] Checking packaging result, _EB_EXIT=!_EB_EXIT!
+if !_EB_EXIT! neq 0 (
+    echo [FAIL] electron-builder packaging failed (exit code: !_EB_EXIT!)
     cd ..\..
     pause
     exit /b 1
 )
+echo [DEBUG] Packaging successful, exit code: !_EB_EXIT!
 
 cd ..\..
 
