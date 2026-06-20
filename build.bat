@@ -128,26 +128,31 @@ echo   All modules built.
 echo.
 echo [5/5] Packaging...
 
-rem Use pushd/popd to ensure directory is restored after electron-builder
+rem goto avoids if/else bracket parsing bugs in CMD
+rem pushd/popd ensures directory safety (no setlocal needed here)
+if /i "%MODE%"=="release" goto PKG_RELEASE
+goto PKG_FAST
+
+:PKG_RELEASE
+echo   Building full NSIS installer...
 pushd "%~dp0packages\desktop"
-
-rem No setlocal needed - electron-builder output has no ! issues (only Vite did)
-if /i "%MODE%"=="release" (
-    echo   Building full NSIS installer...
-    call pnpm exec electron-builder --win --x64
-) else (
-    echo   Building fast test package (--dir)...
-    call pnpm exec electron-builder --dir --win
-)
-
+call pnpm exec electron-builder --win --x64
 set _PKG_ERR=%errorlevel%
-echo [DEBUG] Packaging exit code: %_PKG_ERR%
-
 popd
+goto PKG_DONE
 
+:PKG_FAST
+echo   Building fast test package (--dir)...
+pushd "%~dp0packages\desktop"
+call pnpm exec electron-builder --dir --win
+set _PKG_ERR=%errorlevel%
+popd
+goto PKG_DONE
+
+:PKG_DONE
+echo [DEBUG] Packaging exit code: %_PKG_ERR%
 if %_PKG_ERR% neq 0 (
     echo [FAIL] electron-builder packaging failed
-    cd ..\..
     pause
     exit /b 1
 )
