@@ -480,7 +480,7 @@ export class AutomationManager extends EventEmitter {
     try {
       if (!existsSync(this.storagePath)) return [];
       return JSON.parse(readFileSync(this.storagePath, 'utf-8'));
-    } catch {
+    } catch (err) {
       return [];
     }
   }
@@ -500,7 +500,7 @@ export class AutomationManager extends EventEmitter {
       const path = this.historyPath;
       if (!existsSync(path)) return [];
       return JSON.parse(readFileSync(path, 'utf-8'));
-    } catch {
+    } catch (err) {
       return [];
     }
   }

@@ -49,7 +49,7 @@ function detectDatabase(workspace: string): {
             }
           }
         }
-      } catch { /* ignore */ }
+      } catch (err) { /* ignore */ }
     }
   }
 
@@ -61,7 +61,7 @@ function detectDatabase(workspace: string): {
       if (content.includes('postgres') || content.includes('mysql') || content.includes('mariadb')) {
         return { type: 'docker', config: composeFile };
       }
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   }
 
   return null;
@@ -125,7 +125,7 @@ export const QueryDBTool: ITool = {
           let Database: any;
           try {
             Database = require('better-sqlite3');
-          } catch {
+          } catch (err) {
             // 回退：使用简单的JSON文件存储模拟
             return {
               success: true,
@@ -271,7 +271,7 @@ export const DBSchemaTool: ITool = {
           let Database: any;
           try {
             Database = require('better-sqlite3');
-          } catch {
+          } catch (err) {
             return {
               success: true,
               content: [

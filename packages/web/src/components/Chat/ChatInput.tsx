@@ -179,7 +179,7 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
         if (!cancelled && data.success) {
           setAvailableModels(data.models || []);
         }
-      } catch {
+      } catch (err) {
         // 静默失败，使用空列表
       } finally {
         if (!cancelled) setModelsLoading(false);

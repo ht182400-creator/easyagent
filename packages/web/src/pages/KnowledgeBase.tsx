@@ -151,7 +151,7 @@ export default function KnowledgeBase() {
     try {
       const fullDoc = await getDocument(docId);
       setViewDoc(fullDoc);
-    } catch {
+    } catch (err) {
       addNotification({ type: 'error', message: '加载文档内容失败' });
     } finally {
       setLoadingDoc(false);

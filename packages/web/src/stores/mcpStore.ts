@@ -76,7 +76,7 @@ export const useMCPStore = create<MCPState>((set, get) => ({
         const data = await res.json();
         set({ servers: data, loading: false });
       }
-    } catch {
+    } catch (err) {
       // 使用默认配置
     } finally {
       set({ loading: false });
@@ -106,7 +106,7 @@ export const useMCPStore = create<MCPState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(server),
       });
-    } catch { /* 本地存储 */ }
+    } catch (err) { /* 本地存储 */ }
   },
 
   removeServer: async (name) => {
@@ -123,7 +123,7 @@ export const useMCPStore = create<MCPState>((set, get) => ({
 
     try {
       await fetch(`/api/mcp/servers/${name}`, { method: 'DELETE' });
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   },
 
   toggleServer: async (name, enabled) => {
@@ -183,7 +183,7 @@ export const useMCPStore = create<MCPState>((set, get) => ({
         message: `MCP "${name}" 已连接`,
         duration: 2000,
       });
-    } catch {
+    } catch (err) {
       set((s) => ({
         runtimes: {
           ...s.runtimes,

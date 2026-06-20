@@ -196,7 +196,7 @@ function readBundledCatalog(): ModelsCatalog | null {
           return catalog;
         }
       }
-    } catch {
+    } catch (err) {
       // 继续尝试下一个路径
     }
   }

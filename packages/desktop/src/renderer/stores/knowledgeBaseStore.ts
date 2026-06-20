@@ -134,8 +134,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
             loading: false,
           });
         }
-      }
-    } catch {
+    } catch (err) {
       set({ loading: false });
     }
   },
@@ -185,7 +184,6 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           });
           return;
         }
-      }
       // 服务端失败时乐观更新
       const newDoc: KnowledgeDocument = {
         ...doc,
@@ -212,7 +210,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
         type: 'success',
         message: `"${doc.title}" 已添加到知识库 (本地)`,
       });
-    } catch {
+    } catch (err) {
       useAppStore.getState().addNotification({
         type: 'error',
         message: '添加文档失败，请确认后端服务在运行',
@@ -244,7 +242,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
 
     try {
       await apiFetch(`/api/knowledge/${id}?scope=${scope}`, { method: 'DELETE' });
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   },
 
   searchDocument: async (query) => {
@@ -267,8 +265,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           set({ searchResults: results });
           return;
         }
-      }
-    } catch { /* 降级到本地搜索 */ }
+    } catch (err) { /* 降级到本地搜索 */ }
 
     // 本地搜索降级
     const q = query.toLowerCase();
@@ -318,9 +315,8 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
         if (data?.success && data?.document) {
           return { ...data.document, content: data.content || '' } as KnowledgeDocument;
         }
-      }
       return null;
-    } catch {
+    } catch (err) {
       return null;
     }
   },
@@ -354,8 +350,6 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
             message: data?.error || '文件导入失败',
           });
         }
-        });
-      }
     } catch (err) {
       useAppStore.getState().addNotification({
         type: 'error',
@@ -392,8 +386,6 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
             message: data?.error || '文件上传失败',
           });
         }
-        });
-      }
     } catch (err) {
       useAppStore.getState().addNotification({
         type: 'error',

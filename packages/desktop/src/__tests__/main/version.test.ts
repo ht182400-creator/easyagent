@@ -13,7 +13,7 @@ describe('主进程 - 版本号', () => {
       const pkgPath = path.join(__dirname, '..', '..', '..', 'package.json');
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
       return pkg.version || '0.0.0';
-    } catch {
+    } catch (err) {
       return '0.3.0'; // 默认版本
     }
   }
@@ -32,7 +32,7 @@ describe('主进程 - 版本号', () => {
         if (readResult instanceof Error) throw readResult;
         const pkg = JSON.parse(readResult);
         return pkg.version || '0.0.0';
-      } catch {
+      } catch (err) {
         return '0.3.0';
       }
     }
@@ -46,7 +46,7 @@ describe('主进程 - 版本号', () => {
         if (readResult instanceof Error) throw readResult;
         const pkg = JSON.parse(readResult);
         return pkg.version || '0.0.0';
-      } catch {
+      } catch (err) {
         return '0.3.0';
       }
     }

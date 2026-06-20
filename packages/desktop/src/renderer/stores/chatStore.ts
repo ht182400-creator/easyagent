@@ -242,7 +242,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         try {
           const data = JSON.parse(event.data);
           handleWSMessage(sessionId, data);
-        } catch {
+        } catch (err) {
           console.warn('无法解析WebSocket消息:', event.data);
         }
       };
@@ -264,7 +264,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       };
 
       set({ ws });
-    } catch {
+    } catch (err) {
       set((s) => {
         const session = { ...ensureSession(s, sessionId) };
         session.connectionState = 'error';

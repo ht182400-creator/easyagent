@@ -71,7 +71,7 @@ export default function SkillsPage() {
       const res = await fetch('/api/skills');
       const data = await res.json();
       setSkills(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
       // 服务不可用时静默失败
     } finally {
       setLoading(false);

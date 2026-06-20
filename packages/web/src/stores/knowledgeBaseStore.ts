@@ -136,7 +136,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           });
         }
       }
-    } catch {
+    } catch (err) {
       set({ loading: false });
     }
   },
@@ -215,7 +215,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
         type: 'success',
         message: `"${doc.title}" 已添加到知识库 (本地)`,
       });
-    } catch {
+    } catch (err) {
       useAppStore.getState().addNotification({
         type: 'error',
         message: '添加文档失败，请确认后端服务在运行',
@@ -247,7 +247,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
 
     try {
       await fetch(`/api/knowledge/${id}?scope=${scope}`, { method: 'DELETE' });
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   },
 
   searchDocument: async (query) => {
@@ -273,7 +273,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           return;
         }
       }
-    } catch { /* 降级到本地搜索 */ }
+    } catch (err) { /* 降级到本地搜索 */ }
 
     // 本地搜索降级
     const q = query.toLowerCase();
@@ -327,7 +327,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
         }
       }
       return null;
-    } catch {
+    } catch (err) {
       return null;
     }
   },

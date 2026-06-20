@@ -59,7 +59,7 @@ export async function checkServerHealth(): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/api/status`);
     return res.ok;
-  } catch {
+  } catch (err) {
     return false;
   }
 }

@@ -41,7 +41,7 @@ export default function App() {
         if (!cancelled) {
           setServerConnected(res.ok);
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
           setServerConnected(false);
         }

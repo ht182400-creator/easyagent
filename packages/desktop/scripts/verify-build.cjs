@@ -236,7 +236,7 @@ if (!foundOldVersion) {
 // 7. 依赖完整性基础检查
 // ============================================================
 console.log('\n--- Checking critical dependencies ---');
-const criticalDeps = ['better-sqlite3', 'express', 'ws', 'cors', 'multer', 'pino', 'body-parser'];
+const criticalDeps = ['better-sqlite3', 'express', 'ws', 'cors', 'multer', 'pino', 'body-parser', 'mime', 'send'];
 for (const dep of criticalDeps) {
   if (pkg.dependencies?.[dep]) {
     ok(`dep declared: ${dep}`);
@@ -264,6 +264,321 @@ if (fs.existsSync(cssPath)) {
   } else {
     ok('No @import in CSS (or already first)');
   }
+}
+
+// ============================================================
+// 9. catch 语法检查（esbuild 0.20.1 不兼容 catch {} 和 catch (_e)）
+// ============================================================
+console.log('\n--- Checking for incompatible catch syntax (esbuild 0.20.1) ---');
+
+// 检查所有子包的 src 目录
+const subPackages = [
+  path.join(ROOT, '..', '..', '..', 'cli', 'src'),
+  path.join(ROOT, '..', '..', '..', 'core', 'src'),
+  path.join(ROOT, '..', '..', '..', 'desktop', 'src'),
+  path.join(ROOT, '..', '..', '..', 'server', 'src'),
+  path.join(ROOT, '..', '..', '..', 'web', 'src'),
+];
+let foundCatchBinding = false;
+for (const pkgDir of subPackages) {
+  if (!fs.existsSync(pkgDir)) continue;
+  const files = walkDir(pkgDir, /\.(ts|tsx)$/);
+  for (const fp of files) {
+    const content = fs.readFileSync(fp, 'utf8');
+    // 检测两种 esbuild 0.20.1 不兼容的 catch 写法
+    if (/\bcatch\s*\{/.test(content)) {
+      const relPath = path.relative(ROOT, fp);
+      fail(`${relPath}: catch {} (no binding) - esbuild 0.20.1 incompatible, use catch (err) {`);
+      foundCatchBinding = true;
+    }
+    if (/\bcatch\s*\(\s*_e\s*\)/.test(content)) {
+      const relPath = path.relative(ROOT, fp);
+      fail(`${relPath}: catch (_e) （_前缀变量）- esbuild 0.20.1 incompatible, use catch (err) {`);
+      foundCatchBinding = true;
+    }
+  }
+}
+if (!foundCatchBinding) {
+  ok('No incompatible catch syntax (esbuild compatible)');
+}
+
+// ============================================================
+// 10. better-sqlite3 NODE_MODULE_VERSION 一致性检查
+// 确保 .node 文件是为 Electron 30 (Node v20, MODULE_VERSION=123) 编译的
+// 而不是为系统 Node.js 编译的（开发模式 pnpm install 可能用系统 Node）
+// ============================================================
+console.log('\n--- Checking better-sqlite3 MODULE_VERSION ---');
+let moduleVersionOk = true;
+const MODULE_VERSION_FILE = '.module_version_cache';
+const EXPECTED_ELECTRON_VERSION = 123; // Electron 30 = Node v20
+
+try {
+  const betterSqlite3Node = path.join(ROOT, 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node');
+  if (fs.existsSync(betterSqlite3Node)) {
+    // 用 node 读取并检查 .node 文件的 NODE_MODULE_VERSION
+    const checkScript = `
+      try {
+        // 尝试加载模块来获取 MODULE_VERSION
+        const m = process.binding('natives');
+        const currentVersion = process.versions.modules || 'unknown';
+        console.log('SYSTEM_NODE_MODULES=' + currentVersion);
+      } catch(e) {
+        console.log('SYSTEM_NODE_MODULES=unknown');
+      }
+    `;
+    const { execSync } = require('child_process');
+    
+    // 检查是否存在缓存标记，避免每次都执行耗时的 node-gyp 操作
+    const cachePath = path.join(ROOT, 'node_modules', 'better-sqlite3', MODULE_VERSION_FILE);
+    let cachedVersion = null;
+    if (fs.existsSync(cachePath)) {
+      cachedVersion = fs.readFileSync(cachePath, 'utf8').trim();
+    }
+
+    // 检查系统 Node.js 的 MODULE_VERSION
+    let systemNodeVersion;
+    try {
+      systemNodeVersion = process.versions.modules;
+    } catch (e) {
+      systemNodeVersion = 'unknown';
+    }
+
+    if (systemNodeVersion === String(EXPECTED_ELECTRON_VERSION)) {
+      ok(`better-sqlite3 MODULE_VERSION = ${systemNodeVersion} (matches Electron 30)`);
+      // 缓存结果
+      if (cachedVersion !== systemNodeVersion) {
+        fs.writeFileSync(cachePath, systemNodeVersion);
+      }
+    } else if (cachedVersion === String(EXPECTED_ELECTRON_VERSION)) {
+      warn(`better-sqlite3 was rebuilt for Electron ${EXPECTED_ELECTRON_VERSION} (cached), but system Node is v${systemNodeVersion}. OK for packaging.`);
+      moduleVersionOk = true;
+    } else {
+      warn(`better-sqlite3 MODULE_VERSION mismatch: system Node=${systemNodeVersion}, need=${EXPECTED_ELECTRON_VERSION} (Electron 30)`);
+      warn(`  Run: cd packages/desktop && npx @electron/rebuild -f -w better-sqlite3 -v 30.0.0`);
+      // 不会 fail，因为可能已经通过 electron-rebuild 修复
+    }
+  } else {
+    warn('better_sqlite3.node not found - run pnpm install in packages/desktop');
+  }
+} catch (e) {
+  warn(`Could not check better-sqlite3 MODULE_VERSION: ${e.message}`);
+}
+
+// ============================================================
+// 11. mime 包版本冲突检查
+// Express 通过 send@0.19 依赖 mime@1.6.x（有 charsets 属性）
+// 如果 mime@2.x 被 pnpm 提升，Express res.json() 会崩溃 (500)
+// ============================================================
+console.log('\n--- Checking mime version (send/Express dependency) ---');
+try {
+  const mimeTopLevel = path.join(ROOT, 'node_modules', 'mime');
+  const mimeSendLevel = path.join(ROOT, 'node_modules', 'send', 'node_modules', 'mime');
+  
+  // 检查 send 是否有自己的 mime 副本（嵌套依赖）
+  let sendHasOwnMime = false;
+  if (fs.existsSync(mimeSendLevel)) {
+    sendHasOwnMime = true;
+  }
+
+  // 检查顶层是否有 mime
+  let mimeTopOk = false;
+  if (fs.existsSync(mimeTopLevel)) {
+    const mimePkgPath = path.join(mimeTopLevel, 'package.json');
+    if (fs.existsSync(mimePkgPath)) {
+      const mimePkg = JSON.parse(fs.readFileSync(mimePkgPath, 'utf8'));
+      const mimeMajor = parseInt(mimePkg.version.split('.')[0]);
+      if (mimeMajor >= 2) {
+        if (sendHasOwnMime) {
+          ok(`mime@${mimePkg.version} (v2) at top level, but send has its own mime copy - OK`);
+          mimeTopOk = true;
+        } else {
+          fail(`mime@${mimePkg.version} (v2) found at top level - send needs mime@1.6.x! ` +
+               `Add "mime": "^1.6.0" to desktop/package.json dependencies.`);
+        }
+      } else {
+        ok(`mime@${mimePkg.version} (v1) at top level - OK for Express/send`);
+        mimeTopOk = true;
+      }
+    }
+  } else if (sendHasOwnMime) {
+    ok('No top-level mime, but send has its own mime copy - OK');
+    mimeTopOk = true;
+  } else {
+    fail('mime@1.6.x NOT FOUND at top level AND send has no copy! ' +
+         'Add "mime": "^1.6.0" to desktop/package.json dependencies. ' +
+         'Without this, Express res.json() will get "Cannot find module mime" in Release build.');
+  }
+
+  // 检查 desktop/package.json 的 mime 依赖声明
+  const mimeDep = pkg.dependencies?.['mime'];
+  if (mimeDep) {
+    const depMajor = mimeDep.replace(/[\^~>=<\s]/g, '').split('.')[0];
+    if (depMajor === '1') {
+      ok(`desktop/package.json has mime "${mimeDep}" (v1) - correct for send/Express`);
+    } else {
+      fail(`desktop/package.json has mime "${mimeDep}" (v${depMajor}) - MUST be ^1.6.0 for send compatibility!`);
+    }
+  } else if (!mimeTopOk) {
+    fail('desktop/package.json is MISSING mime dependency - add "mime": "^1.6.0"');
+  } else if (sendHasOwnMime) {
+    ok('No direct mime dependency (send has own copy) - OK');
+  } else {
+    warn('desktop/package.json missing mime dependency but top-level mime exists (might be hoisted from elsewhere). ' +
+         'Consider adding "mime": "^1.6.0" for explicit dependency.');
+  }
+} catch (e) {
+  warn(`Could not check mime version: ${e.message}`);
+}
+
+// ============================================================
+// 12. electron-updater 传递依赖完整性检查
+// electron-updater 在 asarUnpack 中，但其传递依赖必须在 asar 或顶层 node_modules 中
+// pnpm 可能将它们 hoist 到根 .pnpm，导致打包后缺失 → "Cannot find module"
+// ============================================================
+console.log('\n--- Checking electron-updater transitive dependencies ---');
+try {
+  const updaterPkgPath = path.join(ROOT, 'node_modules', 'electron-updater', 'package.json');
+  const UPDATER_REQUIRED_DEPS = {
+    'fs-extra': '^10.1.0',
+    'js-yaml': '^4.1.0',
+    'lazy-val': '^1.0.5',
+    'lodash.escaperegexp': '^4.1.2',
+    'lodash.isequal': '^4.5.0',
+    'tiny-typed-emitter': '^2.1.0',
+    'builder-util-runtime': '9.7.0',
+    'semver': '~7.7.3',
+  };
+
+  if (fs.existsSync(updaterPkgPath)) {
+    let allFound = true;
+    for (const [dep, version] of Object.entries(UPDATER_REQUIRED_DEPS)) {
+      const topDep = path.join(ROOT, 'node_modules', dep);
+      const nestedDep = path.join(ROOT, 'node_modules', 'electron-updater', 'node_modules', dep);
+      const found = fs.existsSync(topDep) || fs.existsSync(nestedDep);
+      
+      if (found) {
+        // 检查 desktop/package.json 是否声明了此依赖
+        if (pkg.dependencies?.[dep]) {
+          ok(`electron-updater dep: ${dep} (declared in package.json)`);
+        } else {
+          warn(`electron-updater dep: ${dep} found but NOT in package.json - ` +
+               `may come from pnpm hoisting. Add "${dep}": "${version}" to desktop deps.`);
+        }
+      } else {
+        fail(`electron-updater dep MISSING: ${dep} (needed by electron-updater). ` +
+             `Add "${dep}": "${version}" to desktop/package.json dependencies! ` +
+             `Without this, electron-updater will fail with "Cannot find module '${dep}'" in Release.`);
+        allFound = false;
+      }
+    }
+    if (allFound) {
+      ok('All electron-updater transitive deps accounted for');
+    }
+  } else {
+    warn('electron-updater not found in node_modules');
+  }
+} catch (e) {
+  warn(`Could not check electron-updater deps: ${e.message}`);
+}
+
+// ============================================================
+// 13. Express 生态版本兼容性检查
+// desktop 声明了 Express 子依赖的较新版本，可能与 Express 自身需求不兼容
+// 开发模式仍能工作（pnpm 提升可能隐藏问题），但 Release 可能异常
+// ============================================================
+console.log('\n--- Checking Express ecosystem version compatibility ---');
+try {
+  const EXPRESS_VERSION_CHECKS = [
+    { pkg: 'iconv-lite', current: '^0.6.3', needed: '~0.4.24', consumer: 'body-parser' },
+    { pkg: 'media-typer', current: '^1.1.0', needed: '0.3.0', consumer: 'type-is' },
+    { pkg: 'ipaddr.js', current: '^2.2.0', needed: '1.9.1', consumer: 'proxy-addr' },
+    { pkg: 'encodeurl', current: '^1.0.2', needed: '~2.0.0', consumer: 'express/finalhandler' },
+  ];
+
+  for (const check of EXPRESS_VERSION_CHECKS) {
+    const pkgPath = path.join(ROOT, 'node_modules', check.pkg, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const installed = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      const installedMajor = parseInt(installed.version.split('.')[0]);
+      const neededMajor = parseInt(check.needed.replace(/[\^~>=<\s]/g, '').split('.')[0]);
+      const neededMinDigits = parseInt(check.needed.replace(/[\^~>=<\s]/g, '').split('.')[1] || '0');
+      
+      if (installedMajor !== neededMajor) {
+        warn(`${check.pkg}@${installed.version} (declared ${check.current}) ` +
+             `but ${check.consumer} needs ${check.needed}. ` +
+             `May cause subtle issues in Release. Consider adding "${check.pkg}": "${check.needed}" instead.`);
+      } else {
+        ok(`${check.pkg}@${installed.version} - major version matches ${check.consumer} requirements`);
+      }
+    }
+  }
+} catch (e) {
+  warn(`Could not check Express versions: ${e.message}`);
+}
+
+// ============================================================
+// 14. UTF-8 编码损坏检查（PowerShell Set-Content 陷阱）
+// ============================================================
+console.log('\n--- Checking for UTF-8 encoding corruption ---');
+
+let foundEncodingCorruption = false;
+for (const pkgDir of subPackages) {
+  if (!fs.existsSync(pkgDir)) continue;
+  const files = walkDir(pkgDir, /\.(ts|tsx)$/);
+  for (const fp of files) {
+    const content = fs.readFileSync(fp, 'utf8');
+    // 检测常见乱码特征：UTF-8 中文被 ANSI 重新编码后的 mojibake 模式
+    if (/榛|鎵|鍣|鏂|椤|娣诲姞|宸叉坊|鍒犻櫎|鏂囨。/.test(content)) {
+      const relPath = path.relative(ROOT, fp);
+      fail(`${relPath}: encoding corrupted - restore from git, then redo changes with Node.js (not PowerShell Set-Content)`);
+      foundEncodingCorruption = true;
+    }
+  }
+}
+if (!foundEncodingCorruption) {
+  ok('No UTF-8 encoding corruption detected');
+}
+
+// ============================================================
+// 15. HashRouter <a href> 兼容性检查
+// Desktop 使用 HashRouter，页面内导航必须使用 <Link> 或 navigate()
+// <a href="/xxx"> 会触发全页面导航导致黑屏
+// ============================================================
+console.log('\n--- Checking for <a href> in HashRouter (desktop renderer) ---');
+try {
+  const RENDERER_SRC = path.join(ROOT, 'src', 'renderer');
+  const tsxFiles = walkDir(RENDERER_SRC, /\.tsx$/);
+  let foundBadHref = false;
+  
+  for (const fp of tsxFiles) {
+    const content = fs.readFileSync(fp, 'utf8');
+    const relPath = path.relative(ROOT, fp);
+    
+    // 查找 <a href="/xxx"> 模式（内部路由），排除外部 URL (<a href="http...">) 和 target="_blank"
+    const lines = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // 匹配 <a href="/..." 但不是 http:// 或 https:// 开头
+      const match = line.match(/<a\s+href="\/([^"]+)"/);
+      if (match) {
+        // 排除 markdown 渲染中的 href (属于字符串拼接，不是 JSX)
+        if (line.includes("'<a href=") || line.includes('"<a href=') || line.includes("`<a href=")) {
+          continue;
+        }
+        // 排除注释
+        if (line.trim().startsWith('//') || line.trim().startsWith('*') || line.trim().startsWith('/*')) {
+          continue;
+        }
+        fail(`${relPath}:${i + 1}: <a href="/${match[1]}"> should use <Link to="/${match[1]}"> or navigate("/${match[1]}") in HashRouter`);
+        foundBadHref = true;
+      }
+    }
+  }
+  if (!foundBadHref) {
+    ok('No <a href> pointing to internal routes found');
+  }
+} catch (e) {
+  warn(`Could not check HashRouter hrefs: ${e.message}`);
 }
 
 // ============================================================

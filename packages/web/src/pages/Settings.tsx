@@ -57,7 +57,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/version/check');
       const result: UpdateCheckResult = await res.json();
       setUpdateInfo(result);
-    } catch {
+    } catch (err) {
       setUpdateInfo({ currentVersion: '', latestVersion: '', hasUpdate: false, releaseUrl: '', publishedAt: '', body: '', error: '检查失败' });
     } finally {
       setCheckingUpdate(false);

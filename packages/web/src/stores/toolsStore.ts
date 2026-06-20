@@ -96,7 +96,7 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
           count: tools.filter((t) => t.group === g.name).length,
         })),
       });
-    } catch {
+    } catch (err) {
       set({ loading: false });
     }
   },

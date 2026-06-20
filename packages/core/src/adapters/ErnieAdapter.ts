@@ -299,7 +299,7 @@ export class ErnieAdapter extends BaseAdapter {
             }
 
             yield result;
-          } catch {
+          } catch (err) {
             // 跳过无法解析的行
           }
         }
@@ -316,7 +316,7 @@ export class ErnieAdapter extends BaseAdapter {
     try {
       const token = await this.getAccessToken();
       return !!token;
-    } catch {
+    } catch (err) {
       return false;
     }
   }

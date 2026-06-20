@@ -56,7 +56,7 @@ export const GrepTool: ITool = {
       try {
         execSync('rg --version', { stdio: 'ignore' });
         useRg = true;
-      } catch {
+      } catch (err) {
         // 回退到Node.js实现
       }
 
@@ -143,7 +143,7 @@ export const GrepTool: ITool = {
                 }
               }
             }
-          } catch {
+          } catch (err) {
             // 跳过无法读取的文件
           }
         }
@@ -339,7 +339,7 @@ export const WebFetchTool: ITool = {
       // 验证URL格式
       try {
         new URL(url);
-      } catch {
+      } catch (err) {
         return { success: false, content: `无效的URL: ${url}` };
       }
 

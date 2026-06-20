@@ -74,7 +74,7 @@ export default function ChatPage() {
             isStreaming: false,
           });
         }
-      } catch {
+      } catch (err) {
         // 静默失败，至少可以开始新对话
       }
     })();

@@ -325,7 +325,7 @@ export class WeChatAdapter extends BaseIMAdapter {
         result[match[1]] = match[2] || match[3] || '';
       }
       return Object.keys(result).length > 0 ? result : null;
-    } catch {
+    } catch (err) {
       return null;
     }
   }

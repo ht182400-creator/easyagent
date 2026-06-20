@@ -80,16 +80,13 @@ export default function Tools() {
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
-    apiFetch('/api/tools')
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
+    apiFetch<ToolInfo[]>('/api/tools')
       .then((data: ToolInfo[]) => {
-        setTools(data);
+        setTools(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
+        console.error('[Tools] 加载工具列表失败:', err);
         setError(err.message || '加载失败');
         setLoading(false);
       });

@@ -26,7 +26,7 @@ function getCLIVersion(): string {
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
       return `v${pkg.version || '0.3.0'}`;
     }
-  } catch { /* fallback */ }
+  } catch (err) { /* fallback */ }
   return 'v0.3.0';
 }
 const CLI_VERSION = getCLIVersion();
@@ -202,7 +202,7 @@ export const App: FC<AppProps> = ({ initInfo }) => {
               .flatMap((p: any) => (p.models || []).map((m: any) => `  ${p.name}: ${m.id}`))
               .join('\n');
             addMsg('system', `可用模型:\n${modelList || '  无'}`);
-          } catch { addMsg('system', '无法获取模型列表'); }
+          } catch (err) { addMsg('system', '无法获取模型列表'); }
           break;
         }
 
@@ -214,7 +214,7 @@ export const App: FC<AppProps> = ({ initInfo }) => {
               .map((p: any) => `  [${p.hasKey ? '✓' : '✗'}] ${p.name} (${p.id}) - ${p.models?.length || 0} 模型`)
               .join('\n');
             addMsg('system', `提供商:\n${pList}`);
-          } catch { addMsg('system', '无法获取提供商列表'); }
+          } catch (err) { addMsg('system', '无法获取提供商列表'); }
           break;
         }
 
@@ -254,7 +254,7 @@ export const App: FC<AppProps> = ({ initInfo }) => {
               .map((s: any) => `  ${s.id?.slice(-12)} - ${s.title || '未命名'} [${s.status || 'active'}]`)
               .join('\n');
             addMsg('system', `会话 (${sessions.length}):\n${sList || '  无会话'}`);
-          } catch { addMsg('system', '无法获取会话列表'); }
+          } catch (err) { addMsg('system', '无法获取会话列表'); }
           break;
         }
 

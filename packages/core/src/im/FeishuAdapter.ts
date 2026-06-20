@@ -114,7 +114,7 @@ export class FeishuAdapter extends BaseIMAdapter {
       // 再发新消息
       await this.sendMessage(chatId, newText);
       return true;
-    } catch {
+    } catch (err) {
       return false;
     }
   }
@@ -239,7 +239,7 @@ export class FeishuAdapter extends BaseIMAdapter {
     try {
       const parsed = JSON.parse(textContent);
       text = parsed.text || '';
-    } catch {
+    } catch (err) {
       text = textContent;
     }
 

@@ -117,7 +117,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     try {
       const data = await apiFetch<any[]>('/api/automations');
       set({ tasks: Array.isArray(data) ? data : [], loading: false });
-    } catch {
+    } catch (err) {
       set({ loading: false });
     }
   },
@@ -126,7 +126,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     try {
       const data = await apiFetch<any[]>('/api/automations/history');
       set({ history: Array.isArray(data) ? data : [] });
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   },
 
   createTask: async (task) => {
@@ -154,7 +154,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
       set((s) => ({
         tasks: s.tasks.map((t) => (t.id === newTask.id ? serverTask : t)),
       }));
-    } catch { /* 本地存储 */ }
+    } catch (err) { /* 本地存储 */ }
   },
 
   updateTask: async (id, updates) => {
@@ -168,7 +168,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   },
 
   deleteTask: async (id) => {
@@ -184,7 +184,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
 
     try {
       await apiFetch(`/api/automations/${id}`, { method: 'DELETE' });
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   },
 
   toggleTask: async (id, active) => {
@@ -200,7 +200,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active }),
       });
-    } catch { /* ignore */ }
+    } catch (err) { /* ignore */ }
   },
 
   runTaskNow: async (id) => {
@@ -236,6 +236,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
       // 轮询检查任务状态
       let attempts = 0;
       const maxAttempts = 120; // 最多等 2 分钟
+      if (serverRun) {
       while (attempts < maxAttempts) {
         await new Promise((r) => setTimeout(r, 1000));
         attempts++;
@@ -275,8 +276,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
                 });
                 return;
               }
-            }
-          } catch { /* 继续轮询 */ }
+          } catch (err) { /* 继续轮询 */ }
         }
 
         // 超时

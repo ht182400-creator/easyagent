@@ -133,7 +133,7 @@ export const useProviderStore = create<ProviderState>((set, get) => ({
         duration: 3000,
       });
       return success;
-    } catch {
+    } catch (err) {
       set((s) => ({ testResults: { ...s.testResults, [providerId]: false } }));
       return false;
     }

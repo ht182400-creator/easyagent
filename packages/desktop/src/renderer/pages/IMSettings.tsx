@@ -91,12 +91,12 @@ export default function IMSettings() {
   const handleSave = async (platform: IMPlatform) => {
     setSaving(true);
     try {
-      const res = await apiFetch('/api/im/config', {
+      await apiFetch('/api/im/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...editForm, platform, enabled: true }),
       });
-      if (!res.ok) throw new Error('保存失败');
+      // apiFetch 内部已处理错误，走到这里说明保存成功
       setExpanded(null);
       await fetchData();
     } catch (err) {

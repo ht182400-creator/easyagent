@@ -59,7 +59,7 @@ export default function App() {
             }
           }
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
           retryCount++;
           if (retryCount >= maxRetries) {

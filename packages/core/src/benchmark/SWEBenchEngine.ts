@@ -163,7 +163,7 @@ export class SWEBenchEngine {
           version: data.version || '1.0',
           difficulty: this.inferDifficulty(data),
         });
-      } catch {
+      } catch (err) {
         // 跳过无效行
       }
     }
@@ -427,7 +427,7 @@ export function scanSWEBenchData(dataDir: string): { files: string[]; problemCou
     try {
       const content = fs.readFileSync(path.join(dataDir, file), 'utf-8');
       problemCount += content.split('\n').filter(l => l.trim()).length;
-    } catch {
+    } catch (err) {
       // 跳过
     }
   }

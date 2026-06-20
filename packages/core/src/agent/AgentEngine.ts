@@ -226,7 +226,7 @@ export class AgentEngine {
 
             try {
               toolInput = JSON.parse(toolCall.function.arguments);
-            } catch {
+            } catch (err) {
               toolInput = {};
             }
 

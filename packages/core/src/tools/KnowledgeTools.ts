@@ -42,7 +42,7 @@ function loadIndex(workspace: string): DocIndex[] {
   if (!existsSync(indexFile)) return [];
   try {
     return JSON.parse(readFileSync(indexFile, 'utf-8'));
-  } catch {
+  } catch (err) {
     return [];
   }
 }
@@ -214,7 +214,7 @@ export const KnowledgeSearchTool: ITool = {
                   break;
                 }
               }
-            } catch { /* ignore */ }
+            } catch (err) { /* ignore */ }
           }
 
           return titleMatch || tagMatch || categoryMatch || sourceMatch || contentMatch;
@@ -251,7 +251,7 @@ export const KnowledgeSearchTool: ITool = {
             if (chunkFiles.length > 0) {
               preview = readFileSync(join(chunkDir, chunkFiles[0]), 'utf-8').slice(0, 300);
             }
-          } catch { preview = '(无法读取内容)'; }
+          } catch (err) { preview = '(无法读取内容)'; }
         }
 
         results.push([

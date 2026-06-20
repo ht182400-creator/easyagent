@@ -206,7 +206,7 @@ describe('BaseIMAdapter - 流式消息', () => {
     try {
       const msgId = await adapter.sendStreamingMessage('chat123', generator());
       expect(msgId).toBeDefined();
-    } catch {
+    } catch (err) {
       // fallback也可能失败，验证不崩溃即可
     }
 

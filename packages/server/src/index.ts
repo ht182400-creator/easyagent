@@ -78,7 +78,7 @@ function loadCustomSkills(): CustomSkill[] {
     if (!existsSync(CUSTOM_SKILLS_PATH)) return [];
     const raw = readFileSync(CUSTOM_SKILLS_PATH, 'utf-8');
     return JSON.parse(raw) || [];
-  } catch {
+  } catch (err) {
     logger.warn('加载自定义技能失败，返回空列表');
     return [];
   }
@@ -108,10 +108,22 @@ function formatOllamaModelName(tag: string): string {
 }
 
 /**
+ * createApp() 选项
+ */
+export interface CreateAppOptions {
+  /**
+   * 项目根目录，决定 project 作用域知识库的存储位置
+   * 默认: resolve(__dirname, '..', '..', '..') — 从 packages/server/dist 上溯 3 级
+   * Desktop 版本需显式传入有效路径，因为 asar 包内 __dirname 指向只读归档
+   */
+  projectRoot?: string;
+}
+
+/**
  * 创建 Express 应用实例（不启动监听，用于测试和嵌入）
  * 返回 app + HTTP server + WebSocket server 供外部调用
  */
-export async function createApp() {
+export async function createApp(options: CreateAppOptions = {}) {
   // 启动时后台更新模型目录（不阻塞服务启动）
   const modelRegistry = getModelRegistry();
   modelRegistry.initialize().catch((err) => {
@@ -164,8 +176,8 @@ export async function createApp() {
   }
 
   // 初始化知识库服务（双作用域）
-  // __dirname = packages/server/dist → 上 3 级到项目根目录
-  const PROJECT_ROOT = resolve(__dirname, '..', '..', '..');
+  // 优先使用传入的 projectRoot（Desktop 需要），否则从 __dirname 推断
+  const PROJECT_ROOT = options.projectRoot || resolve(__dirname, '..', '..', '..');
   /** 项目级知识库 — 存储在 {PROJECT_ROOT}/.easyagent/knowledge/ */
   const knowledgeService = new KnowledgeService(PROJECT_ROOT, 'project');
   /** 全局知识库 — 存储在 ~/.easyagent/knowledge/，跨所有项目共享 */
@@ -437,7 +449,7 @@ export async function createApp() {
           changelog = recent.trim();
         }
       }
-    } catch { /* changelog 不可用 */ }
+    } catch (err) { /* changelog 不可用 */ }
 
     res.json({
       version: APP_VERSION,
@@ -467,7 +479,7 @@ export async function createApp() {
             resp.on('data', (chunk: string) => data += chunk);
             resp.on('end', () => {
               if (resp.statusCode === 200) {
-                try { resolve(JSON.parse(data)); } catch { reject(new Error('JSON parse error')); }
+                try { resolve(JSON.parse(data)); } catch (err) { reject(new Error('JSON parse error')); }
               } else {
                 reject(new Error(`GitHub API: ${resp.statusCode}`));
               }
@@ -843,7 +855,7 @@ export async function createApp() {
           supportsVision: false,
           pricing: { input: 0, output: 0 },
         }));
-      } catch {
+      } catch (err) {
         return [];
       }
     }
@@ -875,7 +887,7 @@ export async function createApp() {
           supportsVision: m.id.toLowerCase().includes('vision') || m.id.toLowerCase().includes('vl'),
           pricing: preset.models?.[0]?.pricing || { input: 0, output: 0 },
         }));
-    } catch {
+    } catch (err) {
       return [];
     }
   }
@@ -1833,7 +1845,7 @@ export async function createApp() {
               (e) => !e.name.startsWith('.') && !IGNORED_DIRS.has(e.name)
             ).length;
             dirs.push({ name: entry.name, itemCount });
-          } catch {
+          } catch (err) {
             dirs.push({ name: entry.name, itemCount: 0 });
           }
         } else if (entry.isFile()) {
@@ -1847,7 +1859,7 @@ export async function createApp() {
                 size: stats.size,
                 relativePath: entryRelPath,
               });
-            } catch {
+            } catch (err) {
               // 跳过无法读取的文件
             }
           }
@@ -1986,7 +1998,7 @@ export async function createApp() {
           const urlDecoded = decodeURIComponent(fileName);
           if (urlDecoded !== fileName) fileName = urlDecoded;
         }
-      } catch { /* 保持原始文件名 */ }
+      } catch (err) { /* 保持原始文件名 */ }
       const filePath = req.file.path;
       // 读取文件内容，尝试 UTF-8 优先，降级 GBK
       const raw = readFileSync(filePath);
@@ -1996,14 +2008,14 @@ export async function createApp() {
         try {
           const { decode } = require('iconv-lite');
           content = decode(raw, 'gbk');
-        } catch { /* 无 iconv-lite 则保留 UTF-8 结果 */ }
+        } catch (err) { /* 无 iconv-lite 则保留 UTF-8 结果 */ }
       }
       const tags = tagsStr ? tagsStr.split(',').map((t: string) => t.trim()).filter(Boolean) : [];
 
       const result = kbService.importFromContent(fileName, content, category, tags);
 
       // 清理临时上传文件
-      try { rmSync(filePath); } catch { /* ignore */ }
+      try { rmSync(filePath); } catch (err) { /* ignore */ }
 
       if (result.success) {
         const doc = kbService.getDocument(result.docId!);
@@ -2478,7 +2490,7 @@ if (isMainModule) {
     server.listen(PORT, HOST, () => {
       console.log([
         '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.3.2           ║',
+        '║        EasyAgent Server v0.3.3           ║',
         `║  HTTP:      http://localhost:${PORT}        ║`,
         `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
         '╚══════════════════════════════════════════╝',

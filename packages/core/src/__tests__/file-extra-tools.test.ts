@@ -30,7 +30,7 @@ describe('FileInfoTool - 文件信息', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能获取文件基本信息', async () => {
@@ -94,7 +94,7 @@ describe('CreateDirTool - 创建目录', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能创建新目录', async () => {
@@ -146,7 +146,7 @@ describe('MoveFileTool - 移动文件', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能移动文件到新位置', async () => {
@@ -226,7 +226,7 @@ describe('BatchEditTool - 批量编辑', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能执行全局替换', async () => {

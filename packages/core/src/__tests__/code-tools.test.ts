@@ -30,7 +30,7 @@ describe('CodeStatsTool - 代码统计', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能统计工作区代码(默认根目录)', async () => {
@@ -101,7 +101,7 @@ describe('RunTestsTool - 运行测试', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('requiresConfirm应为true(运行测试需确认)', () => {
@@ -159,7 +159,7 @@ describe('FindImportsTool - 查找导入', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能查找模块导入位置', async () => {
@@ -210,7 +210,7 @@ describe('FindDefinitionsTool - 查找定义', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能查找TypeScript函数定义', async () => {

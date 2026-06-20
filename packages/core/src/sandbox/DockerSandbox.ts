@@ -286,13 +286,13 @@ export class DockerSandbox {
         execSync(`docker stop --time 10 ${this.containerId}`, { 
           timeout: 15000, windowsHide: true 
         });
-      } catch { /* 容器可能已停止 */ }
+      } catch (err) { /* 容器可能已停止 */ }
       
       try {
         execSync(`docker rm -f ${this.containerId}`, { 
           timeout: 10000, windowsHide: true 
         });
-      } catch { /* 容器可能已被删除 */ }
+      } catch (err) { /* 容器可能已被删除 */ }
       
       this.containerId = null;
     }
@@ -310,7 +310,7 @@ export class DockerSandbox {
       execSync(`docker image inspect ${this.image}`, { 
         encoding: 'utf-8', timeout: 5000, windowsHide: true 
       });
-    } catch {
+    } catch (err) {
       logger.info({ image: this.image }, '拉取 Docker 镜像...');
       execSync(`docker pull ${this.image}`, { 
         stdio: 'inherit', timeout: 120000 

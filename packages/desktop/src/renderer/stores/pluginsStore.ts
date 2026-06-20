@@ -87,7 +87,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
     try {
       const data = await apiFetch<any[]>('/api/plugins');
       set({ installed: data, loading: false });
-    } catch {
+    } catch (err) {
       set({ loading: false });
     }
   },
@@ -166,7 +166,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
       ];
 
       set({ marketplace: market, loading: false });
-    } catch {
+    } catch (err) {
       set({ loading: false });
     }
   },
@@ -200,7 +200,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
         type: 'success',
         message: `插件 "${name}" 安装成功`,
       });
-    } catch {
+    } catch (err) {
       set({ loading: false });
       useAppStore.getState().addNotification({
         type: 'error',

@@ -112,7 +112,7 @@ export class MCPClient {
     if (!this.process) return;
     try {
       await this.sendRequest('shutdown', {});
-    } catch { /* ignore shutdown errors */ }
+    } catch (err) { /* ignore shutdown errors */ }
     this.process.kill();
     this.process = null;
     this.tools = [];
@@ -184,7 +184,7 @@ export class MCPClient {
         // 其他通知
         this.eventCallback(msg.method, msg.params);
       }
-    } catch {
+    } catch (err) {
       // 忽略非 JSON 行
     }
   }

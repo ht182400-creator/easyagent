@@ -85,20 +85,19 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ saving: true });
     try {
       const { agent, security, preferences } = get();
-      const res = await apiFetch('/api/config', {
+      await apiFetch('/api/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agent, security, preferences }),
       });
-      if (res.ok) {
-        // 持久化到 localStorage 作为备份
-        localStorage.setItem('easyagent-settings', JSON.stringify({ agent, security, preferences }));
-        useAppStore.getState().addNotification({
-          type: 'success',
-          message: '设置已保存',
-          duration: 2000,
-        });
-      }
+      // apiFetch 内部已处理错误，走到这里说明请求成功
+      // 持久化到 localStorage 作为备份
+      localStorage.setItem('easyagent-settings', JSON.stringify({ agent, security, preferences }));
+      useAppStore.getState().addNotification({
+        type: 'success',
+        message: '设置已保存',
+        duration: 2000,
+      });
     } catch (err) {
       console.error('保存设置失败:', err);
       // 降级：保存到 localStorage
@@ -120,7 +119,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       if (data.agent) set((s) => ({ agent: { ...s.agent, ...data.agent } }));
       if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
       if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
-    } catch {
+    } catch (err) {
       // 从 localStorage 恢复
       const saved = localStorage.getItem('easyagent-settings');
       if (saved) {
@@ -129,7 +128,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           if (data.agent) set((s) => ({ agent: { ...s.agent, ...data.agent } }));
           if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
           if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
-        } catch { /* ignore */ }
+        } catch (err) { /* ignore */ }
       }
     }
   },

@@ -3,7 +3,7 @@
  * 支持: 工具调用展示、模型切换、附件上传、历史会话查看
  */
 import { useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Trash2, Wifi, WifiOff, Loader2, ArrowLeft } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useProviderStore } from '../stores/providerStore';
@@ -29,6 +29,7 @@ interface SessionMessage {
 
 export default function ChatPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const urlSessionId = searchParams.get('sessionId') || '';
   /** 实际的会话ID: URL参数优先，否则使用默认 */
   const sessionId = urlSessionId || 'web_default';
@@ -53,7 +54,10 @@ export default function ChatPage() {
 
     (async () => {
       try {
-        const data = await apiFetch<{ messages?: SessionMessage[] }>(`/api/sessions/${urlSessionId}`);
+        // 对 session ID 进行 URL 编码，防止特殊字符导致路由解析错误
+        const data = await apiFetch<{ messages?: SessionMessage[] }>(
+          `/api/sessions/${encodeURIComponent(urlSessionId)}`
+        );
         if (cancelled) return;
         const msgs: SessionMessage[] = data?.messages || [];
         // 先清空旧消息，再导入
@@ -74,13 +78,18 @@ export default function ChatPage() {
             isStreaming: false,
           });
         }
-      } catch {
-        // 静默失败，至少可以开始新对话
+      } catch (err) {
+        console.error('[ChatPage] 加载历史会话失败:', err);
+        addNotification({
+          type: 'error',
+          message: '加载会话消息失败，请检查会话是否存在',
+          duration: 5000,
+        });
       }
     })();
 
     return () => { cancelled = true; };
-  }, [urlSessionId, sessionId, clearMessages, addMessage]);
+  }, [urlSessionId, sessionId, clearMessages, addMessage, addNotification]);
 
   // 初始化：连接WebSocket + 加载提供商（历史会话不连WebSocket）
   useEffect(() => {
@@ -145,9 +154,9 @@ export default function ChatPage() {
         <div>
           <div className="flex items-center gap-2">
             {isHistory && (
-              <a href="/sessions" className="text-gray-500 hover:text-gray-300 transition-colors" title="返回会话列表">
+              <button onClick={() => navigate('/sessions')} className="text-gray-500 hover:text-gray-300 transition-colors" title="返回会话列表">
                 <ArrowLeft className="w-4 h-4" />
-              </a>
+              </button>
             )}
             <h1 className="text-xl font-bold">
               {isHistory ? `历史会话: ${urlSessionId.slice(0, 8)}...` : 'AI 对话'}
@@ -177,7 +186,7 @@ export default function ChatPage() {
       {isHistory && (
         <div className="py-3 px-4 text-center text-sm text-gray-600 border-t border-gray-800">
           这是历史会话的只读视图，如需继续对话请
-          <a href="/chat" className="text-primary-400 hover:text-primary-300 ml-1">新建会话</a>
+          <button onClick={() => navigate('/chat')} className="text-primary-400 hover:text-primary-300 ml-1 cursor-pointer bg-transparent border-none text-sm">新建会话</button>
         </div>
       )}
     </div>

@@ -25,11 +25,11 @@ export default function Sessions() {
     fetchSessions();
   }, []);
 
+  /** 获取会话列表（apiFetch 已内置 JSON 解析，返回直接数据） */
   const fetchSessions = () => {
     setLoading(true);
-    apiFetch('/api/sessions')
-      .then(r => r.json())
-      .then(data => {
+    apiFetch<Session[]>('/api/sessions')
+      .then((data) => {
         setSessions(Array.isArray(data) ? data : []);
         setLoading(false);
       })

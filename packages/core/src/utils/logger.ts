@@ -32,7 +32,7 @@ function isElectronProduction(): boolean {
     };
     const isPackaged = proc.resourcesPath !== undefined && !proc.defaultApp;
     return !!isPackaged;
-  } catch {
+  } catch (err) {
     return false;
   }
 }
@@ -49,7 +49,7 @@ function resolvePinoPrettyPath(): string | null {
   for (const root of searchRoots) {
     try {
       return require.resolve('pino-pretty', { paths: [root] });
-    } catch {
+    } catch (err) {
       continue;
     }
   }
@@ -75,7 +75,7 @@ function createPrettyTarget(opts: {
     // pino-pretty({...}) returns a Transform stream (both Readable + Writable)
     const fn = pretty.default ?? pretty;
     return fn(opts);
-  } catch {
+  } catch (err) {
     return process.stdout;
   }
 }
@@ -122,7 +122,7 @@ export function createLogger(name: string, level: LogLevel = LogLevel.INFO) {
         options: prettyOptions,
       },
     });
-  } catch {
+  } catch (err) {
     return pino({ name, level });
   }
 }

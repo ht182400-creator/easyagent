@@ -61,7 +61,7 @@ export const CodeStatsTool: ITool = {
                 extMap[ext].files++;
                 extMap[ext].lines += lines;
               }
-            } catch { /* skip binary files */ }
+            } catch (err) { /* skip binary files */ }
           }
         }
       };
@@ -158,7 +158,7 @@ export const FindImportsTool: ITool = {
         output = execSync(`rg --no-heading -l "${query.replace(/"/g, '\\"')}" --iglob "${filePattern}" -g '!node_modules' -g '!dist' -g '!.git' --max-count=3 .`, {
           cwd: context.workspace, encoding: 'utf-8', timeout: 15000,
         });
-      } catch {
+      } catch (err) {
         // rg 不可用，fallback 到 grep
         const { GrepTool } = await import('./SearchTools.js');
         const result = await GrepTool.execute({ pattern: `import.*${query}`, glob: filePattern }, context);
@@ -218,7 +218,7 @@ export const FindDefinitionsTool: ITool = {
         output = execSync(`rg --no-heading -n "${pattern}" -g '!node_modules' -g '!dist' -g '!.git' .`, {
           cwd: context.workspace, encoding: 'utf-8', timeout: 15000, maxBuffer: 1024 * 512,
         });
-      } catch {
+      } catch (err) {
         return { success: true, content: `未找到 "${symbol}" 的定义`, metadata: { found: 0 } };
       }
       const lines = output.trim().split('\n').filter(Boolean);

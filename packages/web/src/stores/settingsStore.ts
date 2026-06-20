@@ -122,7 +122,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
         if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
       }
-    } catch {
+    } catch (err) {
       // 从 localStorage 恢复
       const saved = localStorage.getItem('easyagent-settings');
       if (saved) {
@@ -131,7 +131,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           if (data.agent) set((s) => ({ agent: { ...s.agent, ...data.agent } }));
           if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
           if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
-        } catch { /* ignore */ }
+        } catch (err) { /* ignore */ }
       }
     }
   },

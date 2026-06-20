@@ -7,6 +7,15 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.3.3] - 2026-06-21
+
+### Fixed
+- **Desktop 知识库/自动化/技能数据不互通**: 修复 Desktop 版本中 `PROJECT_ROOT` 指向 asar 只读归档导致知识库写入失败(400)、读取返回空的问题。现在 Desktop 使用 `homedir()` 作为 projectRoot
+- **`createApp()` 支持外部传入 projectRoot**: 新增 `CreateAppOptions.projectRoot` 参数，Desktop 版传入用户 home 目录避免 asar 路径限制
+
+### Changed
+- Desktop 打包配置优化：压缩级别设为 `maximum`，清理 node_modules 中不必要的文件
+
 ## [0.3.2] - 2026-06-20
 
 ### Changed

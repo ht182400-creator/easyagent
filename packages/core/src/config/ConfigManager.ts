@@ -125,7 +125,7 @@ export class ConfigManager {
               const apiKey = decrypt(encryptedKey);
               // 更新预设中的API密钥
               preset.apiKey = apiKey;
-            } catch {
+            } catch (err) {
               logger.warn({ providerId }, '提供商API密钥解密失败，可能需要重新设置');
             }
           }

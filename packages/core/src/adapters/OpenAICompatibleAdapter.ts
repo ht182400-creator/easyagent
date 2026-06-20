@@ -307,7 +307,7 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
             }
 
             yield result;
-          } catch {
+          } catch (err) {
             // 跳过无法解析的行
           }
         }

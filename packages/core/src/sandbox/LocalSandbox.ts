@@ -107,7 +107,7 @@ export class LocalSandbox {
                   windowsHide: true,
                   timeout: 5000,
                 });
-              } catch {
+              } catch (err) {
                 proc.kill('SIGKILL');
               }
             } else {
@@ -124,7 +124,7 @@ export class LocalSandbox {
               if (isWindows && proc.pid) {
                 try {
                   execSync(`taskkill /F /T /PID ${proc.pid}`, { windowsHide: true });
-                } catch { proc.kill(); }
+                } catch (err) { proc.kill(); }
               } else {
                 proc.kill();
               }
@@ -140,7 +140,7 @@ export class LocalSandbox {
               if (isWindows && proc.pid) {
                 try {
                   execSync(`taskkill /F /T /PID ${proc.pid}`, { windowsHide: true });
-                } catch { proc.kill(); }
+                } catch (err) { proc.kill(); }
               } else {
                 proc.kill();
               }
@@ -219,7 +219,7 @@ export class LocalSandbox {
         ? `Windows ${process.env.OS || ''}`
         : execSync('uname -r', { encoding: 'utf-8', timeout: 3000 }).trim();
       return { available: true, version: `本地进程 (${version})` };
-    } catch {
+    } catch (err) {
       return { available: true, version: `本地进程 (${process.platform})` };
     }
   }

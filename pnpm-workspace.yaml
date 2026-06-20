@@ -1,12 +1,12 @@
 packages:
   - 'packages/*'
 allowBuilds:
-  better-sqlite3: set this to true or false
-  electron: set this to true or false
-  esbuild: set this to true or false
-  lzma-native: set this to true or false
-  tree-sitter: set this to true or false
-  tree-sitter-javascript: set this to true or false
-  tree-sitter-json: set this to true or false
-  tree-sitter-python: set this to true or false
-  tree-sitter-typescript: set this to true or false
+  better-sqlite3: true
+  electron: true
+  esbuild: true
+  lzma-native: true
+  tree-sitter: true
+  tree-sitter-javascript: true
+  tree-sitter-json: true
+  tree-sitter-python: true
+  tree-sitter-typescript: true

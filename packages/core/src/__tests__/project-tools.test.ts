@@ -30,7 +30,7 @@ describe('ReadConfigTool - 读取配置', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能读取指定配置文件', async () => {
@@ -84,7 +84,7 @@ describe('NpmRunTool - 包管理命令', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('requiresConfirm应为true', () => {
@@ -161,7 +161,7 @@ describe('EnvInfoTool - 环境信息', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应返回操作系统信息', async () => {
@@ -206,7 +206,7 @@ describe('ProjectStatsTool - 项目概览', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应检测Node.js+TypeScript技术栈', async () => {
@@ -272,7 +272,7 @@ describe('RememberTool - 存储记忆', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能存储记忆到文件系统', async () => {
@@ -340,7 +340,7 @@ describe('RecallTool - 检索记忆', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能检索已存储的记忆', async () => {
@@ -397,7 +397,7 @@ describe('ForgetTool - 删除记忆', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能删除已存储的记忆', async () => {

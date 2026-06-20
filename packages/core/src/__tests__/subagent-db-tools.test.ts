@@ -30,7 +30,7 @@ describe('DelegateTaskTool - 任务委派', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能委派任务给architect', async () => {
@@ -128,7 +128,7 @@ describe('ListSubAgentsTool - 列出子Agent', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应列出所有6个可用子Agent', async () => {
@@ -174,7 +174,7 @@ describe('InstallRuntimeTool - 安装运行时', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('应能请求安装Node.js', async () => {
@@ -235,7 +235,7 @@ describe('QueryDBTool - 数据库查询', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('SELECT查询应被允许', async () => {
@@ -349,7 +349,7 @@ describe('DBSchemaTool - 数据库Schema', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch { }
+    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
   });
 
   it('无数据库时返回友好提示', async () => {

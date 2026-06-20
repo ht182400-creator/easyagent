@@ -99,7 +99,7 @@ export class KnowledgeService {
     if (!existsSync(this.indexFile)) return [];
     try {
       return JSON.parse(readFileSync(this.indexFile, 'utf-8'));
-    } catch {
+    } catch (err) {
       return [];
     }
   }
@@ -227,7 +227,7 @@ export class KnowledgeService {
                 break;
               }
             }
-          } catch { /* ignore */ }
+          } catch (err) { /* ignore */ }
         }
 
         return titleMatch || tagMatch || categoryMatch || sourceMatch || contentMatch;
@@ -263,7 +263,7 @@ export class KnowledgeService {
               snippet = firstChunk.slice(0, 150);
             }
           }
-        } catch { /* ignore */ }
+        } catch (err) { /* ignore */ }
       }
 
       return { document: doc, score, snippet };

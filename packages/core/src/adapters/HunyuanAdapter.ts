@@ -290,7 +290,7 @@ export class HunyuanAdapter extends BaseAdapter {
             }
 
             yield result;
-          } catch {
+          } catch (err) {
             // 跳过无法解析的行
           }
         }
@@ -309,7 +309,7 @@ export class HunyuanAdapter extends BaseAdapter {
     try {
       await this.chat([{ role: 'user', content: 'ping' }], { maxTokens: 5 });
       return true;
-    } catch {
+    } catch (err) {
       return false;
     }
   }

@@ -108,7 +108,7 @@ export const EnvInfoTool: ITool = {
       const { execSync } = await import('node:child_process');
 
       const tryVersion = (cmd: string): string => {
-        try { return execSync(cmd, { encoding: 'utf-8', timeout: 5000 }).trim().split('\n')[0]; } catch { return '未安装'; }
+        try { return execSync(cmd, { encoding: 'utf-8', timeout: 5000 }).trim().split('\n')[0]; } catch (err) { return '未安装'; }
       };
 
       const info = [

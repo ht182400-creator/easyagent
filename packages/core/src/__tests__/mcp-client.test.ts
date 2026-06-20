@@ -27,7 +27,7 @@ function createMcpScript(scriptCode: string): [string, string] {
 
 /** 清理临时目录 */
 function cleanMcpDir(dir: string): void {
-  try { rmSync(dir, { recursive: true, force: true }); } catch { }
+  try { rmSync(dir, { recursive: true, force: true }); } catch (err) { }
 }
 
 // ==================== MCPClient 测试 ====================

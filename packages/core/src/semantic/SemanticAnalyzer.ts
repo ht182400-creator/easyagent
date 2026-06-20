@@ -183,7 +183,7 @@ export function collectSourceFiles(root: string, maxDepth = 8): string[] {
     let entries: fs.Dirent[];
     try {
       entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
+    } catch (err) {
       return;
     }
 
@@ -212,7 +212,7 @@ export function extractSymbols(filePath: string, language: SupportedLanguage): S
   let content: string;
   try {
     content = fs.readFileSync(filePath, 'utf-8');
-  } catch {
+  } catch (err) {
     return symbols;
   }
 
@@ -275,7 +275,7 @@ export function analyzeFile(filePath: string): FileSemanticInfo {
   let content: string;
   try {
     content = fs.readFileSync(filePath, 'utf-8');
-  } catch {
+  } catch (err) {
     return {
       filePath, language, symbols: [], imports: [], exports: [],
       lineCount: 0, size: 0,
@@ -414,7 +414,7 @@ export function findReferences(
           kind: 'reference',
         });
       }
-    } catch {
+    } catch (err) {
       // 忽略访问失败的文件
     }
   }
@@ -551,7 +551,7 @@ export function getCodebaseOverview(rootPath: string): {
       totalSize += stat.size;
       const content = fs.readFileSync(filePath, 'utf-8');
       totalLines += content.split('\n').length;
-    } catch {
+    } catch (err) {
       // 忽略
     }
   }

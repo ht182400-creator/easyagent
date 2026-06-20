@@ -185,7 +185,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
     let messageId: string;
     try {
       messageId = await this.sendMessage(chatId, '⏳ 思考中...');
-    } catch {
+    } catch (err) {
       messageId = await this.sendMessage(chatId, '...');
     }
 
@@ -203,7 +203,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
           try {
             await this.editMessage(chatId, messageId, fullText);
             lastUpdate = now;
-          } catch {
+          } catch (err) {
             // 编辑失败时继续累积
           }
         }
@@ -216,7 +216,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
       logger.error({ platform: this.platform, error: (err as Error).message }, '流式发送失败');
       try {
         await this.editMessage(chatId, messageId, fullText + '\n\n⚠️ 回复中断');
-      } catch {
+      } catch (err) {
         // 编辑也失败，静默处理
       }
       return messageId;

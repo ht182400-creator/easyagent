@@ -184,7 +184,7 @@ export const useSemanticStore = create<SemanticState>((set) => ({
       } else {
         set({ overviewLoading: false });
       }
-    } catch {
+    } catch (err) {
       set({ overviewLoading: false });
     }
   },

@@ -190,7 +190,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
       const res = await fetch(`/api/sandbox/${id}`);
       if (!res.ok) return null;
       return await res.json();
-    } catch {
+    } catch (err) {
       return null;
     }
   },

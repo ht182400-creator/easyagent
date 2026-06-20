@@ -43,7 +43,7 @@ function isPortAvailable(port: number): boolean {
       });
       server.listen(port, '127.0.0.1');
     }) as unknown as boolean;
-  } catch {
+  } catch (err) {
     return true; // 乐观假设可用
   }
 }
@@ -189,7 +189,7 @@ export const PreviewURLTool: ITool = {
         if (!['http:', 'https:'].includes(parsed.protocol)) {
           return { success: false, content: `不支持的协议: ${parsed.protocol}。仅支持 HTTP/HTTPS。` };
         }
-      } catch {
+      } catch (err) {
         return { success: false, content: `无效的URL: ${url}。请提供完整的HTTP/HTTPS URL。` };
       }
 
@@ -206,7 +206,7 @@ export const PreviewURLTool: ITool = {
 
       try {
         execSync(openCmd, { timeout: 5000, stdio: 'ignore' });
-      } catch {
+      } catch (err) {
         // 在IDE环境中可能没有图形界面浏览器，静默忽略
       }
 

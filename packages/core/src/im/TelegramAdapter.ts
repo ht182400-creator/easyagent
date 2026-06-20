@@ -73,7 +73,7 @@ export class TelegramAdapter extends BaseIMAdapter {
     if (this.config.mode === 'webhook') {
       try {
         await this.apiCall('deleteWebhook');
-      } catch {
+      } catch (err) {
         // 忽略清理错误
       }
     }
@@ -170,7 +170,7 @@ export class TelegramAdapter extends BaseIMAdapter {
         chat_id: chatId,
         action: 'typing',
       });
-    } catch {
+    } catch (err) {
       // 忽略非关键错误
     }
   }
@@ -371,7 +371,7 @@ export class TelegramAdapter extends BaseIMAdapter {
       await this.apiCall('answerCallbackQuery', {
         callback_query_id: cb.id,
       });
-    } catch {
+    } catch (err) {
       // 忽略
     }
 
@@ -456,7 +456,7 @@ export class TelegramAdapter extends BaseIMAdapter {
       if (result.ok && result.result?.file_path) {
         return `${TG_API_BASE}/file/bot${this.botToken}/${result.result.file_path}`;
       }
-    } catch {
+    } catch (err) {
       // 忽略
     }
     return null;

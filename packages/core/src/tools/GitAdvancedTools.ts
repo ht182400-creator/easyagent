@@ -28,7 +28,7 @@ function isGitRepo(workspace: string): boolean {
       cwd: workspace, encoding: 'utf-8', timeout: 5000, windowsHide: true,
     });
     return true;
-  } catch {
+  } catch (err) {
     return false;
   }
 }
@@ -41,7 +41,7 @@ function getCurrentBranch(workspace: string): string {
     return execSync('git branch --show-current', {
       cwd: workspace, encoding: 'utf-8', timeout: 5000, windowsHide: true,
     }).trim();
-  } catch {
+  } catch (err) {
     return 'unknown';
   }
 }
@@ -92,9 +92,9 @@ function generateRepoMap(workspace: string, maxDepth = 4, maxFiles = 200): strin
             isDir: stat.isDirectory(),
             size: stat.isFile() ? stat.size : undefined,
           });
-        } catch { /* 跳过无法访问的文件 */ }
+        } catch (err) { /* 跳过无法访问的文件 */ }
       }
-    } catch {
+    } catch (err) {
       return 0;
     }
 
@@ -349,7 +349,7 @@ export const GitRepoMapTool: ITool = {
           if (pkg.version) lines.push(`   版本: ${pkg.version}`);
           if (pkg.description) lines.push(`   描述: ${pkg.description}`);
           lines.push('');
-        } catch { /* ignore */ }
+        } catch (err) { /* ignore */ }
       }
 
       // Git 信息
@@ -363,7 +363,7 @@ export const GitRepoMapTool: ITool = {
             cwd: repoPath, encoding: 'utf-8', timeout: 5000, windowsHide: true,
           }).trim();
           lines.push(`   最近提交: ${lastCommit}`);
-        } catch { /* ignore */ }
+        } catch (err) { /* ignore */ }
         lines.push('');
       }
 

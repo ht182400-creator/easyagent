@@ -16,7 +16,7 @@ function createTestWorkspace(): string {
 }
 
 function cleanupWorkspace(dir: string) {
-  try { rmSync(dir, { recursive: true, force: true }); } catch {}
+  try { rmSync(dir, { recursive: true, force: true }); } catch (err) {}
 }
 
 describe('FileTools - 工具定义验证', () => {

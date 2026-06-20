@@ -6,6 +6,7 @@ import { app, BrowserWindow, Menu, Tray, nativeImage, shell, dialog, ipcMain, No
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { homedir } from 'node:os';
 import { AgentEngine, ToolRegistry, SessionManager, ConfigManager, AdapterFactory, getAllBuiltinTools, getModelRegistry } from '@easyagent/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,7 +29,7 @@ function getAppVersion(): string {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
       return pkg.version || '0.3.0';
     }
-  } catch { /* ignore */ }
+  } catch (err) { /* ignore */ }
   return '0.3.0';
 }
 const APP_VERSION = getAppVersion();
@@ -43,16 +44,22 @@ const API_PORT = 3456;
  * 调用 @easyagent/server 的 createApp() 获取服务对象，然后手动监听端口
  */
 async function startBackendServer(): Promise<void> {
+  console.log('[EasyAgent Desktop] [DEBUG] startBackendServer called');
   try {
     // 动态导入 server 包（避免 Electron 启动时的循环依赖）
+    console.log('[EasyAgent Desktop] [DEBUG] importing @easyagent/server...');
     const { createApp } = await import('@easyagent/server');
+    console.log('[EasyAgent Desktop] [DEBUG] @easyagent/server imported, createApp type:', typeof createApp);
 
     if (typeof createApp !== 'function') {
       throw new Error('server 包未导出 createApp 函数');
     }
 
     // createApp 返回 { app, server: httpServer, wss, ... }，但不启动监听
-    const appContext = await createApp();
+    // 显式传入 projectRoot 为用户 home 目录，避免 asar 内只读路径问题
+    console.log('[EasyAgent Desktop] [DEBUG] calling createApp() with projectRoot:', homedir());
+    const appContext = await createApp({ projectRoot: homedir() });
+    console.log('[EasyAgent Desktop] [DEBUG] createApp() returned, has server:', !!appContext.server);
     backendServer = appContext.server;
 
     // 手动启动 HTTP 服务器监听
@@ -65,9 +72,23 @@ async function startBackendServer(): Promise<void> {
       console.error('[EasyAgent Desktop] 后端服务运行时错误:', err.message);
     });
   } catch (error: any) {
-    console.error('[EasyAgent Desktop] 后端启动失败:', error.message);
+    const errMsg = `[EasyAgent Desktop] 后端启动失败: ${error.message}`;
+    const errStack = `[EasyAgent Desktop] 错误堆栈: ${error.stack}`;
+    console.error(errMsg);
+    console.error(errStack);
     console.error('[EasyAgent Desktop] 请确认 @easyagent/server 包已构建: pnpm --filter @easyagent/server build');
     console.error('[EasyAgent Desktop] 应用将以离线模式运行');
+    // 写入错误日志到用户目录方便调试
+    try {
+      const os = await import('node:os');
+      const logDir = path.join(os.homedir(), '.easyagent', 'logs');
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+      const logFile = path.join(logDir, 'startup-error.log');
+      fs.writeFileSync(logFile, `Time: ${new Date().toISOString()}\n${errMsg}\n${errStack}\n`);
+      console.error('[EasyAgent Desktop] 详细错误已写入:', logFile);
+    } catch (logErr: any) {
+      console.error('[EasyAgent Desktop] 日志写入失败:', logErr.message);
+    }
   }
 }
 
@@ -348,7 +369,7 @@ async function initAutoUpdater(): Promise<void> {
     }, 10000);
 
     console.log('[EasyAgent Desktop] 自动更新系统已启用');
-  } catch {
+  } catch (err) {
     console.log('[EasyAgent Desktop] 自动更新未启用 (electron-updater 未安装)');
     isUpdateSupported = false;
   }

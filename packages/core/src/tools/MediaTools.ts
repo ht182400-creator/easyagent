@@ -210,7 +210,7 @@ export const ScreenshotTool: ITool = {
       // URL验证
       try {
         new URL(url);
-      } catch {
+      } catch (err) {
         return { success: false, content: `无效的URL: ${url}` };
       }
 

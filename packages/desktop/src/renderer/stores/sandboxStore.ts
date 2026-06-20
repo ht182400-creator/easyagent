@@ -178,7 +178,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
     try {
       const data = await apiFetch<any>(`/api/sandbox/${id}`);
       return data;
-    } catch {
+    } catch (err) {
       return null;
     }
   },
@@ -186,8 +186,8 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
   /** 销毁沙箱 */
   destroySandbox: async (id) => {
     try {
-      const res = await apiFetch(`/api/sandbox/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await apiFetch(`/api/sandbox/${id}`, { method: 'DELETE' });
+      // apiFetch 内部已处理错误，走到这里说明删除成功
       const { sandboxes, selectedSandbox } = get();
       const updated = sandboxes.filter(s => s.id !== id);
       set({

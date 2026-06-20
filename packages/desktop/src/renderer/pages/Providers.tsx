@@ -82,7 +82,7 @@ export default function Providers() {
         ...prev,
         [providerId]: { success: data.success, error: data.error },
       }));
-    } catch {
+    } catch (err) {
       setTestResults(prev => ({
         ...prev,
         [providerId]: { success: false, error: '网络请求失败，请检查后端服务是否正常运行' },

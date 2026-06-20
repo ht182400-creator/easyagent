@@ -121,7 +121,7 @@ export default function Automation() {
                 detail: progress.detail,
               });
             }
-          } catch { /* ignore malformed messages */ }
+          } catch (err) { /* ignore malformed messages */ }
         };
         ws.onclose = () => {
           if (!closed) {
@@ -129,7 +129,7 @@ export default function Automation() {
           }
         };
         ws.onerror = () => { /* will trigger onclose */ };
-      } catch { /* retry on next effect */ }
+      } catch (err) { /* retry on next effect */ }
     };
 
     connect();

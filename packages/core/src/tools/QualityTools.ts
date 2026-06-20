@@ -51,7 +51,7 @@ export const LintCodeTool: ITool = {
             command = 'npx eslint';
             if (fix) command += ' --fix';
           }
-        } catch { /* ignore */ }
+        } catch (err) { /* ignore */ }
       }
 
       if (!command && existsSync(resolve(ws, 'pyproject.toml')) || existsSync(resolve(ws, '.pylintrc'))) {
@@ -132,7 +132,7 @@ export const FormatCodeTool: ITool = {
           if (pkg.scripts?.format) {
             command = 'npm run format';
           }
-        } catch { /* ignore */ }
+        } catch (err) { /* ignore */ }
         if (!command) {
           command = 'npx prettier --write';
           if (check) command = 'npx prettier --check';

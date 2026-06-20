@@ -32,7 +32,7 @@ export const Banner: FC<BannerProps> = ({
         horizontalLayout: 'full',
       });
       setTitleLines(gradient.pastel.multiline(ascii).split('\n'));
-    } catch {
+    } catch (err) {
       setTitleLines([`EasyAgent CLI ${version}`]);
     }
   }, [version]);
