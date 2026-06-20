@@ -232,14 +232,13 @@ if %AUTO_MODE%==0 (
 echo   Running: build.bat --release
 echo   ----------------------------------------
 call build.bat --release
-set BUILD_EXIT_CODE=%errorlevel%
-echo [DEBUG release-publish] build.bat exit code: !BUILD_EXIT_CODE!
-if "!BUILD_EXIT_CODE!" neq "0" (
+if errorlevel 1 (
     echo.
-    echo   [FAIL] Build failed (exit code: !BUILD_EXIT_CODE!)
+    echo   [FAIL] Build failed (exit code: %errorlevel%)
     pause
     exit /b 1
 )
+echo [DEBUG release-publish] Build completed successfully
 
 echo   [OK] Build complete
 
