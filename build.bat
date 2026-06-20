@@ -128,28 +128,21 @@ echo   All modules built.
 echo.
 echo [5/5] Packaging...
 
+rem setlocal/endlocal 必须在 if 块外面，否则会扰乱括号解析
+setlocal disabledelayedexpansion
 if /i "%MODE%"=="release" (
     echo   Building full NSIS installer...
-    setlocal disabledelayedexpansion
     call pnpm exec electron-builder --win --x64
-    endlocal
-    if errorlevel 1 (
-        echo [FAIL] electron-builder packaging failed
-        cd ..\..
-        pause
-        exit /b 1
-    )
 ) else (
     echo   Building fast test package (--dir)...
-    setlocal disabledelayedexpansion
     call pnpm exec electron-builder --dir --win
-    endlocal
-    if errorlevel 1 (
-        echo [FAIL] electron-builder packaging failed
-        cd ..\..
-        pause
-        exit /b 1
-    )
+)
+endlocal
+if errorlevel 1 (
+    echo [FAIL] electron-builder packaging failed
+    cd ..\..
+    pause
+    exit /b 1
 )
 
 cd ..\..
