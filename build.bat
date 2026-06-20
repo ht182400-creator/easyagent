@@ -3,13 +3,13 @@ setlocal enabledelayedexpansion
 title EasyAgent Desktop Build
 cd /d "%~dp0"
 
-:: ============================================================
-::  EasyAgent Desktop EXE - Standard Build Pipeline
-::  Usage:
-::    build.bat            Fast test mode (--dir, ~60s)
-::    build.bat --release  Full NSIS installer (~3 min)
-::    build.bat --verify   Pre-flight check only (no build)
-:: ============================================================
+::: ============================================================
+:::  EasyAgent Desktop EXE - Standard Build Pipeline
+:::  Usage:
+:::    build.bat            Fast test mode (--dir, ~60s)
+:::    build.bat --release  Full NSIS installer (~3 min)
+:::    build.bat --verify   Pre-flight check only (no build)
+::: ============================================================
 
 set MODE=fast
 if /i "%~1"=="--release" set MODE=release
@@ -23,24 +23,24 @@ echo   Mode: %MODE%
 echo   Time: %date% %time%
 echo ============================================
 
-:: ============================================================
-:: Phase 0: Cleanup
-:: ============================================================
+::: ============================================================
+::: Phase 0: Cleanup
+::: ============================================================
 echo.
 echo [0/5] Cleanup...
 
-:: Kill running processes
+::: Kill running processes
 taskkill /f /im EasyAgent.exe >nul 2>&1
 taskkill /f /im electron.exe  >nul 2>&1
 timeout /t 1 /nobreak >nul
 
-:: Clean old release directory
+::: Clean old release directory
 if exist "packages\desktop\release" (
     echo   Removing old release directory...
     rmdir /s /q "packages\desktop\release" >nul 2>&1
 )
 
-:: Clean dist/renderer for fresh Vite build
+::: Clean dist/renderer for fresh Vite build
 if exist "packages\desktop\dist\renderer" (
     echo   Cleaning dist/renderer for fresh build...
     rmdir /s /q "packages\desktop\dist\renderer" >nul 2>&1
@@ -48,9 +48,9 @@ if exist "packages\desktop\dist\renderer" (
 
 echo   Cleanup done.
 
-:: ============================================================
-:: Phase 1: Pre-flight Verification
-:: ============================================================
+::: ============================================================
+::: Phase 1: Pre-flight Verification
+::: ============================================================
 echo.
 echo [1/5] Pre-flight verification...
 
@@ -71,9 +71,9 @@ if /i "%MODE%"=="verify" (
     exit /b 0
 )
 
-:: ============================================================
-:: Phase 2: Build All Modules
-:: ============================================================
+::: ============================================================
+::: Phase 2: Build All Modules
+::: ============================================================
 echo.
 echo [2/5] Building core...
 
@@ -122,9 +122,9 @@ if errorlevel 1 (
 
 echo   All modules built.
 
-:: ============================================================
-:: Phase 3: Package
-:: ============================================================
+::: ============================================================
+::: Phase 3: Package
+::: ============================================================
 echo.
 echo [5/5] Packaging...
 
@@ -158,9 +158,12 @@ if %_PKG_ERR% neq 0 (
 )
 echo [DEBUG] Packaging successful
 
-:: ============================================================
-:: Phase 4: Verify Output
-:: ============================================================
+rem Return to workspace root for Phase 4/5 relative paths
+cd ..\..
+
+::: ============================================================
+::: Phase 4: Verify Output
+::: ============================================================
 echo.
 echo ============================================
 echo   VERIFYING OUTPUT
@@ -196,9 +199,9 @@ if /i "%MODE%"=="release" (
     )
 )
 
-:: ============================================================
-:: Phase 5: Quick asar content verification
-:: ============================================================
+::: ============================================================
+::: Phase 5: Quick asar content verification
+::: ============================================================
 if exist "%ASAR_PATH%" (
     echo.
     echo   Verifying asar content...
@@ -207,7 +210,7 @@ if exist "%ASAR_PATH%" (
     ver >nul
 )
 
-:: ============================================================
+::: ============================================================
 echo.
 echo ============================================
 echo   BUILD SUCCESS
