@@ -1,0 +1,26 @@
+node_modules/
+dist/
+.vite/
+*.db
+*.db-journal
+.env
+.env.local
+coverage/
+test-results/
+build-output.txt
+tsconfig.tsbuildinfo
+*.exe
+*.zip
+*.blockmap
+*.tgz
+*.tar.gz
+release/
+desktop/release/
+# IDE 用户配置（保留 .codebuddy/memory 共享）
+.codebuddy/automations/
+.codebuddy/teams/
+# EasyAgent 本地数据
+.easyagent/knowledge/
+# 临时文件
+$null
+{console.log('TIMEOUT')

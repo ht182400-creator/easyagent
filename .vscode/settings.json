@@ -1,0 +1,6 @@
+{
+  "files.watcherExclude": {
+    "**/packages/desktop/release/**": true,
+    "**/packages/desktop/release-v*/**": true
+  }
+}

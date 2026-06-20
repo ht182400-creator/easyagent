@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="hg" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="33%" stop-color="#8b5cf6"/>
+      <stop offset="66%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#hg)" opacity="0.08"/>
+  <polygon points="32,4 58,18 58,42 32,56 6,42 6,18" stroke="url(#hg)" stroke-width="2.2" fill="none" stroke-linejoin="round" opacity="0.45" filter="url(#glow)"/>
+  <polygon points="32,8 52,19 52,41 32,52 12,41 12,19" stroke="url(#hg)" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
+  <text x="32" y="39" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="26" fill="url(#hg)">E</text>
+</svg>

@@ -1,0 +1,157 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-06-19T00:00:00Z",
+  "description": "EasyAgent 模型目录 - 包含所有主流中国 AI 提供商的最新模型信息。启动时自动下载更新。",
+  "providers": [
+    {
+      "provider": "deepseek",
+      "providerName": "DeepSeek",
+      "baseURL": "https://api.deepseek.com/v1",
+      "apiKeyEnv": "DEEPSEEK_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "deepseek-v4",
+      "models": [
+        { "id": "deepseek-v4", "name": "DeepSeek V4", "maxContextTokens": 131072, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 2, "output": 8 } },
+        { "id": "deepseek-v4-flash", "name": "DeepSeek V4 Flash", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": true, "pricing": { "input": 0.5, "output": 2 } },
+        { "id": "deepseek-chat", "name": "DeepSeek V3", "maxContextTokens": 65536, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 1, "output": 2 } },
+        { "id": "deepseek-r1", "name": "DeepSeek R1 (推理)", "maxContextTokens": 65536, "maxOutputTokens": 32768, "supportsTools": true, "supportsVision": false, "pricing": { "input": 4, "output": 16 } }
+      ]
+    },
+    {
+      "provider": "zhipu",
+      "providerName": "智谱GLM",
+      "baseURL": "https://open.bigmodel.cn/api/paas/v4",
+      "apiKeyEnv": "ZHIPU_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "glm-5",
+      "models": [
+        { "id": "glm-5", "name": "GLM-5", "maxContextTokens": 200000, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 3, "output": 12 } },
+        { "id": "glm-5-flash", "name": "GLM-5 Flash", "maxContextTokens": 200000, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": true, "pricing": { "input": 0.5, "output": 2 } },
+        { "id": "glm-4-plus", "name": "GLM-4 Plus", "maxContextTokens": 128000, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": true, "pricing": { "input": 50, "output": 50 } },
+        { "id": "glm-4-flash", "name": "GLM-4 Flash", "maxContextTokens": 128000, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": true, "pricing": { "input": 0.1, "output": 0.1 } }
+      ]
+    },
+    {
+      "provider": "qwen",
+      "providerName": "通义千问",
+      "baseURL": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "apiKeyEnv": "DASHSCOPE_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "qwen3-max",
+      "models": [
+        { "id": "qwen3-max", "name": "Qwen3 Max", "maxContextTokens": 131072, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 3, "output": 12 } },
+        { "id": "qwen3-plus", "name": "Qwen3 Plus", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": true, "pricing": { "input": 1.5, "output": 6 } },
+        { "id": "qwen3-turbo", "name": "Qwen3 Turbo", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0.5, "output": 2 } },
+        { "id": "qwen3-coder-plus", "name": "Qwen3 Coder Plus", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 2, "output": 8 } },
+        { "id": "qwen-max", "name": "Qwen Max (Qwen2)", "maxContextTokens": 32768, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": true, "pricing": { "input": 20, "output": 60 } },
+        { "id": "qwen-plus", "name": "Qwen Plus (Qwen2)", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": true, "pricing": { "input": 2, "output": 6 } }
+      ]
+    },
+    {
+      "provider": "kimi",
+      "providerName": "Kimi (月之暗面)",
+      "baseURL": "https://api.moonshot.cn/v1",
+      "apiKeyEnv": "MOONSHOT_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "kimi-k2.7-code",
+      "models": [
+        { "id": "kimi-k2.7-code", "name": "Kimi K2.7 Code", "maxContextTokens": 131072, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": false, "pricing": { "input": 10, "output": 30 } },
+        { "id": "kimi-k2.6", "name": "Kimi K2.6", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": true, "pricing": { "input": 8, "output": 24 } },
+        { "id": "kimi-k2.5", "name": "Kimi K2.5", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 5, "output": 15 } },
+        { "id": "moonshot-v1-128k", "name": "Kimi 128K (V1)", "maxContextTokens": 131072, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 60, "output": 60 } }
+      ]
+    },
+    {
+      "provider": "ernie",
+      "providerName": "文心一言",
+      "baseURL": "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat",
+      "apiKeyEnv": "ERNIE_API_KEY",
+      "apiFormat": "custom",
+      "defaultModel": "ernie-4.5-8k",
+      "models": [
+        { "id": "ernie-4.5-8k", "name": "ERNIE 4.5", "maxContextTokens": 8192, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": true, "pricing": { "input": 4, "output": 12 } },
+        { "id": "ernie-speed", "name": "ERNIE Speed", "maxContextTokens": 128000, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0.5, "output": 2 } },
+        { "id": "ernie-lite", "name": "ERNIE Lite", "maxContextTokens": 128000, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0.3, "output": 0.6 } },
+        { "id": "ernie-4.0-turbo-8k", "name": "ERNIE 4.0 Turbo", "maxContextTokens": 8192, "maxOutputTokens": 2048, "supportsTools": true, "supportsVision": false, "pricing": { "input": 15, "output": 45 } }
+      ]
+    },
+    {
+      "provider": "doubao",
+      "providerName": "豆包 (字节跳动)",
+      "baseURL": "https://ark.cn-beijing.volces.com/api/v3",
+      "apiKeyEnv": "DOUBAO_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "doubao-seed-1.6",
+      "models": [
+        { "id": "doubao-seed-1.6", "name": "豆包 Seed 1.6", "maxContextTokens": 131072, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 1, "output": 4 } },
+        { "id": "doubao-pro-1.6", "name": "豆包 Pro 1.6", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0.8, "output": 2 } },
+        { "id": "doubao-lite-1.6", "name": "豆包 Lite 1.6", "maxContextTokens": 131072, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0.3, "output": 0.6 } }
+      ]
+    },
+    {
+      "provider": "hunyuan",
+      "providerName": "腾讯混元",
+      "baseURL": "https://hunyuan.tencentcloudapi.com",
+      "apiKeyEnv": "HUNYUAN_SECRET_ID",
+      "apiFormat": "custom",
+      "defaultModel": "hunyuan-turbos-vision-latest",
+      "models": [
+        { "id": "hunyuan-turbos-vision-latest", "name": "混元 TurboS Vision", "maxContextTokens": 131072, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 3, "output": 12 } },
+        { "id": "hunyuan-t1", "name": "混元 T1 (推理)", "maxContextTokens": 65536, "maxOutputTokens": 32768, "supportsTools": true, "supportsVision": false, "pricing": { "input": 5, "output": 20 } },
+        { "id": "hunyuan-pro", "name": "混元 Pro", "maxContextTokens": 32768, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": true, "pricing": { "input": 3, "output": 10 } },
+        { "id": "hunyuan-lite", "name": "混元 Lite", "maxContextTokens": 32768, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0.2, "output": 0.8 } }
+      ]
+    },
+    {
+      "provider": "minimax",
+      "providerName": "MiniMax",
+      "baseURL": "https://api.minimax.chat/v1",
+      "apiKeyEnv": "MINIMAX_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "minimax-m3",
+      "models": [
+        { "id": "minimax-m3", "name": "MiniMax M3", "maxContextTokens": 200000, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 2, "output": 8 } },
+        { "id": "minimax-m3-flash", "name": "MiniMax M3 Flash", "maxContextTokens": 200000, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0.5, "output": 2 } },
+        { "id": "minimax-m1", "name": "MiniMax M1", "maxContextTokens": 131072, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 1, "output": 4 } },
+        { "id": "abab6.5s-chat", "name": "ABAB 6.5s", "maxContextTokens": 245760, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 1, "output": 1 } }
+      ]
+    },
+    {
+      "provider": "openai",
+      "providerName": "OpenAI (兼容接口)",
+      "baseURL": "https://api.openai.com/v1",
+      "apiKeyEnv": "OPENAI_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "gpt-4o",
+      "models": [
+        { "id": "gpt-4o", "name": "GPT-4o", "maxContextTokens": 128000, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 18, "output": 54 } },
+        { "id": "gpt-4o-mini", "name": "GPT-4o Mini", "maxContextTokens": 128000, "maxOutputTokens": 16384, "supportsTools": true, "supportsVision": true, "pricing": { "input": 1, "output": 4 } }
+      ]
+    },
+    {
+      "provider": "ollama",
+      "providerName": "Ollama (本地)",
+      "baseURL": "http://localhost:11434/v1",
+      "apiKeyEnv": "OLLAMA_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "qwen3.5:9b",
+      "models": [
+        { "id": "qwen3.5:9b", "name": "Qwen 3.5 9B", "maxContextTokens": 32768, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0, "output": 0 } },
+        { "id": "qwen3.5:4b", "name": "Qwen 3.5 4B", "maxContextTokens": 32768, "maxOutputTokens": 8192, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0, "output": 0 } },
+        { "id": "deepseek-r1:8b", "name": "DeepSeek R1 8B", "maxContextTokens": 32768, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0, "output": 0 } },
+        { "id": "glm4:9b", "name": "GLM-4 9B", "maxContextTokens": 32768, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0, "output": 0 } }
+      ]
+    },
+    {
+      "provider": "custom",
+      "providerName": "自定义",
+      "baseURL": "http://localhost:8000/v1",
+      "apiKeyEnv": "CUSTOM_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "custom-model",
+      "models": [
+        { "id": "custom-model", "name": "自定义模型", "maxContextTokens": 32768, "maxOutputTokens": 4096, "supportsTools": true, "supportsVision": false, "pricing": { "input": 0, "output": 0 } }
+      ]
+    }
+  ]
+}

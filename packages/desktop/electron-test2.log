@@ -1,0 +1,13 @@
+[EasyAgent] 未配置API密钥，Agent引擎未启动 - 请在设置中配置模型
+[19152:0618/193448.294:INFO:CONSOLE(2)] "Unable to load preload script: d:\Work_Area\AI\Claude Code  CN\packages\desktop\dist\preload.js", source: node:electron/js2c/renderer_init (2)
+[19152:0618/193448.296:INFO:CONSOLE(2)] "Error [ERR_REQUIRE_ESM]: require() of ES Module d:\Work_Area\AI\Claude Code  CN\packages\desktop\dist\preload.js not supported.
+Instead change the require of preload.js in null to a dynamic import() which is available in all CommonJS modules.", source: node:electron/js2c/renderer_init (2)
+[19152:0618/193448.311:INFO:CONSOLE(183)] "[EasyAgent] 开发模式 - IPC 桥接不可用", source: file:///D:/Work_Area/AI/Claude%20Code%20%20CN/packages/desktop/dist/renderer/assets/index-CiSahVwG.js (183)
+[19152:0618/193448.320:INFO:CONSOLE(2)] "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)

@@ -1,0 +1,47 @@
+[EasyAgent] Agent 引擎初始化失败: Error: Could not locate the bindings file. Tried:
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\Debug\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\Release\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\out\Debug\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\Debug\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\out\Release\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\Release\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\default\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\compiled\20.11.1\win32\x64\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\addon-build\release\install-root\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\addon-build\debug\install-root\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\addon-build\default\install-root\better_sqlite3.node
+ → D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\lib\binding\node-v123-win32-x64\better_sqlite3.node
+    at bindings (D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\bindings@1.5.0\node_modules\bindings\bindings.js:126:9)
+    at new Database (D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\lib\database.js:48:64)
+    at new SessionManager (file:///D:/Work_Area/AI/Claude%20Code%20%20CN/packages/core/dist/index.js:4284:15)
+    at initAgent (file:///d:/Work_Area/AI/Claude%20Code%20%20CN/packages/desktop/dist/main.js:134:22)
+    at async file:///d:/Work_Area/AI/Claude%20Code%20%20CN/packages/desktop/dist/main.js:217:3 {
+  tries: [
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\build\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\build\\Debug\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\build\\Release\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\out\\Debug\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\Debug\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\out\\Release\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\Release\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\build\\default\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\compiled\\20.11.1\\win32\\x64\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\addon-build\\release\\install-root\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\addon-build\\debug\\install-root\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\addon-build\\default\\install-root\\better_sqlite3.node',
+    'D:\\Work_Area\\AI\\Claude Code  CN\\node_modules\\.pnpm\\better-sqlite3@12.11.1\\node_modules\\better-sqlite3\\lib\\binding\\node-v123-win32-x64\\better_sqlite3.node'
+  ]
+}
+[28748:0618/192732.714:INFO:CONSOLE(2)] "Unable to load preload script: d:\Work_Area\AI\Claude Code  CN\packages\desktop\dist\preload.js", source: node:electron/js2c/renderer_init (2)
+[28748:0618/192732.715:INFO:CONSOLE(2)] "Error [ERR_REQUIRE_ESM]: require() of ES Module d:\Work_Area\AI\Claude Code  CN\packages\desktop\dist\preload.js not supported.
+Instead change the require of preload.js in null to a dynamic import() which is available in all CommonJS modules.", source: node:electron/js2c/renderer_init (2)
+[28748:0618/192732.726:INFO:CONSOLE(183)] "[EasyAgent] 开发模式 - IPC 桥接不可用", source: file:///D:/Work_Area/AI/Claude%20Code%20%20CN/packages/desktop/dist/renderer/assets/index-CiSahVwG.js (183)
+[28748:0618/192732.741:INFO:CONSOLE(2)] "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.", source: node:electron/js2c/renderer_init (2)

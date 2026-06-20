@@ -1,0 +1,11 @@
+# 编译产物
+src/**/*.js
+src/**/*.d.ts
+src/**/*.js.map
+
+# 依赖
+node_modules
+.vite
+
+# 构建输出
+dist

@@ -1,0 +1,29 @@
+{
+  "name": "easyagent",
+  "version": "0.3.2",
+  "description": "AI编程助手 - 集成中国主流大模型的全功能AI Agent",
+  "private": true,
+  "scripts": {
+    "dev:cli": "cd packages/cli && npx tsup --watch",
+    "dev:server": "cd packages/server && npx tsup --watch",
+    "dev:web": "cd packages/web && npm run dev",
+    "build": "cd packages/core && npx tsup && cd ../cli && npx tsup && cd ../server && npx tsup && cd ../desktop && npx tsup",
+    "build:core": "cd packages/core && npx tsup",
+    "build:cli": "cd packages/cli && npx tsup",
+    "build:server": "cd packages/server && npx tsup",
+    "build:desktop": "cd packages/desktop && npx tsup",
+    "build:web": "cd packages/web && npm run build",
+    "test": "cd packages/core && npx vitest run",
+    "test:core": "cd packages/core && npx vitest run",
+    "test:server": "cd packages/server && npx vitest run",
+    "test:all": "cd packages/core && npx vitest run && cd ../server && npx vitest run",
+    "lint": "echo 'lint TODO'",
+    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules",
+    "start": "node packages/cli/dist/main.js",
+    "start:server": "node packages/server/dist/index.js",
+    "start:desktop": "cd packages/desktop && npx electron dist/main.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
