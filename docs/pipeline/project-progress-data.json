@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "repo": "ht182400-creator/easyagent",
+    "version": "0.4.0",
+    "codename": "Gemini",
+    "lastUpdated": "2026-06-22T22:55:00+08:00",
+    "engine": "auto-detected",
+    "totalTests": 806,
+    "modelsSupported": 10
+  },
+  "phases": [
+    {
+      "id": "P0",
+      "name": "关键阻塞项",
+      "status": "done",
+      "priority": "p0",
+      "tasks": [
+        {
+          "id": "p0-node-check",
+          "name": "限制 Node.js < 24.x",
+          "desc": "preinstall.cjs 版本拦截 + engines 限制 + EASYAGENT_SKIP_NODE_CHECK 跳过开关",
+          "status": "done",
+          "time": "1h",
+          "detect": { "files": ["scripts/preinstall.cjs"], "packageKey": "engines.node" }
+        },
+        {
+          "id": "p0-swe-bench",
+          "name": "建立 SWE-bench 评测基准",
+          "desc": "10 题评测集 (easy 3 / medium 4 / hard 3) · BenchmarkRunner.ts · CLI 入口",
+          "status": "done",
+          "time": "3h",
+          "detect": { "files": ["scripts/swe-bench/run-benchmark.mjs"] }
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "name": "高优先级补充",
+      "status": "running",
+      "priority": "p1",
+      "tasks": [
+        {
+          "id": "p1-cicd",
+          "name": "部署 GitHub Actions CI/CD",
+          "desc": "ci.yml (push/PR 测试+编译) + release.yml (Tag 推送自动构建发布 EXE)",
+          "status": "done",
+          "time": "2h",
+          "detect": { "files": [".github/workflows/ci.yml", ".github/workflows/release.yml"] }
+        },
+        {
+          "id": "p1-frontend-merge",
+          "name": "合并 Web ↔ Desktop 前端代码",
+          "desc": "创建 packages/frontend 共享包，统一 apiFetch 行为",
+          "status": "pending",
+          "time": null,
+          "detect": { "files": ["packages/frontend/package.json"] }
+        },
+        {
+          "id": "p1-plugin-sandbox",
+          "name": "PluginManager 沙箱隔离",
+          "desc": "worker_threads + PluginPermission 权限声明白名单",
+          "status": "pending",
+          "time": null,
+          "detect": { "files": ["packages/core/src/plugin/PluginPermission.ts"] }
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "体验与质量增强",
+      "status": "pending",
+      "priority": "p2",
+      "tasks": [
+        {
+          "id": "p2-analytics",
+          "name": "用户行为埋点",
+          "desc": "FTSR / 7日留存率 / TTFV 北极星指标",
+          "status": "pending",
+          "time": null,
+          "detect": { "files": ["packages/core/src/analytics/"] }
+        },
+        {
+          "id": "p2-integration-test",
+          "name": "集成测试",
+          "desc": "CLI → Server → Core → Model 端到端链路覆盖",
+          "status": "pending",
+          "time": null,
+          "detect": { "files": ["packages/core/src/__tests__/integration/"] }
+        },
+        {
+          "id": "p2-leaderboard",
+          "name": "多模型横向评测排行榜",
+          "desc": "每版本发布\"模型适配报告\"",
+          "status": "pending",
+          "time": null,
+          "detect": { "files": ["docs/model-benchmark/"] }
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "社区与分发",
+      "status": "pending",
+      "priority": "p3",
+      "tasks": [
+        {
+          "id": "p3-install-script",
+          "name": "一键安装脚本",
+          "desc": "curl | bash + DeepSeek 快速配置向导",
+          "status": "pending",
+          "time": null,
+          "detect": { "files": ["scripts/install.sh", "scripts/install.ps1"] }
+        },
+        {
+          "id": "p3-contributor",
+          "name": "Contributor 引导计划",
+          "desc": "10 个 good-first-issue + 贡献指南",
+          "status": "pending",
+          "time": null,
+          "detect": { "files": ["CONTRIBUTING.md"] }
+        }
+      ]
+    }
+  ],
+  "scoreHistory": [
+    { "label": "审查前", "value": 68.4 },
+    { "label": "P0 完成", "value": 72 },
+    { "label": "全量完成", "value": 80, "projected": true }
+  ]
+}

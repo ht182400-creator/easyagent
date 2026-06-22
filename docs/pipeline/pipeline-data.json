@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "version": "0.5.0",
+    "codename": "Helios",
+    "releaseDate": "2026-06-23",
+    "generatedAt": "2026-06-23T00:12:00+08:00",
+    "description": "EasyAgent 项目全景进度管线数据 - 整合 PRD/ADD/Review 文档中所有功能模块"
+  },
+  "mainLane": {
+    "id": "main",
+    "label": "核心功能管线",
+    "phases": [
+      {
+        "id": "phase-foundation",
+        "label": "P0 基础",
+        "period": "2026 Q2 早期",
+        "nodes": [
+          { "id": "f1", "label": "多模型适配器", "desc": "10家国产大模型\nOpenAI兼容+自有API", "status": "done", "icon": "🔌" },
+          { "id": "f2", "label": "Agent 系统", "desc": "ReAct循环\n多Agent协作+计划模式", "status": "done", "icon": "🧠" },
+          { "id": "f3", "label": "工具系统 51 tools", "desc": "17分组全覆盖\n文件/搜索/Git/代码/知识库", "status": "done", "icon": "🔧" }
+        ]
+      },
+      {
+        "id": "phase-interface",
+        "label": "P1 交互层",
+        "period": "2026 Q2 中期",
+        "nodes": [
+          { "id": "f7", "label": "Ink CLI", "desc": "React Terminal\n7组件架构+10命令", "status": "done", "icon": "🖥️" },
+          { "id": "f8", "label": "Web Dashboard v4", "desc": "WorkBuddy风格\n10 Store+WS+虚拟滚动", "status": "done", "icon": "🌐" },
+          { "id": "f9", "label": "Desktop 原生应用", "desc": "Electron+React\n六件套布局+系统托盘", "status": "done", "icon": "🖼️" }
+        ]
+      },
+      {
+        "id": "phase-extend",
+        "label": "P2 扩展层",
+        "period": "2026 Q2 中后期",
+        "nodes": [
+          { "id": "f4", "label": "知识库 RAG", "desc": "双作用域架构\n5工具+HTTP API+Web管理", "status": "done", "icon": "📚" },
+          { "id": "f5", "label": "MCP 协议", "desc": "JSON-RPC stdio\n多Server管理+工具发现", "status": "done", "icon": "🔗" },
+          { "id": "f6", "label": "沙箱执行环境", "desc": "Docker+本地进程降级\n3种模式自动检测", "status": "done", "icon": "📦" }
+        ]
+      },
+      {
+        "id": "phase-platform",
+        "label": "P3 平台层",
+        "period": "2026 Q2 后期",
+        "nodes": [
+          { "id": "f10", "label": "插件与技能系统", "desc": "PluginManager+6内置技能\n生命周期+钩子系统", "status": "done", "icon": "🧩" },
+          { "id": "f11", "label": "IM 适配器", "desc": "Telegram/飞书/企业微信\n3平台消息路由", "status": "done", "icon": "💬" },
+          { "id": "f12", "label": "i18n 国际化", "desc": "zh-CN/en-US\n完整消息表+t()函数", "status": "done", "icon": "🌍" }
+        ]
+      },
+      {
+        "id": "phase-release",
+        "label": "P4 发布层",
+        "period": "2026-06-20 ~ 06-22",
+        "nodes": [
+          { "id": "f13", "label": "Desktop 自动升级", "desc": "electron-updater\n静默检查+进度+重启", "status": "done", "icon": "🔄" },
+          { "id": "f14", "label": "模型目录动态更新", "desc": "GitHub/CDN双源\n24h缓存+三级降级", "status": "done", "icon": "📋" },
+          { "id": "f15", "label": "全面去硬编码", "desc": "模型/模板/命令动态加载\n前端智能默认值", "status": "done", "icon": "🎯" },
+          { "id": "f16", "label": "版本控制系统", "desc": "version.json唯一源\nCHANGELOG+升级提示API", "status": "done", "icon": "🏷️" }
+        ]
+      },
+      {
+        "id": "phase-pipeline",
+        "label": "P5 管线运维",
+        "period": "2026-06-22 ~ 进行中",
+        "nodes": [
+          { "id": "p5a", "label": "管线数据看板", "desc": "全量数据可视化\nKPI仪表板+问题追踪", "status": "in-progress", "icon": "🗺️" },
+          { "id": "p5b", "label": "自动数据采集", "desc": "pipeline-data.json\nmemory实时解析+缓存", "status": "done", "icon": "📡" },
+          { "id": "p5c", "label": "实时问题追踪", "desc": "MD文件解析\n模块级追溯+统计", "status": "done", "icon": "🔍" }
+        ]
+      }
+    ]
+  },
+  "branchLanes": [
+    {
+      "id": "branch-opt-p1",
+      "label": "P1 优化分支 · 架构改进",
+      "sourceNode": "phase-release",
+      "nodes": [
+        { "id": "opt-p1a", "label": "Web↔Desktop 前端合并", "desc": "创建 packages/frontend\n消除80%代码重复", "status": "in-progress", "icon": "🔀" },
+        { "id": "opt-p1b", "label": "PluginManager 沙箱", "desc": "worker_threads隔离\nPluginPermission白名单", "status": "pending", "icon": "🛡️" }
+      ]
+    },
+    {
+      "id": "branch-opt-p2",
+      "label": "P2 优化分支 · 质量保障",
+      "sourceNode": "phase-release",
+      "nodes": [
+        { "id": "opt-p2a", "label": "SWE-bench 评测体系", "desc": "Agent代码质量量化\n10题基准+pass@k", "status": "done", "icon": "📊" },
+        { "id": "opt-p2b", "label": "GitHub Actions CI/CD", "desc": "push触发测试+编译\nTag推送自动构建发布", "status": "done", "icon": "⚙️" },
+        { "id": "opt-p2c", "label": "集成测试·端到端", "desc": "CLI→Server→Core→Model\n全链路覆盖", "status": "pending", "icon": "🧪" },
+        { "id": "opt-p2d", "label": "多模型评测排行榜", "desc": "每版本发布\n模型适配报告", "status": "pending", "icon": "🏆" },
+        { "id": "opt-p2e", "label": "用户行为埋点", "desc": "FTSR/留存率/TTFV\n北极星指标仪表盘", "status": "pending", "icon": "📈" }
+      ]
+    },
+    {
+      "id": "branch-opt-p3",
+      "label": "P3 优化分支 · 生态建设",
+      "sourceNode": "phase-release",
+      "nodes": [
+        { "id": "opt-p3a", "label": "一键安装脚本", "desc": "curl | bash 体验\n12min→2min配置", "status": "pending", "icon": "⚡" },
+        { "id": "opt-p3b", "label": "VS Code 插件", "desc": "IDE深度集成\n实时代码建议", "status": "pending", "icon": "🔌" },
+        { "id": "opt-p3c", "label": "Contributor 引导", "desc": "10个good-first-issue\n贡献指南+代码规范", "status": "pending", "icon": "👥" }
+      ]
+    }
+  ],
+  "scoreHistory": [
+    { "version": "v0.1.0", "date": "2026-06-18", "score": 30 },
+    { "version": "v0.2.0", "date": "2026-06-19", "score": 55 },
+    { "version": "v0.3.0", "date": "2026-06-20", "score": 65 },
+    { "version": "v0.4.0", "date": "2026-06-22", "score": 68 },
+    { "version": "v0.5.0", "date": "2026-06-23", "score": 73.4 }
+  ],
+  "kpi": {
+    "testCases": 806,
+    "testPassRate": 100,
+    "tools": 51,
+    "providers": 10,
+    "phases": 11,
+    "changelogVersions": 5,
+    "packagingIssues": 25,
+    "scoreTotal": 73.4,
+    "modes": 4,
+    "modules": 19
+  }
+}

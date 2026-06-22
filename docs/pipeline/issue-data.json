@@ -1,0 +1,237 @@
+{
+  "meta": { "version": "0.4.0", "exports": "2026-06-22" },
+  "modules": {
+    "f1": {
+      "name": "多模型适配器",
+      "phase": "P0",
+      "issues": [
+        {"date":"2026-06-18","title":"Web 页面报错：server webDistPath 路径错误","problem":"server从非server目录启动时前端资源404，process.cwd() 路径不可靠","solution":"改用 __dirname 替代 process.cwd() 计算 webDistPath"},
+        {"date":"2026-06-19","title":"Kimi URL 构造缺陷","problem":"setApiKey 对不在config.providers中的预设创建空baseURL条目，导致适配器URL变为 /v1/models（缺少协议和主机）","solution":"从 PROVIDER_PRESETS 查找完整配置（baseURL/name/apiFormat/models），自定义提供商使用 https://api.openai.com/v1 默认值"},
+        {"date":"2026-06-19","title":"config.getConfig 崩溃","problem":"server端 config 是 AppConfig 对象并非 ConfigManager 实例，调用 .getConfig() 报 TypeError","solution":"3处 config.getConfig() → 直接使用 config 对象"},
+        {"date":"2026-06-19","title":"Ollama 本地对话无响应","problem":"前端 providerStore 初始值 deepseek，hasExplicitSelection 为true不自动切换，始终发送deepseek给后端","solution":"初始值改为''空字符串；hasExplicitSelection→hasValidSelection，无密钥时自动切换"},
+        {"date":"2026-06-19","title":"连接测试失败无详细错误","problem":"提供商页面连接测试失败只显示'✗ 失败'，不知道原因","solution":"validateConnection() 抛出结构化错误（HTTP状态分析/网络层分析）；前端显示红色错误卡片"},
+        {"date":"2026-06-19","title":"Logger UTF-8 中文乱码","problem":"pino v9 transport 用worker线程，Windows下stderr编码非UTF-8，中文被GBK误解码","solution":"Win32平台不使用 pino-pretty worker transport，改为主线程同步 Transform stream"},
+        {"date":"2026-06-19","title":"前端模型选择器显示旧模型","problem":"Chat页面下拉仍显示DeepSeek V3等旧模型","solution":"providerStore默认模型 deepseek-chat→deepseek-v4；新增readBundledCatalog四级降级链"},
+        {"date":"2026-06-19","title":"WebSocket ECONNABORTED","problem":"ws.send 在WebSocket未就绪时抛出ECONNABORTED","solution":"新增safeSend()函数，检查readyState+try-catch包裹，替换15+处直接ws.send"},
+        {"date":"2026-06-18","title":"/api/tools 响应字段缺失","problem":"工具分组计数全为0，缺少group/requiresConfirm等字段","solution":"增强端点返回完整字段，工具名映射完全重写（错误名→实际70工具名）"}
+      ]
+    },
+    "f2": {
+      "name": "Agent 系统",
+      "phase": "P0",
+      "issues": [
+        {"date":"2026-06-18","title":"better-sqlite3 测试失败","problem":"Node.js v24.13.0无Windows预编译二进制；环境缺C++编译工具链","solution":"vitest alias mock：创建 better-sqlite3 mock，用内存Map模拟SQLite CRUD操作"},
+        {"date":"2026-06-22","title":"工具系统自动分组+toggle持久化","problem":"分组映射在server硬编码维护；enabled toggle未与后端同步","solution":"ITool 新增 group 字段；getAllBuiltinTools() 自动标注分组；ToolRegistry 新增disabledSet+API；tsup关闭treeshake"},
+        {"date":"2026-06-22","title":"DTS 类型错误","problem":"WeChatAdapter timestamp parseInt*1000返回number，与类型声明string不匹配","solution":"改用 new Date(...).toISOString() 统一返回ISO 8601字符串"}
+      ]
+    },
+    "f3": {
+      "name": "工具系统 51 tools",
+      "phase": "P0",
+      "issues": [
+        {"date":"2026-06-18","title":"P0 工具扩展：31→51","problem":"对照cc-haha发现工具数有差距","solution":"新增6个工具文件21个工具：QualityTools(4)/PreviewTools(4)/MediaTools(3)/DatabaseTools(2)/KnowledgeTools(5)/SubAgentTools(3)"},
+        {"date":"2026-06-17","title":"QualityTools DTS编译错误","problem":"check 变量在try块内声明，catch块无法访问，DTS生成失败","solution":"将 check 声明移到 try 之前"},
+        {"date":"2026-06-18","title":"工具参数名适配","problem":"测试中参数名与代码不一致（target_directory vs targetDirectory）","solution":"统一使用目标代码中的实际参数名"},
+        {"date":"2026-06-19","title":"工具页面静态无交互","problem":"Tools.tsx 卡片仅为静态展示，分类卡片也无交互","solution":"完整重写：点击展开参数详情/分类筛选/搜索过滤/分组统计可点击筛选"},
+        {"date":"2026-06-22","title":"tsup treeshake移除方法","problem":"外部调用的ToolRegistry类方法被treeshake移除","solution":"tsup.config.ts 关闭 treeshake"}
+      ]
+    },
+    "f4": {
+      "name": "知识库 RAG",
+      "phase": "P2",
+      "issues": [
+        {"date":"2026-06-19","title":"知识库 API 全部返回 404","problem":"旧编译产物 src/index.js 被vitest优先加载（不含知识库路由）；路由顺序 :id 捕获 stats","solution":"删除旧artifact；路由顺序调整（:id移到stats/summary之后）；重新编译dist"},
+        {"date":"2026-06-20","title":"知识库中文文件名/内容乱码","problem":"multer/busboy 在Windows下将UTF-8文件名按Latin-1误解码","solution":"文件名用 Buffer.from(fileName,'latin1').toString('utf8')；内容UTF-8读取+\\ufffd降级GBK"},
+        {"date":"2026-06-20","title":"文档预览\"空内容\"","problem":"GET /api/knowledge 列表不含content字段，页面直接把摘要传给预览弹窗","solution":"新增 getDocument(id) action 调用详情接口；预览弹窗加载时显示spinner"},
+        {"date":"2026-06-20","title":"知识库页面功能卡片无交互","problem":"三个介绍卡片静态展示无点击功能","solution":"卡片增加action字段+handleFeatureClick，点击跳转到导入/搜索/分类区域"},
+        {"date":"2026-06-20","title":"分类/文档显示数不准确","problem":"服务端stats与客户端documents数组不一致","solution":"所有计数基于实际documents数组客户端计算，消除服务端数据不一致"},
+        {"date":"2026-06-21","title":"Desktop 知识库数据不互通","problem":"PROJECT_ROOT 在asar中指向只读归档，写入失败(400)、读取返回空","solution":"createApp() 接受 projectRoot 参数；Desktop传入homedir()作为projectRoot"}
+      ]
+    },
+    "f5": {
+      "name": "MCP 协议",
+      "phase": "P2",
+      "issues": [
+        {"date":"2026-06-18","title":"MCP 测试 Windows 下失败","problem":"Windows cmd.exe 对 node -e 内联脚本转义导致 SyntaxError","solution":"改用临时 .js 文件替代内联脚本"},
+        {"date":"2026-06-18","title":"MCPClient 进程异常pending请求未处理","problem":"进程close事件后未决请求永远超时","solution":"close事件中reject所有pending requests"},
+        {"date":"2026-06-18","title":"sendStreamingMessage 异常二次崩溃","problem":"catch块内editMessage可能再抛异常","solution":"添加内层try-catch保护"}
+      ]
+    },
+    "f6": {
+      "name": "沙箱执行环境",
+      "phase": "P2",
+      "issues": [
+        {"date":"2026-06-19","title":"Docker 不可用→本地进程降级","problem":"Windows Home版无法安装DISM→WSL2→Docker不可用","solution":"新增LocalSandbox：cmd.exe/spawn本地执行+超时控制+taskkill/T杀进程树"},
+        {"date":"2026-06-19","title":"Sandbox.tsx TDZ引用错误→白屏","problem":"renderMainContent用const在第90行定义，但第112行提前引用→ReferenceError","solution":"将 renderMainContent = () => (...) 定义移到所有条件return之前"}
+      ]
+    },
+    "f7": {
+      "name": "Ink CLI",
+      "phase": "P1",
+      "issues": [
+        {"date":"2026-06-18","title":"CLI 组件化架构重构","problem":"原 readline REPL 不支持流式输出和丰富UI","solution":"替换为 Ink React Terminal UI：Banner(渐变)+ChatView(流式)+StatusBar+HelpPanel+8命令"},
+        {"date":"2026-06-18","title":"ESM 打包问题","problem":"tsup ESM打包需要特殊配置","solution":"配置4个tsup config，分别处理core/cli/server/desktop"}
+      ]
+    },
+    "f8": {
+      "name": "Web Dashboard v4",
+      "phase": "P1",
+      "issues": [
+        {"date":"2026-06-18","title":"CSS @import 顺序警告","problem":"@import url() 必须在 @tailwind 指令之前","solution":"调换顺序，@import所有CSS变量在 tailwind之前"},
+        {"date":"2026-06-19","title":"JSX .js 文件解析错误","problem":"Vite默认扩展名 .js > .tsx，解析到编译产物 .js 含JSX语法","solution":"vite.config.ts 添加 resolve.extensions: ['.tsx','.ts','.jsx','.js']，让.tsx优先"},
+        {"date":"2026-06-20","title":"Token用量分析页面","problem":"Token用量卡片跳转不合适，缺乏独立统计/图表","solution":"新建TokenUsage.tsx (~370行)：DonutChart+BarChart自研SVG组件+费用估算+时间范围切换"},
+        {"date":"2026-06-20","title":"首页统计卡片无交互","problem":"4个统计卡片只是数字展示","solution":"改为button+onClick，映射到对应页面路径"},
+        {"date":"2026-06-19","title":"前端编译重复导出错误","problem":"KB_CATEGORIES 第9行export const+第332行export {}重复","solution":"删除重复的 export { KB_CATEGORIES } 行"}
+      ]
+    },
+    "f9": {
+      "name": "Desktop 原生应用",
+      "phase": "P1",
+      "issues": [
+        {"date":"2026-06-20","title":"electron-builder v24 陷阱","problem":"^23.6.0匹配到v24.0.0 alpha，NSIS EnVar插件缺失，EXE仅0.3MB","solution":"精确锁定23.6.0；pnpm exec替代npx；删除v24残留"},
+        {"date":"2026-06-20","title":"Vite 5 inline CSS bug","problem":"index.html <style>标签导致构建失败No matching HTML proxy","solution":"改为外部CSS link文件"},
+        {"date":"2026-06-20","title":"Express 30+子依赖连环缺失","problem":"body-parser/depd/ee-first/destroy/busboy/split2等依序缺失","solution":"一次性扫描完整依赖树，显式声明90+包；创建express-deps.json清单"},
+        {"date":"2026-06-20","title":"localhost→IPv6导致API请求全失败","problem":"Windows下localhost解析为IPv6 ::1，但后端绑127.0.0.1","solution":"5个文件全部改为127.0.0.1；CSP connect-src同步更新"},
+        {"date":"2026-06-20","title":"apiFetch 43+处双重 .json()","problem":"apiFetch已内置res.json()，13文件43+处再次调用.json()，被catch静默吞掉","solution":"全项目修复；verify-build.cjs遍历所有.ts/.tsx自动检测"},
+        {"date":"2026-06-21","title":"better-sqlite3 asar加载失败","problem":"bindings从asar内__dirname找不到.node文件，后端启动失败","solution":"files排除better-sqlite3出asar；extraResources复制到resources"},
+        {"date":"2026-06-21","title":"mime缺失(dev可用/Release报错)","problem":"send需要mime@1.6.0，但只在@easyagent/server/node_modules下，asar中找不到","solution":"desktop/package.json显式添加mime: ^1.6.0"},
+        {"date":"2026-06-21","title":"开发/Release MODULE_VERSION不一致","problem":"开发用Node v24编译(137)，Electron需要v20(123)","solution":"postinstall自动执行electron-rebuild；verify自动检测"},
+        {"date":"2026-06-21","title":"electron-updater传递依赖缺失","problem":"lodash.escaperegexp等8个包只在core/node_modules，asar中缺失","solution":"desktop/package.json显式添加8个传递依赖"},
+        {"date":"2026-06-21","title":"Sessions显示0个会话","problem":"apiFetch已解析数据，再调.json()→TypeError被catch吞掉","solution":"移除双重.json()，直接使用apiFetch泛型返回值"},
+        {"date":"2026-06-21","title":"返回按钮→黑屏","problem":"<a href=\"/sessions\">在HashRouter下触发全页面导航","solution":"改为useNavigate()或<Link to=>组件"},
+        {"date":"2026-06-21","title":"工具页面HTTP undefined","problem":"apiFetch返回数组，但代码检查r.ok和r.json()","solution":"直接使用泛型返回值，移除Response对象检查"},
+        {"date":"2026-06-21","title":"settingsStore/sandboxStore/IMSettings res.ok误用","problem":"3处apiFetch返回值被当作Response检查.ok","solution":"全部改为直接使用返回数据"},
+        {"date":"2026-06-21","title":"build.bat CMD解析bug","problem":"if/else括号块内call+setlocal+endlocal导致CMD解析崩溃","solution":"goto标签+pushd/popd替代if/else+setlocal"}
+      ]
+    },
+    "f10": {
+      "name": "插件与技能系统",
+      "phase": "P3",
+      "issues": [
+        {"date":"2026-06-19","title":"技能市场feedback误显示","problem":"点击refactor显示debug已激活，feedback状态全局共享切换时未清除","solution":"handleSelectSkill切换技能时清除feedback"},
+        {"date":"2026-06-19","title":"技能市场\"暂无技能\"Bug","problem":"getAllSkillsWithStatus()在模块顶层引用pluginManager→ReferenceError；编译产物缺失4个方法","solution":"函数移到createApp()内部（pluginManager初始化之后）；重新编译dist"},
+        {"date":"2026-06-19","title":"技能激活功能缺失","problem":"激活按钮无onClick处理","solution":"新增POST /api/skills/:name/activate端点+前端handleActivate(loading/feedback/防重复)"},
+        {"date":"2026-06-19","title":"缺少停用/自定义技能","problem":"只有激活没有停用；缺少自定义技能CRUD","solution":"PluginManager新增userActivatedSkills+4方法；新增5个HTTP端点；支持表格/卡片双视图"},
+        {"date":"2026-06-19","title":"切换标签未清空详情面板","problem":"切换来源标签时右侧详情面板残留旧技能信息","solution":"setSourceFilter(src)同时执行setActiveSkill(null)"}
+      ]
+    },
+    "f11": {
+      "name": "IM 适配器",
+      "phase": "P3",
+      "issues": [
+        {"date":"2026-06-18","title":"IM 测试 STATUS_CHANGE 断言错误","problem":"正则为'status:change'实际用'status_change'","solution":"修改断言匹配实际格式"},
+        {"date":"2026-06-18","title":"sendStreamingMessage 二次异常","problem":"catch块内editMessage可能再抛异常","solution":"添加内层try-catch保护"},
+        {"date":"2026-06-19","title":"WeChatAdapter 完整实现","problem":"原来是占位实现，缺少消息解密和解析","solution":"实现wxDecrypt(AES-256-CBC)+parseWeChatXML正则解析+URL验证+消息回调"},
+        {"date":"2026-06-19","title":"FeishuAdapter 文件上传修复","problem":"uploadImage/uploadFile中imageUrl处理为undefined→undefined","solution":"完整实现下载/Base64/本地文件→Blob→FormData multipart上传"}
+      ]
+    },
+    "f12": {
+      "name": "i18n 国际化",
+      "phase": "P3",
+      "issues": [
+        {"date":"2026-06-18","title":"国际化消息表建立","problem":"需要支持中英文双语言","solution":"实现t()函数+zh-CN/en-US完整消息表，覆盖所有UI文本"}
+      ]
+    },
+    "f13": {
+      "name": "Desktop 自动升级",
+      "phase": "P4",
+      "issues": [
+        {"date":"2026-06-18","title":"关于对话框版本硬编码","problem":"多处硬编码v0.1.0/v0.2.0，与真实版本不一致","solution":"getAppVersion()动态读取package.json"},
+        {"date":"2026-06-18","title":"检查更新仅打开GitHub链接","problem":"无真正的自动更新流程","solution":"集成electron-updater完整流程：静默检查+下载进度+弹窗重启"},
+        {"date":"2026-06-20","title":"StatusBar 硬编码\"DeepSeek Chat\"","problem":"模型名和版本号写死","solution":"动态显示版本号+更新状态"},
+        {"date":"2026-06-21","title":"electron-updater仓库路径错误","problem":"repo指向easyagent/easyagent（不存在）","solution":"修正为ht182400-creator/easyagent"}
+      ]
+    },
+    "f14": {
+      "name": "模型目录动态更新",
+      "phase": "P4",
+      "issues": [
+        {"date":"2026-06-19","title":"模型列表全硬编码","problem":"ProviderPresets中11提供商29个模型完全硬编码","solution":"新增ModelRegistry类：GitHub/CDN远程下载→本地缓存24h"},
+        {"date":"2026-06-19","title":"远程URL 404","problem":"GitHub easyagent/easyagent仓库不存在","solution":"内置models-catalog.json兜底+四级降级链（远程→缓存→内置→硬编码）"},
+        {"date":"2026-06-19","title":"动态模型与预设合并显示","problem":"Ollama显示5个预设但本地仅2个","solution":"mergeModels()合并+fromDynamic字段+前端动态徽章"}
+      ]
+    },
+    "f15": {
+      "name": "全面去硬编码",
+      "phase": "P4",
+      "issues": [
+        {"date":"2026-06-19","title":"4大类硬编码问题","problem":"模型列表/ChatInput下拉/Dashboard模板/安全命令 全部硬编码","solution":"动态模型发现/动态模板加载/环境变量命令白名单/all-models API"},
+        {"date":"2026-06-18","title":"Desktop UI版本号硬编码","problem":"StatusBar/ChatView中版本号写死","solution":"通过/api/version API动态获取"},
+        {"date":"2026-06-20","title":"6处4个不同版本号","problem":"v0.1.0/0.2.0/0.5.0/0.8.0严重不一致","solution":"version.json唯一源→sync-version.mjs同步7处"},
+        {"date":"2026-06-19","title":"默认模型deepseek-chat→deepseek-v4","problem":"全项目多处硬编码旧模型名","solution":"全局替换+ConfigManager/AgentEngine/SessionManager兜底更新"}
+      ]
+    },
+    "f16": {
+      "name": "版本控制系统",
+      "phase": "P4",
+      "issues": [
+        {"date":"2026-06-20","title":"版本号管理混乱","problem":"4个不同版本号分散在6处代码中；无CHANGELOG","solution":"version.json单一版本源+sync-version.mjs同步+CHANGELOG.md+release.mjs发布自动化"},
+        {"date":"2026-06-20","title":"release.mjs TS注解+路径空格","problem":".mjs含TS类型注解SyntaxError；execSync路径含空格被截断","solution":"移除全部14+处TS注解；路径加双引号"},
+        {"date":"2026-06-22","title":"release-publish.bat Token读取出错","problem":"if/else括号块内set/p重定向导致CMD解析崩溃","solution":"改用for /f usebackq方式读取文件"},
+        {"date":"2026-06-22","title":"Release已存在时422自动处理","problem":"curl POST返回422 already_exists就跳到手动上传（25MB限制）","solution":"检测422后GET已有Release的upload_url，自动上传文件"}
+      ]
+    },
+    "b1a": {
+      "name": "Web↔Desktop 前端合并",
+      "phase": "B1",
+      "issues": [
+        {"date":"2026-06-21","title":"Web ↔ Desktop 代码隔离发现","problem":"两套独立前端代码（各65+源文件），80%重复但不可共享（BrowserRouter/HashRouter + fetch/apiFetch 差异）","solution":"建立隔离约束规则；MEMORY.md标注差异表；apiFetch vs fetch 调用规范"},
+        {"date":"2026-06-21","title":"apiFetch误用全面审计","problem":"22个文件56个apiFetch调用点中6处误用（双重.json()+res.ok误用）","solution":"全面修复6处+verify-build自动检测"}
+      ]
+    },
+    "b1b": {
+      "name": "PluginManager 沙箱",
+      "phase": "B1",
+      "issues": [
+        {"date":"2026-06-22","title":"PluginManager无沙箱隔离（识别）","problem":"同步require()可直接访问文件系统，架构审查发现为最大架构风险","solution":"待实施：worker_threads隔离+PluginPermission白名单机制"}
+      ]
+    },
+    "b2a": {
+      "name": "SWE-bench 评测体系",
+      "phase": "B2",
+      "issues": [
+        {"date":"2026-06-22","title":"benchmark-tasks.json 字面换行","problem":"JSON中换行符导致解析失败","solution":"用脚本重新生成合法JSON"},
+        {"date":"2026-06-22","title":"BenchmarkRunner 6个TS编译错误","problem":"API不匹配：ConfigManager/ToolRegistry/AgentEngine接口变化","solution":"逐一修复API调用适配"}
+      ]
+    },
+    "b2b": {
+      "name": "GitHub Actions CI/CD",
+      "phase": "B2",
+      "issues": [
+        {"date":"2026-06-22","title":"CI首次运行失败","problem":"better-sqlite3在Windows CI镜像上需要从源码编译，node-gyp找不到VS","solution":"在每个job的pnpm install前添加ilammy/msvc-dev-cmd@v1设置MSVC环境"},
+        {"date":"2026-06-20","title":"SSH推送+HTTPS被墙","problem":"github.com:443超时（被墙），但22可达","solution":"配置SSH Key(RSA 4096-bit)+git@github.com推送"}
+      ]
+    },
+    "b2c": {
+      "name": "集成测试·端到端",
+      "phase": "B2",
+      "issues": []
+    },
+    "b2d": {
+      "name": "多模型评测排行榜",
+      "phase": "B2",
+      "issues": []
+    },
+    "b2e": {
+      "name": "用户行为埋点",
+      "phase": "B2",
+      "issues": []
+    },
+    "b3a": {
+      "name": "一键安装脚本",
+      "phase": "B3",
+      "issues": []
+    },
+    "b3b": {
+      "name": "VS Code 插件",
+      "phase": "B3",
+      "issues": []
+    },
+    "b3c": {
+      "name": "Contributor 引导",
+      "phase": "B3",
+      "issues": []
+    }
+  },
+  "_totalIssues": 89
+}

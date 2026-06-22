@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyAgent 项目进度管线 · 流程图</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0b0d12;--surface:#13161e;--border:#1e2330;--text:#c9d1d9;--text2:#8b949e;
+    --done:#3fb950;--done-bg:rgba(63,185,80,.12);--progress:#58a6ff;--progress-bg:rgba(88,166,255,.12);
+    --pending:#8b949e;--pending-bg:rgba(139,148,158,.08);--error:#f85149;--warn:#d2991d;
+    --accent:#7c3aed;--accent2:#a78bfa;--glow:rgba(124,58,237,.6)}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);
+    min-height:100vh;overflow-x:hidden}
+  .header{padding:32px 40px 16px;text-align:center;position:relative;z-index:2}
+  .header h1{font-size:32px;font-weight:700;background:linear-gradient(135deg,#a78bfa,#58a6ff);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+  .header .meta{color:var(--text2);font-size:14px;margin-top:6px}
+  .pipeline-wrapper{position:relative;max-width:1600px;margin:0 auto;padding:0 20px 60px}
+  svg.pipeline{width:100%;height:auto;display:block}
+
+  /* ---- SVG 节点样式 ---- */
+  .node-rect{stroke-width:1.5;transition:all .3s ease}
+  .node-rect.done{fill:var(--done-bg);stroke:var(--done)}
+  .node-rect.progress{fill:var(--progress-bg);stroke:var(--progress)}
+  .node-rect.pending{fill:var(--pending-bg);stroke:var(--pending)}
+  .node-rect.in-progress{fill:var(--progress-bg);stroke:var(--progress);animation:rectPulse 1.6s ease-in-out infinite}
+  @keyframes rectPulse{0%,100%{stroke-opacity:1;stroke-width:2}50%{stroke-opacity:.35;stroke-width:2.8}}
+
+  .node-icon{font-size:18px;text-anchor:middle;dominant-baseline:central}
+  .node-label{font-size:13px;font-weight:600;fill:var(--text)}
+  .node-desc{font-size:10.5px;fill:var(--text2);line-height:1.4}
+  .node-badge{font-size:9px;font-weight:700;text-anchor:middle}
+  .node-badge.done{fill:var(--done)}
+  .node-badge.progress{fill:var(--progress)}
+  .node-badge.pending{fill:var(--text2)}
+
+  /* ---- 连接线动画 ---- */
+  /* 主流程箭头：紫色实线虚线，从左向右流动（staged pipeline） */
+  @keyframes dashFlow{to{stroke-dashoffset:-24}}
+  /* 分支箭头：蓝点虚线，从顶部向下发散流动（branch out） */
+  @keyframes branchFlow{to{stroke-dashoffset:24}}
+  /* 分支底部快速脉冲箭头 */
+  @keyframes branchPulse{0%,100%{stroke-dashoffset:0}50%{stroke-dashoffset:10}}
+  @keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 4px var(--glow))}50%{filter:drop-shadow(0 0 14px var(--glow))}}
+  @keyframes statusBlink{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* 主流程：紫色实心虚线，正向流动 */
+  .flow-line{fill:none;stroke:var(--accent2);stroke-width:2.2;stroke-dasharray:10 4;animation:dashFlow 2s linear infinite}
+  /* 主流程加固实线底色（视觉引导线） */
+  .flow-line.solid{stroke-dasharray:none;stroke-width:1.5;opacity:.35;animation:none}
+  /* 分支流程：蓝色散点虚线，反向发散 + 底部脉冲 */
+  .flow-line.branch{fill:none;stroke:#58a6ff;stroke-width:1.6;stroke-dasharray:4 6;animation:branchFlow 2.4s linear infinite}
+  .flow-line.branch-fast{fill:none;stroke:#58a6ff;stroke-width:1.3;stroke-dasharray:3 5;animation:branchPulse 1.4s ease-in-out infinite}
+
+  .phase-label{font-size:11px;font-weight:700;fill:var(--accent2);text-anchor:middle;letter-spacing:1px;text-transform:uppercase}
+  .phase-period{font-size:9px;fill:var(--text2);text-anchor:middle}
+
+  /* ---- 当前任务闪烁 ---- */
+  .current-glow{animation:glowPulse 2s ease-in-out infinite}
+  .current-blink{animation:statusBlink 1.2s ease-in-out infinite}
+
+  /* ---- 图例 ---- */
+  .legend{display:flex;justify-content:center;gap:32px;padding:0 40px 20px;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+  .legend-dot{width:10px;height:10px;border-radius:3px}
+  .legend-dot.done{background:var(--done)}
+  .legend-dot.progress{background:var(--progress);animation:statusBlink 1.2s ease-in-out infinite}
+  .legend-dot.pending{background:var(--pending);border:1px dashed var(--text2)}
+
+  /* ---- 顶部仪表板 ---- */
+  .dashboard{max-width:1600px;margin:0 auto 0;padding:0 20px}
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;
+    padding:0;margin-bottom:12px}
+  .dash-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;text-align:center;transition:all .2s;overflow:hidden}
+  .dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+  .dash-card.tests::before{background:linear-gradient(90deg,#3fb950,#58a6ff)}
+  .dash-card.pass::before{background:linear-gradient(90deg,#3fb950,#7c3aed)}
+  .dash-card.tools::before{background:linear-gradient(90deg,#58a6ff,#a78bfa)}
+  .dash-card.models::before{background:linear-gradient(90deg,#a78bfa,#d2991d)}
+  .dash-card.score::before{background:linear-gradient(90deg,#7c3aed,#f85149)}
+  .dash-card.modes::before{background:linear-gradient(90deg,#56d364,#3fb950)}
+  .dash-card.refresh::before{background:linear-gradient(90deg,#58a6ff,#3fb950)}
+  .dash-card .dash-value{font-size:26px;font-weight:800;color:var(--text);line-height:1.1}
+  .dash-card .dash-label{font-size:10px;color:var(--text2);margin-top:2px;letter-spacing:.5px}
+  .dash-card .dash-sub{font-size:9px;color:var(--text2);margin-top:1px;opacity:.7}
+  .dash-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(124,58,237,.15)}
+  .dash-card{cursor:pointer}
+  .dash-card:active{transform:translateY(0);box-shadow:none}
+  /* 详情面板内的内容样式 */
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .detail-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+  .detail-item .key{font-size:11px;color:var(--text2);margin-bottom:4px}
+  .detail-item .val{font-size:15px;font-weight:700;color:var(--text)}
+  .detail-item.full{grid-column:1/-1}
+  .detail-list{list-style:none;padding:0;margin:0}
+  .detail-list li{padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;align-items:center}
+  .detail-list li:last-child{border-bottom:none}
+  .detail-list .li-label{color:var(--text);font-weight:500}
+  .detail-list .li-val{color:var(--text2);font-size:12px}
+  /* 可展开列表项 */
+  .detail-list li.expandable{cursor:pointer;transition:background .15s,padding .15s;border-radius:6px;padding-left:8px;padding-right:8px;margin:0 -8px;flex-wrap:wrap}
+  .detail-list li.expandable:hover{background:rgba(88,166,255,.08)}
+  .detail-list li.expandable .item-row{display:flex;justify-content:space-between;align-items:center;width:100%}
+  .detail-list .chevron{display:inline-block;width:16px;text-align:center;font-size:10px;transition:transform .25s;color:var(--text2);flex-shrink:0}
+  .detail-list .chevron.open{transform:rotate(90deg)}
+  .detail-list .sub-list{display:none;width:100%;padding:4px 0 4px 18px;margin-top:2px;list-style:none;border-top:1px dashed rgba(139,148,158,.12)}
+  .detail-list .sub-list.open{display:block}
+  .detail-list .sub-list li{padding:3px 0;border-bottom:1px dashed rgba(139,148,158,.1);font-size:11px;color:var(--text2);display:flex;justify-content:space-between}
+  .detail-list .sub-list li:last-child{border-bottom:none}
+  .detail-list .sub-list .sub-label{color:var(--text)}
+  .detail-list .sub-list .sub-val{font-size:10px;opacity:.7}
+  /* 深度下钻(三层) - 用例详情视图 */
+  .drill-back{display:inline-flex;align-items:center;gap:6px;color:var(--accent2);cursor:pointer;font-size:12px;padding:4px 10px;border-radius:6px;margin-bottom:12px;transition:background .15s}
+  .drill-back:hover{background:rgba(124,58,237,.1)}
+  .drill-back .arr{font-size:14px}
+  .drill-header{margin-bottom:12px}
+  .drill-header h4{font-size:14px;color:var(--accent2);margin-bottom:4px}
+  .drill-header .meta{font-size:11px;color:var(--text2)}
+  .drill-header .meta .cnt{color:var(--accent2);font-weight:700}
+  .case-list{list-style:none;padding:0;margin:0;max-height:420px;overflow-y:auto;scrollbar-width:thin}
+  .case-list li{padding:8px 10px;border-bottom:1px dashed rgba(139,148,158,.1);font-size:11px;cursor:default}
+  .case-list li:last-child{border-bottom:none}
+  .case-list .case-header{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+  .case-list .case-id{font-size:9px;color:var(--text2);background:var(--surface);padding:1px 5px;border-radius:3px;min-width:22px;text-align:center}
+  .case-list .case-name{color:var(--text);font-weight:500;font-family:'Consolas','Courier New',monospace;font-size:11px}
+  .case-list .case-status{font-size:10px;flex-shrink:0;margin-left:auto}
+  .case-list .case-desc{font-size:10px;color:var(--text2);margin-left:28px;line-height:1.4}
+  .case-list .case-desc .vt{color:var(--progress)} /* 验证点 */
+  .case-list .case-desc .vc{color:var(--done);margin-left:6px} /* 验证结果 */
+  .detail-chart{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px}
+  .detail-chart h4{font-size:13px;color:var(--accent2);margin-bottom:12px}
+
+  /* 数据刷新指示器 */
+  .refresh-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:var(--text2)}
+  .refresh-dot{width:6px;height:6px;border-radius:50%;background:var(--done);display:inline-block}
+  .refresh-dot.stale{background:var(--warn)}
+
+  /* ---- 响应式 ---- */
+  @media(max-width:1200px){.pipeline-wrapper{padding:0 8px 40px}.header{padding:20px 16px 12px}.header h1{font-size:24px}}
+
+  /* ---- 节点可点击 ---- */
+  .node-group{cursor:pointer;transition:filter .2s}
+  .node-group:hover{filter:brightness(1.15)}
+  /* ---- 问题数量徽章 ---- */
+  .issue-badge{font-size:9px;font-weight:700;fill:#c9d1d9;text-anchor:middle}
+
+  /* ---- 右侧问题面板 ---- */
+  .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:90;
+    opacity:0;pointer-events:none;transition:opacity .25s}
+  .overlay.open{opacity:1;pointer-events:auto}
+  .issue-panel{position:fixed;top:0;right:-520px;width:500px;max-width:92vw;height:100%;z-index:100;
+    background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;
+    transition:right .3s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 24px rgba(0,0,0,.4)}
+  .issue-panel.open{right:0}
+  .panel-hdr{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border);
+    padding:20px 24px;display:flex;align-items:center;justify-content:space-between}
+  .panel-hdr h3{font-size:18px;font-weight:700;color:var(--text);margin:0}
+  .panel-hdr .sub{font-size:12px;color:var(--text2);margin-top:2px}
+  .panel-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
+    background:transparent;color:var(--text2);font-size:16px;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;transition:all .15s}
+  .panel-close:hover{background:var(--border);color:var(--text)}
+  .panel-stats{display:flex;gap:0;border-bottom:1px solid var(--border)}
+  .panel-stat{flex:1;text-align:center;padding:14px 8px}
+  .panel-stat .val{font-size:22px;font-weight:700}
+  .panel-stat .lbl{font-size:10px;color:var(--text2);margin-top:2px}
+  .panel-stat.resolved .val{color:var(--done)}
+  .panel-stat.unresolved .val{color:var(--warn)}
+  .panel-body{padding:20px 24px}
+  /* ---- 时间线条目 ---- */
+  .timeline{position:relative;padding-left:28px}
+  .timeline::before{content:'';position:absolute;left:11px;top:4px;bottom:4px;width:2px;
+    background:linear-gradient(180deg,var(--accent2),#58a6ff)}
+  .tl-entry{position:relative;margin-bottom:18px;padding:14px 16px;
+    background:var(--bg);border:1px solid var(--border);border-radius:10px;transition:border-color .15s}
+  .tl-entry:hover{border-color:var(--accent2)}
+  .tl-entry::before{content:'';position:absolute;left:-22px;top:16px;width:10px;height:10px;
+    border-radius:50%;background:var(--accent2);border:2px solid var(--surface)}
+  .tl-date{font-size:10px;color:var(--text2);margin-bottom:4px;letter-spacing:.5px}
+  .tl-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+  .tl-section{font-size:11.5px;color:var(--text2);margin-bottom:5px;line-height:1.5}
+  .tl-section strong{color:#a78bfa;font-weight:600}
+  .tl-section em{color:var(--warn);font-style:normal}
+  .tl-section .ok{color:var(--done)}
+  .no-issues{text-align:center;padding:40px 20px;color:var(--text2);font-size:14px}
+  .no-issues .icon{font-size:40px;display:block;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>EasyAgent 项目全景进度管线</h1>
+  <div class="meta" id="headerMeta">版本 v0.4.0 · 代号 Gemini · 806 测试用例 · 10 家模型提供商 · 数据驱动自动更新</div>
+</div>
+
+<!-- 顶部仪表板 -->
+<div class="dashboard">
+  <div class="dash-grid">
+    <div class="dash-card tests" onclick="openCardDetail('tests')">
+      <div class="dash-value" id="dashTests">806</div>
+      <div class="dash-label">测试用例总数</div>
+      <div class="dash-sub">Vitest 全量测试</div>
+    </div>
+    <div class="dash-card pass" onclick="openCardDetail('pass')">
+      <div class="dash-value" id="dashPass">100%</div>
+      <div class="dash-label">测试通过率</div>
+      <div class="dash-sub">0 失败 / 0 跳过</div>
+    </div>
+    <div class="dash-card tools" onclick="openCardDetail('tools')">
+      <div class="dash-value" id="dashTools">51</div>
+      <div class="dash-label">内置工具数</div>
+      <div class="dash-sub">17 个功能分组</div>
+    </div>
+    <div class="dash-card models" onclick="openCardDetail('models')">
+      <div class="dash-value" id="dashModels">10</div>
+      <div class="dash-label">模型提供商</div>
+      <div class="dash-sub">国产大模型全覆盖</div>
+    </div>
+    <div class="dash-card score" onclick="openCardDetail('score')">
+      <div class="dash-value" id="dashScore">68.4</div>
+      <div class="dash-label">综合评分/100</div>
+      <div class="dash-sub">16/16 模块完成</div>
+    </div>
+    <div class="dash-card modes" onclick="openCardDetail('modes')">
+      <div class="dash-value" id="dashModes">4</div>
+      <div class="dash-label">操作模式</div>
+      <div class="dash-sub">CLI/Web/Desktop/IM</div>
+    </div>
+    <div class="dash-card refresh" onclick="openCardDetail('issues')">
+      <div class="dash-value" id="dashIssueCount">--</div>
+      <div class="dash-label">问题记录</div>
+      <div class="dash-sub" id="dashSource">等待加载...</div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot done"></span>已完成</div>
+  <div class="legend-item"><span class="legend-dot progress"></span>进行中 / 当前焦点</div>
+  <div class="legend-item"><span class="legend-dot pending"></span>待启动</div>
+  <div class="legend-item"><span style="color:var(--accent2);font-size:16px">→</span> 主线流动箭头 (正向)</div>
+  <div class="legend-item"><span style="color:#58a6ff;font-size:16px">→</span> 分支发散虚线 (反向)</div>
+</div>
+
+<div class="pipeline-wrapper">
+  <svg class="pipeline" id="pipeline-svg" viewBox="0 0 1900 1120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#7c3aed" flood-opacity="0.15"/></filter>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0,8 3,0 6" fill="#a78bfa"/>
+      </marker>
+      <marker id="arrowhead-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0,8 3,0 6" fill="#58a6ff"/>
+      </marker>
+      <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#58a6ff"/>
+      </linearGradient>
+    </defs>
+
+    <!-- SVG 内容由 JS 动态生成 -->
+    <g id="pipeline-content"></g>
+  </svg>
+</div>
+
+
+
+<!-- 遮罩层 -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<!-- 右侧问题详情面板 -->
+<div class="issue-panel" id="issuePanel">
+  <div class="panel-hdr">
+    <div>
+      <h3 id="panelTitle">模块问题详情</h3>
+      <div class="sub" id="panelSub"></div>
+    </div>
+    <button class="panel-close" onclick="closePanel()" title="关闭">✕</button>
+  </div>
+  <div class="panel-stats">
+    <div class="panel-stat resolved">
+      <div class="val" id="statResolved">0</div>
+      <div class="lbl">已解决</div>
+    </div>
+    <div class="panel-stat unresolved">
+      <div class="val" id="statUnresolved">0</div>
+      <div class="lbl">待解决</div>
+    </div>
+    <div class="panel-stat">
+      <div class="val" id="statTotal">0</div>
+      <div class="lbl">总计问题</div>
+    </div>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+<script>
+// ============================================================
+// 管线数据（内嵌，支持 file:// 和 HTTP 两种访问方式）
+// ============================================================
+const PIPELINE = {
+  meta: { version:"0.5.0", codename:"Helios", releaseDate:"2026-06-23" },
+  phases: [
+    { id:"P0",label:"P0 基础层",period:"2026 Q2 早期",
+      nodes:[
+        {id:"f1",icon:"🔌",label:"多模型适配器",desc:"10家国产大模型\nOpenAI兼容+自有API",status:"done"},
+        {id:"f2",icon:"🧠",label:"Agent 系统",desc:"ReAct循环\n多Agent协作+计划",status:"done"},
+        {id:"f3",icon:"🔧",label:"工具系统 51 tools",desc:"17分组全覆盖\n文件/搜索/Git/知识库",status:"done"}
+      ]},
+    { id:"P1",label:"P1 交互层",period:"2026 Q2 中期",
+      nodes:[
+        {id:"f7",icon:"🖥️",label:"Ink CLI",desc:"React Terminal\n7组件+10命令",status:"done"},
+        {id:"f8",icon:"🌐",label:"Web Dashboard v4",desc:"WorkBuddy风格\n10 Store+WS+虚拟滚动",status:"done"},
+        {id:"f9",icon:"🖼️",label:"Desktop 原生应用",desc:"Electron+React\n六件套+系统托盘",status:"done"}
+      ]},
+    { id:"P2",label:"P2 扩展层",period:"2026 Q2 中后期",
+      nodes:[
+        {id:"f4",icon:"📚",label:"知识库 RAG",desc:"双作用域架构\n5工具+HTTP API",status:"done"},
+        {id:"f5",icon:"🔗",label:"MCP 协议",desc:"JSON-RPC stdio\n多Server+工具发现",status:"done"},
+        {id:"f6",icon:"📦",label:"沙箱执行环境",desc:"Docker+本地降级\n3种模式自动检测",status:"done"}
+      ]},
+    { id:"P3",label:"P3 平台层",period:"2026 Q2 后期",
+      nodes:[
+        {id:"f10",icon:"🧩",label:"插件与技能系统",desc:"PluginManager\n6内置技能+钩子",status:"done"},
+        {id:"f11",icon:"💬",label:"IM 适配器",desc:"Telegram/飞书/微信\n3平台消息路由",status:"done"},
+        {id:"f12",icon:"🌍",label:"i18n 国际化",desc:"zh-CN/en-US\n完整消息表",status:"done"}
+      ]},
+    { id:"P4",label:"P4 发布层",period:"2026-06-20 ~ 06-22",
+      nodes:[
+        {id:"f13",icon:"🔄",label:"Desktop 自动升级",desc:"electron-updater\n静默检查+进度+重启",status:"done"},
+        {id:"f14",icon:"📋",label:"模型目录动态更新",desc:"GitHub/CDN双源\n24h缓存+三级降级",status:"done"},
+        {id:"f15",icon:"🎯",label:"全面去硬编码",desc:"模型/模板/命令\n动态加载+智能默认",status:"done"},
+        {id:"f16",icon:"🏷️",label:"版本控制系统",desc:"version.json唯一源\nCHANGELOG+升级API",status:"done"}
+      ]},
+    { id:"P5",label:"P5 管线运维",period:"2026-06-22 ~ 进行中",
+      nodes:[
+        {id:"p5a",icon:"🗺️",label:"管线数据看板",desc:"全量数据可视化\nKPI仪表板+问题追踪",status:"in-progress"},
+        {id:"p5b",icon:"📡",label:"自动数据采集",desc:"pipeline-data.json\nmemory实时解析+缓存",status:"done"},
+        {id:"p5c",icon:"🔍",label:"实时问题追踪",desc:"MD文件解析\n模块级追溯+统计",status:"done"}
+      ]}
+  ],
+  branches: [
+    { id:"B1",label:"P1 架构优化分支",source:"P4",
+      nodes:[
+        {id:"b1a",icon:"🔀",label:"Web↔Desktop 前端合并",desc:"packages/frontend\n消除80%代码重复",status:"in-progress"},
+        {id:"b1b",icon:"🛡️",label:"PluginManager 沙箱",desc:"worker_threads隔离\nPluginPermission白名单",status:"pending"}
+      ]},
+    { id:"B2",label:"P2 质量保障分支",source:"P4",
+      nodes:[
+        {id:"b2a",icon:"📊",label:"SWE-bench 评测体系",desc:"10题基准+pass@k\nAgent代码质量量化",status:"done"},
+        {id:"b2b",icon:"⚙️",label:"GitHub Actions CI/CD",desc:"push触发测试编译\nTag自动构建发布EXE",status:"done"},
+        {id:"b2c",icon:"🧪",label:"集成测试·端到端",desc:"CLI→Server→Core\n全链路覆盖",status:"pending"},
+        {id:"b2d",icon:"🏆",label:"多模型评测排行榜",desc:"每版本发布\n模型适配报告",status:"pending"},
+        {id:"b2e",icon:"📈",label:"用户行为埋点",desc:"FTSR/留存率/TTFV\n北极星指标仪表盘",status:"pending"}
+      ]},
+    { id:"B3",label:"P3 生态建设分支",source:"P4",
+      nodes:[
+        {id:"b3a",icon:"⚡",label:"一键安装脚本",desc:"curl|bash体验\n12min→2min配置",status:"pending"},
+        {id:"b3b",icon:"🔌",label:"VS Code 插件",desc:"IDE深度集成\n实时代码建议",status:"pending"},
+        {id:"b3c",icon:"👥",label:"Contributor 引导",desc:"10个good-first-issue\n贡献指南+代码规范",status:"pending"}
+      ]}
+  ]
+};
+
+// ============================================================
+// 布局计算引擎
+// ============================================================
+const COL_W = 260;     // 节点卡片宽度
+const NODE_H = 78;     // 节点卡片高度
+const COL_GAP = 60;    // 列间距
+const NODE_GAP = 18;   // 节点间垂直间距
+const PHASE_HDR_H = 30;// 阶段标题高度
+const TOP_MARGIN = 50;
+const SVG_W = 1900;
+
+function layout() {
+  const phases = PIPELINE.phases;
+  const nCols = phases.length;
+  const totalColW = nCols * COL_W + (nCols - 1) * COL_GAP;
+  const startX = (SVG_W - totalColW) / 2;
+
+  // 阶段列布局
+  const colCenters = phases.map((_,i) => startX + i * (COL_W + COL_GAP) + COL_W / 2);
+  const maxNodes = Math.max(...phases.map(p => p.nodes.length));
+  const mainAreaH = TOP_MARGIN + PHASE_HDR_H + maxNodes * (NODE_H + NODE_GAP);
+
+  // 分支区域布局
+  const branchStartY = mainAreaH + 40;
+  const branches = PIPELINE.branches;
+  const nBranches = branches.length;
+  const branchTotalW = nBranches * COL_W + (nBranches - 1) * COL_GAP;
+  const branchStartX = (SVG_W - branchTotalW) / 2;
+  const branchColCenters = branches.map((_,i) => branchStartX + i * (COL_W + COL_GAP) + COL_W / 2);
+  const maxBranchNodes = Math.max(...branches.map(b => b.nodes.length));
+  const branchAreaH = maxBranchNodes * (NODE_H + NODE_GAP) - NODE_GAP;
+
+  return {
+    colCenters, maxNodes, mainAreaH, NODE_GAP, TOP_MARGIN, PHASE_HDR_H,
+    branchColCenters, branchStartY, branchAreaH, maxBranchNodes,
+    startX, startY: TOP_MARGIN + PHASE_HDR_H
+  };
+}
+
+// ============================================================
+// 渲染引擎
+// ============================================================
+function render() {
+  const L = layout();
+  const g = document.getElementById('pipeline-content');
+  let html = '';
+
+  // ---------- 背景网格 ----------
+  html += `<rect x="0" y="0" width="${SVG_W}" height="1120" fill="none" stroke="#1e2330" stroke-width="0.5" stroke-dasharray="4 8" opacity="0.4"/>`;
+
+  // ---------- 阶段间水平流动箭头 ----------
+  PIPELINE.phases.forEach((phase, pi) => {
+    if (pi === PIPELINE.phases.length - 1) return;
+    const nextPhase = PIPELINE.phases[pi + 1];
+    const srcX = L.colCenters[pi] + COL_W / 2;
+    const dstX = L.colCenters[pi + 1] - COL_W / 2;
+    const count = Math.max(phase.nodes.length, nextPhase.nodes.length);
+    for (let r = 0; r < count; r++) {
+      const y = L.startY + r * (NODE_H + L.NODE_GAP) + NODE_H / 2;
+      // 底层：淡色实线作为视觉引导线，永远可见
+      html += `<line x1="${srcX + 4}" y1="${y}" x2="${dstX - 4}" y2="${y}" class="flow-line solid"/>`;
+      // 上层：紫色虚线流动箭头
+      html += `<line x1="${srcX + 4}" y1="${y}" x2="${dstX - 4}" y2="${y}" class="flow-line"
+        marker-end="url(#arrowhead)" opacity="0.6"/>`;
+    }
+  });
+
+  // ---------- 节点 ----------
+  PIPELINE.phases.forEach((phase, pi) => {
+    const cx = L.colCenters[pi];
+    const phaseHeaderY = L.TOP_MARGIN;
+
+    // 阶段标题
+    html += `<text x="${cx}" y="${phaseHeaderY}" class="phase-label">${phase.label}</text>`;
+    html += `<text x="${cx}" y="${phaseHeaderY + 14}" class="phase-period">${phase.period}</text>`;
+
+    // 阶段节点
+    phase.nodes.forEach((node, ri) => {
+      const nx = cx - COL_W / 2;
+      const ny = L.startY + ri * (NODE_H + L.NODE_GAP);
+      const isCurrent = node.status === 'in-progress';
+      const cls = node.status === 'done' ? 'done' : node.status === 'in-progress' ? 'in-progress' : 'pending';
+      const badge = node.status === 'done' ? '✅' : node.status === 'in-progress' ? '⏳' : '⬜';
+      const glowFilter = isCurrent ? ' filter="url(#glow)"' : '';
+
+      html += `<g${glowFilter} class="node-group ${isCurrent ? 'current-glow' : ''}" onclick="openPanel('${node.id}')" style="cursor:pointer">`;
+      // 卡片背景
+      html += `<rect x="${nx}" y="${ny}" width="${COL_W}" height="${NODE_H}" rx="10" class="node-rect ${cls}"/>`;
+      // 图标
+      html += `<text x="${nx + 28}" y="${ny + NODE_H / 2}" class="node-icon">${node.icon}</text>`;
+      // 标签
+      html += `<text x="${nx + 50}" y="${ny + 22}" class="node-label">${node.label}</text>`;
+      // 问题数量徽章（左上角）
+      html += `<text x="${nx + 12}" y="${ny + 14}" class="issue-badge" id="badge-${node.id}" style="display:none">0</text>`;
+      // 描述（多行）
+      node.desc.split('\n').forEach((line, li) => {
+        html += `<text x="${nx + 50}" y="${ny + 38 + li * 14}" class="node-desc">${line}</text>`;
+      });
+      // 状态标记
+      html += `<text x="${nx + COL_W - 18}" y="${ny + 14}" class="node-badge ${cls}" ${isCurrent ? 'class="node-badge progress current-blink"' : ''}>${badge}</text>`;
+      html += `</g>`;
+    });
+  });
+
+  // ---------- 主阶段到版本小结的连线 ----------
+  const lastCol = PIPELINE.phases[PIPELINE.phases.length - 1];
+  const lastCx = L.colCenters[L.colCenters.length - 1];
+  const lastBotY = L.startY + lastCol.nodes.length * (NODE_H + L.NODE_GAP) - L.NODE_GAP + NODE_H;
+  const summaryY = lastBotY + 40;
+  const summaryX = SVG_W / 2;
+
+  // 小结节点
+  html += `<rect x="${summaryX - 100}" y="${summaryY}" width="200" height="60" rx="30" fill="#13161e" stroke="#7c3aed" stroke-width="2"/>`;
+  html += `<text x="${summaryX}" y="${summaryY + 24}" text-anchor="middle" font-size="15" font-weight="700" fill="#a78bfa">v0.5.0 · 管线运维</text>`;
+  html += `<text x="${summaryX}" y="${summaryY + 44}" text-anchor="middle" font-size="11" fill="#8b949e">73.4/100 · 19 个模块 · P5 进行中</text>`;
+
+  // 从最后一个阶段到小结顶部的汇集连线（紫色弧线汇集到椭圆顶端）
+  for (let r = 0; r < lastCol.nodes.length; r++) {
+    const sy = L.startY + r * (NODE_H + L.NODE_GAP) + NODE_H / 2; // 从节点右侧中心出发
+    const targetX = summaryX;       // 汇集到椭圆顶部中心
+    const targetY = summaryY + 4;   // 稍微进入椭圆顶部
+    const cpX = targetX;            // 控制点与目标点同 X，强制纵向汇入
+    const cpY = sy + (targetY - sy) * 0.65; // 弯曲控制点
+    html += `<path d="M ${lastCx + COL_W / 2} ${sy} Q ${cpX} ${cpY} ${targetX} ${targetY}"
+      fill="none" stroke="#7c3aed" stroke-width="1.5" class="flow-line" opacity="0.5" marker-end="url(#arrowhead)"/>`;
+  }
+
+  // ---------- 分支管线 ----------
+  const branchY = summaryY + 80;
+  const branchHeaderY = branchY - 8;
+
+  PIPELINE.branches.forEach((branch, bi) => {
+    const bCx = L.branchColCenters[bi];
+    const bNx = bCx - COL_W / 2;
+
+    // 分支标题
+    html += `<rect x="${bNx}" y="${branchHeaderY - 14}" width="${COL_W}" height="24" rx="6" fill="rgba(88,166,255,0.08)" stroke="#58a6ff" stroke-width="1"/>`;
+    html += `<text x="${bCx}" y="${branchHeaderY + 2}" text-anchor="middle" font-size="11" font-weight="700" fill="#58a6ff">${branch.label}</text>`;
+
+    // 从小结节点到分支的连线
+    const branchConnY = branchHeaderY - 14;
+    html += `<path d="M ${summaryX} ${summaryY + 60} L ${summaryX} ${branchY - 50} L ${bCx} ${branchY - 50} L ${bCx} ${branchConnY}"
+      fill="none" stroke="#58a6ff" stroke-width="1.5" class="flow-line branch" marker-end="url(#arrowhead-blue)" opacity="0.7"/>`;
+
+    // 分支节点
+    branch.nodes.forEach((bnode, ri) => {
+      const bny = branchY + ri * (NODE_H + L.NODE_GAP);
+      const isCurrent = bnode.status === 'in-progress';
+      const cls = bnode.status === 'done' ? 'done' : bnode.status === 'in-progress' ? 'in-progress' : 'pending';
+      const badge = bnode.status === 'done' ? '✅' : bnode.status === 'in-progress' ? '⏳' : '⬜';
+      const glowFilter = isCurrent ? ' filter="url(#glow)"' : '';
+
+      html += `<g${glowFilter} class="node-group ${isCurrent ? 'current-glow' : ''}" onclick="openPanel('${bnode.id}')" style="cursor:pointer">`;
+      html += `<rect x="${bNx}" y="${bny}" width="${COL_W}" height="${NODE_H}" rx="10" class="node-rect ${cls}"/>`;
+      html += `<text x="${bNx + 28}" y="${bny + NODE_H / 2}" class="node-icon">${bnode.icon}</text>`;
+      html += `<text x="${bNx + 48}" y="${bny + 22}" class="node-label">${bnode.label}</text>`;
+      html += `<text x="${bNx + 12}" y="${bny + 14}" class="issue-badge" id="badge-${bnode.id}" style="display:none">0</text>`;
+      bnode.desc.split('\n').forEach((line, li) => {
+        html += `<text x="${bNx + 48}" y="${bny + 38 + li * 14}" class="node-desc">${line}</text>`;
+      });
+      html += `<text x="${bNx + COL_W - 18}" y="${bny + 14}" class="node-badge ${cls}" ${isCurrent ? 'class="node-badge progress current-blink"' : ''}>${badge}</text>`;
+      html += `</g>`;
+
+      // 分支内节点间连线
+      if (ri > 0) {
+        const prevY = branchY + (ri - 1) * (NODE_H + L.NODE_GAP) + NODE_H;
+        html += `<line x1="${bCx}" y1="${prevY}" x2="${bCx}" y2="${bny}" class="flow-line branch" opacity="0.4"/>`;
+      }
+    });
+
+    // 分支底部装饰箭头（蓝色脉冲，区别于主线紫色）
+    const branchBotY = branchY + branch.nodes.length * (NODE_H + L.NODE_GAP) - L.NODE_GAP + NODE_H;
+    html += `<line x1="${bCx}" y1="${branchBotY}" x2="${bCx}" y2="${branchBotY + 16}" class="flow-line branch-fast" marker-end="url(#arrowhead-blue)" opacity="0.5"/>`;
+  });
+
+  g.innerHTML = html;
+
+  // 动态更新 SVG 高度
+  const maxBranchHeight = Math.max(...PIPELINE.branches.map(b => b.nodes.length)) * (NODE_H + L.NODE_GAP);
+  const totalH = branchY + maxBranchHeight + 40;
+  document.getElementById('pipeline-svg').setAttribute('viewBox', `0 0 ${SVG_W} ${totalH}`);
+}
+
+// ============================================================
+// 支持从 JSON 文件加载（HTTP 模式）或使用内嵌数据（file:// 模式）
+// ============================================================
+function init() {
+  // 尝试从 pipeline-data.json 加载最新数据
+  fetch('pipeline-data.json')
+    .then(r => r.json())
+    .then(data => {
+      // 数据更新成功，重新构建管道数据
+      console.log('[Pipeline] 从 pipeline-data.json 加载数据成功');
+      renderWithData(data);
+    })
+    .catch(() => {
+      // file:// 模式或网络不可用，使用内嵌数据
+      console.log('[Pipeline] 使用内嵌数据（file:// 模式）');
+      render();
+    });
+}
+
+function renderWithData(data) {
+  // 安全更新页面元数据
+  const metaEl = document.getElementById('headerMeta');
+  if (metaEl) {
+    metaEl.textContent = `版本 v${data.meta.version} · 代号 ${data.meta.codename} · ${data.kpi.testCases} 测试用例 · ${data.kpi.providers} 家模型提供商 · P5管线运维进行中`;
+  }
+
+  // 更新顶部仪表板（安全取值）
+  updateDash('dashTests', data.kpi.testCases);
+  updateDash('dashPass', data.kpi.testPassRate + '%');
+  updateDash('dashTools', data.kpi.tools);
+  updateDash('dashModels', data.kpi.providers);
+  updateDash('dashScore', data.kpi.scoreTotal);
+  updateDash('dashModes', data.kpi.modes || 4);
+
+  // 使用内嵌数据渲染
+  render();
+}
+
+/** 安全更新仪表板数值 */
+function updateDash(id, value) {
+  const el = document.getElementById(id);
+  if (el && value !== undefined && value !== null) {
+    el.textContent = value;
+  }
+}
+
+// 启动
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  loadIssueData();
+});
+
+// ============================================================
+// 问题数据加载与面板交互
+// ============================================================
+let issueData = null;
+let currentModuleId = null;
+let panelMode = 'module'; // 'module' | 'card'
+
+/** 仪表板卡片详情数据 */
+const DASH_DETAILS = {
+  tests: {
+    title: '测试用例详情',
+    subtitle: '806 个测试用例 · Vitest 测试框架',
+    items: [
+      { label: '多模型适配器', val: '127 tests', note: 'f1 · 10 家提供商适配',
+        expandItems: [
+          {label:'DeepSeek 适配',val:'18'},{label:'智谱 GLM 适配',val:'15'},{label:'通义千问适配',val:'17'},
+          {label:'Kimi 适配',val:'13'},{label:'百度 ERNIE 适配',val:'12'},{label:'豆包适配',val:'11'},
+          {label:'混元适配',val:'14'},{label:'MiniMax 适配',val:'10'},{label:'OpenAI 适配',val:'9'},{label:'Ollama 本地',val:'8'},
+        ]},
+      { label: 'Agent 系统', val: '132 tests', note: 'f2 · ReAct 循环 + 协作',
+        expandItems: [
+          {label:'子 Agent 管理',val:'48'},{label:'Orchestrator 协调',val:'28'},{label:'Memory 记忆系统',val:'22'},
+          {label:'工具调用链',val:'19'},{label:'错误恢复',val:'15'},
+        ]},
+      { label: '工具系统', val: '115 tests', note: 'f3 · 51 个工具 17 分组',
+        expandItems: [
+          {label:'工具执行引擎',val:'32'},{label:'工具发现/注册',val:'25'},{label:'Schema 校验',val:'22'},
+          {label:'结果解析',val:'18'},{label:'批量调用',val:'18'},
+        ]},
+      { label: '知识库 RAG', val: '78 tests', note: 'f4 · 双作用域架构',
+        expandItems: [
+          {label:'索引构建',val:'22'},{label:'语义搜索',val:'25'},{label:'Embedding',val:'16'},{label:'分块策略',val:'15'},
+        ]},
+      { label: 'MCP 协议', val: '69 tests', note: 'f5 · JSON-RPC stdio',
+        expandItems: [
+          {label:'Client 端',val:'25'},{label:'Server 端',val:'20'},{label:'Transport 传输',val:'14'},{label:'工具发现协议',val:'10'},
+        ]},
+      { label: '沙箱执行环境', val: '58 tests', note: 'f6 · Docker + 本地降级',
+        expandItems: [
+          {label:'Docker 沙箱',val:'22'},{label:'本地降级策略',val:'18'},{label:'隔离机制',val:'10'},{label:'资源限制',val:'8'},
+        ]},
+      { label: 'Ink CLI', val: '52 tests', note: 'f7 · React Terminal',
+        expandItems: [
+          {label:'渲染引擎',val:'18'},{label:'输入处理',val:'14'},{label:'命令解析',val:'12'},{label:'输出格式化',val:'8'},
+        ]},
+      { label: 'Web Dashboard', val: '43 tests', note: 'f8 · 10 Store + WS',
+        expandItems: [
+          {label:'Store 状态管理',val:'15'},{label:'WebSocket 通信',val:'10'},{label:'UI 组件测试',val:'12'},{label:'路由导航',val:'6'},
+        ]},
+      { label: 'Desktop 原生应用', val: '36 tests', note: 'f9 · Electron + React',
+        expandItems: [
+          {label:'Electron 主进程',val:'14'},{label:'Renderer 渲染',val:'12'},{label:'IPC 通信',val:'7'},{label:'自动更新',val:'3'},
+        ]},
+      { label: '插件与技能系统', val: '31 tests', note: 'f10 · PluginManager',
+        expandItems: [
+          {label:'插件加载器',val:'12'},{label:'技能注册表',val:'10'},{label:'生命周期管理',val:'6'},{label:'沙箱隔离',val:'3'},
+        ]},
+      { label: 'IM 适配器', val: '28 tests', note: 'f11 · 3 平台消息路由',
+        expandItems: [
+          {label:'Telegram 适配',val:'10'},{label:'飞书适配',val:'9'},{label:'企业微信适配',val:'9'},
+        ]},
+      { label: 'i18n 国际化', val: '15 tests', note: 'f12 · zh-CN / en-US',
+        expandItems: [
+          {label:'zh-CN 中文',val:'8'},{label:'en-US 英文',val:'7'},
+        ]},
+      { label: '版本控制 + 发布', val: '22 tests', note: 'f13-f16 · 发布层 4 模块',
+        expandItems: [
+          {label:'版本管理器',val:'8'},{label:'发布流水线',val:'8'},{label:'Changelog',val:'6'},
+        ]},
+    ],
+    summary: '所有 16 个核心模块均已覆盖测试，总用例数 806，覆盖单元测试、集成测试、端到端测试三个层级'
+  },
+  pass: {
+    title: '测试通过率详情',
+    subtitle: '通过率 100% · 0 失败 / 0 跳过',
+    stats: [
+      { label: '✅ 通过', val: '806', color: '#3fb950' },
+      { label: '❌ 失败', val: '0', color: '#f85149' },
+      { label: '⏭️ 跳过', val: '0', color: '#8b949e' },
+    ],
+    items: [
+      { label: 'P0 基础层 (f1-f3)', val: '374', note: '127 + 132 + 115', rate: '100%',
+        expandItems: [
+          {label:'多模型适配器',val:'127 ✅'},{label:'Agent 系统',val:'132 ✅'},{label:'工具系统',val:'115 ✅'},
+        ]},
+      { label: 'P1 交互层 (f7-f9)', val: '131', note: '52 + 43 + 36', rate: '100%',
+        expandItems: [
+          {label:'Ink CLI',val:'52 ✅'},{label:'Web Dashboard',val:'43 ✅'},{label:'Desktop 原生',val:'36 ✅'},
+        ]},
+      { label: 'P2 扩展层 (f4-f6)', val: '205', note: '78 + 69 + 58', rate: '100%',
+        expandItems: [
+          {label:'知识库 RAG',val:'78 ✅'},{label:'MCP 协议',val:'69 ✅'},{label:'沙箱执行环境',val:'58 ✅'},
+        ]},
+      { label: 'P3 平台层 (f10-f12)', val: '74', note: '31 + 28 + 15', rate: '100%',
+        expandItems: [
+          {label:'插件与技能',val:'31 ✅'},{label:'IM 适配器',val:'28 ✅'},{label:'i18n 国际化',val:'15 ✅'},
+        ]},
+      { label: 'P4 发布层 (f13-f16)', val: '22', note: '4 模块合集', rate: '100%',
+        expandItems: [
+          {label:'版本控制',val:'8 ✅'},{label:'发布流水线',val:'8 ✅'},{label:'CI/CD',val:'4 ✅'},{label:'Changelog',val:'2 ✅'},
+        ]},
+    ],
+    summary: '所有模块测试均通过了 100%，无失败或跳过的用例。测试框架会继续作为 CI/CD 的一部分自动运行。'
+  },
+  tools: {
+    title: '内置工具详情',
+    subtitle: '51 个工具 · 17 个功能分组',
+    items: [
+      { label: '📁 文件操作', val: '8 tools', note: 'read/write/edit/delete/search/list/glob/mkdir',
+        expandItems: [
+          {label:'read_file',val:'读取文件内容'},{label:'write_to_file',val:'创建/覆盖文件'},{label:'replace_in_file',val:'精确替换'},{label:'delete_file',val:'删除文件'},
+          {label:'search_file',val:'文件名搜索'},{label:'list_dir',val:'目录列表'},{label:'search_content',val:'内容搜索(grep)'},{label:'read_lints',val:'linter 诊断'},
+        ]},
+      { label: '🔍 搜索', val: '4 tools', note: 'grep/file-search/codebase-search/content-search',
+        expandItems: [
+          {label:'search_content',val:'Ripgrep 全文搜索'},{label:'search_file',val:'Glob 模式匹配'},{label:'codebase_search',val:'语义代码搜索'},{label:'web_search',val:'互联网搜索'},
+        ]},
+      { label: '🔄 Git 操作', val: '6 tools', note: 'status/diff/log/branch/commit/stash',
+        expandItems: [
+          {label:'Git Status',val:'查看工作区状态'},{label:'Git Diff',val:'查看差异'},{label:'Git Log',val:'提交历史'},{label:'Git Branch',val:'分支操作'},{label:'Git Commit',val:'提交变更'},{label:'Git Stash',val:'暂存操作'},
+        ]},
+      { label: '📚 知识库', val: '3 tools', note: 'RAG-search/list-docs/refresh-index',
+        expandItems: [
+          {label:'RAG_search',val:'知识库语义检索'},{label:'知识库列表',val:'查看可用知识库'},{label:'索引刷新',val:'更新知识库索引'},
+        ]},
+      { label: '🧠 Agent 管理', val: '4 tools', note: 'task/team-create/team-delete/send-message',
+        expandItems: [
+          {label:'task',val:'启动子 Agent 任务'},{label:'team_create',val:'创建协作团队'},{label:'team_delete',val:'删除团队'},{label:'send_message',val:'团队消息通信'},
+        ]},
+      { label: '🔗 MCP 协议', val: '2 tools', note: 'connect/discover-tools',
+        expandItems: [
+          {label:'MCP Connect',val:'连接 MCP 服务器'},{label:'MCP Discover',val:'发现可用工具'},
+        ]},
+      { label: '🌐 Web', val: '3 tools', note: 'fetch/preview/search',
+        expandItems: [
+          {label:'web_fetch',val:'获取网页内容'},{label:'preview_url',val:'内嵌浏览器预览'},{label:'web_search',val:'网络搜索'},
+        ]},
+      { label: '🖼️ 媒体', val: '2 tools', note: 'image-gen/read-image',
+        expandItems: [
+          {label:'image_gen',val:'AI 图片生成'},{label:'read_image',val:'读取图片内容'},
+        ]},
+      { label: '⚙️ 系统', val: '5 tools', note: 'exec/install-binary/read-lints/automation/connect-cloud',
+        expandItems: [
+          {label:'execute_command',val:'执行 Shell 命令'},{label:'install_binary',val:'安装运行时'},{label:'read_lints',val:'读取诊断信息'},{label:'automation_update',val:'自动化任务管理'},{label:'connect_cloud_service',val:'云服务连接'},
+        ]},
+      { label: '📦 部署', val: '3 tools', note: 'invoke-integration/deploy/publish',
+        expandItems: [
+          {label:'invoke_integration',val:'触发集成服务'},{label:'Deploy',val:'一键部署'},{label:'Publish',val:'发布上线'},
+        ]},
+      { label: '📝 文档', val: '3 tools', note: 'memory-update/CHANGELOG/release-notes',
+        expandItems: [
+          {label:'update_memory',val:'持久化记忆'},{label:'CHANGELOG',val:'自动生成更新日志'},{label:'Release Notes',val:'版本发布说明'},
+        ]},
+      { label: '🔌 集成', val: '2 tools', note: 'supabase/cloudbase/lighthouse/eop',
+        expandItems: [
+          {label:'Supabase',val:'数据库/Auth'},{label:'CloudBase',val:'微信云开发'},{label:'Lighthouse',val:'轻量服务器'},{label:'EdgeOne Pages',val:'前端部署'},
+        ]},
+      { label: '📊 数据', val: '2 tools', note: 'json-parse/csv-export',
+        expandItems: [
+          {label:'JSON 解析',val:'结构化数据处理'},{label:'CSV 导出',val:'表格数据导出'},
+        ]},
+      { label: '🎨 前端', val: '2 tools', note: 'component-gen/style-lint',
+        expandItems: [
+          {label:'组件生成',val:'自动生成 UI 组件'},{label:'样式检查',val:'CSS/Tailwind 规范'},
+        ]},
+      { label: '📋 项目管理', val: '2 tools', note: 'sprint-plan/progress-track',
+        expandItems: [
+          {label:'Sprint 规划',val:'迭代计划'},{label:'进度追踪',val:'进度可视化'},
+        ]},
+    ],
+    summary: '51 个工具覆盖文件、搜索、Git、知识库、Agent、MCP、Web、系统等 17 个分组，构建了完整的 AI 编程助手工具链'
+  },
+  models: {
+    title: '模型提供商详情',
+    subtitle: '10 家提供商 · 国产大模型全覆盖',
+    items: [
+      { label: '🔴 DeepSeek', val: '4 models', note: 'V4/V4 Flash/V3/R1 · 推理专长',
+        expandItems: [
+          {label:'DeepSeek V4',val:'最新旗舰 · 超强推理'},{label:'DeepSeek V4 Flash',val:'快速推理'},{label:'DeepSeek V3',val:'通用能力'},{label:'DeepSeek R1',val:'专精推理'},
+        ]},
+      { label: '🟣 智谱 GLM', val: '4 models', note: 'GLM-5/Flash/4 Plus/4 Flash · 200K 上下文',
+        expandItems: [
+          {label:'GLM-5',val:'最新旗舰 · 200K ctx'},{label:'GLM-5 Flash',val:'快速版'},{label:'GLM-4 Plus',val:'高性能'},{label:'GLM-4 Flash',val:'轻量快速'},
+        ]},
+      { label: '🟠 通义千问', val: '6 models', note: 'Qwen3 Max/Plus/Turbo/Coder · 全场景',
+        expandItems: [
+          {label:'Qwen3 Max',val:'最强能力'},{label:'Qwen3 Plus',val:'均衡性能'},{label:'Qwen3 Turbo',val:'高速响应'},{label:'Qwen3 Coder',val:'代码专长'},{label:'Qwen 2.5',val:'经典版本'},{label:'Qwen VL',val:'多模态视觉'},
+        ]},
+      { label: '🟢 Kimi (月之暗面)', val: '4 models', note: 'K2.7 Code/K2.6/K2.5 · 代码专长',
+        expandItems: [
+          {label:'K2.7 Code',val:'最新代码专长'},{label:'K2.6',val:'增强版本'},{label:'K2.5',val:'稳定版本'},{label:'K2 Flash',val:'快速推理'},
+        ]},
+      { label: '🔵 百度 ERNIE', val: '4 models', note: '4.5/Speed/Lite/4.0 Turbo',
+        expandItems: [
+          {label:'ERNIE 4.5',val:'最新旗舰'},{label:'ERNIE Speed',val:'高速版本'},{label:'ERNIE Lite',val:'轻量版本'},{label:'ERNIE 4.0 Turbo',val:'经典加速'},
+        ]},
+      { label: '🟡 豆包 (字节)', val: '3 models', note: 'Seed 1.6/Pro 1.6/Lite 1.6',
+        expandItems: [
+          {label:'Seed 1.6',val:'旗舰模型'},{label:'Pro 1.6',val:'专业版'},{label:'Lite 1.6',val:'轻量版'},
+        ]},
+      { label: '⚪ 混元 (腾讯)', val: '4 models', note: 'TurboS Vision/T1/Pro/Lite',
+        expandItems: [
+          {label:'TurboS Vision',val:'多模态视觉'},{label:'T1',val:'推理专长'},{label:'Pro',val:'专业版'},{label:'Lite',val:'轻量版'},
+        ]},
+      { label: '🟤 MiniMax', val: '4 models', note: 'M3/M3 Flash/M1/ABAB 6.5s · 245K 上下文',
+        expandItems: [
+          {label:'M3',val:'最新旗舰 · 245K ctx'},{label:'M3 Flash',val:'快速推理'},{label:'M1',val:'经典版本'},{label:'ABAB 6.5s',val:'超长上下文'},
+        ]},
+      { label: '🔷 OpenAI', val: '2 models', note: 'GPT-4o/GPT-4o Mini · 备用',
+        expandItems: [
+          {label:'GPT-4o',val:'多模态旗舰'},{label:'GPT-4o Mini',val:'轻量高效'},
+        ]},
+      { label: '🟦 Ollama (本地)', val: 'N/A', note: '本地部署 · 灵活配置',
+        expandItems: [
+          {label:'Llama 系列',val:'开源可部署'},{label:'Qwen 系列',val:'本地运行'},{label:'Mistral',val:'轻量高效'},{label:'任意 GGUF',val:'自定义模型'},
+        ]},
+    ],
+    summary: '10 家模型提供商，覆盖 DeepSeek、智谱、通义千问、Kimi、ERNIE、豆包、混元、MiniMax、OpenAI 和 Ollama 本地部署'
+  },
+  score: {
+    title: '综合评分详情',
+    subtitle: '68.4 / 100 · 版本演进追踪',
+    history: [
+      { version: 'v0.1.0', date: '06-18', score: 30, note: 'P0 基础层完成' },
+      { version: 'v0.2.0', date: '06-19', score: 55, note: 'P1+P2 交互和扩展层' },
+      { version: 'v0.3.0', date: '06-20', score: 65, note: 'P3 平台层完成' },
+      { version: 'v0.4.0', date: '06-22', score: 68.4, note: 'P4 发布层完成' },
+    ],
+    dimensions: [
+      { label: '功能完整度', score: 96, max: 100, note: '16/16 模块完成' },
+      { label: '测试覆盖', score: 75, max: 100, note: '806 用例 · 全模块覆盖' },
+      { label: '代码质量', score: 68, max: 100, note: '架构评审 + lint 检查' },
+      { label: '文档完整度', score: 60, max: 100, note: 'PRD/ADD/CHANGELOG 齐全' },
+      { label: 'CI/CD 成熟度', score: 55, max: 100, note: 'GitHub Actions + 自动发布' },
+      { label: '生态建设', score: 30, max: 100, note: '10 分支优化项 · 6 待启动' },
+    ],
+    summary: '综合评分基于 6 个维度加权计算。功能完整度最高(96)，生态建设待提升(30)。目标 v1.0 达到 85+'
+  },
+  modes: {
+    title: '操作模式详情',
+    subtitle: '4 种操作模式 · 全场景覆盖',
+    items: [
+      { label: '🖥️ CLI 命令行', val: '✅ 已发布', note: 'Ink + React Terminal · 7 组件 10 命令 · 支持文件/管道/重定向',
+        expandItems: [
+          {label:'交互式聊天',val:'多轮对话 · 上下文管理'},{label:'文件操作',val:'读取/编辑/搜索/删除'},{label:'管道模式',val:'stdin/stdout 流式处理'},
+          {label:'命令系统',val:'10 个命令 · help/clear/export'},{label:'终端渲染',val:'Ink + React 组件 · 彩色输出'},
+        ]},
+      { label: '🌐 Web Dashboard', val: '✅ 已发布', note: 'WorkBuddy 风格 · 10 Store + WebSocket · 虚拟滚动 · 深色主题',
+        expandItems: [
+          {label:'状态管理',val:'10 个 Zustand Store'},{label:'实时通信',val:'WebSocket 双向推送'},{label:'虚拟滚动',val:'万级消息无卡顿'},
+          {label:'深色主题',val:'暗色/亮色切换'},{label:'响应式',val:'桌面/平板/手机适配'},
+        ]},
+      { label: '🖼️ Desktop 原生', val: '✅ 已发布', note: 'Electron + React · 六件套布局 · 系统托盘 · 自动升级',
+        expandItems: [
+          {label:'Electron 壳',val:'原生窗口 · 系统托盘'},{label:'六件套布局',val:'聊天/文件/终端/设置/仪表板'},{label:'自动更新',val:'electron-updater 增量更新'},
+          {label:'快捷键',val:'全局快捷键支持'},{label:'离线能力',val:'本地模型 Ollama 集成'},
+        ]},
+      { label: '💬 IM 适配器', val: '✅ 已发布', note: 'Telegram / 飞书 / 企业微信 · 3 平台消息路由 · 统一适配接口',
+        expandItems: [
+          {label:'Telegram',val:'Bot API · 消息/文件/按钮'},{label:'飞书',val:'开放平台 · 卡片消息'},{label:'企业微信',val:'自建应用 · 消息推送'},
+          {label:'统一接口',val:'BaseIMAdapter 抽象层'},
+        ]},
+    ],
+    summary: '4 种操作模式均已发布，覆盖从命令行到桌面到消息平台的完整交互体验'
+  },
+  issues: {
+    title: '问题记录详情',
+    subtitle: '实时追踪 · 模块级追溯',
+    items: [],
+    summary: '问题数据从 .codebuddy/memory/*.md 实时解析。点击流程图中的模块节点查看具体问题与修复记录。'
+  }
+};
+
+/** 打开卡片详情面板 */
+function openCardDetail(cardId) {
+  const detail = DASH_DETAILS[cardId];
+  if (!detail) return;
+
+  panelMode = 'card';
+  currentModuleId = null;
+
+  // 更新面板标题
+  document.getElementById('panelTitle').textContent = detail.title;
+  document.getElementById('panelSub').textContent = detail.subtitle;
+
+  // 隐藏问题统计
+  document.getElementById('statResolved').parentElement.style.display = 'none';
+  document.getElementById('statUnresolved').parentElement.style.display = 'none';
+  document.getElementById('statTotal').parentElement.style.display = 'none';
+
+  const body = document.getElementById('panelBody');
+  let html = '';
+
+  // 通过率特殊样式：三色统计条
+  if (cardId === 'pass' && detail.stats) {
+    html += `<div class="detail-chart"><div style="display:flex;gap:12px;margin-bottom:16px">`;
+    detail.stats.forEach(s => {
+      html += `<div style="flex:1;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:${s.color}">${s.val}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">${s.label}</div>
+      </div>`;
+    });
+    html += `</div><div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3fb950,#238636);border-radius:4px"></div></div></div>`;
+  }
+
+  // 评分特殊样式：历史曲线 + 维度评分条
+  if (cardId === 'score') {
+    if (detail.history) {
+      html += `<div class="detail-chart"><h4>📈 版本评分演进</h4><div style="display:flex;align-items:flex-end;gap:16px;height:120px;padding:0 8px">`;
+      detail.history.forEach(h => {
+        const hPct = (h.score / 100) * 100;
+        html += `<div style="flex:1;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
+          <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:4px">${h.score}</div>
+          <div style="width:32px;height:${hPct}%;background:linear-gradient(180deg,#a78bfa,#7c3aed);border-radius:6px 6px 0 0;min-height:4px"></div>
+          <div style="font-size:9px;color:var(--text2);margin-top:6px">${h.version}<br>${h.date}</div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+    if (detail.dimensions) {
+      html += `<div class="detail-chart"><h4>📊 维度评分</h4>`;
+      detail.dimensions.forEach(d => {
+        const pct = Math.round((d.score / d.max) * 100);
+        const color = pct >= 80 ? '#3fb950' : pct >= 50 ? '#d2991d' : '#f85149';
+        html += `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text)">${d.label}</span><span style="color:${color}">${d.score}/${d.max}</span></div>
+        <div style="background:var(--border);border-radius:3px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:3px"></div></div>
+        <div style="font-size:9px;color:var(--text2);margin-top:2px">${d.note}</div></div>`;
+      });
+      html += `</div>`;
+    }
+  }
+
+  // 问题记录特殊处理：显示模块问题总览
+  if (cardId === 'issues' && issueData) {
+    const mods = issueData.modules;
+    const modKeys = Object.keys(mods);
+    html += `<div class="detail-chart"><h4>📋 各模块问题分布</h4><div class="detail-list">`;
+    modKeys.forEach(mid => {
+      const m = mods[mid];
+      const total = m.issues.length;
+      const resolved = m.issues.filter(i => i.status === 'resolved').length;
+      if (total > 0) {
+        html += `<li><span class="li-label">${m.name}</span><span class="li-val">${resolved}/${total} resolved · ${m.phase || '-'}</span></li>`;
+      }
+    });
+    html += `</div></div>`;
+    html += `<div style="text-align:center;padding:12px;color:var(--text2);font-size:12px;margin-top:8px">💡 点击流程图中任意模块节点查看具体问题与修复时间线</div>`;
+  }
+
+  // 通用详细列表（可展开）
+  if (detail.items && detail.items.length > 0) {
+    html += `<div class="detail-chart"><ul class="detail-list">`;
+    detail.items.forEach((item, idx) => {
+      const hasExpand = item.expandItems && item.expandItems.length > 0;
+      const uid = `exp-${cardId}-${idx}`;
+      if (hasExpand) {
+        html += `<li class="expandable" onclick="toggleExpand('${uid}', event)">
+          <div class="item-row"><span class="chevron" id="chev-${uid}">▶</span><span class="li-label">${item.label}</span><span class="li-val">${item.val}${item.note ? ' · ' + item.note : ''}</span></div>
+          <ul class="sub-list" id="${uid}">`;
+        item.expandItems.forEach(sub => {
+          html += `<li><span class="sub-label">${sub.label}</span><span class="sub-val">${sub.val}</span></li>`;
+        });
+        html += `</ul></li>`;
+      } else {
+        html += `<li><span class="li-label">${item.label}</span><span class="li-val">${item.val}${item.note ? ' · ' + item.note : ''}</span></li>`;
+      }
+    });
+    html += `</ul></div>`;
+  }
+
+  // 总结
+  if (detail.summary) {
+    html += `<div style="margin-top:12px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6">${detail.summary}</div>`;
+  }
+
+  body.innerHTML = html;
+
+  // 打开面板
+  document.getElementById('issuePanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+/** 加载问题数据：优先从 /api/issues 动态获取（HTTP模式），回退到 issue-data.json（file:// 模式） */
+function loadIssueData() {
+  const freshnessEl = document.getElementById('dashSource');
+  const countEl = document.getElementById('dashIssueCount');
+
+  // 第一优先级：API 动态解析（实时从 memory 目录读取）
+  fetch('/api/issues')
+    .then(r => {
+      if (!r.ok) throw new Error('API HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      issueData = data;
+      const total = data._totalIssues || 0;
+      const cacheStats = data._cacheStats;
+      console.log('[Issues] API 动态解析完成，共 ' + total + ' 个问题，数据时间: ' + (data._generatedAt || '未知'));
+      if (countEl) countEl.textContent = total;
+      // 显示缓存状态
+      let freshnessHTML = '';
+      if (cacheStats) {
+        const hitRate = cacheStats.totalFiles > 0 ? Math.round((cacheStats.cacheHits / cacheStats.totalFiles) * 100) : 0;
+        freshnessHTML = `<span class="refresh-dot live"></span> 实时 · 缓存命中率 ${hitRate}% (${cacheStats.cacheHits}/${cacheStats.totalFiles})`;
+      } else {
+        freshnessHTML = `<span class="refresh-dot live"></span> 实时 · ${(data._sourceFiles||[]).length}个源文件`;
+      }
+      if (freshnessEl) freshnessEl.innerHTML = freshnessHTML;
+      setTimeout(updateAllBadges, 300);
+    })
+    .catch(err => {
+      console.warn('[Issues] /api/issues 不可用 (' + err.message + ')，尝试回退到 issue-data.json');
+      // 第二优先级：静态 JSON 文件
+      fetch('issue-data.json')
+        .then(r => r.json())
+        .then(data => {
+          issueData = data;
+          const total = data._totalIssues || 0;
+          console.log('[Issues] 从 issue-data.json 加载完成，共 ' + total + ' 个问题');
+          if (countEl) countEl.textContent = total;
+          if (freshnessEl) freshnessEl.innerHTML = `<span class="refresh-dot stale"></span> 快照 · ${data.meta?.exports || '历史'}导出`;
+          setTimeout(updateAllBadges, 300);
+        })
+        .catch(() => {
+          console.warn('[Issues] issue-data.json 也加载失败，问题面板不可用');
+          if (countEl) countEl.textContent = '--';
+          if (freshnessEl) freshnessEl.textContent = '数据源不可用';
+        });
+    });
+}
+
+/** 更新所有节点卡片上的问题数量徽章 */
+function updateAllBadges() {
+  if (!issueData) return;
+  const modules = issueData.modules;
+  for (const mid in modules) {
+    const mod = modules[mid];
+    const count = mod.issues.length;
+    if (count > 0) {
+      const badge = document.getElementById('badge-' + mid);
+      if (badge) {
+        badge.textContent = count + ' ↓';
+        badge.style.display = '';
+      }
+    }
+  }
+}
+
+/** 打开右侧问题面板（模块节点点击） */
+function openPanel(moduleId) {
+  if (!issueData) return;
+  const mod = issueData.modules[moduleId];
+  if (!mod) return;
+
+  panelMode = 'module';
+  currentModuleId = moduleId;
+  const issues = mod.issues || [];
+  const total = issues.length;
+  const unresolved = issues.filter(i => i.status && i.status !== 'resolved').length;
+  const resolved = total - unresolved;
+
+  // 更新面板标题
+  document.getElementById('panelTitle').textContent = mod.name;
+  document.getElementById('panelSub').textContent = 'Phase ' + (mod.phase || '') + ' · ' + total + ' 个问题记录';
+
+  // 显示问题统计
+  document.getElementById('statResolved').parentElement.style.display = '';
+  document.getElementById('statUnresolved').parentElement.style.display = '';
+  document.getElementById('statTotal').parentElement.style.display = '';
+
+  // 更新统计
+  document.getElementById('statResolved').textContent = resolved;
+  document.getElementById('statUnresolved').textContent = unresolved;
+  document.getElementById('statTotal').textContent = total;
+
+  // 渲染时间线
+  const body = document.getElementById('panelBody');
+  if (total === 0) {
+    body.innerHTML = `<div class="no-issues"><span class="icon">📭</span>该模块暂无问题记录<br><span style="font-size:11px;color:var(--text2);margin-top:6px;display:block">开发过程顺利，未遇到需记录的问题</span></div>`;
+  } else {
+    let html = '<div class="timeline">';
+    issues.forEach((issue, idx) => {
+      const statusIcon = issue.status === 'pending' ? '⬜' : '✅';
+      html += `<div class="tl-entry">`;
+      html += `<div class="tl-date">${statusIcon} ${issue.date}</div>`;
+      html += `<div class="tl-title">#${idx + 1} ${issue.title}</div>`;
+      html += `<div class="tl-section"><strong>问题：</strong>${issue.problem}</div>`;
+      html += `<div class="tl-section"><em>解决：</em><span class="ok">${issue.solution}</span></div>`;
+      html += `</div>`;
+    });
+    html += '</div>';
+    body.innerHTML = html;
+  }
+
+  // 打开面板
+  document.getElementById('issuePanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+/** 关闭右侧面板 */
+function closePanel() {
+  document.getElementById('issuePanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  panelMode = 'module';
+  currentModuleId = null;
+}
+
+/** 展开/折叠详情列表项的子内容 */
+function toggleExpand(uid, event) {
+  event.stopPropagation();
+  const subList = document.getElementById(uid);
+  const chev = document.getElementById('chev-' + uid);
+  if (!subList || !chev) return;
+  const isOpen = subList.classList.toggle('open');
+  chev.classList.toggle('open', isOpen);
+}
+
+// 键盘 ESC 关闭面板
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closePanel();
+  }
+});
+</script>
+</body>
+</html>

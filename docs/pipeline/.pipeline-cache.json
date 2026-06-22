@@ -1,0 +1,398 @@
+{
+  "snapshots": {
+    "2026-06-18.md": {
+      "mtimeMs": 1781798935361.3545,
+      "size": 29245
+    },
+    "2026-06-19.md": {
+      "mtimeMs": 1781886468452.5415,
+      "size": 36770
+    },
+    "2026-06-20.md": {
+      "mtimeMs": 1781969978709.8875,
+      "size": 38657
+    },
+    "2026-06-21.md": {
+      "mtimeMs": 1781984450426.6348,
+      "size": 21408
+    },
+    "2026-06-22.md": {
+      "mtimeMs": 1782143907683.6384,
+      "size": 19886
+    },
+    "MEMORY.md": {
+      "mtimeMs": 1782143885087.1145,
+      "size": 14446
+    },
+    "2026-06-23.md": {
+      "mtimeMs": 1782144308037.3606,
+      "size": 1426
+    }
+  },
+  "fileResults": {
+    "2026-06-18.md": [
+      {
+        "moduleId": "f7",
+        "date": "2026-06-18",
+        "title": "下午: 六大功能点全面落实 (14:28-16:30)",
+        "problem": "下午: 六大功能点全面落实 (14:28-16:30)",
+        "solution": "修复 tsup ESM 打包 (4个config)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-18",
+        "title": "晚上: 虚拟滚动 + Skills/Plugins 系统 (16:25-16:46)",
+        "problem": "晚上: 虚拟滚动 + Skills/Plugins 系统 (16:25-16:46)",
+        "solution": "修复预存bug: Sessions.tsx 缺少 totalTokens 字段",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-18",
+        "title": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
+        "problem": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
+        "solution": "重启后仍被锁，用户手动删除后解决",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-18",
+        "title": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
+        "problem": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
+        "solution": "重启后仍被锁，用户手动删除后解决",
+        "status": "resolved",
+        "_tagModuleIds": []
+      }
+    ],
+    "2026-06-19.md": [
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "problem": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "solution": "后端 `:3456` 已重启（含修复）",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-19",
+        "title": "后端 Server 启动 & ESM 修复 (00:15)",
+        "problem": "后端 Server 启动 & ESM 修复 (00:15)",
+        "solution": "修复 packages/server/src/index.ts: 添加 ESM 兼容的 __dirname 定义",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-19",
+        "title": "工具系统页面交互重构 (19:57-20:05)",
+        "problem": "工具系统页面交互重构 (19:57-20:05)",
+        "solution": "前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "工具系统页面交互重构 (19:57-20:05)",
+        "problem": "工具系统页面交互重构 (19:57-20:05)",
+        "solution": "前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
+        "problem": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
+        "solution": "`uploadImage()`: 原代码 `imageUrl.startsWith('http') ? undefined : undefined` → 改为完整的下载/Base64/本地文件 → Blob → FormData multipart 上传",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
+        "problem": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
+        "solution": "`uploadImage()`: 原代码 `imageUrl.startsWith('http') ? undefined : undefined` → 改为完整的下载/Base64/本地文件 → Blob → FormData multipart 上传",
+        "status": "resolved",
+        "_tagModuleIds": []
+      }
+    ],
+    "2026-06-20.md": [
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "MEMORY.md 增加操作铁律 (00:29)",
+        "problem": "MEMORY.md 增加操作铁律 (00:29)",
+        "solution": "新增\"双作用域知识库测试修复\"内容追加至 2026-06-19.md 末尾",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-20",
+        "title": "MEMORY.md 增加操作铁律 (00:29)",
+        "problem": "MEMORY.md 增加操作铁律 (00:29)",
+        "solution": "新增\"双作用域知识库测试修复\"内容追加至 2026-06-19.md 末尾",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "知识库文档预览\"空内容\"修复 (00:37)",
+        "problem": "知识库文档预览\"空内容\"修复 (00:37)",
+        "solution": "弹窗条件改为 `(viewDoc || loadingDoc)`，加载中显示 spinner，加载完成显示完整内容",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "problem": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "solution": "\"已索引文档\"改为 `documents.length`(替代 `stats.totalDocs`)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": "首页统计卡片交互化 (01:33)",
+        "solution": "`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "Token 用量分析中心 - 全新专业页面 (01:35-01:41)",
+        "problem": "Token 用量分析中心 - 全新专业页面 (01:35-01:41)",
+        "solution": "`Dashboard.tsx`: Token用量卡片 path 改为 `/token-usage`",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
+        "problem": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
+        "solution": "多行 import 插入问题已修复 (Dashboard.tsx, TokenUsage.tsx)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
+        "problem": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
+        "solution": "多行 import 插入问题已修复 (Dashboard.tsx, TokenUsage.tsx)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-20",
+        "title": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
+        "problem": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
+        "solution": "多行 import 插入问题已修复 (Dashboard.tsx, TokenUsage.tsx)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "Desktop EXE 打包标准化总结 (14:21-14:35)",
+        "problem": "Desktop EXE 打包标准化总结 (14:21-14:35)",
+        "solution": "13 个已解决问题的完整清单（现象/原因/修复/教训）",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "Desktop EXE 打包标准化总结 (14:21-14:35)",
+        "problem": "Desktop EXE 打包标准化总结 (14:21-14:35)",
+        "solution": "13 个已解决问题的完整清单（现象/原因/修复/教训）",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "🟢 问题 18: build.bat 中文编码乱码 (14:48-14:54)",
+        "problem": "🟢 问题 18: build.bat 中文编码乱码 (14:48-14:54)",
+        "solution": "`build.bat` 全部改为英文，删除 `chcp 65001`",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-20",
+        "title": "版本控制与升级系统 (20:07-20:14)",
+        "problem": "版本控制与升级系统 (20:07-20:14)",
+        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "版本控制与升级系统 (20:07-20:14)",
+        "problem": "版本控制与升级系统 (20:07-20:14)",
+        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-20",
+        "title": "版本控制与升级系统 (20:07-20:14)",
+        "problem": "版本控制与升级系统 (20:07-20:14)",
+        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "版本控制与升级系统 (20:07-20:14)",
+        "problem": "版本控制与升级系统 (20:07-20:14)",
+        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "status": "resolved",
+        "_tagModuleIds": []
+      }
+    ],
+    "2026-06-21.md": [
+      {
+        "moduleId": "f4",
+        "date": "2026-06-21",
+        "title": "重新打包 - 2026-06-21 02:29",
+        "problem": "重新打包 - 2026-06-21 02:29",
+        "solution": "asar 验证：double .json() 修复已确认编码到产物中 ✅",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-21",
+        "title": "重新打包 - 2026-06-21 02:29",
+        "problem": "重新打包 - 2026-06-21 02:29",
+        "solution": "asar 验证：double .json() 修复已确认编码到产物中 ✅",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-21",
+        "title": "快速重新打包 - 2026-06-21 02:42",
+        "problem": "快速重新打包 - 2026-06-21 02:42",
+        "solution": "包含 Chat.tsx 全部 3 项修复",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "build.bat pause导致父脚本提前终止 - 2026-06-21 03:35",
+        "problem": "build.bat pause导致父脚本提前终止 - 2026-06-21 03:35",
+        "solution": "修复：改用 CMD 内置的 `if errorlevel 1` 语法，完全不依赖变量展开",
+        "status": "resolved",
+        "_tagModuleIds": []
+      }
+    ],
+    "2026-06-22.md": [
+      {
+        "moduleId": "f1",
+        "date": "2026-06-22",
+        "title": "自动化任务失败诊断",
+        "problem": "自动化任务失败诊断",
+        "solution": "解决：在「设置 → 模型提供商」中配置 DeepSeek API Key",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-22",
+        "title": "工具系统优化：自动分组 + 启用/禁用持久化",
+        "problem": "工具系统优化：自动分组 + 启用/禁用持久化",
+        "solution": "修复：`tsup.config.ts` 关闭 treeshake（外部调用的类方法被移除）；清理 src/ 下 64 个过时 .js/.d.ts 文件",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-22",
+        "title": "DTS 类型错误永久修复",
+        "problem": "DTS 类型错误永久修复",
+        "solution": "`WeChatAdapter.ts:232`: `timestamp` 从 `number`（`parseInt * 1000`）改为 `string`（`new Date(...).toISOString()`）",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-22",
+        "title": "DTS 类型错误永久修复",
+        "problem": "DTS 类型错误永久修复",
+        "solution": "`WeChatAdapter.ts:232`: `timestamp` 从 `number`（`parseInt * 1000`）改为 `string`（`new Date(...).toISOString()`）",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-22",
+        "title": "release-publish.bat Token 自动加载修复",
+        "problem": "release-publish.bat Token 自动加载修复",
+        "solution": "将 `set /p ... <file` 改为 `for /f \"usebackq delims=\" %%t in (\"file\") do set \"VAR=%%t\"` 方式读取",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "release-publish.bat Token 自动加载修复",
+        "problem": "release-publish.bat Token 自动加载修复",
+        "solution": "将 `set /p ... <file` 改为 `for /f \"usebackq delims=\" %%t in (\"file\") do set \"VAR=%%t\"` 方式读取",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "P0 实施完成",
+        "problem": "P0 实施完成",
+        "solution": "`package.json` engines 改为 `\">=18.0.0 <24.0.0\"`",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-22",
+        "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "solution": "修复 `getBoundingClientRect` 错误：KPI 更新增加 null 安全检查",
+        "status": "resolved",
+        "_tagModuleIds": []
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-22",
+        "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "solution": "修复 `getBoundingClientRect` 错误：KPI 更新增加 null 安全检查",
+        "status": "resolved",
+        "_tagModuleIds": []
+      }
+    ],
+    "MEMORY.md": [],
+    "2026-06-23.md": []
+  },
+  "generatedAt": "2026-06-22T16:10:12.910Z"
+}

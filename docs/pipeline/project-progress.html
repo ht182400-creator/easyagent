@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyAgent · Project Progress</title>
+<style>
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: #f6f8fa;
+    color: #1f2328;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 64px;
+  }
+
+  /* ========== Header ========== */
+  /* 新版管线入口 */
+  .pipeline-banner {
+    background: linear-gradient(135deg, #7c3aed 0%, #58a6ff 100%);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 12px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.25);
+  }
+  .pipeline-banner .banner-text { font-size: 14px; font-weight: 600; }
+  .pipeline-banner a {
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background .2s;
+    white-space: nowrap;
+  }
+  .pipeline-banner a:hover { background: rgba(255,255,255,0.35); }
+
+  .header {
+    text-align: center;
+    padding: 24px 0 28px;
+  }
+  .header .repo {
+    font-size: 14px;
+    color: #656d76;
+    margin-bottom: 4px;
+  }
+  .header .repo a { color: #0969da; text-decoration: none; }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1f2328;
+    margin-bottom: 4px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: #656d76;
+  }
+  .header .meta .badge {
+    display: inline-block;
+    background: #1f883d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+  .header .meta .source {
+    display: inline-block;
+    font-size: 10px;
+    color: #656d76;
+    margin-left: 8px;
+    padding: 2px 6px;
+    background: #eaeef2;
+    border-radius: 8px;
+  }
+
+  /* ========== Mode Toggle ========== */
+  .mode-bar {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    overflow: hidden;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .mode-btn {
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    background: #fff;
+    color: #656d76;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mode-btn:first-child { border-right: 1px solid #d0d7de }
+  .mode-btn:hover { background: #f6f8fa }
+  .mode-btn.active {
+    background: #0969da;
+    color: #fff;
+  }
+  .mode-btn.active svg { stroke: #fff }
+
+  /* ========== Summary bar ========== */
+  .summary {
+    display: flex;
+    gap: 1px;
+    background: #d0d7de;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .summary .item {
+    flex: 1;
+    background: #ffffff;
+    padding: 14px 18px;
+    text-align: center;
+  }
+  .summary .number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2328;
+  }
+  .summary .label {
+    font-size: 11px;
+    color: #656d76;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .summary .done .number { color: #1a7f37 }
+  .summary .running .number { color: #9a6700 }
+  .summary .pending .number { color: #656d76 }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+  .progress-bar-wrap .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .progress-bar-wrap .pct { color: #0969da }
+  .progress-track {
+    height: 8px;
+    background: #eaeef2;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #2da44e;
+    transition: width 1s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  /* ========== Priority tag ========== */
+  .pri-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.04em;
+    line-height: 18px;
+  }
+  .pri-tag.p0 { background: #ffebe9; color: #cf222e }
+  .pri-tag.p1 { background: #fff3e0; color: #bc4c00 }
+  .pri-tag.p2 { background: #ddf4ff; color: #0550ae }
+  .pri-tag.p3 { background: #fbefff; color: #8250df }
+
+  /* ============ VIEW 1: 列表视图 ============ */
+  .view-list { display: block }
+  .view-list.hidden { display: none }
+
+  .workflow {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .job-row {
+    display: flex;
+    border-bottom: 1px solid #d0d7de;
+  }
+  .job-row:last-child { border-bottom: none }
+  .job-icon {
+    width: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .job-icon::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    width: 2px;
+    height: 50%;
+    background: #d0d7de;
+    transform: translateX(-50%);
+  }
+  .job-row.first .job-icon::after { top: 50% }
+  .job-row.last .job-icon::after { height: 50%; top: 0 }
+
+  .job-icon-inner {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1; position: relative; font-size: 0;
+  }
+  .job-icon-inner.success { background: #fff; border: 2.5px solid #2da44e }
+  .job-icon-inner.running { background: #fff8e1; border: 2.5px solid #d4a72c }
+  .job-icon-inner.pending { background: #fff; border: 2.5px solid #d0d7de }
+  .job-icon-inner.failed { background: #fff1f0; border: 2.5px solid #cf222e }
+  .job-icon-inner.success svg { width:14px; height:14px }
+  .job-icon-inner.pending svg { width:12px; height:12px }
+
+  .job-content {
+    flex: 1; min-width: 0;
+    padding: 10px 14px 10px 0;
+    display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  }
+  .job-name {
+    font-size: 13px; font-weight: 600; color: #1f2328;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .job-desc { font-size: 11px; color: #656d76; line-height: 1.4 }
+
+  .job-time {
+    width: 130px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 14px 18px;
+    font-size: 11px;
+    font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
+    color: #656d76; white-space: nowrap;
+  }
+  .job-time.success { color: #1a7f37 }
+
+  .phase-group { border-bottom: 1px solid #d0d7de }
+  .phase-group:last-child { border-bottom: none }
+  .phase-label {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 18px;
+    background: #f6f8fa;
+    font-size: 12px; font-weight: 600; color: #656d76;
+    border-bottom: 1px solid #d0d7de;
+  }
+  .phase-label .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0 }
+  .phase-label .dot.green { background: #2da44e }
+  .phase-label .dot.yellow { background: #d4a72c; animation: pulse-dot 1.5s infinite }
+  .phase-label .dot.gray { background: #d0d7de }
+
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .dep-line {
+    border-left: 2px dashed #d0d7de;
+    height: 10px; margin-left: 27px;
+  }
+
+  /* ============ VIEW 2: 卡片图 ============ */
+  .view-card { display: none }
+  .view-card.visible { display: block }
+
+  .card-graph {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    padding: 32px 28px;
+    overflow-x: auto;
+  }
+
+  .graph-pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    min-width: max-content;
+  }
+
+  /* Phase column */
+  .graph-phase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Horizontal connector between phases */
+  .graph-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    flex-shrink: 0;
+    padding: 0 8px;
+  }
+  .graph-connector .line-row {
+    width: 100%;
+    height: 2px;
+    background: #d0d7de;
+    position: relative;
+  }
+  .graph-connector .line-row::after {
+    content: '';
+    position: absolute;
+    right: -4px; top: -4px;
+    width: 0; height: 0;
+    border-left: 6px solid #d0d7de;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+  }
+  .graph-connector .line-row.dashed {
+    background: repeating-linear-gradient(90deg, #d0d7de 0, #d0d7de 6px, transparent 6px, transparent 10px);
+  }
+  .graph-connector .line-row.dashed::after {
+    border-left-color: transparent;
+  }
+
+  /* Phase header card */
+  .phase-card {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 160px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .phase-card .phase-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2328;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .phase-card .phase-meta {
+    font-size: 11px;
+    color: #656d76;
+  }
+
+  /* Task cards below phase */
+  .task-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 16px;
+    position: relative;
+  }
+  .task-cards::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    width: 2px;
+    height: 100%;
+    background: #d0d7de;
+    transform: translateX(-50%);
+  }
+
+  .task-card-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    position: relative;
+    z-index: 1;
+  }
+  .tc-connector {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    z-index: 1;
+    margin-left: -6px;
+  }
+  .tc-connector.ok {
+    background: #2da44e;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #2da44e;
+  }
+  .tc-connector.run {
+    background: #d4a72c;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #d4a72c;
+    animation: pulse-dot 1.5s infinite;
+  }
+  .tc-connector.wait {
+    background: #fff;
+    border: 2px solid #d0d7de;
+  }
+
+  .task-card {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 8px 12px;
+    min-width: 170px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .task-card:hover {
+    border-color: #8c959f;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .task-card .tc-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2328;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .task-card .tc-desc {
+    font-size: 10px;
+    color: #656d76;
+    line-height: 1.3;
+    max-width: 180px;
+  }
+  .task-card .tc-status {
+    font-size: 10px;
+    font-weight: 600;
+    margin-top: 4px;
+    font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
+  }
+  .tc-status.done { color: #1a7f37 }
+  .tc-status.run { color: #9a6700 }
+  .tc-status.wait { color: #656d76 }
+
+  /* Score section */
+  .score-section {
+    margin-top: 24px;
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 20px 24px;
+  }
+  .score-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1f2328;
+  }
+  .score-bar-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    height: 72px;
+    font-size: 12px;
+    color: #656d76;
+  }
+  .score-bar {
+    flex: 1;
+    position: relative;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .score-bar.s1 { height:42px; background:#eaeef2; border:1px solid #d0d7de; color:#656d76 }
+  .score-bar.s2 { flex:1.08; height:52px; background:#ddf4ff; border:1px solid #80ccff; color:#0969da }
+  .score-bar.s3 { flex:1.6; height:62px; background:#e6f4ea; border:1px dashed #4ac26b; color:#1a7f37 }
+  .score-bar .val {
+    position: absolute; top:-22px; left:50%;
+    transform: translateX(-50%);
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .score-bar.s1 .val { color:#656d76 }
+  .score-bar.s2 .val { color:#0969da }
+  .score-bar.s3 .val { color:#1a7f37 }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding-top: 32px; margin-top: 32px;
+    border-top: 1px solid #d0d7de;
+    font-size: 12px; color: #656d76; line-height: 1.8;
+  }
+
+  /* Reveal animation */
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeUp 0.4s ease forwards;
+  }
+  @keyframes fadeUp { to { opacity:1; transform: translateY(0) } }
+  .r1{animation-delay:0s} .r2{animation-delay:.08s} .r3{animation-delay:.16s}
+  .r4{animation-delay:.24s} .r5{animation-delay:.32s} .r6{animation-delay:.40s}
+
+  /* Loading & Error */
+  .loading-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #656d76;
+    font-size: 14px;
+  }
+  .loading-state .spinner {
+    display: inline-block;
+    width: 24px; height: 24px;
+    border: 3px solid #d0d7de;
+    border-top-color: #0969da;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg) } }
+  .error-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #cf222e;
+    font-size: 14px;
+  }
+
+  @media (max-width: 768px) {
+    .container{padding:12px 10px 40px}
+    .job-time{width:90px;padding:14px 10px}
+    .job-icon{width:44px}
+    .summary .item{padding:12px 10px}
+    .summary .number{font-size:20px}
+    .graph-pipeline{flex-direction:column;align-items:center}
+    .graph-connector{width:100%;height:32px;padding:8px 0}
+    .graph-connector .line-row{width:2px;height:100%}
+    .graph-connector .line-row::after{
+      right:-4px;top:auto;bottom:-6px;
+      border-top:6px solid #d0d7de;
+      border-left:5px solid transparent;
+      border-right:5px solid transparent;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 新版流程图管线入口 -->
+  <div class="pipeline-banner">
+    <div class="banner-text">🚀 全新动态流程图管线已上线 — 包含分支优化、流动箭头、高亮当前任务</div>
+    <a href="index.html" target="_blank">📊 打开全功能流程图 →</a>
+  </div>
+
+  <!-- Header -->
+  <div class="header reveal r1">
+    <div class="repo">
+      <a href="https://github.com/ht182400-creator/easyagent" id="header-repo">ht182400-creator/easyagent</a>
+    </div>
+    <h1>项目进度管线</h1>
+    <p class="meta" id="header-meta">
+      <span id="header-version">v0.4.0</span> ·
+      最后更新 <span id="header-time">2026-06-22</span> ·
+      <span class="badge">active</span>
+      <span class="source" id="header-source">数据源: JSON</span>
+    </p>
+  </div>
+
+  <!-- Mode Toggle -->
+  <div class="mode-bar reveal r1">
+    <button class="mode-btn active" onclick="switchMode('list')" id="btn-list">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="11" x2="13" y2="11"/></svg>
+      列表
+    </button>
+    <button class="mode-btn" onclick="switchMode('card')" id="btn-card">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="5" height="5" rx="1"/><rect x="8.5" y="2.5" width="5" height="5" rx="1"/><rect x="2.5" y="8.5" width="5" height="5" rx="1"/><rect x="8.5" y="8.5" width="5" height="5" rx="1"/></svg>
+      卡片图
+    </button>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="summary reveal r1" id="summary-stats"></div>
+
+  <!-- Progress -->
+  <div class="progress-bar-wrap reveal r1">
+    <div class="row"><span>总体进度</span><span class="pct" id="progress-pct">—</span></div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW: 列表 ==================== -->
+  <div class="view-list" id="view-list">
+    <div class="workflow reveal r2" id="workflow-list"></div>
+  </div>
+
+  <!-- ==================== VIEW: 卡片图 ==================== -->
+  <div class="view-card" id="view-card">
+    <div class="card-graph reveal r2">
+      <div class="graph-pipeline" id="card-pipeline"></div>
+    </div>
+  </div>
+
+  <!-- Score Evolution -->
+  <div class="score-section reveal r5">
+    <h3>综合评分演进</h3>
+    <div class="score-bar-wrap" id="score-bars"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer reveal r6" id="footer-info"></div>
+
+</div>
+
+<script>
+// ==================== 数据加载 ====================
+let progressData = null;
+const DATA_URL = './project-progress-data.json';
+
+/** 从 JSON 文件加载数据 */
+async function loadData() {
+  // 显示加载状态
+  document.getElementById('summary-stats').innerHTML =
+    '<div class="loading-state"><div class="spinner"></div><div>正在加载项目进度数据...</div></div>';
+
+  try {
+    // 添加时间戳防止浏览器缓存
+    const url = DATA_URL + '?t=' + Date.now();
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    progressData = await resp.json();
+    renderAll();
+  } catch (err) {
+    console.error('加载进度数据失败:', err);
+    document.getElementById('summary-stats').innerHTML =
+      `<div class="error-state">⚠ 无法加载数据文件 <code>${DATA_URL}</code><br>请确保 JSON 文件存在或通过 HTTP 服务器访问此页面</div>`;
+  }
+}
+
+// ==================== 渲染引擎 ====================
+
+/** 计算统计数据 */
+function calcStats() {
+  let total = 0, done = 0, running = 0, pending = 0;
+  for (const ph of progressData.phases) {
+    for (const t of ph.tasks) {
+      total++;
+      if (t.status === 'done') done++;
+      else if (t.status === 'running') running++;
+      else pending++;
+    }
+  }
+  // 计算当前评分（基于进度比例插值）
+  const pctDone = total > 0 ? done / total : 0;
+  const lastScore = progressData.scoreHistory.length > 0
+    ? progressData.scoreHistory[progressData.scoreHistory.length - 1].value
+    : 80;
+  const firstScore = progressData.scoreHistory.length > 0
+    ? progressData.scoreHistory[0].value
+    : 68;
+  const currentScore = Math.round(firstScore + (lastScore - firstScore) * pctDone);
+  return { total, done, running, pending, pctDone, currentScore };
+}
+
+/** 渲染所有区域 */
+function renderAll() {
+  const stats = calcStats();
+  renderHeader(stats);
+  renderSummary(stats);
+  renderProgress(stats);
+  renderListView(stats);
+  renderCardView(stats);
+  renderScoreBars();
+  renderFooter();
+}
+
+/** 渲染页面头部 */
+function renderHeader(stats) {
+  document.getElementById('header-repo').textContent = progressData.meta.repo || 'ht182400-creator/easyagent';
+  document.getElementById('header-version').textContent =
+    `v${progressData.meta.version}` + (progressData.meta.codename ? ` · ${progressData.meta.codename}` : '');
+  document.getElementById('header-time').textContent =
+    (progressData.meta.lastUpdated || '').slice(0, 16).replace('T', ' ');
+  document.getElementById('header-source').textContent =
+    '数据源: ' + (progressData.meta.engine || 'JSON');
+}
+
+/** 渲染统计面板 */
+function renderSummary(stats) {
+  document.getElementById('summary-stats').innerHTML = `
+    <div class="item done"><div class="number">${stats.done}</div><div class="label">✅ 已完成</div></div>
+    <div class="item running"><div class="number">${stats.running}</div><div class="label">⌛ 进行中</div></div>
+    <div class="item pending"><div class="number">${stats.pending}</div><div class="label">⏸ 待开始</div></div>
+    <div class="item"><div class="number">${stats.total}</div><div class="label">总计</div></div>
+    <div class="item"><div class="number">${stats.currentScore}</div><div class="label">预估评分</div></div>
+  `;
+}
+
+/** 渲染进度条 */
+function renderProgress(stats) {
+  const pct = Math.round(stats.pctDone * 100);
+  document.getElementById('progress-pct').textContent =
+    `${stats.done} / ${stats.total} · ${pct}%`;
+  // 延迟触发动画
+  setTimeout(() => {
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }, 200);
+}
+
+// ==================== 列表视图 ====================
+function renderListView(stats) {
+  let html = '';
+  for (let pi = 0; pi < progressData.phases.length; pi++) {
+    const ph = progressData.phases[pi];
+    const phaseDone = ph.tasks.filter(t => t.status === 'done').length;
+    const phaseTotal = ph.tasks.length;
+    const dotClass = ph.status === 'done' ? 'green' : ph.status === 'running' ? 'yellow' : 'gray';
+    const statusText = ph.status === 'done' ? '完成'
+      : ph.status === 'running' ? '进行中' : '等待';
+
+    html += `<div class="phase-group">`;
+    html += `<div class="phase-label">
+      <span class="dot ${dotClass}"></span>${ph.id} · ${ph.name}
+      <span style="margin-left:auto">${phaseDone}/${phaseTotal} 完成 · ${statusText}</span>
+    </div>`;
+
+    for (let ti = 0; ti < ph.tasks.length; ti++) {
+      const t = ph.tasks[ti];
+      const rowClass = ti === 0 ? 'first' : ti === ph.tasks.length - 1 ? 'last' : '';
+      const borderStyle = ti === ph.tasks.length - 1 ? 'border-bottom:none' : '';
+      const iconClass = t.status === 'done' ? 'success' : t.status === 'running' ? 'running' : 'pending';
+      const timeClass = t.status === 'done' ? 'success' : '';
+      const timeText = t.status === 'done' ? `success · ${t.time || '-'}` : '—';
+
+      html += `<div class="job-row ${rowClass}" style="${borderStyle}">
+        <div class="job-icon">
+          <div class="job-icon-inner ${iconClass}">`;
+
+      if (t.status === 'done') {
+        html += `<svg viewBox="0 0 16 16" fill="none"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" fill="#2da44e"/></svg>`;
+      } else if (t.status === 'running') {
+        html += `<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="#d4a72c" stroke-width="2" fill="none" stroke-dasharray="31.4" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="2s" repeatCount="indefinite"/></circle></svg>`;
+      } else {
+        html += `<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#d0d7de" stroke-width="1.5" fill="none"/></svg>`;
+      }
+
+      html += `</div></div>
+        <div class="job-content">
+          <div class="job-name"><span class="pri-tag ${ph.priority}">${ph.id}</span> ${t.name}</div>
+          <div class="job-desc">${t.desc}</div>
+        </div>
+        <div class="job-time ${timeClass}">${timeText}</div>
+      </div>`;
+
+      // 任务间依赖线（P1 内部）
+      if (ti < ph.tasks.length - 1 && ph.tasks[ti].status === 'done' && ph.tasks[ti + 1].status === 'pending')
+        html += `<div class="dep-line"></div>`;
+      else if (ti < ph.tasks.length - 1)
+        html += ``;
+    }
+    html += `</div>`;
+  }
+  document.getElementById('workflow-list').innerHTML = html;
+}
+
+// ==================== 卡片视图 ====================
+function renderCardView(stats) {
+  let html = '';
+  for (let pi = 0; pi < progressData.phases.length; pi++) {
+    const ph = progressData.phases[pi];
+    const phaseDone = ph.tasks.filter(t => t.status === 'done').length;
+    const phaseTotal = ph.tasks.length;
+    const dotColor = ph.status === 'done' ? '#2da44e' : ph.status === 'running' ? '#d4a72c' : '#d0d7de';
+    const dotAnim = ph.status === 'running' ? 'animation:pulse-dot 1.5s infinite' : '';
+    const statusText = ph.status === 'done' ? `${phaseDone}/${phaseTotal} 完成`
+      : ph.status === 'running' ? `${phaseDone}/${phaseTotal} 完成 · 进行中`
+      : `${phaseDone}/${phaseTotal} 完成 · 等待`;
+
+    html += `<div class="graph-phase">
+      <div class="phase-card">
+        <div class="phase-name">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${dotColor};${dotAnim}"></span>
+          ${ph.id} · ${ph.name}
+        </div>
+        <div class="phase-meta">${statusText}</div>
+      </div>
+      <div class="task-cards">`;
+
+    for (const t of ph.tasks) {
+      const connClass = t.status === 'done' ? 'ok' : t.status === 'running' ? 'run' : 'wait';
+      const statusClass = t.status === 'done' ? 'done' : t.status === 'running' ? 'run' : 'wait';
+      const statusLabel = t.status === 'done' ? '✓ success'
+        : t.status === 'running' ? '⌛ running' : '⏸ pending';
+      const statusSymbol = t.status === 'done' ? '✓' : t.status === 'running' ? '⌛' : '⏸';
+
+      html += `<div class="task-card-wrap">
+        <div class="tc-connector ${connClass}"></div>
+        <div class="task-card">
+          <div class="tc-name"><span class="pri-tag ${ph.priority}">${ph.id}</span> ${t.name}</div>
+          <div class="tc-desc">${t.desc}</div>
+          <div class="tc-status ${statusClass}">${statusLabel}</div>
+        </div>
+      </div>`;
+    }
+
+    html += `</div></div>`;
+
+    // 阶段间连接器
+    if (pi < progressData.phases.length - 1) {
+      const nextPh = progressData.phases[pi + 1];
+      const curDone = ph.status === 'done';
+      const lineClass = curDone ? '' : ' dashed';
+      html += `<div class="graph-connector"><div class="line-row${lineClass}"></div></div>`;
+    }
+  }
+  document.getElementById('card-pipeline').innerHTML = html;
+}
+
+// ==================== 评分柱 ====================
+function renderScoreBars() {
+  const bars = progressData.scoreHistory || [];
+  let html = '';
+  const classes = ['s1', 's2', 's3'];
+  for (let i = 0; i < bars.length; i++) {
+    const b = bars[i];
+    html += `<div class="score-bar ${classes[i] || 's1'}">
+      <span class="val">${b.value}</span>${b.label}
+    </div>`;
+  }
+  document.getElementById('score-bars').innerHTML = html;
+}
+
+/** 渲染页脚 */
+function renderFooter() {
+  const m = progressData.meta;
+  document.getElementById('footer-info').innerHTML =
+    `EasyAgent v${m.version}${m.codename ? ' · ' + m.codename : ''} · MIT License · ${m.modelsSupported} 模型适配 · ${m.totalTests} 测试用例<br>
+    数据来源: ${m.engine || 'auto'} · 生成于 ${m.lastUpdated || ''}`;
+}
+
+// ==================== 模式切换 ====================
+function switchMode(mode) {
+  const listView = document.getElementById('view-list');
+  const cardView = document.getElementById('view-card');
+  const btnList = document.getElementById('btn-list');
+  const btnCard = document.getElementById('btn-card');
+
+  if (mode === 'list') {
+    listView.classList.remove('hidden');
+    cardView.classList.remove('visible');
+    btnList.classList.add('active');
+    btnCard.classList.remove('active');
+  } else {
+    listView.classList.add('hidden');
+    cardView.classList.add('visible');
+    btnCard.classList.add('active');
+    btnList.classList.remove('active');
+  }
+}
+
+// ==================== 启动 ====================
+loadData();
+</script>
+
+</body>
+</html>
