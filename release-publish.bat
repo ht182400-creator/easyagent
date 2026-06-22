@@ -314,8 +314,8 @@ if %errorlevel% neq 0 (
     goto :UPLOAD_MANUAL
 )
 
-rem Get version for tag
-for /f "tokens=2 delims=:," %%a in ('type version.json ^| findstr "version"') do set TAG_VERSION=v%%~a
+rem Get version for tag (use node for reliable JSON parsing)
+for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set TAG_VERSION=v%%a
 
 rem Check if tag exists
 git rev-parse "!TAG_VERSION!" >nul 2>&1
@@ -367,8 +367,8 @@ if "!GITHUB_TOKEN!"=="" (
     goto :UPLOAD_MANUAL
 )
 
-rem Get version
-for /f "tokens=2 delims=:," %%a in ('type version.json ^| findstr "version"') do set TAG_VERSION=v%%~a
+rem Get version (use node for reliable JSON parsing)
+for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set TAG_VERSION=v%%a
 echo   Target version: !TAG_VERSION!
 
 rem Step 1: Create Release
@@ -446,12 +446,12 @@ rem --- Method 3: Manual upload ---
 echo.
 echo   --- Manual Upload Guide ---
 echo.
-rem Get version
-for /f "tokens=2 delims=:," %%a in ('type version.json ^| findstr "version"') do set TAG_VERSION=v%%~a
+rem Get version (use node for reliable JSON parsing)
+for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set TAG_VERSION=v%%a
 echo   (1) Open browser to:
 echo       https://github.com/ht182400-creator/easyagent/releases/new?tag=!TAG_VERSION!
 echo.
-echo   (2) Drag & drop these files:
+echo   (2) Drag ^& drop these files:
 echo       packages\desktop\release\EasyAgent-*-win-x64.exe
 echo       packages\desktop\release\EasyAgent-*-win-x64.exe.blockmap
 echo       packages\desktop\release\latest.yml
@@ -476,9 +476,9 @@ echo           Release Pipeline Complete
 echo ============================================================
 echo.
 
-rem Show version info
-for /f "tokens=2 delims=:," %%a in ('type version.json ^| findstr "version"') do set FINAL_VERSION=%%~a
-echo   Version: v!FINAL_VERSION!
+rem Show version info (use node for reliable JSON parsing)
+for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set FIN_VERSION=%%a
+echo   Version: v!FIN_VERSION!
 echo   Repository: https://github.com/ht182400-creator/easyagent
 echo   Releases: https://github.com/ht182400-creator/easyagent/releases
 
