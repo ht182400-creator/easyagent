@@ -22,5 +22,6 @@ desktop/release/
 # EasyAgent 本地数据
 .easyagent/knowledge/
 # 临时文件
-$null
-{console.log('TIMEOUT')
+.codebuddy/temp/
+# 对话历史日志（可能含敏感信息，仅本地保留）
+docs/history_*.md
