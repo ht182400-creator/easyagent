@@ -31,6 +31,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
+      # better-sqlite3 需要从源码编译，必须设置 MSVC 编译环境
+      - uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -55,6 +58,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+
+      - uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -84,6 +89,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+
+      - uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
