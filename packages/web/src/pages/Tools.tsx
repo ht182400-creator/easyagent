@@ -94,6 +94,28 @@ export default function Tools() {
       });
   }, []);
 
+  /**
+   * 切换工具的启用/禁用状态
+   */
+  const handleToggle = async (toolName: string, enabled: boolean) => {
+    setTools((prev) =>
+      prev.map((t) => (t.name === toolName ? { ...t, enabled } : t))
+    );
+    try {
+      const res = await fetch(`/api/tools/${encodeURIComponent(toolName)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      console.error('[Tools] 切换工具状态失败:', err);
+      setTools((prev) =>
+        prev.map((t) => (t.name === toolName ? { ...t, enabled: !enabled } : t))
+      );
+    }
+  };
+
   /** 计算分组统计数据 */
   const groups = useMemo(() => {
     const map: Record<string, { label: string; count: number; color: string; borderColor: string; bgClass: string; icon: React.ElementType }> = {};
@@ -296,10 +318,32 @@ export default function Tools() {
                 {/* 展开的参数详情 */}
                 {isExpanded && (
                   <div className="mt-2 animate-[fadeIn_150ms_ease-out]">
-                    <div className="flex items-center gap-4 mb-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 mb-3 text-xs text-gray-500 flex-wrap">
                       <span>分组: <span className="text-gray-400">{meta?.label || tool.group}</span></span>
                       <span>内置: <span className="text-gray-400">{tool.builtin ? '是' : '否'}</span></span>
-                      <span>状态: <span className={tool.enabled ? 'text-green-400' : 'text-gray-500'}>{tool.enabled ? '已启用' : '已禁用'}</span></span>
+                      {/* 启用/禁用开关 */}
+                      <span className="flex items-center gap-2">
+                        <span>状态:</span>
+                        <button
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${
+                            tool.enabled ? 'bg-emerald-500' : 'bg-gray-600'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggle(tool.name, !tool.enabled);
+                          }}
+                          title={tool.enabled ? '点击禁用' : '点击启用'}
+                        >
+                          <span
+                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                              tool.enabled ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                            }`}
+                          />
+                        </button>
+                        <span className={tool.enabled ? 'text-green-400' : 'text-gray-500'}>
+                          {tool.enabled ? '已启用' : '已禁用'}
+                        </span>
+                      </span>
                     </div>
                     {renderParams(tool)}
                   </div>

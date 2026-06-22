@@ -137,6 +137,12 @@ export async function createApp(options: CreateAppOptions = {}) {
   // 初始化工具注册表
   const toolRegistry = new ToolRegistry();
   toolRegistry.registerAll(getAllBuiltinTools());
+  // 从持久化配置加载已禁用的工具列表
+  const disabledToolNames = configManager.getDisabledToolNames();
+  if (disabledToolNames.length > 0) {
+    toolRegistry.setDisabledNames(disabledToolNames);
+    logger.info({ count: disabledToolNames.length }, '已加载禁用的工具列表');
+  }
 
   // 初始化插件管理器 (关联 ToolRegistry)
   const pluginManager = getPluginManager({
@@ -1398,57 +1404,35 @@ export async function createApp(options: CreateAppOptions = {}) {
     res.json({ success: true, skill: { ...skills[index], source: 'custom', activated: pluginManager.isSkillActive(name) } });
   });
 
-  /** 获取工具列表（带分组信息） */
+  /** 获取工具列表（分组信息由工具自身定义，启用状态来自持久化配置） */
   app.get('/api/tools', (_req, res) => {
-    // 工具名到分组的映射（与 core/src/tools/index.ts 中 getAllBuiltinTools() 注册的 name 一致）
-    const nameToGroup: Record<string, string> = {
-      // FileTools
-      read_file: 'file', write_file: 'file', edit_file: 'file', delete_file: 'file', list_dir: 'file',
-      // FileExtraTools
-      file_info: 'file', create_dir: 'file', move_file: 'file', batch_edit: 'file',
-      // SearchTools (name: grep, glob, web_search, web_fetch)
-      grep: 'search', glob: 'search', web_search: 'search', web_fetch: 'search',
-      // ExecTools (name: exec, git_status, git_diff, git_log, git_branch, git_blame, git_commit)
-      exec: 'exec', git_status: 'exec', git_diff: 'exec', git_log: 'exec',
-      git_branch: 'exec', git_blame: 'exec', git_commit: 'exec',
-      // GitAdvancedTools
-      git_auto_commit: 'exec', git_repo_map: 'exec', git_stash: 'exec', git_tag: 'exec',
-      git_cherry_pick: 'exec', git_reflog: 'exec',
-      // CodeTools
-      code_stats: 'code', run_tests: 'code', find_imports: 'code', find_definitions: 'code',
-      // QualityTools
-      lint_code: 'quality', format_code: 'quality', read_lints: 'quality', type_check: 'quality',
-      // ProjectTools
-      read_config: 'project', package_run: 'project', env_info: 'project', project_overview: 'project',
-      // MemoryTools
-      remember: 'memory', recall: 'memory', forget: 'memory',
-      // PreviewTools
-      start_server: 'preview', preview_url: 'preview', diff_files: 'preview', ask_user: 'preview',
-      // MediaTools
-      read_image: 'media', generate_image: 'media', screenshot: 'media',
-      // DatabaseTools
-      query_db: 'database', db_schema: 'database',
-      // KnowledgeTools
-      knowledge_add: 'knowledge', knowledge_search: 'knowledge', knowledge_get: 'knowledge',
-      knowledge_list: 'knowledge', knowledge_remove: 'knowledge',
-      // SubAgentTools
-      delegate_task: 'subagent', list_subagents: 'subagent', install_runtime: 'subagent',
-      // SemanticTools
-      code_semantic_map: 'code', code_symbol_search: 'code', code_find_references: 'code',
-      code_overview: 'code', code_file_structure: 'code',
-      // SandboxTools
-      sandbox_exec: 'exec', sandbox_status: 'exec', sandbox_cleanup: 'exec',
-      // BenchmarkTools
-      benchmark_load: 'project', benchmark_run: 'project', benchmark_report: 'project', benchmark_scan: 'project',
-    };
     const tools = toolRegistry.list().map((t) => ({
       ...t,
-      group: nameToGroup[t.name] || 'exec',
+      // group 由 getAllBuiltinTools() 自动标注，无需手动映射
+      group: t.group || 'other',
       requiresConfirm: t.name === 'delete_file' || t.name === 'exec',
       builtin: true,
-      enabled: true,
+      // enabled 来自 ToolRegistry 的真实运行时状态
+      enabled: t.enabled,
     }));
     res.json(tools);
+  });
+
+  /** 切换工具的启用/禁用状态 */
+  app.post('/api/tools/:name', (req, res) => {
+    const { name } = req.params;
+    const { enabled } = req.body;
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({ error: '缺少 enabled 参数 (true/false)' });
+    }
+    const ok = toolRegistry.setEnabled(name, enabled);
+    if (!ok) {
+      return res.status(404).json({ error: `工具 "${name}" 不存在` });
+    }
+    // 持久化禁用列表
+    configManager.saveDisabledToolNames(toolRegistry.getDisabledNames());
+    logger.info({ tool: name, enabled }, '工具状态已切换');
+    res.json({ success: true, name, enabled });
   });
 
   // ========== IM 适配器管理 API ==========
@@ -2490,7 +2474,7 @@ if (isMainModule) {
     server.listen(PORT, HOST, () => {
       console.log([
         '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.3.3           ║',
+        '║        EasyAgent Server v0.4.0           ║',
         `║  HTTP:      http://localhost:${PORT}        ║`,
         `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
         '╚══════════════════════════════════════════╝',

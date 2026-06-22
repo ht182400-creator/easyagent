@@ -7,6 +7,25 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.4.0] - 2026-06-22
+
+### Added
+- **工具系统自动分组**: `ITool` 接口新增 `group?: string` 字段，`getAllBuiltinTools()` 自动标注分组，替代 43 行硬编码分组表
+- **工具启用/禁用持久化**: 新增 `POST /api/tools/:name` toggle 端点，`ToolRegistry` 新增 `disabledSet` + `setEnabled`/`isEnabled` 管理方法
+- **工具开关 UI**: Desktop 和 Web 版 Tools 页面均添加滑动开关，支持乐观更新 + 失败回滚
+- **`ConfigManager` 工具禁用列表**: `getDisabledToolNames`/`saveDisabledToolNames`，保存到 `tool_settings.json`
+
+### Changed
+- Desktop `projectRoot` 改为 `homedir()`，解决 asar 只读归档路径限制
+- `createApp()` 支持外部传入 `projectRoot` 参数
+- Desktop 打包压缩级别设为 `maximum`
+
+### Fixed
+- 修复 `tsup.config.ts` treeshake 导致外部调用方法被移除的问题
+- 修复 `KnowledgeService.ts` 类型错误
+- 修复 `release.mjs` 参数解析 bug（`process.argv.find` 误匹配 node 路径）
+- 清理 src/ 下 64 个过时 `.js`/`.d.ts`/`.js.map` 文件
+
 ## [0.3.3] - 2026-06-21
 
 ### Fixed

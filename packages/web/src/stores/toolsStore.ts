@@ -101,12 +101,30 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
     }
   },
 
-  toggleTool: (toolName, enabled) =>
+  toggleTool: async (toolName, enabled) => {
+    // 先乐观更新 UI（即时响应）
     set((s) => ({
       tools: s.tools.map((t) =>
         t.name === toolName ? { ...t, enabled } : t
       ),
-    })),
+    }));
+    // 调用后端 API 持久化状态
+    try {
+      await apiFetch(`/api/tools/${encodeURIComponent(toolName)}`, {
+        method: 'POST',
+        body: JSON.stringify({ enabled }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      console.error(`[toolsStore] 切换工具状态失败:`, err);
+      // 回滚 UI 状态
+      set((s) => ({
+        tools: s.tools.map((t) =>
+          t.name === toolName ? { ...t, enabled: !enabled } : t
+        ),
+      }));
+    }
+  },
 
   addExecutionLog: (log) => {
     const newLog: ToolExecutionLog = {

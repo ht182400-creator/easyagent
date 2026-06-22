@@ -83,16 +83,46 @@ export class ConfigManager {
   private config: AppConfig;
   private configPath: string;
   private providersPath: string;
+  private toolSettingsPath: string;
 
   constructor(configDir?: string) {
     const dir = configDir || CONFIG_DIR;
     this.configPath = join(dir, 'config.json');
     this.providersPath = join(dir, 'providers.json');
+    this.toolSettingsPath = join(dir, 'tool_settings.json');
     this.config = DEFAULT_CONFIG;
 
     // 确保配置目录存在
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
+    }
+  }
+
+  /**
+   * 获取已禁用的工具名称列表
+   */
+  getDisabledToolNames(): string[] {
+    try {
+      if (existsSync(this.toolSettingsPath)) {
+        const raw = readFileSync(this.toolSettingsPath, 'utf-8');
+        const settings = JSON.parse(raw);
+        return Array.isArray(settings.disabledTools) ? settings.disabledTools : [];
+      }
+    } catch {
+      logger.warn('工具设置文件读取失败，使用默认值');
+    }
+    return [];
+  }
+
+  /**
+   * 保存已禁用的工具名称列表
+   */
+  saveDisabledToolNames(names: string[]): void {
+    try {
+      writeFileSync(this.toolSettingsPath, JSON.stringify({ disabledTools: names }, null, 2), 'utf-8');
+      logger.info({ count: names.length }, '工具禁用列表已保存');
+    } catch (error) {
+      logger.error({ error }, '工具设置保存失败');
     }
   }
 

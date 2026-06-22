@@ -311,7 +311,7 @@ export class KnowledgeService {
       index = index.filter((d) => d.category === params.category);
     }
     if (params?.tag) {
-      index = index.filter((d) => d.tags.includes(params.tag));
+      index = index.filter((d) => d.tags.includes(params.tag!));
     }
 
     return index.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));

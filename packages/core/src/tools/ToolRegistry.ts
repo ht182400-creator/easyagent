@@ -15,6 +15,8 @@ export interface ITool {
   readonly parameters: ToolDefinition['parameters'];
   /** 是否需要用户确认 */
   readonly requiresConfirm: boolean;
+  /** 工具分组(如 file/search/exec/code 等) */
+  readonly group?: string;
 
   /** 执行工具 */
   execute(params: Record<string, unknown>, context: ToolContext): Promise<ToolResult>;
@@ -28,6 +30,8 @@ export interface ITool {
  */
 export class ToolRegistry {
   private tools: Map<string, ITool> = new Map();
+  /** 被禁用的工具名称集合 */
+  private disabledSet: Set<string> = new Set();
 
   /**
    * 注册工具
@@ -38,6 +42,41 @@ export class ToolRegistry {
     }
     this.tools.set(tool.name, tool);
     logger.info({ tool: tool.name }, '工具已注册');
+  }
+
+  /**
+   * 设置工具的启用/禁用状态
+   */
+  setEnabled(name: string, enabled: boolean): boolean {
+    if (!this.tools.has(name)) return false;
+    if (enabled) {
+      this.disabledSet.delete(name);
+    } else {
+      this.disabledSet.add(name);
+    }
+    logger.info({ tool: name, enabled }, '工具状态已更新');
+    return true;
+  }
+
+  /**
+   * 检查工具是否已启用
+   */
+  isEnabled(name: string): boolean {
+    return this.tools.has(name) && !this.disabledSet.has(name);
+  }
+
+  /**
+   * 获取所有被禁用的工具名称列表
+   */
+  getDisabledNames(): string[] {
+    return Array.from(this.disabledSet);
+  }
+
+  /**
+   * 批量设置禁用工具列表（从持久化配置加载）
+   */
+  setDisabledNames(names: string[]): void {
+    this.disabledSet = new Set(names.filter(n => this.tools.has(n)));
   }
 
   /**
@@ -115,10 +154,12 @@ export class ToolRegistry {
 
   /**
    * 获取所有工具定义(JSON Schema格式，用于LLM)
+   * 自动过滤被禁用的工具
    */
   getDefinitions(): ToolDefinition[] {
     const defs: ToolDefinition[] = [];
     for (const tool of this.tools.values()) {
+      if (this.disabledSet.has(tool.name)) continue;
       defs.push({
         name: tool.name,
         description: tool.description,
@@ -153,13 +194,15 @@ ${params}
   }
 
   /**
-   * 获取工具列表（含参数信息，供前端展示）
+   * 获取工具列表（含参数、分组、启用状态，供前端展示）
    */
-  list(): Array<{ name: string; description: string; parameters: ToolDefinition['parameters'] }> {
+  list(): Array<{ name: string; description: string; parameters: ToolDefinition['parameters']; group?: string; enabled: boolean }> {
     return Array.from(this.tools.values()).map(t => ({
       name: t.name,
       description: t.description,
       parameters: t.parameters,
+      group: t.group,
+      enabled: !this.disabledSet.has(t.name),
     }));
   }
 }

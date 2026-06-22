@@ -59,8 +59,8 @@ function bumpVersion(current, type) {
 function getTargetVersion() {
   const arg = process.argv[2];
 
-  // 跳过程序名和 --dry-run
-  const targetArg = process.argv.find(a => !a.startsWith('--') && a !== process.argv[1]?.split(/[\\/]/).pop());
+  // 跳过 node 路径和脚本名，取第一个非 -- 参数
+  const targetArg = process.argv.slice(2).find(a => !a.startsWith('--'));
   
   if (targetArg === 'patch' || targetArg === 'minor' || targetArg === 'major') {
     const currentVersion = JSON.parse(readFileSync(join(root, 'version.json'), 'utf-8')).version;
