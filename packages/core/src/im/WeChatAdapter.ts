@@ -229,7 +229,7 @@ export class WeChatAdapter extends BaseIMAdapter {
         messageId: msg.msgId || `wechat_${Date.now()}`,
         senderId: msg.fromUserName || '',
         senderName: '',
-        timestamp: msg.createTime ? parseInt(msg.createTime, 10) * 1000 : Date.now(),
+        timestamp: msg.createTime ? new Date(parseInt(msg.createTime, 10) * 1000).toISOString() : new Date().toISOString(),
       };
 
       await this.handleIncomingMessage(imMsg);

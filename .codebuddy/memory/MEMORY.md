@@ -2,7 +2,7 @@
 
 ## 项目概述
 - **项目**: EasyAgent - 集成中国主流大模型的开源 AI 编程助手
-- **版本**: v5.3 (806 tests 全通过)
+- **版本**: v0.4.0 (806 tests 全通过 + SWE-bench 评测框架)
 - **仓库**: https://github.com/ht182400-creator/easyagent (SSH 推送)
 - **技术栈**: TypeScript 5.x + React 18 + Vite 5 + Tailwind CSS 3 + Zustand 4 + Express + WebSocket + Electron 30 + SQLite(better-sqlite3) + Vitest + tsup
 - **对比参考**: D:\Work_Area\AI\cc-haha
@@ -37,9 +37,10 @@
 - API Key 加密存储在 `~/.easyagent/providers.json`
 
 ### 版本号管理
-- **唯一版本源**: `version.json` (v0.3.0)，修改后运行 `node scripts/sync-version.mjs` 同步
+- **唯一版本源**: `version.json` (v0.4.0)，修改后运行 `node scripts/sync-version.mjs` 同步
 - **禁止硬编码**: UI 组件通过 `/api/version` API 获取版本号，严禁写死
 - **发布**: `node scripts/release.mjs patch|minor|major` 版本标记；`release-publish.bat` 全流程交互发布
+- **CI/CD**: `.github/workflows/ci.yml` (日常测试) + `release.yml` (Tag 推送自动构建+发布)
 - verify-build.cjs 第 6 项自动拦截旧版本号硬编码
 - 模型列表通过 `/v1/models` API 动态获取，ProviderPresets 仅兜底
 - 命令白名单从 `EASYAGENT_ALLOWED_COMMANDS` 环境变量加载
@@ -114,7 +115,7 @@ build.bat --verify     # 仅预检查，不构建
 
 **流程**: 清理进程 → verify-build.cjs 预检查(10大类20+项) → core/server/desktop tsup → vite build → electron-builder → 输出验证
 
-**输出**: `release/EasyAgent-0.3.0-win-x64.exe` 或 `release/win-unpacked/EasyAgent.exe`
+**输出**: `release/EasyAgent-0.4.0-win-x64.exe` 或 `release/win-unpacked/EasyAgent.exe`
 
 ## Server + Web 启动
 
@@ -131,9 +132,26 @@ cd packages/server && npx vitest run   # 41 tests
 cd packages/desktop && npx vitest run  # 127 tests
 ```
 
+## SWE-bench 评测基准 (P0-2 已完成)
+
+```bash
+pnpm benchmark:dry                     # 环境检查 (无需 API Key)
+pnpm benchmark --provider deepseek --model deepseek-v4  # 实际评测
+```
+
+- 数据集: `packages/core/src/benchmark/benchmark-tasks.json` (10题, easy/medium/hard)
+- 运行器: `BenchmarkRunner.ts` + `SWEBenchEngine.ts`
+- CLI: `scripts/swe-bench/run-benchmark.mjs`
+
+## Node.js 版本限制 (P0-1 已完成)
+
+- engines: `>=18.0.0 <24.0.0` (better-sqlite3 无 Node 24 预编译)
+- preinstall: `scripts/preinstall.cjs` 自动拦截
+- 跳过: `set EASYAGENT_SKIP_NODE_CHECK=1` (Windows) / `export` (Unix)
+
 ## 关键文件索引
 
-- 版本源: `version.json` (0.3.0 "Gemini")
+- 版本源: `version.json` (0.4.0 "Gemini")
 - 版本同步: `scripts/sync-version.mjs`
 - 发布脚本: `scripts/release.mjs`
 - 一键发布: `release-publish.bat`（交互式，集成版本标记+构建+上传全流程）

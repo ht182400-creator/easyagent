@@ -1,0 +1,138 @@
+# EasyAgent Desktop 自动构建与发布
+# 触发条件: 推送版本 tag (v*) 或手动触发
+#
+# 参考: docs/06_版本发布与CI-CD流程指南.md §3
+# P1-2: docs/09_EasyAgent项目Review与优化建议报告.md
+
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (如 0.4.1)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ===== Job 1: 测试 =====
+  test:
+    name: Run Tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core package
+        run: cd packages/core && npx tsup --dts
+
+      - name: Run core tests
+        run: cd packages/core && npx vitest run
+
+      - name: Run server tests
+        run: cd packages/server && npx vitest run
+
+  # ===== Job 2: 构建 Desktop EXE =====
+  build-desktop:
+    name: Build Desktop EXE
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../cli && npx tsup
+          cd ../server && npx tsup
+          cd ../desktop && npx tsup
+
+      - name: Build web frontend
+        run: cd packages/web && npm run build
+
+      - name: Build Desktop (NSIS installer)
+        run: cd packages/desktop && npx electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Verify build output
+        run: node packages/desktop/scripts/verify-build.cjs --release
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-release
+          path: |
+            packages/desktop/release/*.exe
+            packages/desktop/release/*.exe.blockmap
+            packages/desktop/release/latest.yml
+          retention-days: 5
+
+  # ===== Job 3: 创建 GitHub Release 并上传 =====
+  release:
+    name: Create GitHub Release
+    needs: build-desktop
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: desktop-release
+          path: release-artifacts
+
+      - name: Get version from tag
+        id: version
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^v', ''
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create Release and Upload
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: EasyAgent v${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release-artifacts/*.exe
+            release-artifacts/*.exe.blockmap
+            release-artifacts/latest.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

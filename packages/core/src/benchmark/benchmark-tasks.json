@@ -1,0 +1,172 @@
+[
+  {
+    "id": "easyagent_001",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_001",
+    "base_commit": "HEAD",
+    "issue_title": "文件名非法字符清洗工具函数",
+    "issue_body": "实现一个函数 sanitizeFilename(input: string): string，将输入字符串中的非法文件名字符（< > : \" / \\ | ? * 以及控制字符）替换为下划线 '_'，连续多个非法字符只替换为一个下划线，去除首尾空格和点号。例如输入 'CON: <test>.txt' 返回 'CON_test.txt'。",
+    "hint_text": "使用正则表达式 /[<>:\"/\\\\|?*\\x00-\\x1f]+/g 匹配非法字符",
+    "test_patch": "import { sanitizeFilename } from './solution';\ntest('sanitizeFilename basic', () => {\n  expect(sanitizeFilename('hello world.txt')).toBe('hello world.txt');\n  expect(sanitizeFilename('CON: <test>.txt')).toBe('CON_test.txt');\n  expect(sanitizeFilename('file?name*.ext')).toBe('file_name.ext');\n  expect(sanitizeFilename('  .hidden.  ')).toBe('hidden');\n  expect(sanitizeFilename('a<b>c:d\"e/f\\\\g|h?i*j')).toBe('a_b_c_d_e_f_g_h_i_j');\n});",
+    "fail_to_pass": [
+      "test('sanitizeFilename basic')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "easy"
+  },
+  {
+    "id": "easyagent_002",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_002",
+    "base_commit": "HEAD",
+    "issue_title": "递归目录大小计算",
+    "issue_body": "实现一个异步函数 getDirSize(dirPath: string): Promise<number>，递归计算指定目录的总大小（字节）。需要正确处理符号链接（跳过不计算），忽略无法访问的文件（不因权限问题而崩溃），对目录本身的大小不计入。如果路径不存在，返回 -1。",
+    "hint_text": "使用 fs.promises.stat 和 fs.promises.readdir，注意 stat.isDirectory() 和 stat.isSymbolicLink() 判断",
+    "test_patch": "import { getDirSize } from './solution';\nimport * as fs from 'fs/promises';\nimport * as path from 'path';\nimport * as os from 'os';\n\ntest('getDirSize non-exist', async () => {\n  expect(await getDirSize('/non/existent/path')).toBe(-1);\n});\n\ntest('getDirSize empty dir', async () => {\n  const dir = path.join(os.tmpdir(), 'easysize_test_' + Date.now());\n  await fs.mkdir(dir);\n  try {\n    expect(await getDirSize(dir)).toBe(0);\n  } finally {\n    await fs.rm(dir, { recursive: true, force: true });\n  }\n});\n\ntest('getDirSize with files', async () => {\n  const dir = path.join(os.tmpdir(), 'easysize_test2_' + Date.now());\n  await fs.mkdir(dir);\n  try {\n    await fs.writeFile(path.join(dir, 'a.txt'), 'hello');\n    await fs.writeFile(path.join(dir, 'b.txt'), 'world!');\n    const size = await getDirSize(dir);\n    expect(size).toBe(5 + 6);\n  } finally {\n    await fs.rm(dir, { recursive: true, force: true });\n  }\n});",
+    "fail_to_pass": [
+      "test('getDirSize basic')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "easy"
+  },
+  {
+    "id": "easyagent_003",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_003",
+    "base_commit": "HEAD",
+    "issue_title": "LRU 缓存实现",
+    "issue_body": "实现一个泛型类 LRUCache<K, V>，支持以下操作：\n- constructor(capacity: number): 初始化，capacity 必须为正整数\n- get(key: K): V | undefined: 获取值，命中时将其移到最近使用位置\n- put(key: K, value: V): void: 设置值，若超出 capacity 则淘汰最久未使用的项\n- size: number: 当前缓存项数量\n- keys(): K[]: 返回所有 key（按最近使用顺序，最近的在末尾）\n\n要求：所有操作时间复杂度 O(1)，使用双向链表 + Map 实现。",
+    "hint_text": "使用双向链表节点 { key, value, prev, next } + Map<K, Node> 实现 O(1) 操作",
+    "test_patch": "import { LRUCache } from './solution';\n\ntest('LRUCache basic', () => {\n  const cache = new LRUCache<string, number>(2);\n  cache.put('a', 1);\n  cache.put('b', 2);\n  expect(cache.get('a')).toBe(1);\n  cache.put('c', 3); // 淘汰 'b'\n  expect(cache.get('b')).toBeUndefined();\n  expect(cache.get('a')).toBe(1);\n  expect(cache.get('c')).toBe(3);\n});\n\ntest('LRUCache update', () => {\n  const cache = new LRUCache<number, string>(2);\n  cache.put(1, 'one');\n  cache.put(1, 'ONE'); // 更新\n  expect(cache.get(1)).toBe('ONE');\n  expect(cache.size).toBe(1);\n});\n\ntest('LRUCache keys order', () => {\n  const cache = new LRUCache<string, number>(3);\n  cache.put('a', 1);\n  cache.put('b', 2);\n  cache.put('c', 3);\n  cache.get('a'); // 移到末尾\n  expect(cache.keys()).toEqual(['b', 'c', 'a']);\n});\n\ntest('LRUCache capacity 1', () => {\n  const cache = new LRUCache<number, number>(1);\n  cache.put(1, 10);\n  cache.put(2, 20);\n  expect(cache.get(1)).toBeUndefined();\n  expect(cache.get(2)).toBe(20);\n});",
+    "fail_to_pass": [
+      "test('LRUCache basic')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "medium"
+  },
+  {
+    "id": "easyagent_004",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_004",
+    "base_commit": "HEAD",
+    "issue_title": "JSON Schema 验证器",
+    "issue_body": "实现一个简化版 JSON Schema 验证器函数 validateJSON(schema: JSONSchema, data: unknown): ValidationResult。支持以下 Schema 关键字：\n- type: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'null'\n- required: string[] (仅 object 类型)\n- properties: Record<string, JSONSchema> (仅 object 类型)\n- items: JSONSchema (仅 array 类型)\n- enum: unknown[] (任意类型)\n- minimum / maximum: number (仅 number 类型)\n- minLength / maxLength: number (仅 string 类型)\n\n返回 { valid: boolean, errors: string[] }，errors 包含所有验证失败的错误路径和原因。",
+    "hint_text": "递归验证，对嵌套 object/array 也递归检查，错误路径用点号分隔，如 'user.name'",
+    "test_patch": "import { validateJSON, JSONSchema } from './solution';\n\ntest('validateJSON type check', () => {\n  const schema: JSONSchema = { type: 'string' };\n  expect(validateJSON(schema, 'hello').valid).toBe(true);\n  expect(validateJSON(schema, 42).valid).toBe(false);\n});\n\ntest('validateJSON object with required', () => {\n  const schema: JSONSchema = {\n    type: 'object',\n    required: ['name', 'age'],\n    properties: {\n      name: { type: 'string' },\n      age: { type: 'number', minimum: 0 }\n    }\n  };\n  expect(validateJSON(schema, { name: 'Alice', age: 25 }).valid).toBe(true);\n  expect(validateJSON(schema, { name: 'Bob' }).valid).toBe(false);\n  expect(validateJSON(schema, { name: 'Eve', age: -1 }).valid).toBe(false);\n});\n\ntest('validateJSON nested object', () => {\n  const schema: JSONSchema = {\n    type: 'object',\n    properties: {\n      user: {\n        type: 'object',\n        properties: {\n          name: { type: 'string', minLength: 2 },\n          email: { type: 'string' }\n        }\n      }\n    }\n  };\n  expect(validateJSON(schema, { user: { name: 'Al', email: 'a@b.com' } }).valid).toBe(false);\n  const r = validateJSON(schema, { user: { name: 'Alice', email: 'a@b.com' } });\n  expect(r.valid).toBe(true);\n  expect(r.errors).toHaveLength(0);\n});\n\ntest('validateJSON array with items', () => {\n  const schema: JSONSchema = { type: 'array', items: { type: 'number', minimum: 0 } };\n  expect(validateJSON(schema, [1, 2, 3]).valid).toBe(true);\n  expect(validateJSON(schema, [1, -2, 3]).valid).toBe(false);\n});\n\ntest('validateJSON enum', () => {\n  const schema: JSONSchema = { enum: ['red', 'green', 'blue'] };\n  expect(validateJSON(schema, 'red').valid).toBe(true);\n  expect(validateJSON(schema, 'yellow').valid).toBe(false);\n});",
+    "fail_to_pass": [
+      "test('validateJSON type check')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "medium"
+  },
+  {
+    "id": "easyagent_005",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_005",
+    "base_commit": "HEAD",
+    "issue_title": "异步重试工具函数",
+    "issue_body": "实现一个泛型函数 retry<T>(fn: () => Promise<T>, options?: RetryOptions): Promise<T>。RetryOptions 包含：\n- maxRetries: number (默认 3)\n- delayMs: number (默认 1000，基础延迟)\n- backoff: 'fixed' | 'exponential' | 'linear' (默认 'exponential')\n- shouldRetry: (error: Error) => boolean (默认所有错误都重试)\n- onRetry: (error: Error, attempt: number) => void (每次重试的回调)\n\n要求：\n- 最大重试次数耗尽后抛出最后一个错误\n- 指数退避: delay * 2^attempt\n- 线性退避: delay * attempt\n- 支持 shouldRetry 条件判断，不符合条件的错误立即抛出不重试",
+    "hint_text": "使用 for 循环 + try-catch，注意 attempt 从 1 开始计数",
+    "test_patch": "import { retry } from './solution';\n\ntest('retry success on first try', async () => {\n  const fn = async () => 'result';\n  const result = await retry(fn);\n  expect(result).toBe('result');\n});\n\ntest('retry success on second try', async () => {\n  let calls = 0;\n  const fn = async () => {\n    calls++;\n    if (calls === 1) throw new Error('fail');\n    return 'ok';\n  };\n  const result = await retry(fn, { maxRetries: 3, delayMs: 10 });\n  expect(result).toBe('ok');\n  expect(calls).toBe(2);\n});\n\ntest('retry exhausts retries', async () => {\n  const fn = async () => { throw new Error('always fail'); };\n  await expect(retry(fn, { maxRetries: 2, delayMs: 10 })).rejects.toThrow('always fail');\n});\n\ntest('retry shouldRetry filter', async () => {\n  const fn = async () => { throw new TypeError('bad type'); };\n  await expect(\n    retry(fn, {\n      maxRetries: 3,\n      delayMs: 10,\n      shouldRetry: (err) => err.message !== 'bad type'\n    })\n  ).rejects.toThrow('bad type');\n});\n\ntest('retry onRetry callback', async () => {\n  const retries: number[] = [];\n  let calls = 0;\n  const fn = async () => {\n    calls++;\n    if (calls <= 2) throw new Error(`fail ${calls}`);\n    return 'done';\n  };\n  const result = await retry(fn, {\n    maxRetries: 3,\n    delayMs: 10,\n    onRetry: (err, attempt) => retries.push(attempt)\n  });\n  expect(result).toBe('done');\n  expect(retries).toEqual([1, 2]);\n});",
+    "fail_to_pass": [
+      "test('retry success on first try')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "medium"
+  },
+  {
+    "id": "easyagent_006",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_006",
+    "base_commit": "HEAD",
+    "issue_title": "Semver 版本号解析与比较",
+    "issue_body": "实现两个函数：\n1. parseSemver(version: string): { major: number, minor: number, patch: number, prerelease: string[], build: string[] } | null\n   解析语义化版本字符串 (https://semver.org)，格式为 MAJOR.MINOR.PATCH[-prerelease][+build]。如果格式不合法返回 null。\n\n2. compareSemver(a: string, b: string): -1 | 0 | 1 | null\n   比较两个语义化版本。先比较 major/minor/patch，再比较 prerelease（有 prerelease 的版本 < 无 prerelease 的版本）。如果任一字符串不合法返回 null。\n\n要求：\n- 支持类似 '1.2.3-alpha.1+build.123' 的完整格式\n- 数字部分必须是非负整数，不能有前导零（除非就是 0）\n- prerelease 比较时按点号分段，纯数字的按数值比较，含字母的按字典序比较",
+    "hint_text": "使用正则 /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-([\\da-zA-Z-]+(?:\\.[\\da-zA-Z-]+)*))?(?:\\+([\\da-zA-Z-]+(?:\\.[\\da-zA-Z-]+)*))?$/",
+    "test_patch": "import { parseSemver, compareSemver } from './solution';\n\ntest('parseSemver valid', () => {\n  expect(parseSemver('1.2.3')).toEqual({ major: 1, minor: 2, patch: 3, prerelease: [], build: [] });\n  expect(parseSemver('0.0.0')).toEqual({ major: 0, minor: 0, patch: 0, prerelease: [], build: [] });\n  expect(parseSemver('2.0.0-alpha.1+build.123').prerelease).toEqual(['alpha', '1']);\n});\n\ntest('parseSemver invalid', () => {\n  expect(parseSemver('01.2.3')).toBeNull();\n  expect(parseSemver('1.2')).toBeNull();\n  expect(parseSemver('v1.2.3')).toBeNull();\n  expect(parseSemver('1.2.3.4')).toBeNull();\n  expect(parseSemver('abc')).toBeNull();\n});\n\ntest('compareSemver basic', () => {\n  expect(compareSemver('1.0.0', '2.0.0')).toBe(-1);\n  expect(compareSemver('2.0.0', '1.0.0')).toBe(1);\n  expect(compareSemver('1.2.3', '1.2.3')).toBe(0);\n  expect(compareSemver('1.9.0', '1.10.0')).toBe(-1);\n});\n\ntest('compareSemver prerelease', () => {\n  expect(compareSemver('1.0.0-alpha', '1.0.0')).toBe(-1);\n  expect(compareSemver('1.0.0-alpha', '1.0.0-beta')).toBe(-1);\n  expect(compareSemver('1.0.0-alpha.2', '1.0.0-alpha.10')).toBe(-1);\n});\n\ntest('compareSemver invalid input', () => {\n  expect(compareSemver('invalid', '1.0.0')).toBeNull();\n  expect(compareSemver('1.0.0', 'x.y.z')).toBeNull();\n});",
+    "fail_to_pass": [
+      "test('parseSemver valid')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "hard"
+  },
+  {
+    "id": "easyagent_007",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_007",
+    "base_commit": "HEAD",
+    "issue_title": "DeepMerge 深度合并工具",
+    "issue_body": "实现一个函数 deepMerge<T extends Record<string, unknown>>(target: T, ...sources: Partial<T>[]): T，深度合并多个对象。规则如下：\n- 基本类型 (string/number/boolean/null/undefined) 直接覆盖\n- 对象类型递归合并\n- 数组类型直接覆盖（不合并数组元素）\n- 不修改原对象 (immutable)\n- 处理循环引用 (抛出错误)\n\n要求返回新对象，不改变 target 或 sources 中的任何对象。",
+    "hint_text": "使用递归 + Object.keys，对每个 key 判断 source 的值类型，基本类型直接赋值，object 递归，数组直接覆盖。用 WeakSet 检测循环引用。",
+    "test_patch": "import { deepMerge } from './solution';\n\ntest('deepMerge basic', () => {\n  const result = deepMerge({ a: 1 }, { b: 2 });\n  expect(result).toEqual({ a: 1, b: 2 });\n});\n\ntest('deepMerge nested', () => {\n  const result = deepMerge(\n    { a: { x: 1, y: 2 }, b: 3 },\n    { a: { y: 20, z: 30 } }\n  );\n  expect(result).toEqual({ a: { x: 1, y: 20, z: 30 }, b: 3 });\n});\n\ntest('deepMerge array override', () => {\n  const result = deepMerge({ arr: [1, 2] }, { arr: [3] });\n  expect(result).toEqual({ arr: [3] });\n});\n\ntest('deepMerge immutability', () => {\n  const target = { a: { x: 1 } };\n  const source = { a: { y: 2 } };\n  const result = deepMerge(target, source);\n  expect(target.a).toEqual({ x: 1 });\n  expect(source.a).toEqual({ y: 2 });\n  expect(result).toEqual({ a: { x: 1, y: 2 } });\n  expect(result).not.toBe(target);\n  expect(result.a).not.toBe(target.a);\n});\n\ntest('deepMerge multiple sources', () => {\n  const result = deepMerge({ a: 1 }, { b: 2 }, { c: 3 });\n  expect(result).toEqual({ a: 1, b: 2, c: 3 });\n});",
+    "fail_to_pass": [
+      "test('deepMerge basic')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "hard"
+  },
+  {
+    "id": "easyagent_008",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_008",
+    "base_commit": "HEAD",
+    "issue_title": "事件总线 EventEmitter 实现",
+    "issue_body": "实现一个泛型事件总线类 TypedEmitter<Events extends Record<string, unknown[]>>，支持严格类型化的事件发射和监听。要求：\n- on<K>(event: K, listener: (...args) => void): () => void (返回取消订阅函数)\n- once<K>(event: K, listener: (...args) => void): () => void\n- emit<K>(event: K, ...args): void\n- off<K>(event: K, listener: (...args) => void): void\n- removeAllListeners(event?): void\n- listenerCount(event): number\n\n要求：\n- emit 按注册顺序同步调用所有监听器\n- once 注册的监听器调用一次后自动移除\n- off 在 emit 遍历过程中调用时，不应影响当前 emit 的遍历",
+    "hint_text": "使用 Map 存储事件到监听器数组。emit 时复制数组后再遍历以实现 safe remove。once 可以用包装函数实现。",
+    "test_patch": "import { TypedEmitter } from './solution';\n\ntype MyEvents = {\n  data: [string, number];\n  error: [Error];\n  close: [];\n};\n\ntest('TypedEmitter on/emit', () => {\n  const emitter = new TypedEmitter<MyEvents>();\n  const received: [string, number][] = [];\n  emitter.on('data', (msg, code) => received.push([msg, code]));\n  emitter.emit('data', 'hello', 200);\n  emitter.emit('data', 'world', 201);\n  expect(received).toEqual([['hello', 200], ['world', 201]]);\n});\n\ntest('TypedEmitter once', () => {\n  const emitter = new TypedEmitter<MyEvents>();\n  let count = 0;\n  emitter.once('data', () => { count++; });\n  emitter.emit('data', 'a', 1);\n  emitter.emit('data', 'b', 2);\n  expect(count).toBe(1);\n});\n\ntest('TypedEmitter off', () => {\n  const emitter = new TypedEmitter<MyEvents>();\n  let count = 0;\n  const fn = () => { count++; };\n  emitter.on('data', fn);\n  emitter.emit('data', 'a', 1);\n  emitter.off('data', fn);\n  emitter.emit('data', 'b', 2);\n  expect(count).toBe(1);\n});\n\ntest('TypedEmitter safe remove during emit', () => {\n  const emitter = new TypedEmitter<MyEvents>();\n  let count = 0;\n  const fn1 = () => { emitter.off('data', fn2); count++; };\n  const fn2 = () => { count++; };\n  emitter.on('data', fn1);\n  emitter.on('data', fn2);\n  emitter.emit('data', 'test', 0);\n  expect(count).toBe(2);\n});\n\ntest('TypedEmitter listenerCount', () => {\n  const emitter = new TypedEmitter<MyEvents>();\n  expect(emitter.listenerCount('data')).toBe(0);\n  emitter.on('data', () => {});\n  emitter.on('data', () => {});\n  expect(emitter.listenerCount('data')).toBe(2);\n  emitter.removeAllListeners('data');\n  expect(emitter.listenerCount('data')).toBe(0);\n});",
+    "fail_to_pass": [
+      "test('TypedEmitter on/emit')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "hard"
+  },
+  {
+    "id": "easyagent_009",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_009",
+    "base_commit": "HEAD",
+    "issue_title": "CSV 解析器",
+    "issue_body": "实现一个函数 parseCSV(text: string, options?: CSVOptions): string[][]，将 CSV 文本解析为二维字符串数组。CSVOptions：\n- delimiter: string (默认 ',')\n- quote: string (默认 '\"')\n- hasHeader: boolean (默认 false，如果为 true 则跳过第一行)\n- trimFields: boolean (默认 false)\n\n要求正确处理：\n- 引号内的字段（不含引号本身）\n- 引号内的转义引号 (\"\" → \")\n- 引号内的换行符（多行字段）\n- 引号内的分隔符\n- 空字段\n- 末尾空行",
+    "hint_text": "逐字符解析状态机：NORMAL / QUOTED / AFTER_QUOTE 三种状态。引号内遇到 \"\" 转为单个 \"。",
+    "test_patch": "import { parseCSV } from './solution';\n\ntest('parseCSV simple', () => {\n  const result = parseCSV('a,b,c\\n1,2,3');\n  expect(result).toEqual([['a', 'b', 'c'], ['1', '2', '3']]);\n});\n\ntest('parseCSV quoted fields', () => {\n  const result = parseCSV('\"hello, world\",123\\n\"a\",\"b\"');\n  expect(result).toEqual([['hello, world', '123'], ['a', 'b']]);\n});\n\ntest('parseCSV escaped quotes', () => {\n  const result = parseCSV('\"She said \"\"hi\"\"\",123');\n  expect(result).toEqual([['She said \"hi\"', '123']]);\n});\n\ntest('parseCSV multiline field', () => {\n  const result = parseCSV('a,b\\n\"line1\\nline2\",c');\n  expect(result).toEqual([['a', 'b'], ['line1\\nline2', 'c']]);\n});\n\ntest('parseCSV hasHeader', () => {\n  const result = parseCSV('Name,Age\\nAlice,30\\nBob,25', { hasHeader: true });\n  expect(result).toEqual([['Alice', '30'], ['Bob', '25']]);\n});\n\ntest('parseCSV empty fields', () => {\n  const result = parseCSV('a,,c\\n,,');\n  expect(result).toEqual([['a', '', 'c'], ['', '', '']]);\n});\n\ntest('parseCSV custom delimiter', () => {\n  const result = parseCSV('a|b|c\\n1|2|3', { delimiter: '|' });\n  expect(result).toEqual([['a', 'b', 'c'], ['1', '2', '3']]);\n});",
+    "fail_to_pass": [
+      "test('parseCSV simple')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "medium"
+  },
+  {
+    "id": "easyagent_010",
+    "repo": "easyagent/core",
+    "instance_id": "easyagent_010",
+    "base_commit": "HEAD",
+    "issue_title": "加权随机选择器",
+    "issue_body": "实现一个泛型类 WeightedRandom<T>，根据权重进行随机选择。\n- constructor(items: Array<{ item: T; weight: number }>): 初始化选择器，权重必须为正数\n- select(): T: 按权重随机选择一项返回\n- selectN(n: number): T[]: 按权重随机选择 n 项（有放回抽样）\n- getDistribution(): Array<{ item: T; probability: number }>: 返回各项的理论概率\n\n要求：\n- 使用累积权重 + 二分查找实现 O(log n) 选择\n- 权重为 0 的项永远不被选中\n- 输入为空数组时构造函数抛错\n- 使用 Math.random() 作为随机源",
+    "hint_text": "计算前缀和数组 prefixSum，生成 [0, totalWeight) 随机数，用二分查找定位到对应区间。",
+    "test_patch": "import { WeightedRandom } from './solution';\n\ntest('WeightedRandom select returns valid item', () => {\n  const wr = new WeightedRandom([\n    { item: 'a', weight: 1 },\n    { item: 'b', weight: 2 },\n  ]);\n  const selected = wr.select();\n  expect(['a', 'b']).toContain(selected);\n});\n\ntest('WeightedRandom zero weight never selected', () => {\n  const wr = new WeightedRandom([\n    { item: 'always', weight: 1 },\n    { item: 'never', weight: 0 },\n  ]);\n  for (let i = 0; i < 100; i++) {\n    expect(wr.select()).toBe('always');\n  }\n});\n\ntest('WeightedRandom distribution', () => {\n  const wr = new WeightedRandom([\n    { item: 'a', weight: 1 },\n    { item: 'b', weight: 3 },\n  ]);\n  const dist = wr.getDistribution();\n  expect(dist.find(d => d.item === 'a')!.probability).toBeCloseTo(0.25, 1);\n  expect(dist.find(d => d.item === 'b')!.probability).toBeCloseTo(0.75, 1);\n});\n\ntest('WeightedRandom selectN', () => {\n  const wr = new WeightedRandom([{ item: 'x', weight: 1 }]);\n  const results = wr.selectN(5);\n  expect(results).toHaveLength(5);\n  expect(results.every(r => r === 'x')).toBe(true);\n});\n\ntest('WeightedRandom empty input throws', () => {\n  expect(() => new WeightedRandom([])).toThrow();\n});\n\ntest('WeightedRandom negative weight throws', () => {\n  expect(() => new WeightedRandom([{ item: 'x', weight: -1 }])).toThrow();\n});",
+    "fail_to_pass": [
+      "test('WeightedRandom select returns valid item')"
+    ],
+    "pass_to_pass": [],
+    "created_at": "2026-06-22",
+    "version": "0.4.0",
+    "difficulty": "easy"
+  }
+]

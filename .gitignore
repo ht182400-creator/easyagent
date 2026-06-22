@@ -25,3 +25,5 @@ desktop/release/
 .codebuddy/temp/
 # 对话历史日志（可能含敏感信息，仅本地保留）
 docs/history_*.md
+# GitHub Token（仅本地使用，勿提交）
+scripts/.release_token

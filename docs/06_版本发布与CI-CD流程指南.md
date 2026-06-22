@@ -1,13 +1,13 @@
 # EasyAgent 版本发布与 CI/CD 流程指南
 
-> 版本: v1.0 | 日期: 2026-06-20 | 适用版本: 0.3.0+
+> 版本: v1.2 | 日期: 2026-06-22 | 适用版本: 0.4.0+
 
 ---
 
 ## 目录
 
 1. [核心概念：版本发布的完整链路](#一核心概念版本发布的完整链路)
-2. [当前工作流：手动发布 0.3.1](#二当前工作流手动发布-031)
+2. [当前工作流：release-publish.bat 交互式发布](#二当前工作流release-publishbat-交互式发布)
 3. [GitHub Actions 自动打包（可选但推荐）](#三github-actions-自动打包可选但推荐)
 4. [两种方案对比](#四两种方案对比)
 5. [FAQ](#五faq)
@@ -66,114 +66,119 @@ Desktop App 启动
 
 ---
 
-## 二、当前工作流：手动发布 0.3.1
+## 二、当前工作流：release-publish.bat 交互式发布
 
 ### 2.1 当前工具链
 
-项目已有完整的版本管理脚本链：
-
 | 脚本 | 功能 |
 |------|------|
+| `release-publish.bat` | **一键交互式发布**：版本递增 → 构建 → GitHub Release 上传 |
 | `version.json` | 唯一版本源，记录版本号 + 代号 + 发布日期 |
 | `scripts/sync-version.mjs` | 将 `version.json` 同步到 6 个子包 `package.json` |
-| `scripts/release.mjs` | 一键发布：版本递增 → 同步 → CHANGELOG → git commit/tag/push |
+| `scripts/release.mjs` | 版本递增：同步 → CHANGELOG → git commit/tag/push |
 | `CHANGELOG.md` | 遵循 Keep a Changelog 格式的更新日志 |
 | `build.bat` | Desktop EXE 打包流水线（编译 + electron-builder） |
 | `packages/desktop/scripts/verify-build.cjs` | 打包前 8 大类自动检查 |
+| `scripts/.release_token` | GitHub Token（仅本地，已 gitignored） |
 
-### 2.2 手动发布 0.3.1 完整步骤
+### 2.2 推荐方式：release-publish.bat 一键发布
 
-#### 步骤 1：确保代码最新且干净
+直接在项目根目录运行：
 
 ```powershell
-cd "d:\Work_Area\AI\Claude Code  CN"
-
-# 查看当前状态
-git status
-
-# 如果有未提交的更改，先提交
-git add .
-git commit -m "chore: 准备发布 0.3.1"
-
-# 拉取远程最新代码（避免冲突）
-git pull origin main
+.\release-publish.bat
 ```
 
-#### 步骤 2：运行版本发布脚本
+**交互式步骤**：
+
+```
+Step 1: Select version bump type
+  [1] patch  (bug fix)      → 0.4.0 → 0.4.1
+  [2] minor  (feature)      → 0.4.0 → 0.5.0
+  [3] major  (breaking)     → 0.4.0 → 1.0.0
+  [4] custom (enter x.y.z)
+  [0] skip   (already tagged, build/upload only)
+
+Step 2: Pre-checks (git status, remote connectivity)
+
+Step 3: Version Bump (version.json + package.json + CHANGELOG + git push)
+
+Step 4: Build Desktop EXE (build.bat --release)
+
+Step 5: Create GitHub Release
+  [1] gh CLI (recommended, requires install)
+  [2] GitHub Token + curl (semi-auto)    ← Token 自动从 scripts/.release_token 读取
+  [3] Manual upload (open browser)
+  [0] Skip
+```
+
+**常用场景**：
+
+| 场景 | 选择 | 说明 |
+|------|------|------|
+| 新版本发布（patch） | `1 → Y → Y → 2` | 版本递增 + 构建 + curl 上传 |
+| 已有 tag 重新构建上传 | `0 → Y → Y → 2` | 跳过版本递增，只构建上传 |
+| 仅上游代码，不构建 | `1 → Y → n → 0` | 只做版本递增推送，后续手动处理 |
+
+### 2.3 Token 自动加载机制
+
+为防止 Token 泄露到 git 历史，采用本地文件 + gitignore 方式：
+
+```
+scripts/.release_token          ← 单行文本，仅存 Token（已 gitignored）
+.gitignore                      ← 新增 scripts/.release_token
+release-publish.bat (option 2)  ← 自动从文件读取，不存在才提示输入
+```
+
+**首次配置 Token**：
+
+1. 创建 `scripts/.release_token` 文件，写入 GitHub Token（纯文本，无换行）
+2. 以后每次选 option 2，Token 自动加载，无需手动粘贴
+
+### 2.4 手动分步发布（备用方式）
+
+#### 步骤 1：版本递增 + Tag + 推送
 
 ```powershell
-# 方式 A：自动递增 patch（推荐，0.3.0 → 0.3.1）
 node scripts/release.mjs patch
-
-# 方式 B：先预览不实际修改
-node scripts/release.mjs --dry-run patch
-
-# 方式 C：指定精确版本号
-node scripts/release.mjs 0.3.1
 ```
 
-**`release.mjs` 会自动完成：**
-1. 更新 `version.json`：`"version": "0.3.1"`，`"releaseDate": "2026-06-20"`
-2. 运行 `sync-version.mjs`：同步版本号到 6 个 `package.json`
-3. 更新 `CHANGELOG.md`：从 git commit 历史生成新条目
-4. `git add .` + `git commit -m "release: v0.3.1"`
-5. `git tag -a v0.3.1`
-6. `git push origin main --follow-tags`
-
-#### 步骤 3：构建 Desktop EXE
+#### 步骤 2：构建 EXE
 
 ```powershell
-# 运行打包流水线（--release 生成 NSIS 安装包）
 .\build.bat --release
 ```
 
-**构建产物位置：**
-- 安装包：`packages\desktop\release\EasyAgent-0.3.1-win-x64.exe` (~87MB)
-- Blockmap：`packages\desktop\release\EasyAgent-0.3.1-win-x64.exe.blockmap`
-- 最新标记：`packages\desktop\release\latest.yml`
+#### 步骤 3：上传 GitHub Release
 
-#### 步骤 4：创建 GitHub Release 并上传 EXE
+```powershell
+# 方式 A：运行 release-publish.bat 选 0 → Y → n → 2（仅上传）
+.\release-publish.bat
 
-1. 打开浏览器，访问：https://github.com/ht182400-creator/easyagent/releases
-2. 点击 **"Draft a new release"**
-3. **Tag**: 选择 `v0.3.1`（步骤 2 已推送）
-4. **Release title**: `EasyAgent v0.3.1 - Gemini`
-5. **Description**: 从 `CHANGELOG.md` 复制 0.3.1 的更新内容
-6. **上传文件**（拖拽到页面）：
-   - `EasyAgent-0.3.1-win-x64.exe` — Windows 安装包
-   - `EasyAgent-0.3.1-win-x64.exe.blockmap` — 增量更新块映射
-   - `latest.yml` — electron-updater 版本元数据
-7. 点击 **"Publish release"**
+# 方式 B：用 PowerShell 脚本
+powershell -ExecutionPolicy Bypass -File scripts\upload-release.ps1
+```
 
-#### 步骤 5：验证自动更新
-
-1. 在另一台电脑（或当前电脑）安装旧版本 `EasyAgent-0.3.0-win-x64.exe`
-2. 启动 EasyAgent，等待 5 秒
-3. StatusBar 应显示 "发现新版本 v0.3.1"
-4. 点击更新 → 自动下载 → 安装完成
-
-### 2.3 发布流程图
+### 2.5 发布流程图
 
 ```
 你（开发者）
   │
-  ├─ [本地] node scripts/release.mjs patch
-  │   └─ version.json → 0.3.1
-  │   └─ sync-version.mjs → 6个package.json
-  │   └─ CHANGELOG.md 更新
-  │   └─ git commit + tag v0.3.1 + push
+  ├─ [本地] .\release-publish.bat
+  │   │
+  │   ├─ Step 1: 选版本类型 (patch/minor/major/custom/skip)
+  │   ├─ Step 2: Pre-checks (git/remote/working tree)
+  │   ├─ Step 3: node scripts/release.mjs
+  │   │   └─ version.json → package.json → CHANGELOG → git push
+  │   ├─ Step 4: .\build.bat --release
+  │   │   └─ verify-build.cjs → tsup → vite → electron-builder
+  │   └─ Step 5: 上传 GitHub Release
+  │       ├─ [1] gh CLI 自动上传
+  │       ├─ [2] Token+curl 上传（Token 自动读取）
+  │       └─ [3] 手动浏览器拖拽上传
   │
-  ├─ [本地] .\build.bat --release
-  │   └─ verify-build.cjs 预检查
-  │   └─ tsup 编译 core/server/desktop
-  │   └─ vite 打包前端
-  │   └─ electron-builder 生成 EXE
-  │   └─ 输出: EasyAgent-0.3.1-win-x64.exe + blockmap + latest.yml
-  │
-  └─ [浏览器] GitHub → Releases → Draft new release
-      └─ 选择 tag v0.3.1
-      └─ 上传 3 个文件
-      └─ Publish
+  └─ 用户端自动更新
+      └─ electron-updater 检测 latest.yml → 下载 EXE → 安装
 ```
 
 ---
@@ -409,22 +414,28 @@ git push origin v0.3.1-test
 
 ## 四、两种方案对比
 
-| 维度 | 方案 A：手动发布 | 方案 B：GitHub Actions |
+| 维度 | 方案 A：release-publish.bat | 方案 B：GitHub Actions |
 |------|:---:|:---:|
-| 初始设置 | ✅ 无需额外配置 | ⚠️ 需要 1 次 PAT 配置 + Workflow 文件 |
-| 每次发布耗时 | ~15 分钟（构建+上传） | ~1 分钟（推送即可） |
+| 初始设置 | ✅ 配置 Token 文件一次即可 | ⚠️ 需要 PAT + Workflow YAML |
+| 每次发布耗时 | ~5 分钟（交互式） | ~1 分钟（推送即触发） |
 | 构建环境 | 依赖本机 Windows | GitHub Windows 虚拟机（一致） |
-| 上传 Release | 手动拖拽 3 个文件 | 自动上传 |
-| 出错风险 | ⚠️ 可能遗漏文件 | ✅ 脚本化，一致性高 |
+| 上传 Release | 自动（curl API，Token 自动读取） | 自动上传 |
+| 出错风险 | ✅ 脚本化，逐步确认 | ✅ 脚本化，一致性高 |
 | 成本 | 本机电费 | GitHub 免费（公开仓库） |
-| 离线发布 | ✅ 可以 | ❌ 必须联网 |
+| 离线发布 | ✅ 本地构建，构建可离线 | ❌ 必须联网 |
 | macOS/Linux 构建 | 需要对应设备 | 添加 matrix 即可 |
 
 ### 推荐策略
 
-> **阶段 1（当前即可）**：使用方案 A 手动发布 0.3.1，熟悉完整流程
+> **阶段 1 + 2 已完成**：`release-publish.bat` 交互式发布（日常备用）+ GitHub Actions CI/CD 自动构建已部署
 >
-> **阶段 2（后续优化）**：部署 GitHub Actions，实现推送即发布
+> - `.github/workflows/ci.yml` — push/PR 触发日常测试和编译验证
+> - `.github/workflows/release.yml` — Tag 推送触发自动构建+发布 EXE
+> - 前置条件：GitHub Settings → Secrets → Actions 中添加 `GH_TOKEN`
+
+**当前双轨策略**：
+1. **日常开发**：`release-publish.bat` 交互式发布，适合快速修复和小版本
+2. **正式发布**：`git push --follow-tags` 触发 GitHub Actions 自动构建，适合大版本和跨平台构建
 
 ---
 
@@ -465,9 +476,18 @@ node scripts/release.mjs patch
 3. **electron-builder v24 被意外使用**：pnpm lockfile 应锁定 23.6.0
 4. **磁盘空间不足**：GitHub Actions 免费额度 14GB，大型项目可能超限
 
-### Q6：可以在没有 GitHub Actions 的情况下让 `release.mjs` 自动创建 Release 吗？
+### Q6：如何避免每次上传都手动输入 Token？
 
-理论上可以，但需要 GitHub Personal Access Token。如果想在不设 CI/CD 的情况下一键完成，可以在 `release.mjs` 末尾添加 GitHub API 调用来创建 Release 和上传文件。但这种方式需要把 Token 存在本地，安全性较差，不推荐。
+在项目根目录创建 `scripts/.release_token` 文件，写入 Token（纯文本，无换行）。`release-publish.bat` 的 option 2 会自动读取。该文件已在 `.gitignore` 中排除，不会提交到仓库。
+
+```powershell
+# 创建 token 文件（仅需一次）
+echo ghp_xxxxxxxxxxxx > scripts\.release_token
+```
+
+### Q7：已经 git tag 过了，只想重新构建和上传怎么办？
+
+运行 `release-publish.bat`，Step 1 选 `[0] skip`，跳过版本递增。后续构建和上传流程不变。
 
 ---
 
@@ -507,4 +527,4 @@ git push origin :refs/tags/v0.3.1-bad
 
 ---
 
-> **下一步建议**：先用方案 A 手动发布 0.3.1 走通全流程，熟悉后根据团队规模决定是否部署 GitHub Actions。如果只有你一个人开发，手动发布完全够用；如果有多人协作或频繁发布，CI/CD 自动化会极大提升效率。
+> **下一步建议**：GitHub Actions 已部署，首次使用需在 GitHub Settings → Secrets → Actions 中添加 `GH_TOKEN`。之后推送 Tag 即自动构建发布。日常小版本仍可使用 `release-publish.bat` 交互式发布。

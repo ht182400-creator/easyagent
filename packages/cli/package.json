@@ -4,6 +4,9 @@
   "description": "EasyAgent CLI - 命令行AI编程助手",
   "type": "module",
   "main": "./dist/main.js",
+  "engines": {
+    "node": ">=18.0.0 <24.0.0"
+  },
   "bin": {
     "ea": "./dist/main.js",
     "easyagent": "./dist/main.js"

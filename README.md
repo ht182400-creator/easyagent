@@ -1,8 +1,31 @@
-# EasyAgent - AI编程助手 v0.3.0 (Gemini)
+# EasyAgent - AI编程助手 v0.4.0 (Gemini)
 
 > 集成中国主流大模型的全功能AI编程助手  
 > 融合 WorkBuddy 设计风格 + 国产模型适配  
 > **模型目录动态更新 (GitHub/CDN) + 三级数据源降级 + 70工具/17分组 + 版本控制系统 + WorkBuddy 深色主题 UI**
+
+## 📊 Agent 代码质量评测 (SWE-bench Verified)
+
+> EasyAgent 代码生成能力经过标准化评测验证。以下为使用内置 benchmark 数据集的 pass@1 评测结果：
+
+| 模型 | Pass@1 | 解决率 | Easy | Medium | Hard | 评测日期 |
+|------|:------:|:------:|:----:|:------:|:----:|:--------:|
+| **DeepSeek V4** | *(运行中)* | - | - | - | - | 2026-06 |
+| **通义千问 Qwen3 Max** | *(待评测)* | - | - | - | - | - |
+| **智谱 GLM-5** | *(待评测)* | - | - | - | - | - |
+
+> 💡 **运行评测**: `pnpm benchmark --provider deepseek --model deepseek-v4`  
+> 评测使用 10 道精选编码题目覆盖 easy/medium/hard 三个难度级别，包含数据结构、算法、工具函数等典型编程场景。详见 [`scripts/swe-bench/`](scripts/swe-bench/)
+
+### 评测维度
+
+| 类别 | 题目数 | 示例题型 |
+|------|:------:|----------|
+| **字符串/文件处理** | 3 | 文件名清洗、CSV 解析、目录大小计算 |
+| **数据结构** | 3 | LRU Cache、加权随机选择器、Semver 解析 |
+| **系统设计** | 4 | EventEmitter、JSON Schema 验证、DeepMerge、重试机制 |
+
+
 
 ## ✨ 核心特性
 
@@ -58,9 +81,22 @@
 ## 🚀 快速开始
 
 ### 环境要求
-- Node.js >= 18
+- Node.js >= 18 且 < 24 (⚠️ Node.js 24.x 暂不支持，详见下方说明)
 - pnpm >= 9
 - （可选）C++ 编译工具链 — 用于编译 better-sqlite3 原生模块（详见下方说明）
+
+### ⚠️ Node.js 版本要求
+
+**EasyAgent 当前不支持 Node.js 24.x** — better-sqlite3 核心依赖在 Node 24 上无预编译二进制，必须从源码编译 C++ 扩展，成功率仅约 60%。安装时将自动拦截。
+
+| Node.js 版本 | 状态 | 说明 |
+|-------------|:----:|------|
+| 18.x / 20.x LTS | ✅ 推荐 | 完全支持，开箱即用 |
+| 22.x LTS | ✅ 支持 | 完全支持 |
+| **24.x** | ❌ 拦截 | better-sqlite3 无预编译二进制 |
+| < 18 | ❌ 拦截 | 不支持 ES2022+ 特性 |
+
+> 💡 如果你确实需要在 Node 24 上使用 (自担风险): `set EASYAGENT_SKIP_NODE_CHECK=1 && pnpm install`
 
 ### 安装
 
@@ -113,6 +149,9 @@ cd ../desktop && npx electron dist/main.js     # 原生桌面版
 ### 快速验证
 
 ```bash
+# 环境检查 (Node.js 版本 + 评测数据集)
+pnpm benchmark:dry
+
 # 核心测试 (629/629 通过)
 cd packages/core && npx vitest run
 
@@ -128,11 +167,11 @@ pnpm test:all
 
 ### ⚠️ better-sqlite3 编译说明
 
-`better-sqlite3` 是 C++ 原生模块，需要匹配当前 Node.js 版本的预编译二进制文件：
-- **Node.js v24.13.0 用户**：当前无预编译二进制，需安装 C++ 编译工具链从源码编译
-  - Windows: 安装 Visual Studio Build Tools (含 C++ 工作负载) + Python 3.x
-  - 安装后运行: `pnpm rebuild better-sqlite3`
-- **Node.js 18/20/22 用户**：有预编译二进制，开箱即用
+`better-sqlite3` 是 C++ 原生模块，EasyAgent 通过 `preinstall` 脚本自动拦截不兼容的 Node.js 版本：
+- **Node.js 18/20/22 用户**：有预编译二进制，`pnpm install` 开箱即用
+- **Node.js 24.x 用户**：安装时自动拦截并提示降级方案
+  - 如需强制安装: `set EASYAGENT_SKIP_NODE_CHECK=1 && pnpm install`
+  - 然后手动编译: `cd packages/core && pnpm rebuild better-sqlite3`
 - **测试环境**：vitest 已通过 alias mock 绕过原生模块依赖，测试始终可运行
 
 ## 📁 项目结构
@@ -294,7 +333,8 @@ pnpm test:desktop
 | 层级 | 技术 | 备注 |
 |------|------|------|
 | 语言 | TypeScript 5.x | 严格模式 |
-| 运行时 | Node.js 18+ | 推荐 20 LTS |
+| 运行时 | Node.js 18-22 (LTS 推荐) | ⚠️ 24.x 被 preinstall 拦截 |
+| 包管理 | pnpm 11+ | monorepo workspace |
 | 包管理 | pnpm 11+ | monorepo workspace |
 | CLI框架 | Ink (React for Terminal) | Banner/ChatView/StatusBar |
 | Web前端 | React 18 + Vite + Tailwind CSS v3 | WorkBuddy 深色主题 + 虚拟滚动(react-window) + 分组导航 |

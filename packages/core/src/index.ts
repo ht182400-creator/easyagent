@@ -196,6 +196,9 @@ export type {
 export {
   SWEBenchEngine,
   scanSWEBenchData,
+  BenchmarkRunner,
+  loadBuiltinDataset,
+  dryRunBenchmark,
 } from './benchmark/index.js';
 export type {
   SWEBenchProblem,
@@ -203,6 +206,10 @@ export type {
   EvaluationSession,
   EvaluationSummary,
   BenchmarkConfig,
+  AgentBenchmarkConfig,
+  BenchmarkProblemResult,
+  BenchmarkAttempt,
+  BenchmarkReport,
 } from './benchmark/index.js';
 
 // SWE-Bench 评测工具 🆕

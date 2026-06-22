@@ -13,3 +13,16 @@ export type {
   EvaluationSummary,
   BenchmarkConfig,
 } from './SWEBenchEngine.js';
+
+export {
+  BenchmarkRunner,
+  loadBuiltinDataset,
+  dryRunBenchmark,
+} from './BenchmarkRunner.js';
+
+export type {
+  AgentBenchmarkConfig,
+  BenchmarkProblemResult,
+  BenchmarkAttempt,
+  BenchmarkReport,
+} from './BenchmarkRunner.js';

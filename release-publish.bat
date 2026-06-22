@@ -355,13 +355,23 @@ rem --- Method 2: Token + curl ---
 echo.
 echo   --- Token-based Release ---
 echo.
+rem Auto-read token from local file (use for /f to avoid cmd parser issues with < inside if block)
+set "GITHUB_TOKEN="
+if exist "scripts\.release_token" (
+    for /f "usebackq delims=" %%t in ("scripts\.release_token") do set "GITHUB_TOKEN=%%t"
+    if not "!GITHUB_TOKEN!"=="" (
+        echo   [OK] Token auto-loaded from scripts/.release_token
+        goto :TOKEN_READY
+    )
+)
+rem Token file not found or empty - prompt user
 echo   Requires GitHub Personal Access Token (classic)
 echo   Create at: https://github.com/settings/tokens
 echo   Scope needed: repo (full)
 echo.
-
 set /p GITHUB_TOKEN="  Enter GitHub Token (hidden input): "
 
+:TOKEN_READY
 if "!GITHUB_TOKEN!"=="" (
     echo   Token cannot be empty. Falling back to manual...
     goto :UPLOAD_MANUAL
@@ -371,9 +381,8 @@ rem Get version (use node for reliable JSON parsing)
 for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set TAG_VERSION=v%%a
 echo   Target version: !TAG_VERSION!
 
-rem Step 1: Create Release
+rem Step 1: Create Release (or get existing if 422)
 echo   (1) Creating Release ...
-set RELEASE_BODY="Release !TAG_VERSION! - see CHANGELOG.md"
 
 curl -s -X POST ^
     -H "Authorization: token !GITHUB_TOKEN!" ^
@@ -381,7 +390,19 @@ curl -s -X POST ^
     -d "{\"tag_name\":\"!TAG_VERSION!\",\"name\":\"EasyAgent !TAG_VERSION!\",\"body\":\"See CHANGELOG.md\",\"draft\":false,\"prerelease\":false}" ^
     "https://api.github.com/repos/ht182400-creator/easyagent/releases" > release_response.json
 
-rem Get upload_url
+rem Check if Release already exists (422)
+findstr /c:"already_exists" release_response.json >nul 2>&1
+if %errorlevel% equ 0 (
+    echo   [INFO] Release already exists, fetching upload URL...
+    del release_response.json 2>nul
+    curl -s ^
+        -H "Authorization: token !GITHUB_TOKEN!" ^
+        -H "Accept: application/vnd.github.v3+json" ^
+        "https://api.github.com/repos/ht182400-creator/easyagent/releases/tags/!TAG_VERSION!" > release_response.json
+    goto :EXTRACT_UPLOAD_URL
+)
+
+rem Check if upload_url present (normal success)
 type release_response.json | findstr "upload_url" >nul
 if %errorlevel% neq 0 (
     echo   [FAIL] Release creation failed. Response:
@@ -389,8 +410,23 @@ if %errorlevel% neq 0 (
     del release_response.json 2>nul
     goto :UPLOAD_MANUAL
 )
-
 echo   [OK] Release created
+
+:EXTRACT_UPLOAD_URL
+rem Extract upload_url from response JSON
+findstr "upload_url" release_response.json > "%TEMP%\_rel_upload_url.tmp" 2>nul
+for /f tokens^=2^ delims^=^" %%a in ('type "%TEMP%\_rel_upload_url.tmp"') do (
+    for /f "tokens=1 delims={" %%u in ("%%a") do set UPLOAD_URL=%%u
+)
+del "%TEMP%\_rel_upload_url.tmp" 2>nul
+
+if "!UPLOAD_URL!"=="" (
+    echo   [FAIL] Could not extract upload URL. Response:
+    type release_response.json
+    del release_response.json 2>nul
+    goto :UPLOAD_MANUAL
+)
+echo   [OK] Release ready, uploading files...
 
 rem Step 2: Upload files
 echo   (2) Uploading artifacts ...
@@ -401,14 +437,8 @@ for %%F in ("packages\desktop\release\EasyAgent-*.exe.blockmap") do set BLOCKMAP
 
 if defined EXE_PATH (
     echo      Uploading: !EXE_PATH!
-    rem Extract upload_url from response
-    findstr "upload_url" release_response.json > "%TEMP%\_rel_upload_url.tmp" 2>nul
-    for /f tokens^=2^ delims^=^" %%a in ('type "%TEMP%\_rel_upload_url.tmp"') do (
-        for /f "tokens=1 delims={" %%u in ("%%a") do set UPLOAD_URL=%%u
-    )
-    del "%TEMP%\_rel_upload_url.tmp" 2>nul
     
-    rem Upload EXE
+    rem Upload EXE (upload_url already extracted above)
     for %%F in ("!EXE_PATH!") do (
         curl -s -X POST ^
             -H "Authorization: token !GITHUB_TOKEN!" ^
@@ -446,17 +476,20 @@ rem --- Method 3: Manual upload ---
 echo.
 echo   --- Manual Upload Guide ---
 echo.
+echo   [WARN] GitHub web upload limit: 25MB per file!
+echo   [WARN] EXE file (~85MB) exceeds this limit - browser upload WILL fail.
+echo.
 rem Get version (use node for reliable JSON parsing)
 for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set TAG_VERSION=v%%a
-echo   (1) Open browser to:
+echo   Recommended alternatives:
+echo   [A] Run this script again, choose option [2] (Token + curl, auto)
+echo   [B] Use gh CLI:
+echo       gh release upload !TAG_VERSION! packages\desktop\release\EasyAgent-*-win-x64.exe
+echo       gh release upload !TAG_VERSION! packages\desktop\release\EasyAgent-*-win-x64.exe.blockmap
+echo       gh release upload !TAG_VERSION! packages\desktop\release\latest.yml
+echo.
+echo   Release page (if not yet created):
 echo       https://github.com/ht182400-creator/easyagent/releases/new?tag=!TAG_VERSION!
-echo.
-echo   (2) Drag ^& drop these files:
-echo       packages\desktop\release\EasyAgent-*-win-x64.exe
-echo       packages\desktop\release\EasyAgent-*-win-x64.exe.blockmap
-echo       packages\desktop\release\latest.yml
-echo.
-echo   (3) Click "Publish release"
 echo.
 echo   Press any key to continue...
 pause >nul

@@ -1,0 +1,99 @@
+# EasyAgent 日常 CI - 测试和代码质量检查
+# 每次 push/PR 到 main 分支自动运行
+#
+# 参考: docs/09_EasyAgent项目Review与优化建议报告.md P1-2
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ===== 测试 =====
+  test-core:
+    name: Test Core
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core (tsup + DTS)
+        run: cd packages/core && npx tsup --dts
+
+      - name: Run core tests
+        run: cd packages/core && npx vitest run
+
+  test-server:
+    name: Test Server
+    needs: test-core
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+
+      - name: Build server
+        run: cd packages/server && npx tsup
+
+      - name: Run server tests
+        run: cd packages/server && npx vitest run
+
+  # ===== 编译验证 =====
+  build-check:
+    name: Build Verification
+    needs: test-core
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../cli && npx tsup
+          cd ../server && npx tsup
+          cd ../desktop && npx tsup
+
+      - name: Verify build output
+        run: node packages/desktop/scripts/verify-build.cjs

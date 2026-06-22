@@ -4,6 +4,7 @@
   "description": "AI编程助手 - 集成中国主流大模型的全功能AI Agent",
   "private": true,
   "scripts": {
+    "preinstall": "node scripts/preinstall.cjs",
     "dev:cli": "cd packages/cli && npx tsup --watch",
     "dev:server": "cd packages/server && npx tsup --watch",
     "dev:web": "cd packages/web && npm run dev",
@@ -17,6 +18,8 @@
     "test:core": "cd packages/core && npx vitest run",
     "test:server": "cd packages/server && npx vitest run",
     "test:all": "cd packages/core && npx vitest run && cd ../server && npx vitest run",
+    "benchmark": "node scripts/swe-bench/run-benchmark.mjs",
+    "benchmark:dry": "node scripts/swe-bench/run-benchmark.mjs --dry-run",
     "lint": "echo 'lint TODO'",
     "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules",
     "start": "node packages/cli/dist/main.js",
@@ -24,6 +27,6 @@
     "start:desktop": "cd packages/desktop && npx electron dist/main.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0 <24.0.0"
   }
 }
