@@ -1,15 +1,25 @@
 {
-  "name": "@easyagent/web",
+  "name": "@easyagent/frontend",
   "version": "0.4.1",
-  "description": "EasyAgent Web Dashboard",
+  "description": "EasyAgent 统一前端 - Web + Desktop 共享 UI 组件/页面/状态管理",
   "type": "module",
+  "main": "./src/main.tsx",
+  "exports": {
+    ".": "./src/main.tsx",
+    "./App": "./src/App.tsx",
+    "./components/*": "./src/components/*",
+    "./pages/*": "./src/pages/*",
+    "./stores/*": "./src/stores/*",
+    "./config": "./src/config.tsx",
+    "./api": "./src/api.ts",
+    "./styles/*": "./src/styles/*"
+  },
   "scripts": {
-    "dev": "set NODE_OPTIONS=--no-deprecation && vite --port 5173",
-    "build": "tsc && vite build",
+    "dev": "vite --port 5173",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@easyagent/frontend": "workspace:*",
     "lucide-react": "^0.378.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",

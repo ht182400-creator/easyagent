@@ -1,20 +1,15 @@
 /**
  * Desktop 渲染进程入口
- * 使用 HashRouter 适配 Electron file:// 协议
+ * 使用统一前端 @easyagent/frontend，通过 ConfigProvider 设为 Desktop 模式
  * 集成 IPC 桥接用于桌面特有功能
  */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import App from './App';
-import './index.css';
+import { ConfigProvider } from '@/config';
+import App from '@/App';
 
 // ==================== 初始化 IPC 桥接 ====================
-/** 检测是否在 Electron 环境中运行 */
-function isElectron(): boolean {
-  return !!(window as any).easyAgent;
-}
-
 /** 将 Electron IPC 事件桥接到 Web Store */
 function setupIPCBridge() {
   const api = (window as any).easyAgent;
@@ -25,8 +20,8 @@ function setupIPCBridge() {
 
   console.log('[EasyAgent Desktop] IPC 桥接已初始化');
 
-  // 动态导入 store 避免循环依赖
-  import('./stores/appStore').then(({ useAppStore }) => {
+  // 动态导入 store 避免循环依赖（使用统一前端的 store）
+  import('@/stores/appStore').then(({ useAppStore }) => {
     // 监听工作区变化
     api.onWorkspaceChanged((workspacePath: string) => {
       console.log('[EasyAgent Desktop] 工作区切换:', workspacePath);
@@ -57,9 +52,11 @@ setupIPCBridge();
 // ==================== 启动 React 应用 ====================
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
+    <ConfigProvider config={{ apiBase: 'http://127.0.0.1:3456', wsBase: 'ws://127.0.0.1:3456/ws', isDesktop: true }}>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </ConfigProvider>
   </React.StrictMode>
 );
 

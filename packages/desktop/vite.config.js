@@ -12,12 +12,22 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@': resolve(__dirname, 'src/renderer'),
+            '@': resolve(__dirname, '../frontend/src'),
         },
     },
     server: {
         port: 5183,
         strictPort: true,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3456',
+                changeOrigin: true,
+            },
+            '/ws': {
+                target: 'ws://localhost:3456',
+                ws: true,
+            },
+        },
     },
 });
 //# sourceMappingURL=vite.config.js.map

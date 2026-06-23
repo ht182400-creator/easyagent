@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
@@ -14,9 +17,10 @@ export default defineConfig({
     assetsInlineLimit: 0,
   },
   resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src/renderer'),
-    },
+    alias: [
+      /** 统一前端 @/ → packages/frontend/src */
+      { find: /^@\//, replacement: resolve(__dirname, '../frontend/src/') },
+    ],
   },
   server: {
     port: 5183,
