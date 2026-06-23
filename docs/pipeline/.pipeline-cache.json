@@ -21,8 +21,8 @@
       "size": 19886
     },
     "2026-06-23.md": {
-      "mtimeMs": 1782225917797.9834,
-      "size": 35123
+      "mtimeMs": 1782229162455.5366,
+      "size": 37821
     },
     "MEMORY.md": {
       "mtimeMs": 1782218623292.3752,
@@ -3095,6 +3095,30 @@
           "p5a",
           "p5b"
         ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "P5 管线数据同步 (23:31)",
+        "problem": "P5 管线数据同步 (23:31)",
+        "solution": "`update-progress.mjs` 中 `branchDetect` 使用旧 ID (opt-p1a/opt-p2b) 无法匹配 `pipeline-data.json` 中的实际节点 ID (b1a/b2b)；修复后脚本可正确自动检测分支节点文件并更新状态",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-23",
+        "title": "P5 管线数据同步 (23:31)",
+        "problem": "P5 管线数据同步 (23:31)",
+        "solution": "`update-progress.mjs` 中 `branchDetect` 使用旧 ID (opt-p1a/opt-p2b) 无法匹配 `pipeline-data.json` 中的实际节点 ID (b1a/b2b)；修复后脚本可正确自动检测分支节点文件并更新状态",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a",
+          "p5b"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -3112,5 +3136,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-23T15:29:08.692Z"
+  "generatedAt": "2026-06-23T15:48:38.778Z"
 }
