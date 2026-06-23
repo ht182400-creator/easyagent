@@ -1,12 +1,12 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.5.0",
+    "version": "0.4.0",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-23T01:42:00.000Z",
+    "lastUpdated": "2026-06-23T13:41:47.845Z",
     "engine": "auto-detected",
-    "totalTests": 40,
-    "modelsSupported": 10
+    "totalTests": 36,
+    "modelsSupported": 4
   },
   "phases": [
     {
@@ -167,14 +167,14 @@
     {
       "id": "P5",
       "name": "管线运维",
-      "status": "running",
+      "status": "done",
       "priority": "p5",
       "tasks": [
         {
           "id": "p5a-dashboard",
           "name": "管线数据看板",
           "desc": "SVG 流程图渲染 · KPI 仪表板 · 问题面板 · 四级渐进展开 · file:// 离线支持",
-          "status": "in-progress",
+          "status": "done",
           "time": "持续",
           "detect": {
             "files": [
