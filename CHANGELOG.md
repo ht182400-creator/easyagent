@@ -7,6 +7,15 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.4.1] - 2026-06-23
+
+### Fixed
+- 修复 `update-progress.mjs` syncPipelineData 中 `pipeline-data.json` 结构不匹配导致的 TypeError
+
+### Changed
+- `.gitignore` 补充规则：排除含 Token 的历史文件 (`history_*.md`)、临时测试脚本、`packages/docs/`
+- 更新开发记忆文档和项目进度数据
+
 ## [0.4.0] - 2026-06-22
 
 ### Added
