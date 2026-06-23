@@ -3,7 +3,7 @@
     "repo": "ht182400-creator/easyagent",
     "version": "0.4.1",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-23T15:33:24.669Z",
+    "lastUpdated": "2026-06-23T15:38:51.289Z",
     "engine": "auto-detected",
     "totalTests": 36,
     "modelsSupported": 4
@@ -240,6 +240,10 @@
     {
       "label": "v0.4.1 前端合并+CI/CD",
       "value": 75
+    },
+    {
+      "label": "自动评分（五维度加权）",
+      "value": 81
     },
     {
       "label": "全量完成",

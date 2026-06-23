@@ -21,6 +21,16 @@ const ROOT = join(__dirname, '..');
 const DATA_FILE = join(ROOT, 'docs', 'pipeline', 'project-progress-data.json');
 const PIPELINE_DATA_FILE = join(ROOT, 'docs', 'pipeline', 'pipeline-data.json');
 
+// 懒加载 pipeline-config.mjs 的 calculateScore（避免 import 时的循环依赖）
+let _calculateScore = null;
+function getCalculateScore() {
+  if (!_calculateScore) {
+    // 动态 import ESM 模块
+    _calculateScore = import('../docs/pipeline/lib/pipeline-config.mjs').then(m => m.calculateScore);
+  }
+  return _calculateScore;
+}
+
 // CLI 参数
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry') || args.includes('-d');
@@ -177,7 +187,7 @@ function calcPhaseStatus(tasks) {
 
 // ==================== 主流程 ====================
 
-function main() {
+async function main() {
   console.log('🔍 EasyAgent 项目进度检测\n');
 
   // 读取现有数据
@@ -279,8 +289,31 @@ function main() {
     writeFileSync(DATA_FILE, JSON.stringify(data, null, 2) + '\n', 'utf8');
     console.log(`💾 已写入: ${DATA_FILE}`);
 
-    // 同步更新流程图管线数据
-    syncPipelineData(data, { version, codename, testCount, modelCount, now });
+    // 动态计算综合评分（从 pipeline-config 的五维度加权公式）
+    let dynScore = null;
+    try {
+      const { calculateScore } = await import('../docs/pipeline/lib/pipeline-config.mjs');
+      dynScore = calculateScore();
+      console.log(`📊 动态评分: ${dynScore.total} / 100`);
+
+      // 自动更新 project-progress-data.json 中的评分历史（仅当与上次不同时追加）
+      const lastScore = data.scoreHistory?.[data.scoreHistory.length - 2]?.value; // 跳过"全量完成"占位
+      if (lastScore !== dynScore.total && !data.scoreHistory?.some(e => e.label === '自动评分（五维度加权）')) {
+        // 在"全量完成"之前插入动态评分条目
+        const projectedIdx = data.scoreHistory?.findIndex(e => e.projected);
+        if (projectedIdx >= 0) {
+          data.scoreHistory.splice(projectedIdx, 0, {
+            label: '自动评分（五维度加权）',
+            value: dynScore.total,
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('⚠ 无法动态计算评分:', e.message);
+    }
+
+    // 同步更新流程图管线数据（含动态评分）
+    await syncPipelineData(data, { version, codename, testCount, modelCount, now, dynScore });
     console.log(`💾 已写入: ${PIPELINE_DATA_FILE}`);
   } else {
     console.log('🔍 [DRY RUN] 未写入文件，仅预览');
@@ -290,7 +323,7 @@ function main() {
 /**
  * 将项目进度数据同步到流程图管线数据文件
  * @param {Object} progressData - project-progress-data.json 的内容
- * @param {Object} info - 版本/测试/模型信息
+ * @param {Object} info - 版本/测试/模型/评分信息
  */
 function syncPipelineData(progressData, info) {
   let pipelineData;
@@ -311,9 +344,15 @@ function syncPipelineData(progressData, info) {
   pipelineData.version = info.version;
   pipelineData.generatedAt = info.now;
 
-  // 更新 KPI 数据
+  // 更新 KPI 数据（含动态评分）
   pipelineData.kpi.testCases = info.testCount;
   pipelineData.kpi.providers = info.modelCount;
+  if (info.dynScore) {
+    pipelineData.kpi.scoreTotal = info.dynScore.total;
+    // 同步评分维度到综合评分详情（如果 pipelineData 中有 scoreDimensions 字段）
+    if (!pipelineData.scoreDimensions) pipelineData.scoreDimensions = [];
+    pipelineData.scoreDimensions = info.dynScore.dimensions;
+  }
 
   // 遍历主线任务，同步检测后的状态
   const detectMap = new Map();

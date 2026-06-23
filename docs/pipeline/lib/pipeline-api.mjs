@@ -13,7 +13,7 @@
 import { parseMemoryIssues } from './pipeline-parser.mjs';
 import {
   getPipelineView, generateDashboardDetails,
-  getKPI, SCORE_HISTORY, KPI_DEFAULTS,
+  getKPI, getScoreHistory, KPI_DEFAULTS,
   generateTestDetailPanel,
 } from './pipeline-config.mjs';
 
@@ -47,7 +47,7 @@ export function createApiHandler(memoryDir, cacheFilePath) {
         sendJson(res, 200, {
           pipeline: pipelineView,
           kpi,
-          scoreHistory: SCORE_HISTORY,
+          scoreHistory: getScoreHistory(),
         });
         return true;
       }

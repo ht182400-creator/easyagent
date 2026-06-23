@@ -6802,7 +6802,7 @@
     "testPassRate": 100,
     "tools": 51,
     "providers": 4,
-    "scoreTotal": 75,
+    "scoreTotal": 81,
     "modes": 4
   },
   "scoreHistory": [
@@ -6837,10 +6837,42 @@
       "score": 75
     }
   ],
-  "generatedAt": "2026-06-23T15:33:24.669Z",
+  "generatedAt": "2026-06-23T15:38:51.289Z",
   "version": "0.4.1",
   "meta": {
     "version": "0.4.1",
-    "generatedAt": "2026-06-23T15:33:24.669Z"
-  }
+    "generatedAt": "2026-06-23T15:38:51.289Z"
+  },
+  "scoreDimensions": [
+    {
+      "label": "功能完整度",
+      "score": 97,
+      "max": 100,
+      "note": "19/19 模块完成"
+    },
+    {
+      "label": "测试覆盖",
+      "score": 95,
+      "max": 100,
+      "note": "765/804 用例通过"
+    },
+    {
+      "label": "分支优化",
+      "score": 30,
+      "max": 100,
+      "note": "3/10 分支完成"
+    },
+    {
+      "label": "CI/CD 成熟度",
+      "score": 100,
+      "max": 100,
+      "note": "4/4 CI 文件就绪"
+    },
+    {
+      "label": "文档完整度",
+      "score": 75,
+      "max": 100,
+      "note": "3/4 文档齐全"
+    }
+  ]
 }

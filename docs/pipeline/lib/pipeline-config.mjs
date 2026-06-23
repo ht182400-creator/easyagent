@@ -408,9 +408,96 @@ function calcPhasePassRate(vtResult, moduleIds) {
 }
 
 /**
+ * 根据项目实际完成情况自动计算综合评分
+ * 
+ * 五维度加权公式：
+ *   总分 = 功能完整度×0.35 + 测试覆盖×0.25 + 分支优化×0.20 + CI/CD成熟度×0.10 + 文档完整度×0.10
+ * 
+ * 各维度数据来源均为自动检测（文件存在性 / vitest 报告 / MODULES 状态），无硬编码。
+ * 
+ * @returns {{ total: number, dimensions: Array<{label:string, score:number, max:number, note:string}> }}
+ */
+export function calculateScore() {
+  const vitestResult = loadVitestResults();
+  const ROOT = resolve(__dirname, '../../..');  // docs/pipeline/lib → workspace root
+
+  // 1. 功能完整度 —— 主线模块完成率 (in-progress 按 50% 计)
+  const mainNodeIds = PHASES.flatMap(p => p.nodeIds);
+  let mainDone = 0;
+  const mainTotal = mainNodeIds.length;
+  for (const id of mainNodeIds) {
+    const status = MODULES[id]?.status;
+    if (status === 'done') mainDone++;
+    else if (status === 'in-progress') mainDone += 0.5;
+  }
+  const functionalScore = Math.round((mainDone / mainTotal) * 100);
+
+  // 2. 测试覆盖 —— 来自 vitest 报告的实际通过率
+  let testScore = 100;
+  if (vitestResult.totalTests > 0) {
+    const effectiveTotal = vitestResult.totalPassed + vitestResult.totalFailed + vitestResult.totalSkipped;
+    testScore = effectiveTotal > 0 ? Math.round((vitestResult.totalPassed / effectiveTotal) * 100) : 100;
+  }
+
+  // 3. 分支优化 —— 分支模块完成率 (只计 done)
+  const branchNodeIds = BRANCHES.flatMap(b => b.nodeIds);
+  let branchDone = 0;
+  const branchTotal = branchNodeIds.length;
+  for (const id of branchNodeIds) {
+    if (MODULES[id]?.status === 'done') branchDone++;
+  }
+  const branchScore = branchTotal > 0 ? Math.round((branchDone / branchTotal) * 100) : 0;
+
+  // 4. CI/CD 成熟度 —— 检测 CI 相关文件存在性
+  const ciFiles = [
+    '.github/workflows/ci.yml',
+    '.github/workflows/release.yml',
+    'release-publish.bat',
+    'build.bat',
+  ];
+  const ciExist = ciFiles.filter(f => existsSync(resolve(ROOT, f))).length;
+  const cicdScore = Math.round((ciExist / ciFiles.length) * 100);
+
+  // 5. 文档完整度 —— 检测关键文档存在性
+  const docFiles = [
+    'README.md',
+    'CHANGELOG.md',
+    '.github/CONTRIBUTING.md',
+    'docs/pipeline/ARCHITECTURE.md',
+  ];
+  const docExist = docFiles.filter(f => existsSync(resolve(ROOT, f))).length;
+  const docScore = Math.round((docExist / docFiles.length) * 100);
+
+  // 加权总分
+  const total = Math.round(
+    functionalScore * 0.35 +
+    testScore * 0.25 +
+    branchScore * 0.20 +
+    cicdScore * 0.10 +
+    docScore * 0.10
+  );
+
+  const dimensions = [
+    { label: '功能完整度', score: functionalScore, max: 100,
+      note: `${Math.round(mainDone)}/${mainTotal} 模块完成` },
+    { label: '测试覆盖', score: testScore, max: 100,
+      note: `${vitestResult.totalPassed || '--'}/${vitestResult.totalTests || '--'} 用例通过` },
+    { label: '分支优化', score: branchScore, max: 100,
+      note: `${branchDone}/${branchTotal} 分支完成` },
+    { label: 'CI/CD 成熟度', score: cicdScore, max: 100,
+      note: `${ciExist}/${ciFiles.length} CI 文件就绪` },
+    { label: '文档完整度', score: docScore, max: 100,
+      note: `${docExist}/${docFiles.length} 文档齐全` },
+  ];
+
+  return { total, dimensions };
+}
+
+/**
  * 获取动态 KPI 值
  * - testCases 从 test-case-mapping.json 自动计算
  * - passRate/passFail 从 vitest JSON 报告动态计算
+ * - scoreTotal 从 calculateScore() 自动计算（五维度加权，无硬编码）
  */
 export function getKPI() {
   const mapping = loadTestCaseMapping();
@@ -435,6 +522,9 @@ export function getKPI() {
     passRate = testCases > 0 ? 100 : 0;
   }
 
+  // 自动计算综合评分（五维度加权，无硬编码）
+  const score = calculateScore();
+
   return {
     testCases,
     testPassRate: passRate,
@@ -443,11 +533,12 @@ export function getKPI() {
     testSkipped: totalSkipped,
     tools: 51,
     providers: 10,
-    scoreTotal: 75.0,
+    scoreTotal: score.total,
     modes: 4,
     _source: vtResult.totalTests > 0 ? `vitest-reports(${vtResult.files.length} files)` : 'test-case-mapping.json',
     _totalFiles: mapping?._meta?.totalTestFiles || 0,
     _vitestFiles: vtResult.files,
+    _scoreDimensions: score.dimensions,
   };
 }
 
@@ -466,6 +557,31 @@ export const SCORE_HISTORY = [
   { version: 'v0.5.0', date: '2026-06-23', score: 73.4 },
   { version: 'v0.4.1', date: '2026-06-23', score: 75.0, note: '前端合并+CI/CD完成' },
 ];
+
+/**
+ * 获取评分历史（静态历史 + 动态追加当前评分）
+ * 当前评分从 calculateScore() 实时计算。
+ * @returns {Array<{version:string, date:string, score:number, note?:string, dynamic?:boolean}>}
+ */
+export function getScoreHistory() {
+  const current = calculateScore();
+  // 检查最新一条是否与当前评分相同（避免重复追加）
+  const lastEntry = SCORE_HISTORY[SCORE_HISTORY.length - 1];
+  if (lastEntry && lastEntry.score === current.total) {
+    return SCORE_HISTORY;
+  }
+  // 追加当前动态评分
+  return [
+    ...SCORE_HISTORY,
+    {
+      version: 'current',
+      date: new Date().toISOString().slice(0, 10),
+      score: current.total,
+      note: '动态计算（五维度加权）',
+      dynamic: true,
+    },
+  ];
+}
 
 // ============================================================
 // 仪表板卡片详情数据（动态生成工厂）
@@ -530,14 +646,14 @@ export function generateDashboardDetails(kpi) {
     score: {
       title: '综合评分详情',
       subtitle: `${kpi?.scoreTotal || KPI_DEFAULTS.scoreTotal} / 100 · 版本演进追踪`,
-      history: SCORE_HISTORY,
-      dimensions: [
+      history: getScoreHistory(),
+      dimensions: kpi._scoreDimensions || [
+        // 回退硬编码值（仅当 calculateScore 不可用时）
         { label: '功能完整度', score: 96, max: 100, note: '16/16 模块完成' },
         { label: '测试覆盖', score: 75, max: 100, note: `${testCount} 用例 · 全模块覆盖` },
-        { label: '代码质量', score: 68, max: 100, note: '架构评审 + lint 检查' },
-        { label: '文档完整度', score: 60, max: 100, note: 'PRD/ADD/CHANGELOG 齐全' },
+        { label: '分支优化', score: 30, max: 100, note: '3/10 分支完成' },
         { label: 'CI/CD 成熟度', score: 55, max: 100, note: 'GitHub Actions + 自动发布' },
-        { label: '生态建设', score: 30, max: 100, note: '10 分支优化项 · 6 待启动' },
+        { label: '文档完整度', score: 60, max: 100, note: 'PRD/ADD/CHANGELOG 齐全' },
       ],
     },
     modes: {

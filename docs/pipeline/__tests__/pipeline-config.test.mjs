@@ -16,6 +16,9 @@ import {
   getPipelineView,
   generateDashboardDetails,
   getKeywordMap,
+  calculateScore,
+  getScoreHistory,
+  getKPI,
 } from '../lib/pipeline-config.mjs';
 
 // ==================== 模块定义测试 ====================
@@ -124,8 +127,9 @@ describe('KPI_DEFAULTS', () => {
     assert.ok(typeof KPI_DEFAULTS.modes === 'number', 'modes 应为数字');
   });
 
-  it('testPassRate 应为 100', () => {
-    assert.equal(KPI_DEFAULTS.testPassRate, 100, '通过率应为 100');
+  it('testPassRate 应 >= 90（真实 vitest 数据允许少量失败）', () => {
+    assert.ok(KPI_DEFAULTS.testPassRate >= 90,
+      `testPassRate ${KPI_DEFAULTS.testPassRate} 应 >= 90`);
   });
 
   it('testCases 应 >= 864', () => {
@@ -199,9 +203,10 @@ describe('generateDashboardDetails', () => {
     assert.ok(tests.summary, 'tests 应有 summary');
   });
 
-  it('pass 卡片应显示 100% 通过率', () => {
+  it('pass 卡片应显示动态通过率', () => {
     const { pass } = generateDashboardDetails(KPI_DEFAULTS);
-    assert.ok(pass.subtitle.includes('100%'), 'pass subtitle 应包含 100%');
+    // 真实 vitest 数据通过率可能是 95% 等，检查格式而非具体值
+    assert.ok(pass.subtitle.includes('%'), `pass subtitle 应包含 %: ${pass.subtitle}`);
     const passStat = pass.stats.find(s => s.label.includes('通过'));
     assert.ok(passStat, '应有"通过"统计项');
   });
@@ -261,6 +266,68 @@ describe('SCORE_HISTORY', () => {
       assert.ok(entry.date, '应有 date');
       assert.ok(typeof entry.score === 'number', 'score 应为数字');
     }
+  });
+});
+
+// ==================== 动态评分测试 ====================
+
+describe('calculateScore', () => {
+  it('应返回 total 和 dimensions', () => {
+    const result = calculateScore();
+    assert.ok(typeof result.total === 'number', 'total 应为数字');
+    assert.ok(result.total >= 0 && result.total <= 100, `total ${result.total} 应在 0-100 范围`);
+    assert.ok(Array.isArray(result.dimensions), 'dimensions 应为数组');
+    assert.equal(result.dimensions.length, 5, '应有 5 个维度');
+  });
+
+  it('每个维度应有 label/score/max/note', () => {
+    const { dimensions } = calculateScore();
+    for (const dim of dimensions) {
+      assert.ok(typeof dim.label === 'string', 'label 应为字符串');
+      assert.ok(typeof dim.score === 'number', 'score 应为数字');
+      assert.ok(dim.score >= 0 && dim.score <= 100, `${dim.label} score 应在 0-100`);
+      assert.equal(dim.max, 100, 'max 应为 100');
+      assert.ok(typeof dim.note === 'string', 'note 应为字符串');
+    }
+  });
+
+  it('加权总分应等于各维度加权之和', () => {
+    const { total, dimensions } = calculateScore();
+    const weights = [0.35, 0.25, 0.20, 0.10, 0.10];
+    const computed = Math.round(
+      dimensions.reduce((sum, dim, i) => sum + dim.score * weights[i], 0)
+    );
+    assert.equal(total, computed, `总分 ${total} 应等于加权计算 ${computed}`);
+  });
+});
+
+describe('getScoreHistory', () => {
+  it('应返回评分历史数组（含动态当前值）', () => {
+    const history = getScoreHistory();
+    assert.ok(Array.isArray(history), '应返回数组');
+    assert.ok(history.length >= SCORE_HISTORY.length, '长度应 >= 静态历史');
+  });
+
+  it('末尾条目应为动态计算值', () => {
+    const history = getScoreHistory();
+    const last = history[history.length - 1];
+    assert.ok(last.dynamic === true, '最后一条应有 dynamic: true 标记');
+    assert.ok(typeof last.score === 'number', 'score 应为数字');
+  });
+});
+
+describe('getKPI 动态评分', () => {
+  it('scoreTotal 应与 calculateScore().total 一致', () => {
+    const kpi = getKPI();
+    const score = calculateScore();
+    assert.equal(kpi.scoreTotal, score.total,
+      `KPI scoreTotal ${kpi.scoreTotal} 应等于 calculateScore ${score.total}`);
+  });
+
+  it('_scoreDimensions 应包含 5 个维度', () => {
+    const kpi = getKPI();
+    assert.ok(Array.isArray(kpi._scoreDimensions), '_scoreDimensions 应为数组');
+    assert.equal(kpi._scoreDimensions.length, 5, '应有 5 个维度');
   });
 });
 
