@@ -13,6 +13,8 @@ on:
 
 env:
   NODE_VERSION: '20'
+  # 强制 node-gyp 使用 VS 2022 (v17)，避免 windows-latest 上的 VS 2026 (v18) 不被识别
+  npm_config_msvs_version: '2022'
 
 jobs:
   # ===== 测试 =====
