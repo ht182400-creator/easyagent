@@ -16,6 +16,11 @@ export default defineConfig({
     setupFiles: ['./src/__tests__/setup.ts'],
     // 测试超时
     testTimeout: 10000,
+    // 输出 JSON 报告供管线自动采集
+    reporters: ['default', 'json'],
+    outputFile: {
+      json: '../../docs/pipeline/_vitest-desktop.json',
+    },
     // 路径别名 - 匹配 tsconfig
     alias: {
       '@': path.resolve(__dirname, 'src/renderer'),

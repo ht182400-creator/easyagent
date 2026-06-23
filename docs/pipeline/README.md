@@ -117,3 +117,18 @@ node docs/pipeline/server.mjs
 # 浏览器打开
 # http://127.0.0.1:8898/index.html
 ```
+
+## 测试
+
+管线模块自带 4 个测试文件，覆盖配置/缓存/解析/API 四个核心组件，共 58 个用例，使用 Node.js 内置测试运行器：
+
+```bash
+# 运行所有管线测试
+node --test docs/pipeline/__tests__/pipeline-*.test.mjs
+
+# 分别运行
+node --test docs/pipeline/__tests__/pipeline-config.test.mjs  # 配置模块 29 用例
+node --test docs/pipeline/__tests__/pipeline-cache.test.mjs   # 缓存模块 15 用例
+node --test docs/pipeline/__tests__/pipeline-parser.test.mjs  # 解析器 8 用例
+node --test docs/pipeline/__tests__/pipeline-api.test.mjs     # API 14 用例
+```

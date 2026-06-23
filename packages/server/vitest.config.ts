@@ -9,6 +9,11 @@ export default defineConfig({
     // 服务端测试需要更长超时
     testTimeout: 15000,
     hookTimeout: 10000,
+    // 输出 JSON 报告供管线自动采集
+    reporters: ['default', 'json'],
+    outputFile: {
+      json: '../../docs/pipeline/_vitest-server.json',
+    },
   },
   resolve: {
     alias: {

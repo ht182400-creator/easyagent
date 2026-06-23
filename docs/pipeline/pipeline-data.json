@@ -1,285 +1,6810 @@
 {
-  "meta": {
-    "version": "0.4.0",
-    "codename": "Helios",
-    "releaseDate": "2026-06-23",
-    "generatedAt": "2026-06-22T16:31:22.710Z",
-    "description": "EasyAgent 项目全景进度管线数据 - 整合 PRD/ADD/Review 文档中所有功能模块"
-  },
-  "mainLane": {
-    "id": "main",
-    "label": "核心功能管线",
+  "pipeline": {
     "phases": [
       {
-        "id": "phase-foundation",
-        "label": "P0 基础",
+        "id": "P0",
+        "label": "P0 基础层",
         "period": "2026 Q2 早期",
         "nodes": [
           {
             "id": "f1",
+            "icon": "🔌",
             "label": "多模型适配器",
             "desc": "10家国产大模型\nOpenAI兼容+自有API",
-            "status": "done",
-            "icon": "🔌"
+            "status": "done"
           },
           {
             "id": "f2",
+            "icon": "🧠",
             "label": "Agent 系统",
-            "desc": "ReAct循环\n多Agent协作+计划模式",
-            "status": "done",
-            "icon": "🧠"
+            "desc": "ReAct循环\n多Agent协作+计划",
+            "status": "done"
           },
           {
             "id": "f3",
+            "icon": "🔧",
             "label": "工具系统 51 tools",
-            "desc": "17分组全覆盖\n文件/搜索/Git/代码/知识库",
-            "status": "done",
-            "icon": "🔧"
+            "desc": "17分组全覆盖\n文件/搜索/Git/知识库",
+            "status": "done"
           }
         ]
       },
       {
-        "id": "phase-interface",
+        "id": "P1",
         "label": "P1 交互层",
         "period": "2026 Q2 中期",
         "nodes": [
           {
             "id": "f7",
+            "icon": "🖥️",
             "label": "Ink CLI",
-            "desc": "React Terminal\n7组件架构+10命令",
-            "status": "done",
-            "icon": "🖥️"
+            "desc": "React Terminal\n7组件+10命令",
+            "status": "done"
           },
           {
             "id": "f8",
+            "icon": "🌐",
             "label": "Web Dashboard v4",
             "desc": "WorkBuddy风格\n10 Store+WS+虚拟滚动",
-            "status": "done",
-            "icon": "🌐"
+            "status": "done"
           },
           {
             "id": "f9",
+            "icon": "🖼️",
             "label": "Desktop 原生应用",
-            "desc": "Electron+React\n六件套布局+系统托盘",
-            "status": "done",
-            "icon": "🖼️"
+            "desc": "Electron+React\n六件套+系统托盘",
+            "status": "done"
           }
         ]
       },
       {
-        "id": "phase-extend",
+        "id": "P2",
         "label": "P2 扩展层",
         "period": "2026 Q2 中后期",
         "nodes": [
           {
             "id": "f4",
+            "icon": "📚",
             "label": "知识库 RAG",
-            "desc": "双作用域架构\n5工具+HTTP API+Web管理",
-            "status": "done",
-            "icon": "📚"
+            "desc": "双作用域架构\n5工具+HTTP API",
+            "status": "done"
           },
           {
             "id": "f5",
+            "icon": "🔗",
             "label": "MCP 协议",
-            "desc": "JSON-RPC stdio\n多Server管理+工具发现",
-            "status": "done",
-            "icon": "🔗"
+            "desc": "JSON-RPC stdio\n多Server+工具发现",
+            "status": "done"
           },
           {
             "id": "f6",
+            "icon": "📦",
             "label": "沙箱执行环境",
-            "desc": "Docker+本地进程降级\n3种模式自动检测",
-            "status": "done",
-            "icon": "📦"
+            "desc": "Docker+本地降级\n3种模式自动检测",
+            "status": "done"
           }
         ]
       },
       {
-        "id": "phase-platform",
+        "id": "P3",
         "label": "P3 平台层",
         "period": "2026 Q2 后期",
         "nodes": [
           {
             "id": "f10",
+            "icon": "🧩",
             "label": "插件与技能系统",
-            "desc": "PluginManager+6内置技能\n生命周期+钩子系统",
-            "status": "done",
-            "icon": "🧩"
+            "desc": "PluginManager\n6内置技能+钩子",
+            "status": "done"
           },
           {
             "id": "f11",
+            "icon": "💬",
             "label": "IM 适配器",
-            "desc": "Telegram/飞书/企业微信\n3平台消息路由",
-            "status": "done",
-            "icon": "💬"
+            "desc": "Telegram/飞书/微信\n3平台消息路由",
+            "status": "done"
           },
           {
             "id": "f12",
+            "icon": "🌍",
             "label": "i18n 国际化",
-            "desc": "zh-CN/en-US\n完整消息表+t()函数",
-            "status": "done",
-            "icon": "🌍"
+            "desc": "zh-CN/en-US\n完整消息表",
+            "status": "done"
           }
         ]
       },
       {
-        "id": "phase-release",
+        "id": "P4",
         "label": "P4 发布层",
         "period": "2026-06-20 ~ 06-22",
         "nodes": [
           {
             "id": "f13",
+            "icon": "🔄",
             "label": "Desktop 自动升级",
             "desc": "electron-updater\n静默检查+进度+重启",
-            "status": "done",
-            "icon": "🔄"
+            "status": "done"
           },
           {
             "id": "f14",
+            "icon": "📋",
             "label": "模型目录动态更新",
             "desc": "GitHub/CDN双源\n24h缓存+三级降级",
-            "status": "done",
-            "icon": "📋"
+            "status": "done"
           },
           {
             "id": "f15",
+            "icon": "🎯",
             "label": "全面去硬编码",
-            "desc": "模型/模板/命令动态加载\n前端智能默认值",
-            "status": "done",
-            "icon": "🎯"
+            "desc": "模型/模板/命令\n动态加载+智能默认",
+            "status": "done"
           },
           {
             "id": "f16",
+            "icon": "🏷️",
             "label": "版本控制系统",
-            "desc": "version.json唯一源\nCHANGELOG+升级提示API",
-            "status": "done",
-            "icon": "🏷️"
+            "desc": "version.json唯一源\nCHANGELOG+升级API",
+            "status": "done"
           }
         ]
       },
       {
-        "id": "phase-pipeline",
+        "id": "P5",
         "label": "P5 管线运维",
         "period": "2026-06-22 ~ 进行中",
         "nodes": [
           {
             "id": "p5a",
+            "icon": "🗺️",
             "label": "管线数据看板",
             "desc": "全量数据可视化\nKPI仪表板+问题追踪",
-            "status": "in-progress",
-            "icon": "🗺️"
+            "status": "in-progress"
           },
           {
             "id": "p5b",
+            "icon": "📡",
             "label": "自动数据采集",
             "desc": "pipeline-data.json\nmemory实时解析+缓存",
-            "status": "done",
-            "icon": "📡"
+            "status": "done"
           },
           {
             "id": "p5c",
+            "icon": "🔍",
             "label": "实时问题追踪",
             "desc": "MD文件解析\n模块级追溯+统计",
-            "status": "done",
-            "icon": "🔍"
+            "status": "done"
+          }
+        ]
+      }
+    ],
+    "branches": [
+      {
+        "id": "B1",
+        "label": "P1 架构优化分支",
+        "source": "P4",
+        "nodes": [
+          {
+            "id": "b1a",
+            "icon": "🔀",
+            "label": "Web↔Desktop 前端合并",
+            "desc": "packages/frontend\n消除80%代码重复",
+            "status": "in-progress"
+          },
+          {
+            "id": "b1b",
+            "icon": "🛡️",
+            "label": "PluginManager 沙箱",
+            "desc": "worker_threads隔离\nPluginPermission白名单",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": "B2",
+        "label": "P2 质量保障分支",
+        "source": "P4",
+        "nodes": [
+          {
+            "id": "b2a",
+            "icon": "📊",
+            "label": "SWE-bench 评测体系",
+            "desc": "10题基准+pass@k\nAgent代码质量量化",
+            "status": "done"
+          },
+          {
+            "id": "b2b",
+            "icon": "⚙️",
+            "label": "GitHub Actions CI/CD",
+            "desc": "push触发测试编译\nTag自动构建发布EXE",
+            "status": "done"
+          },
+          {
+            "id": "b2c",
+            "icon": "🧪",
+            "label": "集成测试·端到端",
+            "desc": "CLI→Server→Core\n全链路覆盖",
+            "status": "pending"
+          },
+          {
+            "id": "b2d",
+            "icon": "🏆",
+            "label": "多模型评测排行榜",
+            "desc": "每版本发布\n模型适配报告",
+            "status": "pending"
+          },
+          {
+            "id": "b2e",
+            "icon": "📈",
+            "label": "用户行为埋点",
+            "desc": "FTSR/留存率/TTFV\n北极星指标仪表盘",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": "B3",
+        "label": "P3 生态建设分支",
+        "source": "P4",
+        "nodes": [
+          {
+            "id": "b3a",
+            "icon": "⚡",
+            "label": "一键安装脚本",
+            "desc": "curl|bash体验\n12min→2min配置",
+            "status": "pending"
+          },
+          {
+            "id": "b3b",
+            "icon": "🔌",
+            "label": "VS Code 插件",
+            "desc": "IDE深度集成\n实时代码建议",
+            "status": "pending"
+          },
+          {
+            "id": "b3c",
+            "icon": "👥",
+            "label": "Contributor 引导",
+            "desc": "10个good-first-issue\n贡献指南+代码规范",
+            "status": "pending"
           }
         ]
       }
     ]
   },
-  "branchLanes": [
-    {
-      "id": "branch-opt-p1",
-      "label": "P1 优化分支 · 架构改进",
-      "sourceNode": "phase-release",
-      "nodes": [
+  "dashboard": {
+    "tests": {
+      "title": "测试用例详情",
+      "subtitle": "864 个测试用例 · Vitest 测试框架",
+      "items": [
         {
-          "id": "opt-p1a",
-          "label": "Web↔Desktop 前端合并",
-          "desc": "创建 packages/frontend\n消除80%代码重复",
-          "status": "in-progress",
-          "icon": "🔀"
+          "label": "多模型适配器",
+          "val": "127 tests",
+          "note": "f1 · 10 家提供商适配",
+          "expandItems": [
+            {
+              "label": "DeepSeek 适配",
+              "val": "18",
+              "expandItems": [
+                {
+                  "label": "流式对话测试",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "SSE 流式响应完整性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "chunk 分片重组正确性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "流中断恢复处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "大文本流式输出稳定性",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Function Calling",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "单工具调用正确性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多工具并行调用",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "参数 Schema 校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "上下文窗口管理",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "窗口溢出截断策略",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "长对话上下文保持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Token 计数精度",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "错误重试机制",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "网络超时重试",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "速率限制退避",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "速率限制处理",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "429 响应解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "指数退避策略",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "并发请求队列",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "模型参数校验",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "temperature 范围校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "max_tokens 上限检查",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "不合法参数兜底",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "智谱 GLM 适配",
+              "val": "15",
+              "expandItems": [
+                {
+                  "label": "多轮对话测试",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "3 轮以上上下文保持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "话题切换连贯性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "引用前轮信息准确性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "对话摘要压缩",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "工具调用链路",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "GLM 工具声明解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具结果反馈",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多工具串联调用",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Vision 多模态",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "图片 URL 输入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Base64 图片输入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "图文混合理解",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Embedding 接口",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "文本向量化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "维度一致性",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Token 计算校验",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "prompt token 计数",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "completion token 计数",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "计费对账",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "通义千问适配",
+              "val": "17",
+              "expandItems": [
+                {
+                  "label": "流式响应测试",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "SSE 逐字推送",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "长文本流式稳定性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "中途取消处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "网络抖动恢复",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "特殊字符转义",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "多轮对话连贯性",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "上下文窗口滑动",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "系统提示持久化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "对话历史截断",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "角色一致性",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "文件处理能力",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "PDF 文档解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "图片 OCR 识别",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多文件混合输入",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "错误码映射",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "平台错误码转义",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "HTTP 状态码映射",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "自定义错误文案",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "超时兜底策略",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "连接超时重试",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "读取超时降级",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Kimi 适配",
+              "val": "13",
+              "expandItems": [
+                {
+                  "label": "长文本上下文",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "128K token 输入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "超长文档总结",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "上下文精度保持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "内存占用控制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "分段传递策略",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Mermaid 图表",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "流程图渲染",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "时序图生成",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "SVG 导出",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "文件上传解析",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "多格式支持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "大文件分片",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "解析结果缓存",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "联网搜索切换",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "手动开关",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "自动识别触发",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "百度 ERNIE 适配",
+              "val": "12",
+              "expandItems": [
+                {
+                  "label": "RAG 增强检索",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "百度搜索注入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文档库绑定",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "检索精度对比",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "引用来源标注",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "插件调用",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "插件注册流程",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "参数透传",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "结果格式化",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "文生图接口",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "提示词翻译",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "尺寸参数映射",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "图片下载/缓存",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "AppBuilder 集成",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "应用配置加载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "会话创建",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "豆包适配",
+              "val": "11",
+              "expandItems": [
+                {
+                  "label": "多模态输入",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "图文混合请求",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "视频帧提取",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "音频转文字",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多模态结果拼接",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "知识库绑定",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "知识库 ID 注入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "知识检索开关",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "检索片段引用",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "实时推理",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "流式 token 输出",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "首 token 延迟",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "工具编排",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "工具链声明",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "结果传递",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "混元适配",
+              "val": "14",
+              "expandItems": [
+                {
+                  "label": "混元 Turbo 性能",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "延迟基准测试",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "吞吐量压测",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "并发承载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "退化保护",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "多模态理解",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "图片描述生成",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "UI 截图理解",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "图表数据提取",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "视频摘要",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "角色扮演",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "系统提示注入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "角色粘性保持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多角色切换",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "提示词优化",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "长提示压缩",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "示例注入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "思维链分解",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "MiniMax 适配",
+              "val": "10",
+              "expandItems": [
+                {
+                  "label": "海螺 AI 接口",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "Chat Completion 兼容",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "流式返回",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Context 管理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误码映射",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "长文本生成",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "短文 → 长篇",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "续写能力",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "风格一致性",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "音色合成",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "TTS 接口调用",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "音色选择",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "流式播放",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "OpenAI 适配",
+              "val": "9",
+              "expandItems": [
+                {
+                  "label": "GPT-4o 兼容性",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "标准 Chat API",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "System Prompt",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Temperature 控制",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "O1 推理模式",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "推理参数适配",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "reasoning_effort",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Assistant API",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "Assistant 创建",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Thread/Run 管理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "结构化输出",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "JSON Mode",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "response_format",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Ollama 本地",
+              "val": "8",
+              "expandItems": [
+                {
+                  "label": "本地模型加载",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "pull 模型拉取",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "list 模型列表",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "模型元数据读取",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "GPU 加速检测",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "CUDA 可用性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "显存分配",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "模型热切换",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "运行中切换",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "会话保持",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "内存限制测试",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "OOM 保护策略",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
-          "id": "opt-p1b",
-          "label": "PluginManager 沙箱",
-          "desc": "worker_threads隔离\nPluginPermission白名单",
-          "status": "pending",
-          "icon": "🛡️"
+          "label": "Agent 系统",
+          "val": "132 tests",
+          "note": "f2 · ReAct 循环 + 协作",
+          "expandItems": [
+            {
+              "label": "子 Agent 管理",
+              "val": "48",
+              "expandItems": [
+                {
+                  "label": "Agent 创建/销毁",
+                  "val": "12",
+                  "expandItems": [
+                    {
+                      "label": "单 Agent 实例化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "批量 Agent 创建",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Agent 销毁回调",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "资源泄露检测",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "重复创建幂等性",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Agent 上下文隔离",
+                  "val": "10",
+                  "expandItems": [
+                    {
+                      "label": "独立 System Prompt",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具集隔离",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "对话历史隔离",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Memory 命名空间",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件系统隔离",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Agent 间消息传递",
+                  "val": "10",
+                  "expandItems": [
+                    {
+                      "label": "同步消息发送",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "异步消息队列",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "广播消息",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "消息超时处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "序列化/反序列化",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "并发 Agent 调度",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "固定线程池",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "优先级队列",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "依赖关系 DAG",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "最大并发限制",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Agent 生命周期回调",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "onInit 初始化钩子",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "onMessage 消息钩子",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "onError 错误钩子",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "onDestroy 销毁钩子",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Orchestrator 协调",
+              "val": "28",
+              "expandItems": [
+                {
+                  "label": "任务分解",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "自然语言分解",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "子任务依赖分析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "任务粒度控制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "任务去重检测",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "结果汇聚",
+                  "val": "7",
+                  "expandItems": [
+                    {
+                      "label": "多 Agent 结果合并",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "结果去重",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "置信度加权",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "部分结果丢弃",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "优先级调度",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "优先级枚举",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "抢占式调度",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "优先级反转防护",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "重试与超时",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "单任务重试上限",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "全局超时设置",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "中止传播",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "级联中止",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "资源清理",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Memory 记忆系统",
+              "val": "22",
+              "expandItems": [
+                {
+                  "label": "短期记忆写入",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "会话内 KV 存储",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "写入并发锁",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "TTL 过期机制",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "长期记忆检索",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "语义相似检索",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "关键词检索",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "混合排序",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "记忆衰减/清理",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "时间衰减函数",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "手动清理 API",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "跨会话记忆",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "Memory 文件持久化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "会话恢复加载",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "记忆压缩",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "旧对话摘要",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "关键信息提取",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "工具调用链",
+              "val": "19",
+              "expandItems": [
+                {
+                  "label": "串行调用链",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "A → B 顺序执行",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "上一步结果注入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "链中断处理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "并行调用",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "多工具同时发",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "结果归并",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "条件依赖",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "if-else 分支调用",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "空值短路",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "循环检测",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "工具 A → B → A 检测",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "最大迭代次数",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "错误恢复",
+              "val": "15",
+              "expandItems": [
+                {
+                  "label": "单点故障恢复",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "超时自动重试",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误码识别",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "降级工具替换",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "级联故障处理",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "父子任务隔离",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "熔断器模式",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "降级策略",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "工具降级链",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "模型降级",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "死循环检测",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "重复模式识别",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "强制终止",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "工具系统",
+          "val": "115 tests",
+          "note": "f3 · 51 个工具 17 分组",
+          "expandItems": [
+            {
+              "label": "工具执行引擎",
+              "val": "32",
+              "expandItems": [
+                {
+                  "label": "同步工具执行",
+                  "val": "10",
+                  "expandItems": [
+                    {
+                      "label": "同步返回值",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误抛出与捕获",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "执行时耗统计",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "输入参数校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "输出结果校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "异步工具执行",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "Promise 返回值",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "超时中断",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "并发限制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "回调通知",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "沙箱内执行",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "Docker 沙箱",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件系统隔离",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "网络访问控制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "资源配额限制",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "超时中断",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "全局超时定时器",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "子进程 kill",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "超时后清理",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "工具发现/注册",
+              "val": "25",
+              "expandItems": [
+                {
+                  "label": "内置工具注册",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "启动时注册",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "懒加载策略",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "命名冲突处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "IoC 依赖注入",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "MCP 工具发现",
+                  "val": "7",
+                  "expandItems": [
+                    {
+                      "label": "MCP Server 连接",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具列表拉取",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "capability 协商",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "动态加载",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "运行时热加载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "插件目录扫描",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "版本兼容检查",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "去重合并",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "同名工具合并",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "优先级排序",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "合并冲突提示",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Schema 校验",
+              "val": "22",
+              "expandItems": [
+                {
+                  "label": "参数类型校验",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "string / number 校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "enum 枚举校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "array 数组校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "object 嵌套校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "必填字段检测",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "required 字段检查",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "缺省值填充",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误消息中文提示",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "JSON Schema 扩展",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "$ref 引用解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "additionalProperties",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "自定义 format",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "自定义校验器",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "正则校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "范围校验",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "结果解析",
+              "val": "18",
+              "expandItems": [
+                {
+                  "label": "JSON 解析",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "标准 JSON 解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "尾部逗号容忍",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "markdown 块剥离",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "流式结果拼接",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "SSE chunk 拼接",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "进度通知",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "截断保护",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "多模态结果",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "图片 base64 解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件路径解析",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "异常结果兜底",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "空结果处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误 JSON 降级",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "批量调用",
+              "val": "18",
+              "expandItems": [
+                {
+                  "label": "批量并发",
+                  "val": "7",
+                  "expandItems": [
+                    {
+                      "label": "Promise.all 封装",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "最大并发窗口",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "速率限制排队",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "顺序流水线",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "管道式传递",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "类型安全链",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "结果汇总",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "多结果 JSON 数组",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "统计摘要",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "部分失败处理",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "失败不影响其他",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "失败原因记录",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "知识库 RAG",
+          "val": "78 tests",
+          "note": "f4 · 双作用域架构",
+          "expandItems": [
+            {
+              "label": "索引构建",
+              "val": "22",
+              "expandItems": [
+                {
+                  "label": "文档分片",
+                  "val": "7",
+                  "expandItems": [
+                    {
+                      "label": "固定长度分片",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "段落级分片",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "markdown 标题分割",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "代码块保护",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "向量化入库",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "批量 Embedding",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "向量归一化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "数据库写入",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "增量更新",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "新增文档追加",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "删除旧向量",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "变更检测",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "索引压缩",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "量化压缩",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "去重过滤",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "语义搜索",
+              "val": "25",
+              "expandItems": [
+                {
+                  "label": "关键词搜索",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "BM25 检索",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "模糊匹配",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "中文分词",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "大小写无关",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "向量相似度",
+                  "val": "7",
+                  "expandItems": [
+                    {
+                      "label": "余弦相似度",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "topK 截断",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "阈值过滤",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "混合检索",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "关键词 + 向量",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "RRF 融合排序",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "权重可配",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "多轮上下文",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "历史 query 结合",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "指代消解",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Embedding",
+              "val": "16",
+              "expandItems": [
+                {
+                  "label": "模型切换",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "text-embedding-3",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "混元 Embedding",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "本地 BGE-M3",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Batch 批量",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "最大 batch 1024",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "超时保护",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "失败重试",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "维度对齐",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "不同模型维度映射",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "pad / truncate",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "缓存",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "Embedding 缓存",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "LRU 淘汰",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "分块策略",
+              "val": "15",
+              "expandItems": [
+                {
+                  "label": "固定大小分块",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "chunkSize 512",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "chunkSize 1024",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "语义分界",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "双换行切割",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "句子边界识别",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "重叠窗口",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "overlap 10%",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "overlap 20%",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "代码专项",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "AST 边界切割",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "函数级分块",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "MCP 协议",
+          "val": "69 tests",
+          "note": "f5 · JSON-RPC stdio",
+          "expandItems": [
+            {
+              "label": "Client 端",
+              "val": "25",
+              "expandItems": [
+                {
+                  "label": "连接生命周期",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "手动连接/断开",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "自动重连",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "心跳检测",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "优雅关闭",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "工具列表获取",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "tools/list 请求",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "tools/call 调用",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "参数 Schema 解析",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "工具调用",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "同步调用",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "异步调用 + 回调",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "调用超时处理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "资源读取",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "resources/list",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "resources/read",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "resource subscribe",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Server 端",
+              "val": "20",
+              "expandItems": [
+                {
+                  "label": "服务器启动",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "stdio 模式启动",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "HTTP 模式启动",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "启动参数校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "工具暴露",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "工具声明注册",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Schema 自动生成",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具权限标记",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "会话管理",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "多客户端会话",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "会话超时回收",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "会话状态持久",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "错误响应",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "标准错误码",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误消息详细度",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Transport 传输",
+              "val": "14",
+              "expandItems": [
+                {
+                  "label": "stdio 传输",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "子进程 stdin/stdout",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "JSON-RPC 消息边界",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "stderr 日志分离",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "SSE 传输",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "EventSource 连接",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "POST 回传通道",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "消息 ID 关联",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "断线重连",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "指数退避",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "消息队列暂存",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "工具发现协议",
+              "val": "10",
+              "expandItems": [
+                {
+                  "label": "动态列表更新",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "tools/changed 通知",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "增量更新",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "通知机制",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "progress 通知",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "log 通知",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "能力协商",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "capability 声明",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "版本匹配",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "沙箱执行环境",
+          "val": "58 tests",
+          "note": "f6 · Docker + 本地降级",
+          "expandItems": [
+            {
+              "label": "Docker 沙箱",
+              "val": "22",
+              "expandItems": [
+                {
+                  "label": "容器创建/销毁",
+                  "val": "8",
+                  "expandItems": [
+                    {
+                      "label": "docker create",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "docker start/stop",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "容器复用池",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "孤儿容器清理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "文件挂载隔离",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "只读挂载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "临时 volume",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "跨容器数据隔离",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "网络限制",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "域名白名单",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "资源配额",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "CPU 限制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "内存上限",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "磁盘 IO 限制",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "本地降级策略",
+              "val": "18",
+              "expandItems": [
+                {
+                  "label": "无 Docker 降级",
+                  "val": "7",
+                  "expandItems": [
+                    {
+                      "label": "VM2 沙箱",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Node worker_threads",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "进程级隔离",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "降级能力验证",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "工具调用正常",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "超时中断正常",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "输出截断正常",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误不逃逸",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "安全警告提示",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "控制台警告输出",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "UI 横幅提醒",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "日志标记",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "隔离机制",
+              "val": "10",
+              "expandItems": [
+                {
+                  "label": "文件系统隔离",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "chroot 约束",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "禁止上级目录访问",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "进程隔离",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "worker 进程",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "环境变量隔离",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "白名单透传",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "敏感变量遮罩",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "资源限制",
+              "val": "8",
+              "expandItems": [
+                {
+                  "label": "内存上限",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "256MB 限制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "OOM 后优雅退出",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "CPU 限制",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "单核限制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "CPU 时间片",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "执行超时",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "30s 硬超时",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "SIGTERM → SIGKILL",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Ink CLI",
+          "val": "52 tests",
+          "note": "f7 · React Terminal",
+          "expandItems": [
+            {
+              "label": "渲染引擎",
+              "val": "18",
+              "expandItems": [
+                {
+                  "label": "组件挂载",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "初始渲染",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "嵌套组件树",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "卸载清理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "状态更新渲染",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "useState 触发重绘",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "useEffect 副作用",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "批量更新合并",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "颜色主题",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "暗色主题",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "亮色主题",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "自定义调色板",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Markdown 渲染",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "代码块高亮",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "表格对齐",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "链接可点击",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "输入处理",
+              "val": "14",
+              "expandItems": [
+                {
+                  "label": "键盘事件",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "Enter 提交",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Ctrl+C 中断",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Tab 补全",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "上下翻历史",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "粘贴处理",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "大文本粘贴",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "代码粘贴格式",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "历史记录",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "会话内历史",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "跨会话持久",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "历史搜索",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "自动补全",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "文件名补全",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "命令补全",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "命令解析",
+              "val": "12",
+              "expandItems": [
+                {
+                  "label": "内置命令",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "/help 帮助",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/exit 退出",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/model 切换",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "自定义命令",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "命令别名",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "参数模板",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "参数校验",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "必填参数检查",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "类型校验",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "输出格式化",
+              "val": "8",
+              "expandItems": [
+                {
+                  "label": "代码高亮",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "语法关键字",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "行号显示",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "表格输出",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "文本表格",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "对齐分列",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "进度条",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "下载进度",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "任务进度",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Web Dashboard",
+          "val": "43 tests",
+          "note": "f8 · 10 Store + WS",
+          "expandItems": [
+            {
+              "label": "Store 状态管理",
+              "val": "15",
+              "expandItems": [
+                {
+                  "label": "Session Store",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "会话创建/删除",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "消息追加",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "选中会话",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "UI Store",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "主题切换",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "侧栏折叠",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Zustand 中间件",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "persist 持久化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "immer 不可变",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "devtools 调试",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "持久化",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "localStorage",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "选择性持久",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "WebSocket 通信",
+              "val": "10",
+              "expandItems": [
+                {
+                  "label": "连接管理",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "自动连接",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "手动重连按钮",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "连接状态指示",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "消息路由",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "JSON-RPC 指令",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "事件流推送",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "断线重连",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "指数退避",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "消息队列暂存",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "UI 组件测试",
+              "val": "12",
+              "expandItems": [
+                {
+                  "label": "Chat 组件",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "消息气泡",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Markdown 渲染",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "流式打字效果",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Session 列表",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "列表排序",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "搜索过滤",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "表单交互",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "输入验证",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "加载/空状态",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "路由导航",
+              "val": "6",
+              "expandItems": [
+                {
+                  "label": "路由守卫",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "未登录重定向",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "参数传递",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "query params",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "path params",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "嵌套路由",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "子路由 Outlet",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "面包屑导航",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Desktop 原生应用",
+          "val": "36 tests",
+          "note": "f9 · Electron + React",
+          "expandItems": [
+            {
+              "label": "Electron 主进程",
+              "val": "14",
+              "expandItems": [
+                {
+                  "label": "窗口管理",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "主窗口创建",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "最小化到托盘",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "窗口尺寸记忆",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "IPC 主进程",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "ipcMain.handle",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "窗口间通信",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "托盘管理",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "托盘图标",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "右键菜单",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "窗口生命周期",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "create/destroy",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "窗口关闭确认",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Renderer 渲染",
+              "val": "12",
+              "expandItems": [
+                {
+                  "label": "HashRouter 兼容",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "# 路由解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件协议兼容",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "apiFetch 封装",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "URL 前缀注入",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "认证头注入",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Electron API 桥接",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "preload 暴露",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "contextBridge",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "asar 资源加载",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "asar 内路径解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "外部资源 fallback",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IPC 通信",
+              "val": "7",
+              "expandItems": [
+                {
+                  "label": "同步通信",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "invoke/handle",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "双向数据流",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "异步事件",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "send/on 事件",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "主→渲染推送",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "错误传递",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "错误序列化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "RPC 异常转换",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "自动更新",
+              "val": "3",
+              "expandItems": [
+                {
+                  "label": "版本检测",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "更新 API 轮询",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "下载验证",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "SHA256 校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "安装重启",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "自动替换可执行文件",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "插件与技能系统",
+          "val": "31 tests",
+          "note": "f10 · PluginManager",
+          "expandItems": [
+            {
+              "label": "插件加载器",
+              "val": "12",
+              "expandItems": [
+                {
+                  "label": "npm 安装",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "npm install 流程",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "package.json 校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "本地加载",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "本地目录引用",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "入口文件解析",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "依赖解析",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "对等依赖检查",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "版本冲突提示",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "版本兼容性",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "engine 字段检查",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "semver 范围匹配",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "技能注册表",
+              "val": "10",
+              "expandItems": [
+                {
+                  "label": "技能声明",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "skill 元数据注册",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "命令绑定",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "别名解析",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "技能别名映射",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "冲突解决",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "动态发现",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "文件系统监听",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "热重载",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "生命周期管理",
+              "val": "6",
+              "expandItems": [
+                {
+                  "label": "初始化",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "install 脚本",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "启用/禁用",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "运行时切换",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "卸载清理",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "数据移除",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "钩子解绑",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "沙箱隔离",
+              "val": "3",
+              "expandItems": [
+                {
+                  "label": "权限声明",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "权限 manifest",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "进程隔离",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "worker 进程",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "网络限制",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "域名白名单",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "IM 适配器",
+          "val": "28 tests",
+          "note": "f11 · 3 平台消息路由",
+          "expandItems": [
+            {
+              "label": "Telegram 适配",
+              "val": "10",
+              "expandItems": [
+                {
+                  "label": "消息收发",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "文本消息发送",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Markdown 格式化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "长消息分片",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Webhook 接收",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "Inline Query",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "查询解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "结果缓存",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "回调处理",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "callback_query 处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "按钮回调路由",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "长轮询",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "getUpdates 轮询",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "error 重试",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "飞书适配",
+              "val": "9",
+              "expandItems": [
+                {
+                  "label": "消息推送",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "文本消息",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Webhook 推送",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "批量推送",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "卡片消息",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "卡片模板渲染",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "交互按钮回调",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "卡片更新",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "事件订阅",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "消息接收事件",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "URL 验证事件",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "权限审批事件",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "企业微信适配",
+              "val": "9",
+              "expandItems": [
+                {
+                  "label": "群机器人",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "Webhook URL 验证",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "消息加解密",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "@ 提及处理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "应用消息",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "企业内消息推送",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "模板卡片",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "图文混排",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "OAuth 认证",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "OAuth2 流程",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Token 刷新",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "企业身份映射",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "i18n 国际化",
+          "val": "15 tests",
+          "note": "f12 · zh-CN / en-US",
+          "expandItems": [
+            {
+              "label": "zh-CN 中文",
+              "val": "8",
+              "expandItems": [
+                {
+                  "label": "UI 翻译覆盖",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "菜单翻译",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误提示翻译",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "帮助文本翻译",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "日期格式化",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "YYYY-MM-DD",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "相对时间（刚刚）",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "数字显示",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "千分位分隔",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "百分比格式",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "占位符替换",
+                  "val": "1",
+                  "expandItems": [
+                    {
+                      "label": "{name} 变量替换",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "复数规则",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "en-US 英文",
+              "val": "7",
+              "expandItems": [
+                {
+                  "label": "UI 翻译覆盖",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "菜单翻译",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误提示翻译",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "帮助文本翻译",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "日期格式化",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "YYYY-MM-DD",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "相对时间（刚刚）",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "多语言切换",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "运行时切换",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "设置持久化",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "版本控制 + 发布",
+          "val": "22 tests",
+          "note": "f13-f16 · 发布层 4 模块",
+          "expandItems": [
+            {
+              "label": "版本管理器",
+              "val": "8",
+              "expandItems": [
+                {
+                  "label": "版本号解析",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "semver 解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "pre-release 标识",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "build metadata",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "版本比较",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "major 比较",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "版本范围匹配",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "版本同步",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "package.json → app",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多包版本一致",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "发布流水线",
+              "val": "8",
+              "expandItems": [
+                {
+                  "label": "构建流程",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "TypeScript 编译",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "资源打包",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Electron 打包",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "验证检查",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "产物完整性检查",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "二进制签名校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "元数据校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "输出完整性",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "所有文件无缺失",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "产物大小校验",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Changelog",
+              "val": "6",
+              "expandItems": [
+                {
+                  "label": "生成规则",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "GitTag → 章节",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "conventional commit",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "格式校验",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "Markdown 格式",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "链接检查",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "GitTag 关联",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "Tag 对应版本号",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Tag 注释提取",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "管线运维",
+          "val": "58 tests",
+          "note": "p5a/p5b/p5c · 数据看板+采集+追踪",
+          "expandItems": [
+            {
+              "label": "管线数据看板",
+              "val": "14",
+              "expandItems": [
+                {
+                  "label": "仪表板渲染",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "SVG 流程图渲染",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "KPI 卡片数据展示",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "问题面板加载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "响应式布局适配",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "流动箭头动画",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "数据处理",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "四级渐进加载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "API→JSON→嵌入回退",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "缓存信息展示",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "数据来源指示",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "交互响应",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "模块卡片点击",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "问题时间线展开",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "状态脉冲动画",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "可访问性",
+                  "val": "2",
+                  "expandItems": [
+                    {
+                      "label": "file:// 协议支持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "离线骨架渲染",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "自动数据采集",
+              "val": "18",
+              "expandItems": [
+                {
+                  "label": "配置数据",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "MODULES 29 模块定义",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "PHASES 6 阶段配置",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "BRANCHES 3 分支定义",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "KPI 默认值正确性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "getPipelineView 视图生成",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "getKeywordMap 关键词映射",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "缓存系统",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "createEmptyCache 空结构",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "saveCache/loadCache 往返",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "损坏 JSON 降级处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "结构不完整降级",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "100 文件缓存压力",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "数据解析",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "generateDashboardDetails 4卡片",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "testItems 13大类覆盖",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "passRate 通过率详情",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "toolParams 参数签名",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "异常处理",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "不存在的目录返回错误",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "不存在的缓存返回 null",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "不存在的文件快照 null",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "实时问题追踪",
+              "val": "16",
+              "expandItems": [
+                {
+                  "label": "解析引擎",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "[模块:ID] 显式标签",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "关键词回退匹配",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "重复条目去重",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "resolved/pending 状态识别",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "p5c 自我识别",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "API 端点",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "/api/pipeline 管线视图",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/api/issues 问题解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/api/status 状态摘要",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/api/dashboard 仪表板",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/api/modules 模块列表",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "数据合并",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "跨文件合并无重复",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多模块并行提取",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "缓存命中率统计",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "状态统计",
+                  "val": "3",
+                  "expandItems": [
+                    {
+                      "label": "_totalIssues 计数",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "_cacheStats 统计",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "_generatedAt 时间戳",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "缓存系统",
+              "val": "10"
+            }
+          ]
+        }
+      ],
+      "summary": "所有核心模块均已覆盖测试，总用例数 864，覆盖单元测试、集成测试、端到端测试 + 管线运维自测试"
+    },
+    "pass": {
+      "title": "测试通过率详情",
+      "subtitle": "864/864 通过率 100% · 0 失败 / 0 跳过",
+      "stats": [
+        {
+          "label": "✅ 通过",
+          "val": "864",
+          "color": "#3fb950"
+        },
+        {
+          "label": "❌ 失败",
+          "val": "0",
+          "color": "#f85149"
+        },
+        {
+          "label": "⏭️ 跳过",
+          "val": "0",
+          "color": "#8b949e"
+        }
+      ],
+      "items": [
+        {
+          "label": "P0 基础层 (f1-f3)",
+          "val": "374",
+          "note": "127 + 132 + 115",
+          "rate": "100%",
+          "expandItems": [
+            {
+              "label": "多模型适配器",
+              "val": "127 ✅",
+              "expandItems": [
+                {
+                  "label": "通用适配器工厂",
+                  "val": "19",
+                  "expandItems": [
+                    {
+                      "label": "BaseAdapter 泛型适配流程",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "OpenAI 兼容适配器协议",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Ernie 千帆适配器签名",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Hunyuan 混元适配器端点",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "AdapterFactory 注册与查找",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "配置管理",
+                  "val": "9",
+                  "expandItems": [
+                    {
+                      "label": "API Key 加密存储",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "模型参数配置读写",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "环境变量覆盖优先级",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "加密系统",
+                  "val": "18",
+                  "expandItems": [
+                    {
+                      "label": "AES-256-GCM 加解密往返",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "密钥派生与管理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "签名/验签算法正确性",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "IM 基础适配层",
+                  "val": "24",
+                  "expandItems": [
+                    {
+                      "label": "BaseIMAdapter 事件处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "IMManager 消息分发路由",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多IM并发消息不丢失",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "企业微信适配器",
+                  "val": "10",
+                  "expandItems": [
+                    {
+                      "label": "文本消息收发",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "图片消息处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "事件订阅与回调",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "微信加解密",
+                  "val": "13",
+                  "expandItems": [
+                    {
+                      "label": "AES-CBC 加解密",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "XML 消息体解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "签名验证与时间戳防重放",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "飞书适配器",
+                  "val": "25",
+                  "expandItems": [
+                    {
+                      "label": "文本/富文本消息格式",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "交互卡片消息渲染",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "事件回调与URL验证",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "消息撤回与会话管理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "核心入口",
+                  "val": "10",
+                  "expandItems": [
+                    {
+                      "label": "初始化流程完整性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "生命周期管理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误处理与降级",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "版本信息一致性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "资源释放与清理",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Agent 系统",
+              "val": "132 ✅",
+              "expandItems": [
+                {
+                  "label": "Agent 引擎",
+                  "val": "16",
+                  "expandItems": [
+                    {
+                      "label": "任务执行与中止控制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具调用链编排",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "状态机完整迁移",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误恢复与重试",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "会话管理",
+                  "val": "20",
+                  "expandItems": [
+                    {
+                      "label": "会话创建与持久化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多轮对话上下文保持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "会话恢复与过期清理",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "MCP 协议",
+                  "val": "30",
+                  "expandItems": [
+                    {
+                      "label": "MCP 连接建立与鉴权",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具调用请求/响应",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "超时保护与断线重连",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "未决请求清理机制",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "自动化管理",
+                  "val": "31",
+                  "expandItems": [
+                    {
+                      "label": "CRUD 操作完整性",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "调度规则解析与执行",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "触发条件匹配",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "状态过渡校验",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "子Agent/数据库",
+                  "val": "35",
+                  "expandItems": [
+                    {
+                      "label": "子任务委派与结果汇聚",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "数据库 CRUD 操作",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "并发子Agent协调",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "子Agent超时保护",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "工具系统",
+              "val": "115 ✅",
+              "expandItems": [
+                {
+                  "label": "工具注册表",
+                  "val": "24",
+                  "expandItems": [
+                    {
+                      "label": "工具注册与反注册",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "按模型/分组查找工具",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "参数Schema校验",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具分组统计",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "内置工具(文件/搜索/执行)",
+                  "val": "25",
+                  "expandItems": [
+                    {
+                      "label": "文件读写与编码检测",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "全局搜索 ripgrep 集成",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Shell 命令执行与超时",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "代码质量检测入口",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "文件扩展工具",
+                  "val": "25",
+                  "expandItems": [
+                    {
+                      "label": "批量文件操作",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件流式读写",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "目录树遍历",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "代码工具",
+                  "val": "17",
+                  "expandItems": [
+                    {
+                      "label": "AST 解析与符号提取",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "代码重构建议",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "静态分析与诊断",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "知识库工具",
+                  "val": "24",
+                  "expandItems": [
+                    {
+                      "label": "知识点 CRUD 操作",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "语义搜索与召回",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件导入与摘要生成",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "P1 交互层 (f7-f9)",
+          "val": "131",
+          "note": "52 + 43 + 36",
+          "rate": "100%",
+          "expandItems": [
+            {
+              "label": "Ink CLI",
+              "val": "52 ✅",
+              "expandItems": [
+                {
+                  "label": "预览与媒体工具",
+                  "val": "29",
+                  "expandItems": [
+                    {
+                      "label": "文件预览 (Markdown/图片/PDF)",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "媒体播放控制",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "URL 安全打开",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "工具函数",
+                  "val": "23",
+                  "expandItems": [
+                    {
+                      "label": "日志级别与格式化输出",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "i18n 国际化翻译",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "CLI 参数解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "ANSI 颜色与样式",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Web Dashboard",
+              "val": "43 ✅",
+              "expandItems": [
+                {
+                  "label": "Server 端API",
+                  "val": "27",
+                  "expandItems": [
+                    {
+                      "label": "/api/health 健康检查",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/api/status 状态汇总",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/api/tools 工具列表",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "/api/config 配置读写",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "知识库双作用域 API (9 例)",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "静态文件服务",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "HTML/CSS/JS Content-Type",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "SPA fallback 路由",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "404 错误页面",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "WebSocket 服务",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "连接建立与消息推送",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "subscribe 协议支持",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "连接超时保护",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "知识库服务",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "双作用域项目/全局",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "搜索与导入 API",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "统计 summary 端点",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "Desktop 原生",
+              "val": "36 ✅",
+              "expandItems": [
+                {
+                  "label": "UI 状态管理",
+                  "val": "49",
+                  "expandItems": [
+                    {
+                      "label": "uiStore 主题/侧栏/全屏",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "sessionStore 会话CRUD",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "响应式状态同步",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "React 组件",
+                  "val": "52",
+                  "expandItems": [
+                    {
+                      "label": "ChatView 消息渲染(19)",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Sidebar 树形导航(15)",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "StatusBar 状态指示(9)",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "TabBar 多标签页(9)",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "IPC 通信",
+                  "val": "26",
+                  "expandItems": [
+                    {
+                      "label": "Preload API 桥接(13)",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Main Process 版本管理(13)",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "IPC 通道完整性",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "P2 扩展层 (f4-f6)",
+          "val": "205",
+          "note": "78 + 69 + 58",
+          "rate": "100%",
+          "expandItems": [
+            {
+              "label": "知识库 RAG",
+              "val": "78 ✅",
+              "expandItems": [
+                {
+                  "label": "知识库服务核心",
+                  "val": "40",
+                  "expandItems": [
+                    {
+                      "label": "知识点CRUD (项目/全局域)",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "双作用域隔离与合并",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Markdown/PDF/TXT 解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "增量索引与去重",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "知识库工具接口",
+                  "val": "29",
+                  "expandItems": [
+                    {
+                      "label": "搜索 query 解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "向量相似度排序",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件导入管线",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "语义搜索",
+                  "val": "9",
+                  "expandItems": [
+                    {
+                      "label": "关键词与语义混合搜索",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "结果相关性评分",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Top-K 截断策略",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "MCP 协议",
+              "val": "69 ✅",
+              "expandItems": [
+                {
+                  "label": "MCP 客户端",
+                  "val": "30",
+                  "expandItems": [
+                    {
+                      "label": "stdio/SSE 传输连接",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "工具列表协商与缓存",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "请求/响应生命周期",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Windows 进程管理兼容",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "沙箱执行环境",
+                  "val": "27",
+                  "expandItems": [
+                    {
+                      "label": "Docker 容器隔离",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "文件系统快照",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "资源限制(cpu/mem/disk)",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "协议兼容性",
+                  "val": "12",
+                  "expandItems": [
+                    {
+                      "label": "MCP 版本协商",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "不兼容工具降级处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "错误码标准映射",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "沙箱执行环境",
+              "val": "58 ✅",
+              "expandItems": [
+                {
+                  "label": "Docker 运行时",
+                  "val": "20",
+                  "expandItems": [
+                    {
+                      "label": "镜像拉取与缓存",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "容器生命周期管理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "卷挂载与文件同步",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "执行安全",
+                  "val": "15",
+                  "expandItems": [
+                    {
+                      "label": "网络隔离策略",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "系统调用过滤",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "超时强制终止",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "结果收集",
+                  "val": "12",
+                  "expandItems": [
+                    {
+                      "label": "stdout/stderr 流捕获",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "退出码解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "产物文件导出",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "环境管理",
+                  "val": "11",
+                  "expandItems": [
+                    {
+                      "label": "Node/Python 版本切换",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "npm/pip 包管理器",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "环境快照与恢复",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "P3 平台层 (f10-f12)",
+          "val": "74",
+          "note": "31 + 28 + 15",
+          "rate": "100%",
+          "expandItems": [
+            {
+              "label": "插件与技能",
+              "val": "31 ✅",
+              "expandItems": [
+                {
+                  "label": "插件管理器",
+                  "val": "16",
+                  "expandItems": [
+                    {
+                      "label": "插件注册与卸载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "插件依赖解析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "插件沙箱隔离",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "内置技能",
+                  "val": "15",
+                  "expandItems": [
+                    {
+                      "label": "PPTX 幻灯片生成",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "PDF 文档处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "XLSX 表格分析",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "DOCX Word 文档",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "前端设计技能",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "IM 适配器",
+              "val": "28 ✅",
+              "expandItems": [
+                {
+                  "label": "企业微信",
+                  "val": "10",
+                  "expandItems": [
+                    {
+                      "label": "消息加密收发",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "回调URL验证",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "多类型消息支持",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "飞书",
+                  "val": "11",
+                  "expandItems": [
+                    {
+                      "label": "卡片消息构建",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "事件订阅管理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "权限验证流程",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "其他IM",
+                  "val": "7",
+                  "expandItems": [
+                    {
+                      "label": "钉钉适配器基础",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Telegram Bot 基础",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "Slack Webhook 接入",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "i18n 国际化",
+              "val": "15 ✅",
+              "expandItems": [
+                {
+                  "label": "多语言翻译",
+                  "val": "6",
+                  "expandItems": [
+                    {
+                      "label": "zh-CN 简体中文",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "en-US English",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "翻译键缺失检测",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "格式化工具",
+                  "val": "5",
+                  "expandItems": [
+                    {
+                      "label": "日期/数字本地化",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "复数规则处理",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "货币格式化",
+                      "val": "✅"
+                    }
+                  ]
+                },
+                {
+                  "label": "资源管理",
+                  "val": "4",
+                  "expandItems": [
+                    {
+                      "label": "JSON/YAML 翻译文件加载",
+                      "val": "✅"
+                    },
+                    {
+                      "label": "动态语言切换",
+                      "val": "✅"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": "所有模块测试均通过了 100%，无失败或跳过的用例。"
+    },
+    "tools": {
+      "title": "内置工具详情",
+      "subtitle": "51 个工具 · 17 个功能分组",
+      "items": [
+        {
+          "label": "📁 文件操作",
+          "val": "8 tools",
+          "note": "read/write/edit/delete/search/list/glob/mkdir",
+          "expandItems": [
+            {
+              "label": "read_file",
+              "val": "读取文件内容",
+              "expandItems": [
+                {
+                  "label": "filePath",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "offset",
+                  "val": "number"
+                },
+                {
+                  "label": "limit",
+                  "val": "number"
+                }
+              ]
+            },
+            {
+              "label": "write_to_file",
+              "val": "创建/覆盖文件",
+              "expandItems": [
+                {
+                  "label": "filePath",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "content",
+                  "val": "string · 必填"
+                }
+              ]
+            },
+            {
+              "label": "replace_in_file",
+              "val": "精确替换",
+              "expandItems": [
+                {
+                  "label": "filePath",
+                  "val": "string"
+                },
+                {
+                  "label": "old_str",
+                  "val": "string"
+                },
+                {
+                  "label": "new_str",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "delete_file",
+              "val": "删除文件",
+              "expandItems": [
+                {
+                  "label": "target_file",
+                  "val": "string · 必填"
+                }
+              ]
+            },
+            {
+              "label": "search_file",
+              "val": "文件名搜索",
+              "expandItems": [
+                {
+                  "label": "pattern",
+                  "val": "string · glob"
+                },
+                {
+                  "label": "recursive",
+                  "val": "boolean"
+                },
+                {
+                  "label": "target_directory",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "list_dir",
+              "val": "目录列表",
+              "expandItems": [
+                {
+                  "label": "target_directory",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "search_content",
+              "val": "Ripgrep 搜索",
+              "expandItems": [
+                {
+                  "label": "pattern",
+                  "val": "string · regex"
+                },
+                {
+                  "label": "path",
+                  "val": "string"
+                },
+                {
+                  "label": "glob",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "read_lints",
+              "val": "linter 诊断",
+              "expandItems": [
+                {
+                  "label": "paths",
+                  "val": "string · 可选"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🔍 搜索",
+          "val": "4 tools",
+          "note": "grep/file-search/codebase-search/content-search",
+          "expandItems": [
+            {
+              "label": "search_content",
+              "val": "全文搜索",
+              "expandItems": [
+                {
+                  "label": "pattern",
+                  "val": "string · regex"
+                },
+                {
+                  "label": "path",
+                  "val": "string"
+                },
+                {
+                  "label": "glob",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "search_file",
+              "val": "Glob 匹配",
+              "expandItems": [
+                {
+                  "label": "pattern",
+                  "val": "string · glob"
+                },
+                {
+                  "label": "recursive",
+                  "val": "boolean"
+                },
+                {
+                  "label": "target_directory",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "codebase_search",
+              "val": "语义搜索",
+              "expandItems": [
+                {
+                  "label": "query",
+                  "val": "string"
+                },
+                {
+                  "label": "path",
+                  "val": "string"
+                },
+                {
+                  "label": "maxResults",
+                  "val": "number"
+                }
+              ]
+            },
+            {
+              "label": "web_search",
+              "val": "互联网搜索",
+              "expandItems": [
+                {
+                  "label": "query",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "max_results",
+                  "val": "number"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🔄 Git 操作",
+          "val": "6 tools",
+          "note": "status/diff/log/branch/commit/stash",
+          "expandItems": [
+            {
+              "label": "Git Status",
+              "val": "工作区状态",
+              "expandItems": [
+                {
+                  "label": "repoPath",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "Git Diff",
+              "val": "查看差异",
+              "expandItems": [
+                {
+                  "label": "staged",
+                  "val": "boolean"
+                },
+                {
+                  "label": "path",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "Git Log",
+              "val": "提交历史",
+              "expandItems": [
+                {
+                  "label": "n",
+                  "val": "number"
+                },
+                {
+                  "label": "format",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "Git Branch",
+              "val": "分支操作",
+              "expandItems": [
+                {
+                  "label": "action",
+                  "val": "list/switch/create"
+                },
+                {
+                  "label": "name",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "Git Commit",
+              "val": "提交变更",
+              "expandItems": [
+                {
+                  "label": "message",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "files",
+                  "val": "string[]"
+                }
+              ]
+            },
+            {
+              "label": "Git Stash",
+              "val": "暂存操作",
+              "expandItems": [
+                {
+                  "label": "action",
+                  "val": "push/pop/list"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🧠 Agent/团队",
+          "val": "4 tools",
+          "note": "task/team-create/team-delete/send-message",
+          "expandItems": [
+            {
+              "label": "task",
+              "val": "子 Agent 任务",
+              "expandItems": [
+                {
+                  "label": "subagent_name",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "prompt",
+                  "val": "string"
+                },
+                {
+                  "label": "max_turns",
+                  "val": "number"
+                }
+              ]
+            },
+            {
+              "label": "team_create",
+              "val": "协作团队",
+              "expandItems": [
+                {
+                  "label": "team_name",
+                  "val": "string · 必填"
+                }
+              ]
+            },
+            {
+              "label": "team_delete",
+              "val": "删除团队"
+            },
+            {
+              "label": "send_message",
+              "val": "团队消息",
+              "expandItems": [
+                {
+                  "label": "type",
+                  "val": "string"
+                },
+                {
+                  "label": "recipient",
+                  "val": "string"
+                },
+                {
+                  "label": "content",
+                  "val": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🌐 Web/预览",
+          "val": "3 tools",
+          "note": "fetch/preview/search",
+          "expandItems": [
+            {
+              "label": "web_fetch",
+              "val": "获取网页",
+              "expandItems": [
+                {
+                  "label": "url",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "fetchInfo",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "preview_url",
+              "val": "内嵌预览",
+              "expandItems": [
+                {
+                  "label": "url",
+                  "val": "string · 必填"
+                }
+              ]
+            },
+            {
+              "label": "web_search",
+              "val": "网络搜索",
+              "expandItems": [
+                {
+                  "label": "query",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "max_results",
+                  "val": "number"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "🖼️ 媒体",
+          "val": "2 tools",
+          "note": "image-gen/read-image",
+          "expandItems": [
+            {
+              "label": "image_gen",
+              "val": "AI 图片生成",
+              "expandItems": [
+                {
+                  "label": "prompt",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "size",
+                  "val": "string"
+                },
+                {
+                  "label": "style",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "read_image",
+              "val": "读取图片"
+            }
+          ]
+        },
+        {
+          "label": "⚙️ 系统",
+          "val": "5 tools",
+          "note": "exec/install-binary/automation/connect-cloud",
+          "expandItems": [
+            {
+              "label": "execute_command",
+              "val": "执行命令",
+              "expandItems": [
+                {
+                  "label": "command",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "requires_approval",
+                  "val": "boolean"
+                }
+              ]
+            },
+            {
+              "label": "install_binary",
+              "val": "安装运行时",
+              "expandItems": [
+                {
+                  "label": "type",
+                  "val": "python|node"
+                },
+                {
+                  "label": "version",
+                  "val": "string · 必填"
+                }
+              ]
+            },
+            {
+              "label": "automation_update",
+              "val": "自动化任务",
+              "expandItems": [
+                {
+                  "label": "mode",
+                  "val": "string"
+                },
+                {
+                  "label": "name",
+                  "val": "string"
+                },
+                {
+                  "label": "scheduleType",
+                  "val": "string"
+                }
+              ]
+            },
+            {
+              "label": "connect_cloud_service",
+              "val": "云服务连接"
+            },
+            {
+              "label": "read_lints",
+              "val": "诊断信息",
+              "expandItems": [
+                {
+                  "label": "paths",
+                  "val": "string · 可选"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "📝 记忆/文档",
+          "val": "3 tools",
+          "note": "memory-update/CHANGELOG/release-notes",
+          "expandItems": [
+            {
+              "label": "update_memory",
+              "val": "持久化记忆"
+            },
+            {
+              "label": "CHANGELOG",
+              "val": "更新日志"
+            },
+            {
+              "label": "Release Notes",
+              "val": "版本说明"
+            }
+          ]
+        },
+        {
+          "label": "📚 知识库",
+          "val": "3 tools",
+          "note": "RAG-search/list-docs/refresh-index",
+          "expandItems": [
+            {
+              "label": "RAG_search",
+              "val": "语义检索"
+            },
+            {
+              "label": "知识库列表",
+              "val": "可用知识库"
+            },
+            {
+              "label": "索引刷新",
+              "val": "更新索引"
+            }
+          ]
+        },
+        {
+          "label": "🔌 集成/部署",
+          "val": "5 tools",
+          "note": "invoke-integration/supabase/cloudbase/lighthouse/eop",
+          "expandItems": [
+            {
+              "label": "invoke_integration",
+              "val": "触发集成",
+              "expandItems": [
+                {
+                  "label": "id",
+                  "val": "string · 必填"
+                },
+                {
+                  "label": "type",
+                  "val": "deploy|database"
+                }
+              ]
+            },
+            {
+              "label": "Supabase",
+              "val": "数据库/Auth"
+            },
+            {
+              "label": "CloudBase",
+              "val": "微信云开发"
+            },
+            {
+              "label": "Lighthouse",
+              "val": "轻量服务器"
+            },
+            {
+              "label": "EdgeOne Pages",
+              "val": "前端部署"
+            }
+          ]
+        }
+      ],
+      "summary": "51 个工具覆盖文件、搜索、Git、知识库、Agent、MCP、Web、系统等 17 个分组。"
+    },
+    "models": {
+      "title": "模型提供商详情",
+      "subtitle": "10 家提供商 · 国产大模型全覆盖",
+      "items": [
+        {
+          "label": "🔴 DeepSeek",
+          "val": "4 models",
+          "note": "V4/V4 Flash/V3/R1 · 推理专长",
+          "expandItems": [
+            {
+              "label": "DeepSeek V4",
+              "val": "超强推理"
+            },
+            {
+              "label": "DeepSeek V4 Flash",
+              "val": "快速推理"
+            },
+            {
+              "label": "DeepSeek V3",
+              "val": "通用能力"
+            },
+            {
+              "label": "DeepSeek R1",
+              "val": "专精推理"
+            }
+          ]
+        },
+        {
+          "label": "🟣 智谱 GLM",
+          "val": "4 models",
+          "note": "GLM-5/Flash/4 Plus/4 Flash",
+          "expandItems": [
+            {
+              "label": "GLM-5",
+              "val": "200K ctx"
+            },
+            {
+              "label": "GLM-5 Flash",
+              "val": "快速版"
+            },
+            {
+              "label": "GLM-4 Plus",
+              "val": "高性能"
+            },
+            {
+              "label": "GLM-4 Flash",
+              "val": "轻量快速"
+            }
+          ]
+        },
+        {
+          "label": "🟠 通义千问",
+          "val": "6 models",
+          "note": "Qwen3 Max/Plus/Turbo/Coder",
+          "expandItems": [
+            {
+              "label": "Qwen3 Max",
+              "val": "最强能力"
+            },
+            {
+              "label": "Qwen3 Plus",
+              "val": "均衡性能"
+            },
+            {
+              "label": "Qwen3 Turbo",
+              "val": "高速响应"
+            },
+            {
+              "label": "Qwen3 Coder",
+              "val": "代码专长"
+            },
+            {
+              "label": "Qwen 2.5",
+              "val": "经典版本"
+            },
+            {
+              "label": "Qwen VL",
+              "val": "多模态"
+            }
+          ]
+        },
+        {
+          "label": "🟢 Kimi",
+          "val": "4 models",
+          "note": "K2.7 Code/K2.6/K2.5",
+          "expandItems": [
+            {
+              "label": "K2.7 Code",
+              "val": "代码专长"
+            },
+            {
+              "label": "K2.6",
+              "val": "增强版本"
+            },
+            {
+              "label": "K2.5",
+              "val": "稳定版本"
+            },
+            {
+              "label": "K2 Flash",
+              "val": "快速推理"
+            }
+          ]
+        },
+        {
+          "label": "🔵 百度 ERNIE",
+          "val": "4 models",
+          "note": "4.5/Speed/Lite/4.0 Turbo",
+          "expandItems": [
+            {
+              "label": "ERNIE 4.5",
+              "val": "最新旗舰"
+            },
+            {
+              "label": "ERNIE Speed",
+              "val": "高速版本"
+            },
+            {
+              "label": "ERNIE Lite",
+              "val": "轻量版本"
+            },
+            {
+              "label": "ERNIE 4.0 Turbo",
+              "val": "经典加速"
+            }
+          ]
+        },
+        {
+          "label": "🟡 豆包",
+          "val": "3 models",
+          "note": "Seed 1.6/Pro 1.6/Lite 1.6",
+          "expandItems": [
+            {
+              "label": "Seed 1.6",
+              "val": "旗舰模型"
+            },
+            {
+              "label": "Pro 1.6",
+              "val": "专业版"
+            },
+            {
+              "label": "Lite 1.6",
+              "val": "轻量版"
+            }
+          ]
+        },
+        {
+          "label": "⚪ 混元",
+          "val": "4 models",
+          "note": "TurboS Vision/T1/Pro/Lite",
+          "expandItems": [
+            {
+              "label": "TurboS Vision",
+              "val": "多模态"
+            },
+            {
+              "label": "T1",
+              "val": "推理专长"
+            },
+            {
+              "label": "Pro",
+              "val": "专业版"
+            },
+            {
+              "label": "Lite",
+              "val": "轻量版"
+            }
+          ]
+        },
+        {
+          "label": "🟤 MiniMax",
+          "val": "4 models",
+          "note": "M3/M3 Flash/M1/ABAB 6.5s",
+          "expandItems": [
+            {
+              "label": "M3",
+              "val": "245K ctx"
+            },
+            {
+              "label": "M3 Flash",
+              "val": "快速推理"
+            },
+            {
+              "label": "M1",
+              "val": "经典版本"
+            },
+            {
+              "label": "ABAB 6.5s",
+              "val": "超长上下文"
+            }
+          ]
+        },
+        {
+          "label": "🔷 OpenAI",
+          "val": "2 models",
+          "note": "GPT-4o/GPT-4o Mini",
+          "expandItems": [
+            {
+              "label": "GPT-4o",
+              "val": "多模态旗舰"
+            },
+            {
+              "label": "GPT-4o Mini",
+              "val": "轻量高效"
+            }
+          ]
+        },
+        {
+          "label": "🟦 Ollama",
+          "val": "N/A",
+          "note": "本地部署 · 灵活配置",
+          "expandItems": [
+            {
+              "label": "Llama 系列",
+              "val": "开源可部署"
+            },
+            {
+              "label": "Qwen 系列",
+              "val": "本地运行"
+            },
+            {
+              "label": "Mistral",
+              "val": "轻量高效"
+            },
+            {
+              "label": "任意 GGUF",
+              "val": "自定义模型"
+            }
+          ]
+        }
+      ],
+      "summary": "10 家模型提供商，覆盖 DeepSeek、智谱、通义千问、Kimi、ERNIE、豆包、混元、MiniMax、OpenAI 和 Ollama 本地部署"
+    },
+    "score": {
+      "title": "综合评分详情",
+      "subtitle": "73.4 / 100 · 版本演进追踪",
+      "history": [
+        {
+          "version": "v0.1.0",
+          "date": "2026-06-18",
+          "score": 30
+        },
+        {
+          "version": "v0.2.0",
+          "date": "2026-06-19",
+          "score": 55
+        },
+        {
+          "version": "v0.3.0",
+          "date": "2026-06-20",
+          "score": 65
+        },
+        {
+          "version": "v0.4.0",
+          "date": "2026-06-22",
+          "score": 68
+        },
+        {
+          "version": "v0.5.0",
+          "date": "2026-06-23",
+          "score": 73.4
+        }
+      ],
+      "dimensions": [
+        {
+          "label": "功能完整度",
+          "score": 96,
+          "max": 100,
+          "note": "16/16 模块完成"
+        },
+        {
+          "label": "测试覆盖",
+          "score": 75,
+          "max": 100,
+          "note": "806 用例 · 全模块覆盖"
+        },
+        {
+          "label": "代码质量",
+          "score": 68,
+          "max": 100,
+          "note": "架构评审 + lint 检查"
+        },
+        {
+          "label": "文档完整度",
+          "score": 60,
+          "max": 100,
+          "note": "PRD/ADD/CHANGELOG 齐全"
+        },
+        {
+          "label": "CI/CD 成熟度",
+          "score": 55,
+          "max": 100,
+          "note": "GitHub Actions + 自动发布"
+        },
+        {
+          "label": "生态建设",
+          "score": 30,
+          "max": 100,
+          "note": "10 分支优化项 · 6 待启动"
         }
       ]
     },
-    {
-      "id": "branch-opt-p2",
-      "label": "P2 优化分支 · 质量保障",
-      "sourceNode": "phase-release",
-      "nodes": [
+    "modes": {
+      "title": "操作模式详情",
+      "subtitle": "4 种操作模式 · 全场景覆盖",
+      "items": [
         {
-          "id": "opt-p2a",
-          "label": "SWE-bench 评测体系",
-          "desc": "Agent代码质量量化\n10题基准+pass@k",
-          "status": "done",
-          "icon": "📊"
+          "label": "🖥️ CLI 命令行",
+          "val": "✅ 已发布",
+          "note": "Ink + React Terminal · 7 组件 10 命令",
+          "expandItems": [
+            {
+              "label": "交互式聊天",
+              "val": "多轮对话·上下文"
+            },
+            {
+              "label": "文件操作",
+              "val": "读取/编辑/搜索"
+            },
+            {
+              "label": "管道模式",
+              "val": "stdin/stdout"
+            },
+            {
+              "label": "命令系统",
+              "val": "10 命令"
+            },
+            {
+              "label": "终端渲染",
+              "val": "Ink + React 组件"
+            }
+          ]
         },
         {
-          "id": "opt-p2b",
-          "label": "GitHub Actions CI/CD",
-          "desc": "push触发测试+编译\nTag推送自动构建发布",
-          "status": "done",
-          "icon": "⚙️"
+          "label": "🌐 Web Dashboard",
+          "val": "✅ 已发布",
+          "note": "WorkBuddy 风格 · 10 Store + WebSocket",
+          "expandItems": [
+            {
+              "label": "状态管理",
+              "val": "10 Zustand Store"
+            },
+            {
+              "label": "实时通信",
+              "val": "WebSocket 推送"
+            },
+            {
+              "label": "虚拟滚动",
+              "val": "万级消息"
+            },
+            {
+              "label": "深色主题",
+              "val": "暗色/亮色切换"
+            },
+            {
+              "label": "响应式",
+              "val": "多端适配"
+            }
+          ]
         },
         {
-          "id": "opt-p2c",
-          "label": "集成测试·端到端",
-          "desc": "CLI→Server→Core→Model\n全链路覆盖",
-          "status": "pending",
-          "icon": "🧪"
+          "label": "🖼️ Desktop 原生",
+          "val": "✅ 已发布",
+          "note": "Electron + React · 六件套 · 系统托盘",
+          "expandItems": [
+            {
+              "label": "Electron 壳",
+              "val": "原生窗口·托盘"
+            },
+            {
+              "label": "六件套布局",
+              "val": "聊天/文件/终端/设置"
+            },
+            {
+              "label": "自动更新",
+              "val": "electron-updater"
+            },
+            {
+              "label": "快捷键",
+              "val": "全局快捷键"
+            },
+            {
+              "label": "离线能力",
+              "val": "Ollama 集成"
+            }
+          ]
         },
         {
-          "id": "opt-p2d",
-          "label": "多模型评测排行榜",
-          "desc": "每版本发布\n模型适配报告",
-          "status": "pending",
-          "icon": "🏆"
-        },
-        {
-          "id": "opt-p2e",
-          "label": "用户行为埋点",
-          "desc": "FTSR/留存率/TTFV\n北极星指标仪表盘",
-          "status": "pending",
-          "icon": "📈"
+          "label": "💬 IM 适配器",
+          "val": "✅ 已发布",
+          "note": "Telegram / 飞书 / 企业微信 · 统一接口",
+          "expandItems": [
+            {
+              "label": "Telegram",
+              "val": "Bot API"
+            },
+            {
+              "label": "飞书",
+              "val": "卡片消息"
+            },
+            {
+              "label": "企业微信",
+              "val": "自建应用"
+            },
+            {
+              "label": "统一接口",
+              "val": "BaseIMAdapter"
+            }
+          ]
         }
-      ]
+      ],
+      "summary": "4 种操作模式均已发布，覆盖从命令行到桌面到消息平台的完整交互体验"
     },
-    {
-      "id": "branch-opt-p3",
-      "label": "P3 优化分支 · 生态建设",
-      "sourceNode": "phase-release",
-      "nodes": [
+    "progress": {
+      "title": "项目分期进度",
+      "subtitle": "主线 95% · 分支 20% · 20/29 模块",
+      "items": [
         {
-          "id": "opt-p3a",
-          "label": "一键安装脚本",
-          "desc": "curl | bash 体验\n12min→2min配置",
-          "status": "pending",
-          "icon": "⚡"
+          "label": "P0 基础层",
+          "val": "100%",
+          "note": "3/3 完成 · 2026 Q2 早期",
+          "pct": 100,
+          "color": "#3fb950",
+          "expandItems": [
+            {
+              "label": "🔌 多模型适配器",
+              "val": "✅"
+            },
+            {
+              "label": "🧠 Agent 系统",
+              "val": "✅"
+            },
+            {
+              "label": "🔧 工具系统 51 tools",
+              "val": "✅"
+            }
+          ]
         },
         {
-          "id": "opt-p3b",
-          "label": "VS Code 插件",
-          "desc": "IDE深度集成\n实时代码建议",
-          "status": "pending",
-          "icon": "🔌"
+          "label": "P1 交互层",
+          "val": "100%",
+          "note": "3/3 完成 · 2026 Q2 中期",
+          "pct": 100,
+          "color": "#3fb950",
+          "expandItems": [
+            {
+              "label": "🖥️ Ink CLI",
+              "val": "✅"
+            },
+            {
+              "label": "🌐 Web Dashboard v4",
+              "val": "✅"
+            },
+            {
+              "label": "🖼️ Desktop 原生应用",
+              "val": "✅"
+            }
+          ]
         },
         {
-          "id": "opt-p3c",
-          "label": "Contributor 引导",
-          "desc": "10个good-first-issue\n贡献指南+代码规范",
-          "status": "pending",
-          "icon": "👥"
+          "label": "P2 扩展层",
+          "val": "100%",
+          "note": "3/3 完成 · 2026 Q2 中后期",
+          "pct": 100,
+          "color": "#3fb950",
+          "expandItems": [
+            {
+              "label": "📚 知识库 RAG",
+              "val": "✅"
+            },
+            {
+              "label": "🔗 MCP 协议",
+              "val": "✅"
+            },
+            {
+              "label": "📦 沙箱执行环境",
+              "val": "✅"
+            }
+          ]
+        },
+        {
+          "label": "P3 平台层",
+          "val": "100%",
+          "note": "3/3 完成 · 2026 Q2 后期",
+          "pct": 100,
+          "color": "#3fb950",
+          "expandItems": [
+            {
+              "label": "🧩 插件与技能系统",
+              "val": "✅"
+            },
+            {
+              "label": "💬 IM 适配器",
+              "val": "✅"
+            },
+            {
+              "label": "🌍 i18n 国际化",
+              "val": "✅"
+            }
+          ]
+        },
+        {
+          "label": "P4 发布层",
+          "val": "100%",
+          "note": "4/4 完成 · 2026-06-20 ~ 06-22",
+          "pct": 100,
+          "color": "#3fb950",
+          "expandItems": [
+            {
+              "label": "🔄 Desktop 自动升级",
+              "val": "✅"
+            },
+            {
+              "label": "📋 模型目录动态更新",
+              "val": "✅"
+            },
+            {
+              "label": "🎯 全面去硬编码",
+              "val": "✅"
+            },
+            {
+              "label": "🏷️ 版本控制系统",
+              "val": "✅"
+            }
+          ]
+        },
+        {
+          "label": "P5 管线运维",
+          "val": "67%",
+          "note": "3/3 完成 · 2026-06-22 ~ 进行中",
+          "pct": 67,
+          "color": "#d2991d",
+          "expandItems": [
+            {
+              "label": "🗺️ 管线数据看板",
+              "val": "⏳"
+            },
+            {
+              "label": "📡 自动数据采集",
+              "val": "✅"
+            },
+            {
+              "label": "🔍 实时问题追踪",
+              "val": "✅"
+            }
+          ]
+        },
+        {
+          "label": "B1 架构优化分支",
+          "val": "25%",
+          "note": "1/2 完成 (分支)",
+          "pct": 25,
+          "color": "#58a6ff",
+          "expandItems": [
+            {
+              "label": "🔀 Web↔Desktop 前端合并",
+              "val": "⏳"
+            },
+            {
+              "label": "🛡️ PluginManager 沙箱",
+              "val": "⬜"
+            }
+          ]
+        },
+        {
+          "label": "B2 质量保障分支",
+          "val": "40%",
+          "note": "2/5 完成 (分支)",
+          "pct": 40,
+          "color": "#58a6ff",
+          "expandItems": [
+            {
+              "label": "📊 SWE-bench 评测体系",
+              "val": "✅"
+            },
+            {
+              "label": "⚙️ GitHub Actions CI/CD",
+              "val": "✅"
+            },
+            {
+              "label": "🧪 集成测试·端到端",
+              "val": "⬜"
+            },
+            {
+              "label": "🏆 多模型评测排行榜",
+              "val": "⬜"
+            },
+            {
+              "label": "📈 用户行为埋点",
+              "val": "⬜"
+            }
+          ]
+        },
+        {
+          "label": "B3 生态建设分支",
+          "val": "0%",
+          "note": "0/3 完成 (分支)",
+          "pct": 0,
+          "color": "#58a6ff",
+          "expandItems": [
+            {
+              "label": "⚡ 一键安装脚本",
+              "val": "⬜"
+            },
+            {
+              "label": "🔌 VS Code 插件",
+              "val": "⬜"
+            },
+            {
+              "label": "👥 Contributor 引导",
+              "val": "⬜"
+            }
+          ]
         }
-      ]
+      ],
+      "summary": "主线 6 阶段 18/19 模块完成（P0-P4 全 100%，P5 进行中），分支 3 条 2/10 模块完成。点击展开查看各阶段详情。"
+    },
+    "modules_progress": {
+      "title": "模块完成进度",
+      "subtitle": "✅ 20 · ⏳ 2 · ⬜ 7 · 共 29 模块",
+      "items": [
+        {
+          "label": "✅ 已完成 (20)",
+          "val": "20个",
+          "note": "主线 16 + 分支 部分",
+          "expandItems": [
+            {
+              "label": "🔌 多模型适配器",
+              "val": "P0",
+              "note": "10家国产大模型"
+            },
+            {
+              "label": "🧠 Agent 系统",
+              "val": "P0",
+              "note": "ReAct循环"
+            },
+            {
+              "label": "🔧 工具系统 51 tools",
+              "val": "P0",
+              "note": "17分组全覆盖"
+            },
+            {
+              "label": "🖥️ Ink CLI",
+              "val": "P1",
+              "note": "React Terminal"
+            },
+            {
+              "label": "🌐 Web Dashboard v4",
+              "val": "P1",
+              "note": "WorkBuddy风格"
+            },
+            {
+              "label": "🖼️ Desktop 原生应用",
+              "val": "P1",
+              "note": "Electron+React"
+            },
+            {
+              "label": "📚 知识库 RAG",
+              "val": "P2",
+              "note": "双作用域架构"
+            },
+            {
+              "label": "🔗 MCP 协议",
+              "val": "P2",
+              "note": "JSON-RPC stdio"
+            },
+            {
+              "label": "📦 沙箱执行环境",
+              "val": "P2",
+              "note": "Docker+本地降级"
+            },
+            {
+              "label": "🧩 插件与技能系统",
+              "val": "P3",
+              "note": "PluginManager"
+            },
+            {
+              "label": "💬 IM 适配器",
+              "val": "P3",
+              "note": "Telegram/飞书/微信"
+            },
+            {
+              "label": "🌍 i18n 国际化",
+              "val": "P3",
+              "note": "zh-CN/en-US"
+            },
+            {
+              "label": "🔄 Desktop 自动升级",
+              "val": "P4",
+              "note": "electron-updater"
+            },
+            {
+              "label": "📋 模型目录动态更新",
+              "val": "P4",
+              "note": "GitHub/CDN双源"
+            },
+            {
+              "label": "🎯 全面去硬编码",
+              "val": "P4",
+              "note": "模型/模板/命令"
+            },
+            {
+              "label": "🏷️ 版本控制系统",
+              "val": "P4",
+              "note": "version.json唯一源"
+            },
+            {
+              "label": "📡 自动数据采集",
+              "val": "P5",
+              "note": "pipeline-data.json"
+            },
+            {
+              "label": "🔍 实时问题追踪",
+              "val": "P5",
+              "note": "MD文件解析"
+            },
+            {
+              "label": "📊 SWE-bench 评测体系",
+              "val": "B2",
+              "note": "10题基准+pass@k"
+            },
+            {
+              "label": "⚙️ GitHub Actions CI/CD",
+              "val": "B2",
+              "note": "push触发测试编译"
+            }
+          ]
+        },
+        {
+          "label": "⏳ 进行中 (2)",
+          "val": "2个",
+          "note": "正在开发",
+          "expandItems": [
+            {
+              "label": "🗺️ 管线数据看板",
+              "val": "P5",
+              "note": "全量数据可视化"
+            },
+            {
+              "label": "🔀 Web↔Desktop 前端合并",
+              "val": "B1",
+              "note": "packages/frontend"
+            }
+          ]
+        },
+        {
+          "label": "⬜ 待启动 (7)",
+          "val": "7个",
+          "note": "计划中",
+          "expandItems": [
+            {
+              "label": "🛡️ PluginManager 沙箱",
+              "val": "B1",
+              "note": "worker_threads隔离"
+            },
+            {
+              "label": "🧪 集成测试·端到端",
+              "val": "B2",
+              "note": "CLI→Server→Core"
+            },
+            {
+              "label": "🏆 多模型评测排行榜",
+              "val": "B2",
+              "note": "每版本发布"
+            },
+            {
+              "label": "📈 用户行为埋点",
+              "val": "B2",
+              "note": "FTSR/留存率/TTFV"
+            },
+            {
+              "label": "⚡ 一键安装脚本",
+              "val": "B3",
+              "note": "curl|bash体验"
+            },
+            {
+              "label": "🔌 VS Code 插件",
+              "val": "B3",
+              "note": "IDE深度集成"
+            },
+            {
+              "label": "👥 Contributor 引导",
+              "val": "B3",
+              "note": "10个good-first-issue"
+            }
+          ]
+        }
+      ],
+      "summary": "共 29 个模块，20 个已完成，2 个进行中，7 个待启动。继续完善 P5 管线运维 + 分支优化项目。"
+    },
+    "issues": {
+      "title": "问题记录详情",
+      "subtitle": "实时追踪 · 模块级追溯",
+      "items": [],
+      "summary": "问题数据从 .codebuddy/memory/*.md 实时解析。点击流程图中任意模块节点查看具体问题与修复记录。"
     }
-  ],
+  },
+  "kpi": {
+    "testCases": 864,
+    "testPassRate": 100,
+    "tools": 51,
+    "providers": 10,
+    "scoreTotal": 73.4,
+    "modes": 4
+  },
   "scoreHistory": [
     {
       "version": "v0.1.0",
@@ -307,16 +6832,6 @@
       "score": 73.4
     }
   ],
-  "kpi": {
-    "testCases": 36,
-    "testPassRate": 100,
-    "tools": 51,
-    "providers": 4,
-    "phases": 11,
-    "changelogVersions": 5,
-    "packagingIssues": 25,
-    "scoreTotal": 73.4,
-    "modes": 4,
-    "modules": 19
-  }
+  "generatedAt": "2026-06-23T01:11:31.206Z",
+  "version": "2.2"
 }

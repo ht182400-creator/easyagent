@@ -13,7 +13,8 @@
 import { parseMemoryIssues } from './pipeline-parser.mjs';
 import {
   getPipelineView, generateDashboardDetails,
-  KPI_DEFAULTS, SCORE_HISTORY,
+  getKPI, SCORE_HISTORY, KPI_DEFAULTS,
+  generateTestDetailPanel,
 } from './pipeline-config.mjs';
 
 /**
@@ -42,9 +43,10 @@ export function createApiHandler(memoryDir, cacheFilePath) {
       // ---- /api/pipeline ---- //
       if (pathname === '/api/pipeline') {
         const pipelineView = getPipelineView();
+        const kpi = getKPI();  // 每次请求动态计算
         sendJson(res, 200, {
           pipeline: pipelineView,
-          kpi: KPI_DEFAULTS,
+          kpi,
           scoreHistory: SCORE_HISTORY,
         });
         return true;
@@ -52,7 +54,8 @@ export function createApiHandler(memoryDir, cacheFilePath) {
 
       // ---- /api/dashboard ---- //
       if (pathname === '/api/dashboard') {
-        const details = generateDashboardDetails(KPI_DEFAULTS);
+        const kpi = getKPI();  // 每次请求动态计算
+        const details = generateDashboardDetails(kpi);
         sendJson(res, 200, details);
         return true;
       }
@@ -61,7 +64,8 @@ export function createApiHandler(memoryDir, cacheFilePath) {
       const dashMatch = pathname.match(/^\/api\/dashboard\/(\w+)$/);
       if (dashMatch) {
         const cardId = dashMatch[1];
-        const details = generateDashboardDetails(KPI_DEFAULTS);
+        const kpi = getKPI();  // 每次请求动态计算
+        const details = generateDashboardDetails(kpi);
         if (details[cardId]) {
           sendJson(res, 200, details[cardId]);
         } else {
@@ -73,12 +77,17 @@ export function createApiHandler(memoryDir, cacheFilePath) {
       // ---- /api/status ---- //
       if (pathname === '/api/status') {
         const result = parseMemoryIssues(memoryDir, cacheFilePath);
+        const pv = getPipelineView();
+        // 计算总模块数: 主线阶段 + 分支
+        let totalModules = 0;
+        for (const phase of pv.phases) totalModules += (phase.nodes || []).length;
+        for (const branch of pv.branches) totalModules += (branch.nodes || []).length;
         sendJson(res, 200, {
           generatedAt: result._generatedAt,
           totalIssues: result._totalIssues,
           sourceFiles: result._sourceFiles,
           cacheStats: result._cacheStats,
-          pipeline: { phases: getPipelineView().phases.length, modules: Object.keys(KPI_DEFAULTS).length },
+          pipeline: { phases: pv.phases.length, modules: totalModules },
         });
         return true;
       }
@@ -112,6 +121,13 @@ export function createApiHandler(memoryDir, cacheFilePath) {
           }
         }
         sendJson(res, 200, { modules: allModules, total: allModules.length });
+        return true;
+      }
+
+      // ---- /api/test-detail ---- //
+      if (pathname === '/api/test-detail') {
+        const panel = generateTestDetailPanel();
+        sendJson(res, 200, panel);
         return true;
       }
 

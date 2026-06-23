@@ -99,7 +99,7 @@ export function parseMemoryIssues(memoryDir, cacheFilePath) {
       const mid = entry.moduleId;
       if (!modules[mid]) continue;
       const exists = modules[mid].issues.find(
-        i => i.date === entry.date && i.title === entry.title
+        i => i.date === entry.date && i.title === entry.title && i.problem === entry.problem
       );
       if (!exists) {
         modules[mid].issues.push({
@@ -169,8 +169,9 @@ function extractEntries(content, defaultDate, keywordMap) {
       /\[模块[：:]\s*(?:F\d+|B[123][a-e]|p5[a-c])\s*\]/i, ''
     ).trim().slice(0, 80);
 
-    // 跳过纯操作类标题
-    if (sectionTagIds.length === 0 && /^(前后端|文档|GitHub|发布|打包|编译|启动|重启|停止|验证|测试通过|清理|workflow)/.test(sectionTitle)) {
+    // 跳过纯操作类标题（但若有显式标签则放行，允许后续关键词匹配）
+    // 注意：不再因"GitHub"、"发布"等开头就完全跳过——这些可能是 CI/CD 模块的合法内容
+    if (sectionTagIds.length === 0 && /^(前后端|编译|启动|重启|停止|验证|测试通过|清理)/.test(sectionTitle)) {
       continue;
     }
 
@@ -185,22 +186,68 @@ function extractEntries(content, defaultDate, keywordMap) {
       if (!line) continue;
 
       if (line.startsWith('### ')) {
-        if (currentProblem || currentSolution) {
+        // 判断是否是问题/解决子段落（同问题延续，不 push 当前条目）
+        const isProblemSection = /问题回顾|问题诊断|问题根因|问题修复/.test(line);
+        const isSolutionSection = /^###\s*(解决|解决方案|处理[方式方案]?|修复(?:过程|内容|措施|方案)?)(?![一-龥\w])/.test(line);
+        const isContinuation = isProblemSection || isSolutionSection;
+
+        // 只在非延续段落时 push 当前累积的条目
+        if (!isContinuation && (currentProblem || currentSolution)) {
           entries.push(makeEntry(defaultDate, sectionTitle, currentProblem, currentSolution, currentStatus, [...currentTagIds]));
         }
+
         const subTagMatch = line.match(/\[模块[：:]\s*(F\d+|B[123][a-e]|p5[a-c])\s*\]/i);
         if (subTagMatch) {
           currentTagIds = [subTagMatch[1].toLowerCase()];
         }
-        currentProblem = '';
-        currentSolution = '';
-        currentStatus = '';
-        inSolutionBlock = false;
+
+        // 延续段落保留 currentProblem（问题→解决方案过渡），非延续才重置
+        if (!isContinuation) {
+          currentProblem = '';
+          currentSolution = '';
+          currentStatus = '';
+          inSolutionBlock = false;
+        }
+
+        if (isProblemSection) {
+          inSolutionBlock = false;  // 当前处于问题描述模式
+          continue;
+        }
+        if (isSolutionSection) {
+          inSolutionBlock = true;   // 当前处于解决方案模式
+          continue;
+        }
         continue;
       }
 
-      // 状态字段
-      const statusMatch = line.match(/^[-*]\s*\*\*状态[：:]\*\*\s*(.+)$/);
+      // --- 新增: 自由格式子段落内容捕获 ---
+      // 处于 "问题回顾" 模式下的 - 子项 → 收集为问题描述
+      if (!inSolutionBlock && !currentSolution && line.startsWith('- ') && !line.includes('**')) {
+        const subItem = line.replace(/^[-*]\s*/, '').trim();
+        if (subItem && subItem.length > 5 && sectionTagIds.length > 0) {
+          currentProblem = currentProblem
+            ? currentProblem + '；' + subItem.slice(0, 200)
+            : subItem.slice(0, 200);
+        }
+        continue;
+      }
+      // 问题捕获模式下 - **key**: value 格式（非标准字段名，如"提供商不存在"）
+      if (!inSolutionBlock && !currentSolution && line.startsWith('- **') && sectionTagIds.length > 0) {
+        const kvMatch = line.match(/^[-*]\s*\*\*(.+?)\*\*\s*[：:]\s*(.+)$/);
+        if (kvMatch && !/^(问题|根因|现象|排查|排查结果|状态|修复|修复方案|正确方案|核心方案|处理|修复过程|修复内容)$/.test(kvMatch[1])) {
+          const subItem = kvMatch[1] + ': ' + kvMatch[2].trim().slice(0, 180);
+          currentProblem = currentProblem
+            ? currentProblem + '；' + subItem
+            : subItem;
+          continue;
+        }
+        // 标准字段名（问题/根因/状态/修复）交给下方专用处理器
+        // 未匹配到键值对的行则跳过
+        if (!kvMatch) continue;
+      }
+
+      // 状态字段（兼容冒号在 ** 内外的两种写法）
+      const statusMatch = line.match(/^[-*]\s*\*\*状态[：:]?\*\*\s*(.+)$/);
       if (statusMatch) {
         const st = statusMatch[1].trim().toLowerCase();
         if (st.includes('resolved') || st.includes('解决') || st.includes('✅')) currentStatus = 'resolved';
@@ -209,8 +256,8 @@ function extractEntries(content, defaultDate, keywordMap) {
         continue;
       }
 
-      // 问题描述
-      const probMatch = line.match(/^[-*]\s*\*\*问题[：:]\*\*\s*(.+)$/);
+      // 问题描述（兼容两种格式: **问题：**内容 和 **问题**: 内容）
+      const probMatch = line.match(/^[-*]\s*\*\*问题[：:]?\*\*\s*(.+)$/);
       if (probMatch) {
         if (currentProblem || currentSolution) {
           entries.push(makeEntry(defaultDate, sectionTitle, currentProblem, currentSolution, currentStatus, [...currentTagIds]));
@@ -222,8 +269,8 @@ function extractEntries(content, defaultDate, keywordMap) {
         continue;
       }
 
-      // 根因
-      const rootMatch = line.match(/^[-*]\s*\*\*根因[：:]\*\*\s*(.+)$/);
+      // 根因（兼容冒号在 ** 内外的两种写法）
+      const rootMatch = line.match(/^[-*]\s*\*\*根因[：:]?\*\*\s*(.+)$/);
       if (rootMatch) {
         currentProblem = currentProblem
           ? currentProblem + ' [根因] ' + rootMatch[1].trim().slice(0, 200)
@@ -231,15 +278,15 @@ function extractEntries(content, defaultDate, keywordMap) {
         continue;
       }
 
-      // 现象
-      const symMatch = line.match(/^[-*]\s*\*\*现象[：:]\*\*\s*(.+)$/);
+      // 现象（兼容冒号在 ** 内外的两种写法）
+      const symMatch = line.match(/^[-*]\s*\*\*现象[：:]?\*\*\s*(.+)$/);
       if (symMatch) {
         if (!currentProblem) currentProblem = '[现象] ' + symMatch[1].trim().slice(0, 200);
         continue;
       }
 
-      // 排查
-      const diagMatch = line.match(/^[-*]\s*\*\*(?:排查|排查结果)[：:]\*\*\s*(.+)$/);
+      // 排查（兼容冒号在 ** 内外的两种写法）
+      const diagMatch = line.match(/^[-*]\s*\*\*(?:排查|排查结果)[：:]?\*\*\s*(.+)$/);
       if (diagMatch) {
         currentProblem = currentProblem
           ? currentProblem + ' [排查] ' + diagMatch[1].trim().slice(0, 150)
@@ -247,23 +294,25 @@ function extractEntries(content, defaultDate, keywordMap) {
         continue;
       }
 
-      // 修复
-      const fixStart = line.match(/^[-*]\s*\*\*修复(?:\*\*)?(?:\s*\([^)]*\))?[：:]\*\*\s*(.*)$/);
+      // 修复（兼容多种写法: **修复[X]**/ **修复（描述）**/ **修复方案**/ **正确方案**/ **核心方案**/ **最终方案(...)**/ **解决**）
+      // 匹配任何包含"修复/正确方案/核心方案/最终方案/解决"的粗体标签
+      const fixStart = line.match(/^[-*]\s*\*\*(?:.*(?:修复|正确方案|核心方案|最终方案|解决).*)\*\*[^:：]*[：:]\s*(.+)$/);
       if (fixStart) {
         currentSolution = fixStart[1].trim().slice(0, 200);
         inSolutionBlock = !currentSolution.endsWith('.') && currentSolution.length > 0;
         continue;
       }
 
-      const fixHeader = line.match(/^[-*]\s*\*\*修复\*\*(\s*\([^)]*\))?$/);
+      // 修复标题行（无行内内容的粗体标签，如 "**修复** (path):" / "**最终方案 (22:54)**:"）
+      const fixHeader = line.match(/^[-*]\s*\*\*(?:.*(?:修复|正确方案|核心方案|最终方案|解决).*)\*\*/);
       if (fixHeader) {
         currentSolution = '';
         inSolutionBlock = true;
         continue;
       }
 
-      // 修复方案/正确方案/处理
-      const altFix = line.match(/^[-*]\s*\*\*(?:修复方案|正确方案|核心方案|处理)[：:]\*\*\s*(.+)$/);
+      // 修复方案/正确方案/处理（附加修复行，冒号在粗体内外兼容两种写法）
+      const altFix = line.match(/^[-*]\s*\*\*(?:修复方案|正确方案|核心方案|处理|最终方案|解决)[：:]?\*\*\s*(.+)$/);
       if (altFix) {
         currentSolution = currentSolution
           ? currentSolution + '；' + altFix[1].trim().slice(0, 200)
@@ -272,13 +321,45 @@ function extractEntries(content, defaultDate, keywordMap) {
         continue;
       }
 
-      // 解决方案块内的 - 子项
-      if (inSolutionBlock && line.startsWith('- ') && !line.includes('**')) {
-        const subItem = line.replace(/^[-*]\s*/, '').trim();
-        if (subItem && subItem.length > 5) {
+      // 解决方案块内的所有行都采集为修复内容（支持 - 、 **N. 、 - **key**: 三种格式）
+      if (inSolutionBlock) {
+        if (line.startsWith('- ') && !line.includes('**')) {
+          // 普通子弹
+          const subItem = line.replace(/^[-*]\s*/, '').trim();
+          if (subItem && subItem.length > 5) {
+            currentSolution = currentSolution
+              ? currentSolution + '；' + subItem.slice(0, 150)
+              : subItem.slice(0, 150);
+          }
+          continue;
+        }
+        if (line.startsWith('- **')) {
+          // 粗体键值对如 "- **Pages**: Providers.tsx(2)..."
+          const kvMatch = line.match(/^[-*]\s*\*\*(.+?)\*\*\s*[：:]\s*(.+)$/);
+          if (kvMatch) {
+            const subItem = kvMatch[1] + ': ' + kvMatch[2].trim().slice(0, 130);
+            currentSolution = currentSolution
+              ? currentSolution + '；' + subItem
+              : subItem;
+          }
+          continue;
+        }
+        if (line.startsWith('**') && line.length > 10) {
+          // 编号条目如 **1. 修复描述**—— 提取为修复文本
+          const cleaned = line.replace(/^\*\*[\d一二三四五六七八九十]+[\.、)]?\s*/, '').replace(/\*\*\s*$/, '').trim();
+          if (cleaned && cleaned.length > 5) {
+            currentSolution = currentSolution
+              ? currentSolution + '；' + cleaned.slice(0, 150)
+              : cleaned.slice(0, 150);
+          }
+          continue;
+        }
+        // 非子弹且非**开头的普通文字行（排除空行、代码块）
+        if (!line.startsWith('`') && !line.startsWith('```') && line.length > 10 && !line.startsWith('- ') && !line.startsWith('**')) {
           currentSolution = currentSolution
-            ? currentSolution + '；' + subItem.slice(0, 150)
-            : subItem.slice(0, 150);
+            ? currentSolution + ' ' + line.slice(0, 150)
+            : line.slice(0, 150);
+          continue;
         }
         continue;
       }

@@ -1,0 +1,423 @@
+{
+  "_meta": {
+    "generatedAt": "2026-06-23T02:54:05.165Z",
+    "totalTestFiles": 40,
+    "totalTestCases": 876,
+    "unmappedCases": 0,
+    "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN"
+  },
+  "modules": {
+    "_utils": {
+      "moduleId": "_utils",
+      "totalCases": 43,
+      "subModules": {
+        "通用工具": {
+          "name": "通用工具",
+          "cases": 22,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/utils.test.ts",
+              "cases": 22
+            }
+          ]
+        },
+        "加密工具": {
+          "name": "加密工具",
+          "cases": 21,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/encryption.test.ts",
+              "cases": 21
+            }
+          ]
+        }
+      }
+    },
+    "f1": {
+      "moduleId": "f1",
+      "totalCases": 24,
+      "subModules": {
+        "通用适配器工厂": {
+          "name": "通用适配器工厂",
+          "cases": 24,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/adapter-factory.test.ts",
+              "cases": 24
+            }
+          ]
+        }
+      }
+    },
+    "f10": {
+      "moduleId": "f10",
+      "totalCases": 37,
+      "subModules": {
+        "插件与技能": {
+          "name": "插件与技能",
+          "cases": 37,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/plugins-skills.test.ts",
+              "cases": 37
+            }
+          ]
+        }
+      }
+    },
+    "f11": {
+      "moduleId": "f11",
+      "totalCases": 63,
+      "subModules": {
+        "IM 适配器": {
+          "name": "IM 适配器",
+          "cases": 63,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/feishu-adapter.test.ts",
+              "cases": 18
+            },
+            {
+              "path": "packages/core/src/__tests__/im-adapters.test.ts",
+              "cases": 23
+            },
+            {
+              "path": "packages/core/src/__tests__/wechat-adapter.test.ts",
+              "cases": 9
+            },
+            {
+              "path": "packages/core/src/__tests__/wechat-crypto.test.ts",
+              "cases": 13
+            }
+          ]
+        }
+      }
+    },
+    "f2": {
+      "moduleId": "f2",
+      "totalCases": 57,
+      "subModules": {
+        "Session 管理器": {
+          "name": "Session 管理器",
+          "cases": 20,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/session-manager.test.ts",
+              "cases": 20
+            }
+          ]
+        },
+        "Agent 引擎核心": {
+          "name": "Agent 引擎核心",
+          "cases": 16,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/agent-engine.test.ts",
+              "cases": 16
+            }
+          ]
+        },
+        "配置管理": {
+          "name": "配置管理",
+          "cases": 11,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/config-manager.test.ts",
+              "cases": 11
+            }
+          ]
+        },
+        "核心集成测试": {
+          "name": "核心集成测试",
+          "cases": 10,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/core.test.ts",
+              "cases": 10
+            }
+          ]
+        }
+      }
+    },
+    "f3": {
+      "moduleId": "f3",
+      "totalCases": 246,
+      "subModules": {
+        "预览/媒体工具": {
+          "name": "预览/媒体工具",
+          "cases": 36,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/preview-media-tools.test.ts",
+              "cases": 36
+            }
+          ]
+        },
+        "项目工具": {
+          "name": "项目工具",
+          "cases": 36,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/project-tools.test.ts",
+              "cases": 36
+            }
+          ]
+        },
+        "子Agent/数据库工具": {
+          "name": "子Agent/数据库工具",
+          "cases": 36,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/subagent-db-tools.test.ts",
+              "cases": 36
+            }
+          ]
+        },
+        "自动化管理器": {
+          "name": "自动化管理器",
+          "cases": 34,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/automation-manager.test.ts",
+              "cases": 34
+            }
+          ]
+        },
+        "内置工具": {
+          "name": "内置工具",
+          "cases": 31,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/builtin-tools.test.ts",
+              "cases": 31
+            }
+          ]
+        },
+        "文件扩展工具": {
+          "name": "文件扩展工具",
+          "cases": 26,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/file-extra-tools.test.ts",
+              "cases": 26
+            }
+          ]
+        },
+        "工具注册中心": {
+          "name": "工具注册中心",
+          "cases": 24,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/tool-registry.test.ts",
+              "cases": 24
+            }
+          ]
+        },
+        "代码工具": {
+          "name": "代码工具",
+          "cases": 23,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/code-tools.test.ts",
+              "cases": 23
+            }
+          ]
+        }
+      }
+    },
+    "f4": {
+      "moduleId": "f4",
+      "totalCases": 115,
+      "subModules": {
+        "语义分析": {
+          "name": "语义分析",
+          "cases": 46,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/semantic.test.ts",
+              "cases": 46
+            }
+          ]
+        },
+        "知识库服务": {
+          "name": "知识库服务",
+          "cases": 40,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/knowledge-service.test.ts",
+              "cases": 40
+            }
+          ]
+        },
+        "知识库工具": {
+          "name": "知识库工具",
+          "cases": 29,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/knowledge-tools.test.ts",
+              "cases": 29
+            }
+          ]
+        }
+      }
+    },
+    "f5": {
+      "moduleId": "f5",
+      "totalCases": 27,
+      "subModules": {
+        "MCP Client": {
+          "name": "MCP Client",
+          "cases": 27,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/mcp-client.test.ts",
+              "cases": 27
+            }
+          ]
+        }
+      }
+    },
+    "f6": {
+      "moduleId": "f6",
+      "totalCases": 27,
+      "subModules": {
+        "沙箱执行": {
+          "name": "沙箱执行",
+          "cases": 27,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/sandbox.test.ts",
+              "cases": 27
+            }
+          ]
+        }
+      }
+    },
+    "f8": {
+      "moduleId": "f8",
+      "totalCases": 156,
+      "subModules": {
+        "Web 前端": {
+          "name": "Web 前端",
+          "cases": 101,
+          "files": [
+            {
+              "path": "packages/desktop/src/__tests__/components/ChatView.test.tsx",
+              "cases": 19
+            },
+            {
+              "path": "packages/desktop/src/__tests__/components/Sidebar.test.tsx",
+              "cases": 15
+            },
+            {
+              "path": "packages/desktop/src/__tests__/components/StatusBar.test.tsx",
+              "cases": 9
+            },
+            {
+              "path": "packages/desktop/src/__tests__/components/TabBar.test.tsx",
+              "cases": 9
+            },
+            {
+              "path": "packages/desktop/src/__tests__/stores/sessionStore.test.ts",
+              "cases": 25
+            },
+            {
+              "path": "packages/desktop/src/__tests__/stores/uiStore.test.ts",
+              "cases": 24
+            }
+          ]
+        },
+        "Web API": {
+          "name": "Web API",
+          "cases": 55,
+          "files": [
+            {
+              "path": "packages/server/src/__tests__/api.test.ts",
+              "cases": 28
+            },
+            {
+              "path": "packages/server/src/__tests__/static-files.test.ts",
+              "cases": 8
+            },
+            {
+              "path": "packages/server/src/__tests__/websocket.test.ts",
+              "cases": 5
+            },
+            {
+              "path": "docs/pipeline/__tests__/pipeline-api.test.mjs",
+              "cases": 14
+            }
+          ]
+        }
+      }
+    },
+    "f9": {
+      "moduleId": "f9",
+      "totalCases": 27,
+      "subModules": {
+        "Desktop 原生": {
+          "name": "Desktop 原生",
+          "cases": 27,
+          "files": [
+            {
+              "path": "packages/desktop/src/__tests__/ipc/preload.test.ts",
+              "cases": 13
+            },
+            {
+              "path": "packages/desktop/src/__tests__/main/version.test.ts",
+              "cases": 14
+            }
+          ]
+        }
+      }
+    },
+    "p5a": {
+      "moduleId": "p5a",
+      "totalCases": 29,
+      "subModules": {
+        "管线配置": {
+          "name": "管线配置",
+          "cases": 29,
+          "files": [
+            {
+              "path": "docs/pipeline/__tests__/pipeline-config.test.mjs",
+              "cases": 29
+            }
+          ]
+        }
+      }
+    },
+    "p5b": {
+      "moduleId": "p5b",
+      "totalCases": 16,
+      "subModules": {
+        "缓存系统": {
+          "name": "缓存系统",
+          "cases": 16,
+          "files": [
+            {
+              "path": "docs/pipeline/__tests__/pipeline-cache.test.mjs",
+              "cases": 16
+            }
+          ]
+        }
+      }
+    },
+    "p5c": {
+      "moduleId": "p5c",
+      "totalCases": 9,
+      "subModules": {
+        "问题解析": {
+          "name": "问题解析",
+          "cases": 9,
+          "files": [
+            {
+              "path": "docs/pipeline/__tests__/pipeline-parser.test.mjs",
+              "cases": 9
+            }
+          ]
+        }
+      }
+    }
+  }
+}

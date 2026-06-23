@@ -2,7 +2,8 @@
 
 ## 项目概述
 - **项目**: EasyAgent - 集成中国主流大模型的开源 AI 编程助手
-- **版本**: v0.4.0 (806 tests 全通过 + SWE-bench 评测框架)
+- **版本**: v0.5.0 (876 test cases mapped, 808 vitest assertions, 95% pass, 3 JSON 报告源)
+- **测试报告**: `/api/test-detail` 端点提供四级树形测试详情 (包→文件→分组→用例+失败原因)
 - **仓库**: https://github.com/ht182400-creator/easyagent (SSH 推送)
 - **技术栈**: TypeScript 5.x + React 18 + Vite 5 + Tailwind CSS 3 + Zustand 4 + Express + WebSocket + Electron 30 + SQLite(better-sqlite3) + Vitest + tsup
 - **对比参考**: D:\Work_Area\AI\cc-haha
@@ -151,10 +152,13 @@ start-frontend.bat  # Web前端 localhost:5173 (可见窗口)
 ## 测试命令
 
 ```bash
-cd packages/core && npx vitest run     # 629 tests
-cd packages/server && npx vitest run   # 41 tests
-cd packages/desktop && npx vitest run  # 127 tests
+cd packages/core && npx vitest run     # 636 tests (JSON → _vitest-core.json)
+cd packages/server && npx vitest run   # 41 tests (JSON → _vitest-server.json)
+cd packages/desktop && npx vitest run  # 127 tests (JSON → _vitest-desktop.json)
 ```
+**管线动态通过率**: 服务器启动时自动读取 `docs/pipeline/_vitest-*.json`，按模块汇总计算各阶段 pass rate。
+**测试用例数**: 来自 `docs/pipeline/test-case-mapping.json`（`scripts/scan-test-cases.mjs` 自动生成）。
+**当前结果**: 876 用例 / 804 已跑 / 765 通过 / 39 失败 / 95% pass rate。
 
 ## SWE-bench 评测基准 (P0-2 已完成)
 
@@ -172,6 +176,189 @@ pnpm benchmark --provider deepseek --model deepseek-v4  # 实际评测
 - engines: `>=18.0.0 <24.0.0` (better-sqlite3 无 Node 24 预编译)
 - preinstall: `scripts/preinstall.cjs` 自动拦截
 - 跳过: `set EASYAGENT_SKIP_NODE_CHECK=1` (Windows) / `export` (Unix)
+
+## 管线模块 v2.1 动态化架构 (2026-06-23)
+
+### 架构原则
+- **KPI 动态计算**: `testCases` 从 `test-case-mapping.json` 读取，`passRate` 从 vitest JSON 报告实时计算，**严禁硬编码通过率**
+- **单一配置源**: `docs/pipeline/lib/pipeline-config.mjs` 是唯一配置源（MODULES + PHASES + BRANCHES + KPI），模块变更只改这一个文件
+- **测试用例对照表**: `docs/pipeline/test-case-mapping.json` 由 `scripts/scan-test-cases.mjs` 自动生成，是测试数量的唯一数据源
+- **vitest JSON 报告**: 运行测试后自动生成 `_vitest-*.json`，管线服务器读取并动态计算各阶段通过率
+- **三级渐进式加载**: HTTP API → 静态 JSON 快照 → 内嵌骨架回退，确保 HTTP/file:///离线三种模式均可用
+- **产品目录模式**: Dashboard 卡片详情（工具列表、模型目录）视为静态产品文档，存于 `pipeline-data.json.dashboard`
+
+### 关键组件
+| 文件 | 职责 |
+|------|------|
+| `docs/pipeline/lib/pipeline-config.mjs` | 唯一配置源 |
+| `docs/pipeline/lib/pipeline-api.mjs` | 6 REST API 端点 |
+| `docs/pipeline/lib/pipeline-parser.mjs` | Memory MD 解析 + 缓存 |
+| `docs/pipeline/lib/pipeline-cache.mjs` | mtime 文件级缓存 |
+| `docs/pipeline/server.mjs` | 113 行路由分发 |
+| `docs/pipeline/index.html` | 前端渲染 (924 行, 0 硬编码) |
+| `docs/pipeline/pipeline-data.json` | 静态快照 (含 pipeline + dashboard) |
+| `docs/pipeline/ARCHITECTURE.md` | 架构设计文档 |
+| `scripts/update-progress.mjs` | Git hook 自动检测更新 |
+
+### 关键命令
+```bash
+node docs/pipeline/server.mjs              # 启动管线服务器 (端口 8898)
+node scripts/update-progress.mjs           # 手动触发进度同步
+del docs\pipeline\.pipeline-cache.json     # 强制重建解析缓存
+```
+
+### 新增/修改模块定义（只需改一个文件）
+
+**唯一入口**：`docs/pipeline/lib/pipeline-config.mjs`
+
+在该文件的 `MODULES` 对象中添加新条目即可：
+
+```js
+export const MODULES = {
+  // ... 现有模块 ...
+  newId: {
+    id: 'newId',        // 模块唯一 ID，对应 memory 文件中 [模块:newId]
+    name: '新模块名',      // 显示名称
+    phase: 'P3',        // 所属阶段（P1-P6）
+    icon: '🆕',         // 节点图标
+    desc: '模块简述',     // 鼠标悬停提示
+    status: 'pending',  // pending | in-progress | done
+    keywords: ['关键1', '关键2'],  // memory 文件中无显式标签时的关键词匹配回退
+  },
+};
+```
+
+同时需在 `pipeline-parser.mjs` 第192行附近，将新模块 ID 前缀加入标签 regex：
+```js
+/\[模块[：:]\s*(F\d+|B[123][a-e]|p5[a-c]|newId)\s*\]/i
+```
+
+Memory 文件中使用 `[模块:newId]` 标签，解析器即可自动识别分配。
+
+### 仪表板测试分类数据层级
+
+测试分类卡片支持 **4 层渐进展开**：
+
+| 层级 | 数据位置 | 示例 |
+|------|---------|------|
+| L1 | `generateTestItems()` 的 `expandItems` | 多模型适配器 (127 tests) |
+| L2 | `generateTestItems()` 的 level-2 | DeepSeek 适配 (18) |
+| L3 | `TEST_LEVEL3_MAP` | 流式对话测试 (4) |
+| L4 | `TEST_LEVEL4_MAP` | SSE 流式响应完整性 ✅ |
+
+**新增 L4 数据示例**（在 `pipeline-config.mjs` 的 `TEST_LEVEL4_MAP` 中）：
+```js
+'流式对话测试': [
+  { label: 'SSE 流式响应完整性', val: '✅' },
+  { label: 'chunk 分片重组正确性', val: '✅' },
+],
+```
+
+L3 项有 `expandItems` 时自动渲染为可展开行（▶ 箭头），无则保持纯文本显示。
+
+**L4 全覆盖（2026-06-23 补全）**: `TEST_LEVEL4_MAP` 覆盖全部 209 个 L3 项的 L4 具体用例名称，13 个模块 100% 覆盖。注入逻辑在 `attachLevel3()` 中统一处理，不区分模块。
+
+### 工具卡片 L3 参数详情（2026-06-23 新增）
+
+`tools` 卡片现支持 3 级展开（L1: 工具组 → L2: 工具名 → L3: 参数签名）：
+
+**新增工具参数**（在 `pipeline-config.mjs` 的 `TOOL_PARAMS_MAP` 中）：
+```js
+'read_file': [
+  { label: 'filePath', val: 'string · 必填' },
+  { label: 'offset', val: 'number' },
+  { label: 'limit', val: 'number' },
+],
+```
+
+已覆盖 30 个工具的参数签名，`attachToolParams()` 自动注入到 `generateToolItems()` 返回数据中。
+
+### 仪表板 9 张卡片速查
+
+| 卡片 | cardId | 层级 | 说明 |
+|------|--------|------|------|
+| 测试用例总数 | tests | L1→**L4** (全覆盖) | 13个模块 209 L3项→209 L4具体用例，100%覆盖 |
+| 测试通过率 | pass | L1→L2 | 按阶段分组 |
+| 内置工具数 | tools | L1→L3 | 工具组→工具名→参数 |
+| 模型提供商 | models | L1→L2 | 提供商→模型 |
+| 综合评分 | score | 图表 | 版本演进柱状图+维度条 |
+| 操作模式 | modes | L1→L2 | 模式→功能特性 |
+| **主线完工率** 🆕 | progress | L1→L2 | 分期进度条+模块明细 |
+| **已完成模块** 🆕 | modules_progress | L1→L2 | 按状态分组+模块清单 |
+| 问题记录 | issues | 节点点击 | 模块问题分布+时间线 |
+
+### Memory 文件格式约束（解析器依赖）
+
+**核心规则（编写新记录时遵循）**：
+1. 每个问题使用独立的 `## ` section，可带 `[模块:ID]` 标签或依赖关键词匹配
+2. 问题字段推荐使用 `- **问题**:` / `- **根因**:` / `- **修复**:` / `- **状态**: ✅ resolved` 格式
+
+**解析器已兼容的格式（新旧均可）**：
+- 冒号位置：`**问题：**`（旧）和 `**问题**: `（新）都兼容
+- `### ` 子节识别：支持 `### 问题诊断/问题回顾` → `### 修复内容/解决` 模式
+- 解决方案标记：`**修复**`, `**修复1**`, `**修复方案**`, `**修复内容**`, `**正确方案**`, `**核心方案**`, `**最终方案**`, `**解决**` 均识别
+- 编号修复项：`**1. 修复描述**` / `**2. 修复描述**` 在 solution 块内被捕获
+- 粗体键值对：`- **Pages**: desc` 在 solution 块内被捕获
+- `- **修复** (path):` 括号后跟冒号的格式也被识别
+
+**不需要遵守的旧约束**：
+- ~~每个 Section 必须含 `[模块:ID]`~~ → 关键词匹配作为回退方案
+- ~~冒号必须在粗体标记内部~~ → 内外皆可
+- ~~不能用 `### 修复内容`~~ → 已支持
+- 纯操作流程（启动/构建/GitHub）如无意匹配，可加 `## ` 但无模块标签和 fix 字段，会自动过滤
+
+**模块 ID 速查**：
+| ID | 模块 | ID | 模块 |
+|----|------|----|------|
+| F1 | 多模型适配器 | F9 | Desktop 原生应用 |
+| F2 | Agent 系统 | F10 | 插件与技能系统 |
+| F3 | 工具系统 | F11 | IM 适配器 |
+| F4 | 知识库 RAG | F12 | i18n 国际化 |
+| F5 | MCP 协议 | F13 | Desktop 自动升级 |
+| F6 | 沙箱执行环境 | F14 | 模型目录动态更新 |
+| F7 | Ink CLI | F15 | 全面去硬编码 |
+| F8 | Web Dashboard | F16 | 版本控制系统 |
+| B1a-B3c | 分支优化项(10个) | P5a-P5c | 管线运维(3个) |
+
+**缓存说明**：仅修改日期（当日）或变更过的 MD 文件会被重新解析，旧文件复用 mtime 缓存
+
+### 解析器修复历程（2026-06-23）
+
+两次大规模修复，将问题追踪覆盖率从 ~23% 提升到 **99.5%**：
+
+**第一轮 — 模块分配修复**：
+- 问题：p5a/p5b/p5c/b2b 等模块节点显示 0 个问题
+- 根因：① 内存文件标签错误（`[模块:F8]`→应为`[模块:p5a]`）② `**date**:`格式无`## `标题头 ③ regex 冒号位置单一 ④ section 过滤过激（跳过GitHub等）⑤ 去重仅看`date+title`
+- 结果：总问题数 39→64→87，p5a:0→4, p5b:0→1, p5c:0→3, b2b:0→3
+
+**第二轮 — "详见原文"消除修复**：
+- 问题：大量条目显示"详见原文"（44/64 = 69%），无法展开具体解决信息
+- 根因：① `### 修复内容`不被识别为solution section ② `\b`对中文字符无效（`解决\b`始终false）③ `### 问题回顾`→`### 解决`过渡时entry被提前push ④ `**修复**(path):`括号后冒号不匹配 ⑤ solution块内粗体键值对不捕获 ⑥ `**修复1**:`编号修复项不匹配
+- 关键修复：`\b`→`(?![一-龥\w])`（中文友好边界）；fixStart regex改为通配含修复/方案关键词的粗体标签；问题→解决子段间不reset problem、不提前push entry
+- 结果：总问题数 87→143→189，"详见原文" 44→25→6→1（-97.7%）
+
+**重要教训**：
+- JavaScript `\b` word boundary 对中文字符无效，需用 `(?![一-龥\w])` 替代
+- `### ` 子段（问题回顾→解决）过渡时不应推送/重置条目，需保留累积状态
+
+## 参考：BMAD Agent Team 插件评估（2026-06-23）
+
+**BMAD** (Business Model And Design) 是 CodeBuddy 的 Agile 团队协作插件，包含 7 个角色化 Agent：
+
+| Agent | 角色 | 说明 |
+|-------|------|------|
+| bmad-po | Product Owner | 需求收集、用户故事、PRD 编写 |
+| bmad-architect | System Architect | 技术架构设计、方案评审（交互式） |
+| bmad-sm | Scrum Master | Sprint 规划、任务拆解 |
+| bmad-dev | Developer | 按 PRD/架构/sprint 计划实现功能 |
+| bmad-qa | QA Engineer | 全面自动化测试 |
+| bmad-review | Code Reviewer | 独立代码审查 |
+| bmad-orchestrator | Orchestrator | 工作流协调、仓库分析 |
+
+**评估结论**：不适合 EasyAgent 项目。
+- 功能重叠：EasyAgent 本身是 AI 编程助手（70 工具），bmad 做的事它都能直接做
+- 组织错配：bmad 为多角色团队设计，EasyAgent 是个人/小团队项目
+- 已移除：工作区引用（`_add_level3.mjs`）+ 用户级插件目录均已清理
 
 ## 关键文件索引
 

@@ -82,6 +82,8 @@
   .dash-card.score::before{background:linear-gradient(90deg,#7c3aed,#f85149)}
   .dash-card.modes::before{background:linear-gradient(90deg,#56d364,#3fb950)}
   .dash-card.refresh::before{background:linear-gradient(90deg,#58a6ff,#3fb950)}
+  .dash-card.progress::before{background:linear-gradient(90deg,#7c3aed,#d2991d)}
+  .dash-card.modules_progress::before{background:linear-gradient(90deg,#3fb950,#58a6ff)}
   .dash-card .dash-value{font-size:26px;font-weight:800;color:var(--text);line-height:1.1}
   .dash-card .dash-label{font-size:10px;color:var(--text2);margin-top:2px;letter-spacing:.5px}
   .dash-card .dash-sub{font-size:9px;color:var(--text2);margin-top:1px;opacity:.7}
@@ -104,9 +106,17 @@
   .detail-list li.expandable:hover{background:rgba(88,166,255,.08)}
   .detail-list li.expandable .item-row{display:flex;justify-content:space-between;align-items:center;width:100%}
   .detail-list .chevron{display:inline-block;width:16px;text-align:center;font-size:10px;transition:transform .25s;color:var(--text2);flex-shrink:0}
+  .detail-list .chevron-sm{width:13px;font-size:8px}
+  .detail-list .chevron-xs{width:10px;font-size:7px}
   .detail-list .chevron.open{transform:rotate(90deg)}
   .detail-list .sub-list{display:none;width:100%;padding:4px 0 4px 18px;margin-top:2px;list-style:none;border-top:1px dashed rgba(139,148,158,.12)}
   .detail-list .sub-list.open{display:block}
+  .detail-list .sub-list-deep{padding-left:14px}
+  .detail-list .sub-list-deep2{padding-left:12px;font-size:.85em}
+  .detail-list .sub-list-deep3{padding-left:10px;font-size:.78em}
+  .detail-list .sub-label-sm{font-size:.88em;color:var(--text2)}
+  .detail-list .sub-label-xs{font-size:.82em;color:var(--text2)}
+  .detail-list .sub-label-xxs{font-size:.75em;color:var(--text2)}
   .detail-list .sub-list li{padding:3px 0;border-bottom:1px dashed rgba(139,148,158,.1);font-size:11px;color:var(--text2);display:flex;justify-content:space-between}
   .detail-list .sub-list li:last-child{border-bottom:none}
   .detail-list .sub-list .sub-label{color:var(--text)}
@@ -130,7 +140,33 @@
   .case-list .case-desc .vt{color:var(--progress)} /* 验证点 */
   .case-list .case-desc .vc{color:var(--done);margin-left:6px} /* 验证结果 */
   .detail-chart{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px}
+  /* 进度条样式 */
+  .progress-bar-row{display:flex;align-items:center;gap:10px;width:100%}
+  .progress-bar-track{flex:1;background:var(--border);border-radius:4px;height:8px;overflow:hidden}
+  .progress-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+  .progress-bar-pct{font-size:12px;font-weight:700;min-width:38px;text-align:right}
   .detail-chart h4{font-size:13px;color:var(--accent2);margin-bottom:12px}
+  /* 图表模式标签切换 */
+  .chart-tabs{display:flex;gap:0;margin-bottom:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .chart-tab{flex:1;padding:10px 0;text-align:center;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;position:relative}
+  .chart-tab:hover{color:var(--text);background:rgba(124,58,237,.08)}
+  .chart-tab.active{color:var(--accent2);background:rgba(124,58,237,.12)}
+  .chart-tab.active::after{content:'';position:absolute;bottom:0;left:20%;width:60%;height:2px;background:var(--accent2);border-radius:1px}
+  /* 图表容器 */
+  .chart-container{display:none}
+  .chart-container.active{display:block}
+  .chart-row{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+  .chart-card{flex:1;min-width:280px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;overflow:hidden}
+  .chart-card h5{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+  .donut-center{font-size:20px;font-weight:800;fill:var(--text)}
+  .donut-label{font-size:9px;fill:var(--text2)}
+  .bar-label{font-size:10px;fill:var(--text)}
+  .bar-value{font-size:10px;font-weight:700}
+  .bar-track{fill:var(--border);rx:3}
+  .bar-fill{rx:3;transition:width 1s ease}
+  .legend-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .legend-dot-sm{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;flex-shrink:0}
+  .legend-text{font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px}
 
   /* 数据刷新指示器 */
   .refresh-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:var(--text2)}
@@ -139,6 +175,85 @@
 
   /* ---- 响应式 ---- */
   @media(max-width:1200px){.pipeline-wrapper{padding:0 8px 40px}.header{padding:20px 16px 12px}.header h1{font-size:24px}}
+
+  /* ---- 测试报告卡片高亮 ---- */
+  .dash-card.test-report-highlight{border-left:3px solid var(--accent2);background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(88,166,255,.04))}
+
+  /* ---- 测试报告面板 (四级树形) ---- */
+  .test-report-wrap{padding:0}
+  .tr-summary{display:flex;gap:12px;padding:16px 24px;background:linear-gradient(180deg,var(--bg),var(--surface));border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .tr-stat{flex:1;min-width:100px;text-align:center;padding:12px 8px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
+  .tr-stat-val{font-size:24px;font-weight:800}
+  .tr-stat-lbl{font-size:10px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+  .tr-stat.pass .tr-stat-val{color:var(--done)}
+  .tr-stat.fail .tr-stat-val{color:var(--error)}
+  .tr-stat.rate .tr-stat-val{color:var(--accent2)}
+
+  /* 包标签页 */
+  .tr-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg)}
+  .tr-tab{flex:1;padding:12px 0;text-align:center;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;position:relative;border-bottom:2px solid transparent}
+  .tr-tab:hover{color:var(--text);background:rgba(124,58,237,.04)}
+  .tr-tab.active{color:var(--text);background:rgba(124,58,237,.08);border-bottom-color:var(--accent2)}
+  .tr-tab-badge{font-size:10px;margin-left:4px;padding:1px 6px;border-radius:8px}
+  .tr-tab-badge.pass{background:rgba(63,185,80,.15);color:var(--done)}
+  .tr-tab-badge.fail{background:rgba(248,81,73,.15);color:var(--error)}
+
+  /* 测试套件树 */
+  .tr-body{padding:0;max-height:calc(100vh - 280px);overflow-y:auto;scrollbar-width:thin}
+  .tr-suite{margin:0;border-bottom:1px solid rgba(139,148,158,.08)}
+  .tr-suite-header{display:flex;align-items:center;gap:8px;padding:12px 24px;cursor:pointer;transition:background .15s;user-select:none}
+  .tr-suite-header:hover{background:rgba(124,58,237,.04)}
+  .tr-suite-arrow{font-size:10px;color:var(--text2);transition:transform .2s;min-width:14px;text-align:center}
+  .tr-suite-arrow.open{transform:rotate(90deg)}
+  .tr-suite-name{font-size:13px;font-weight:600;color:var(--text);font-family:'Consolas','Cascadia Code','Fira Code',monospace}
+  .tr-suite-meta{display:flex;gap:8px;margin-left:auto;align-items:center;font-size:11px}
+  .tr-suite-ext{font-size:9px;padding:2px 6px;border-radius:4px;background:var(--bg);color:var(--text2);border:1px solid var(--border);font-family:monospace}
+  .tr-suite-pass{color:var(--done);font-weight:600}
+  .tr-suite-fail{color:var(--error);font-weight:600}
+  .tr-suite-ratio{color:var(--text2);font-size:10px}
+  .tr-suite-status-icon{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .tr-suite-status-icon.pass{background:var(--done);box-shadow:0 0 6px rgba(63,185,80,.4)}
+  .tr-suite-status-icon.fail{background:var(--error);box-shadow:0 0 6px rgba(248,81,73,.4)}
+  .tr-suite-status-icon.compile{background:var(--warn);box-shadow:0 0 6px rgba(210,153,29,.4)}
+
+  /* 编译错误消息 */
+  .tr-compile-error{font-size:11px;color:var(--warn);padding:4px 24px 12px;font-family:monospace;line-height:1.5}
+
+  /* 测试分组 (L3) */
+  .tr-suite-body{display:none;padding:0}
+  .tr-suite-body.open{display:block}
+  .tr-group{padding:0;border-top:1px solid rgba(139,148,158,.05)}
+  .tr-group-header{display:flex;align-items:center;gap:8px;padding:8px 24px 8px 40px;cursor:pointer;transition:background .12s;font-size:11px;color:var(--text2)}
+  .tr-group-header:hover{background:rgba(124,58,237,.03);color:var(--text)}
+  .tr-group-arrow{font-size:8px;transition:transform .2s;min-width:10px}
+  .tr-group-arrow.open{transform:rotate(90deg)}
+  .tr-group-name{font-weight:500}
+  .tr-group-meta{display:flex;gap:6px;margin-left:auto;align-items:center}
+  .tr-group-meta .pass{color:var(--done)}
+  .tr-group-meta .fail{color:var(--error)}
+
+  /* 测试用例列表 (L4) */
+  .tr-group-body{display:none}
+  .tr-group-body.open{display:block}
+  .tr-case{padding:8px 24px 8px 56px;border-bottom:1px solid rgba(139,148,158,.03);transition:background .12s;cursor:default}
+  .tr-case:hover{background:rgba(124,58,237,.04)}
+  .tr-case-header{display:flex;align-items:flex-start;gap:8px}
+  .tr-case-icon{font-size:14px;margin-top:1px;flex-shrink:0}
+  .tr-case-icon.pass{color:var(--done)}
+  .tr-case-icon.fail{color:var(--error)}
+  .tr-case-content{flex:1;min-width:0}
+  .tr-case-title{font-size:11px;font-weight:500;color:var(--text);line-height:1.4;word-break:break-word}
+  .tr-case-title .fail{color:var(--error)}
+  .tr-case-meta{display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text2)}
+  .tr-case-dur{display:flex;align-items:center;gap:3px}
+  .tr-case-failure{display:none;margin-top:8px;padding:10px 12px;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.15);border-radius:6px;font-size:10px;color:var(--error);font-family:'Consolas','Cascadia Code','Fira Code',monospace;line-height:1.5;white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto}
+  .tr-case-failure.show{display:block}
+  .tr-case-toggle{font-size:10px;color:var(--accent2);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-top:4px;display:inline-block}
+  .tr-case-toggle:hover{color:var(--text)}
+
+  /* 空状态 */
+  .tr-empty{text-align:center;padding:48px 24px;color:var(--text2)}
+  .tr-empty-icon{font-size:48px;margin-bottom:16px;opacity:.4}
 
   /* ---- 节点可点击 ---- */
   .node-group{cursor:pointer;transition:filter .2s}
@@ -186,27 +301,50 @@
   .tl-section .ok{color:var(--done)}
   .no-issues{text-align:center;padding:40px 20px;color:var(--text2);font-size:14px}
   .no-issues .icon{font-size:40px;display:block;margin-bottom:12px}
+
+  /* ========== 风格切换按钮 ========== */
+  .view-toggle{display:inline-flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid #373e47;margin-left:16px;vertical-align:middle}
+  .vt-btn{padding:6px 14px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all .2s;outline:none}
+  .vt-btn:hover{color:var(--text);background:rgba(124,58,237,0.08)}
+  .vt-btn.active{background:var(--accent2);color:#fff}
+  .vt-btn+.vt-btn{border-left:1px solid #373e47}
+
+  /* ========== 时序图样式 ========== */
+  .seq-participant-header{filter:drop-shadow(0 2px 4px rgba(124,58,237,0.2))}
+  .seq-module-rect{cursor:pointer;transition:filter .2s,opacity .2s}
+  .seq-module-rect:hover{filter:brightness(1.3);opacity:0.9}
+  .seq-arrow{transition:opacity .2s}
+  .seq-arrow:hover{opacity:1!important}
+  @keyframes seqFlow{to{stroke-dashoffset:-20}}
+  .seq-active-arrow{stroke-dasharray:8 4;animation:seqFlow 1s linear infinite}
+
+  /* 分支区域标题 */
+  .seq-branch-header{filter:drop-shadow(0 1px 3px rgba(88,166,255,0.15))}
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>EasyAgent 项目全景进度管线</h1>
-  <div class="meta" id="headerMeta">版本 v0.4.0 · 代号 Gemini · 806 测试用例 · 10 家模型提供商 · 数据驱动自动更新</div>
+  <div class="meta" id="headerMeta">版本 v0.5.0 · 代号 Gemini · 数据驱动自动更新</div>
+  <div class="view-toggle" style="margin-top:8px">
+    <button class="vt-btn active" data-style="flow" onclick="switchViewStyle('flow')" title="横向管线流程图">🔄 流程图</button>
+    <button class="vt-btn" data-style="sequence" onclick="switchViewStyle('sequence')" title="纵向时序图">📊 时序图</button>
+  </div>
 </div>
 
 <!-- 顶部仪表板 -->
 <div class="dashboard">
   <div class="dash-grid">
     <div class="dash-card tests" onclick="openCardDetail('tests')">
-      <div class="dash-value" id="dashTests">806</div>
+      <div class="dash-value" id="dashTests">864</div>
       <div class="dash-label">测试用例总数</div>
       <div class="dash-sub">Vitest 全量测试</div>
     </div>
     <div class="dash-card pass" onclick="openCardDetail('pass')">
       <div class="dash-value" id="dashPass">100%</div>
       <div class="dash-label">测试通过率</div>
-      <div class="dash-sub">0 失败 / 0 跳过</div>
+      <div class="dash-sub" id="dashPassSub">等待数据...</div>
     </div>
     <div class="dash-card tools" onclick="openCardDetail('tools')">
       <div class="dash-value" id="dashTools">51</div>
@@ -228,10 +366,25 @@
       <div class="dash-label">操作模式</div>
       <div class="dash-sub">CLI/Web/Desktop/IM</div>
     </div>
+    <div class="dash-card progress" onclick="openCardDetail('progress')">
+      <div class="dash-value" id="dashProgress">100%</div>
+      <div class="dash-label">主线完工率</div>
+      <div class="dash-sub">P0-P5 阶段进度</div>
+    </div>
+    <div class="dash-card modules_progress" onclick="openCardDetail('modules_progress')">
+      <div class="dash-value" id="dashModuleDone">16</div>
+      <div class="dash-label">已完成模块</div>
+      <div class="dash-sub">/ 26 个模块</div>
+    </div>
     <div class="dash-card refresh" onclick="openCardDetail('issues')">
       <div class="dash-value" id="dashIssueCount">--</div>
       <div class="dash-label">问题记录</div>
       <div class="dash-sub" id="dashSource">等待加载...</div>
+    </div>
+    <div class="dash-card test-report-highlight" onclick="openTestReport()">
+      <div class="dash-value" id="dashFailCount" style="color:#f85149">--</div>
+      <div class="dash-label">📋 测试报告</div>
+      <div class="dash-sub">四级详情 · 失败原因</div>
     </div>
   </div>
 </div>
@@ -298,69 +451,67 @@
 
 <script>
 // ============================================================
-// 管线数据（内嵌，支持 file:// 和 HTTP 两种访问方式）
+// 数据加载层 —— 三级渐进式加载架构 (v2.0 库化)
+// Tier 1: HTTP API  (/api/pipeline, /api/dashboard)
+// Tier 2: 静态 JSON (pipeline-data.json, 含 pipeline + dashboard)
+// Tier 3: 内嵌最小回退数据 (无网络时的骨架渲染)
 // ============================================================
-const PIPELINE = {
+
+/** 全局数据存储 —— 所有渲染函数从此读取 */
+let pipelineData = null;    // { phases, branches, kpi, scoreHistory }
+let dashboardData = null;   // { tests, pass, tools, models, score, modes, issues }
+let dataSource = 'loading'; // 'api' | 'json' | 'embedded'
+
+/** Phase ID 映射：pipeline-data.json 格式 → 渲染器格式 */
+const PHASE_ID_MAP = {
+  'phase-foundation':'P0','phase-interface':'P1','phase-extend':'P2',
+  'phase-platform':'P3','phase-release':'P4','phase-pipeline':'P5'
+};
+
+/** Branch ID + Node ID 映射：pipeline-data.json → 渲染器/配置格式 */
+const BRANCH_ID_MAP = { 'branch-opt-p1':'B1','branch-opt-p2':'B2','branch-opt-p3':'B3' };
+const NODE_ID_MAP = {
+  'opt-p1a':'b1a','opt-p1b':'b1b','opt-p2a':'b2a','opt-p2b':'b2b',
+  'opt-p2c':'b2c','opt-p2d':'b2d','opt-p2e':'b2e','opt-p3a':'b3a',
+  'opt-p3b':'b3b','opt-p3c':'b3c'
+};
+
+/** 将 pipeline-data.json 格式转换为渲染器格式 */
+function transformJSONData(raw) {
+  return {
+    meta: raw.meta,
+    kpi: raw.kpi,
+    scoreHistory: raw.scoreHistory || [],
+    phases: (raw.mainLane?.phases || []).map(p => ({
+      id: PHASE_ID_MAP[p.id] || p.id,
+      label: p.label,
+      period: p.period || '',
+      nodes: (p.nodes || []).map(n => ({ ...n }))
+    })),
+    branches: (raw.branchLanes || []).map(b => ({
+      id: BRANCH_ID_MAP[b.id] || b.id,
+      label: b.label,
+      source: 'P4',
+      nodes: (b.nodes || []).map(n => ({ ...n, id: NODE_ID_MAP[n.id] || n.id }))
+    }))
+  };
+}
+
+/** 最小内嵌回退数据 —— 确保离线或极端情况下仍可渲染骨架 */
+const EMBEDDED_PIPELINE = {
   meta: { version:"0.5.0", codename:"Helios", releaseDate:"2026-06-23" },
   phases: [
-    { id:"P0",label:"P0 基础层",period:"2026 Q2 早期",
-      nodes:[
-        {id:"f1",icon:"🔌",label:"多模型适配器",desc:"10家国产大模型\nOpenAI兼容+自有API",status:"done"},
-        {id:"f2",icon:"🧠",label:"Agent 系统",desc:"ReAct循环\n多Agent协作+计划",status:"done"},
-        {id:"f3",icon:"🔧",label:"工具系统 51 tools",desc:"17分组全覆盖\n文件/搜索/Git/知识库",status:"done"}
-      ]},
-    { id:"P1",label:"P1 交互层",period:"2026 Q2 中期",
-      nodes:[
-        {id:"f7",icon:"🖥️",label:"Ink CLI",desc:"React Terminal\n7组件+10命令",status:"done"},
-        {id:"f8",icon:"🌐",label:"Web Dashboard v4",desc:"WorkBuddy风格\n10 Store+WS+虚拟滚动",status:"done"},
-        {id:"f9",icon:"🖼️",label:"Desktop 原生应用",desc:"Electron+React\n六件套+系统托盘",status:"done"}
-      ]},
-    { id:"P2",label:"P2 扩展层",period:"2026 Q2 中后期",
-      nodes:[
-        {id:"f4",icon:"📚",label:"知识库 RAG",desc:"双作用域架构\n5工具+HTTP API",status:"done"},
-        {id:"f5",icon:"🔗",label:"MCP 协议",desc:"JSON-RPC stdio\n多Server+工具发现",status:"done"},
-        {id:"f6",icon:"📦",label:"沙箱执行环境",desc:"Docker+本地降级\n3种模式自动检测",status:"done"}
-      ]},
-    { id:"P3",label:"P3 平台层",period:"2026 Q2 后期",
-      nodes:[
-        {id:"f10",icon:"🧩",label:"插件与技能系统",desc:"PluginManager\n6内置技能+钩子",status:"done"},
-        {id:"f11",icon:"💬",label:"IM 适配器",desc:"Telegram/飞书/微信\n3平台消息路由",status:"done"},
-        {id:"f12",icon:"🌍",label:"i18n 国际化",desc:"zh-CN/en-US\n完整消息表",status:"done"}
-      ]},
-    { id:"P4",label:"P4 发布层",period:"2026-06-20 ~ 06-22",
-      nodes:[
-        {id:"f13",icon:"🔄",label:"Desktop 自动升级",desc:"electron-updater\n静默检查+进度+重启",status:"done"},
-        {id:"f14",icon:"📋",label:"模型目录动态更新",desc:"GitHub/CDN双源\n24h缓存+三级降级",status:"done"},
-        {id:"f15",icon:"🎯",label:"全面去硬编码",desc:"模型/模板/命令\n动态加载+智能默认",status:"done"},
-        {id:"f16",icon:"🏷️",label:"版本控制系统",desc:"version.json唯一源\nCHANGELOG+升级API",status:"done"}
-      ]},
-    { id:"P5",label:"P5 管线运维",period:"2026-06-22 ~ 进行中",
-      nodes:[
-        {id:"p5a",icon:"🗺️",label:"管线数据看板",desc:"全量数据可视化\nKPI仪表板+问题追踪",status:"in-progress"},
-        {id:"p5b",icon:"📡",label:"自动数据采集",desc:"pipeline-data.json\nmemory实时解析+缓存",status:"done"},
-        {id:"p5c",icon:"🔍",label:"实时问题追踪",desc:"MD文件解析\n模块级追溯+统计",status:"done"}
-      ]}
+    { id:"P0",label:"P0 基础层",period:"Q2早期",nodes:[{id:"f1",icon:"🔌",label:"多模型适配器",desc:"",status:"done"},{id:"f2",icon:"🧠",label:"Agent 系统",desc:"",status:"done"},{id:"f3",icon:"🔧",label:"工具系统",desc:"",status:"done"}]},
+    { id:"P1",label:"P1 交互层",period:"Q2中期",nodes:[{id:"f7",icon:"🖥️",label:"Ink CLI",desc:"",status:"done"},{id:"f8",icon:"🌐",label:"Web Dashboard",desc:"",status:"done"},{id:"f9",icon:"🖼️",label:"Desktop",desc:"",status:"done"}]},
+    { id:"P2",label:"P2 扩展层",period:"Q2中后",nodes:[{id:"f4",icon:"📚",label:"知识库RAG",desc:"",status:"done"},{id:"f5",icon:"🔗",label:"MCP协议",desc:"",status:"done"},{id:"f6",icon:"📦",label:"沙箱环境",desc:"",status:"done"}]},
+    { id:"P3",label:"P3 平台层",period:"Q2后期",nodes:[{id:"f10",icon:"🧩",label:"插件系统",desc:"",status:"done"},{id:"f11",icon:"💬",label:"IM适配器",desc:"",status:"done"},{id:"f12",icon:"🌍",label:"i18n",desc:"",status:"done"}]},
+    { id:"P4",label:"P4 发布层",period:"06-20~22",nodes:[{id:"f13",icon:"🔄",label:"自动升级",desc:"",status:"done"},{id:"f14",icon:"📋",label:"模型目录",desc:"",status:"done"},{id:"f15",icon:"🎯",label:"去硬编码",desc:"",status:"done"},{id:"f16",icon:"🏷️",label:"版本控制",desc:"",status:"done"}]},
+    { id:"P5",label:"P5 管线运维",period:"进行中",nodes:[{id:"p5a",icon:"🗺️",label:"管线看板",desc:"",status:"in-progress"},{id:"p5b",icon:"📡",label:"数据采集",desc:"",status:"done"},{id:"p5c",icon:"🔍",label:"问题追踪",desc:"",status:"done"}]}
   ],
   branches: [
-    { id:"B1",label:"P1 架构优化分支",source:"P4",
-      nodes:[
-        {id:"b1a",icon:"🔀",label:"Web↔Desktop 前端合并",desc:"packages/frontend\n消除80%代码重复",status:"in-progress"},
-        {id:"b1b",icon:"🛡️",label:"PluginManager 沙箱",desc:"worker_threads隔离\nPluginPermission白名单",status:"pending"}
-      ]},
-    { id:"B2",label:"P2 质量保障分支",source:"P4",
-      nodes:[
-        {id:"b2a",icon:"📊",label:"SWE-bench 评测体系",desc:"10题基准+pass@k\nAgent代码质量量化",status:"done"},
-        {id:"b2b",icon:"⚙️",label:"GitHub Actions CI/CD",desc:"push触发测试编译\nTag自动构建发布EXE",status:"done"},
-        {id:"b2c",icon:"🧪",label:"集成测试·端到端",desc:"CLI→Server→Core\n全链路覆盖",status:"pending"},
-        {id:"b2d",icon:"🏆",label:"多模型评测排行榜",desc:"每版本发布\n模型适配报告",status:"pending"},
-        {id:"b2e",icon:"📈",label:"用户行为埋点",desc:"FTSR/留存率/TTFV\n北极星指标仪表盘",status:"pending"}
-      ]},
-    { id:"B3",label:"P3 生态建设分支",source:"P4",
-      nodes:[
-        {id:"b3a",icon:"⚡",label:"一键安装脚本",desc:"curl|bash体验\n12min→2min配置",status:"pending"},
-        {id:"b3b",icon:"🔌",label:"VS Code 插件",desc:"IDE深度集成\n实时代码建议",status:"pending"},
-        {id:"b3c",icon:"👥",label:"Contributor 引导",desc:"10个good-first-issue\n贡献指南+代码规范",status:"pending"}
-      ]}
+    { id:"B1",label:"架构优化",source:"P4",nodes:[{id:"b1a",icon:"🔀",label:"前端合并",desc:"",status:"in-progress"},{id:"b1b",icon:"🛡️",label:"沙箱",desc:"",status:"pending"}]},
+    { id:"B2",label:"质量保障",source:"P4",nodes:[{id:"b2a",icon:"📊",label:"SWE-bench",desc:"",status:"done"},{id:"b2b",icon:"⚙️",label:"CI/CD",desc:"",status:"done"},{id:"b2c",icon:"🧪",label:"集成测试",desc:"",status:"pending"},{id:"b2d",icon:"🏆",label:"排行榜",desc:"",status:"pending"},{id:"b2e",icon:"📈",label:"埋点",desc:"",status:"pending"}]},
+    { id:"B3",label:"生态建设",source:"P4",nodes:[{id:"b3a",icon:"⚡",label:"安装脚本",desc:"",status:"pending"},{id:"b3b",icon:"🔌",label:"VS Code插件",desc:"",status:"pending"},{id:"b3c",icon:"👥",label:"贡献引导",desc:"",status:"pending"}]}
   ]
 };
 
@@ -375,20 +526,19 @@ const PHASE_HDR_H = 30;// 阶段标题高度
 const TOP_MARGIN = 50;
 const SVG_W = 1900;
 
-function layout() {
-  const phases = PIPELINE.phases;
+/** 布局计算引擎 —— 纯函数，接受管线数据作为参数 */
+function layout(pd) {
+  const phases = pd.phases;
   const nCols = phases.length;
   const totalColW = nCols * COL_W + (nCols - 1) * COL_GAP;
   const startX = (SVG_W - totalColW) / 2;
 
-  // 阶段列布局
   const colCenters = phases.map((_,i) => startX + i * (COL_W + COL_GAP) + COL_W / 2);
   const maxNodes = Math.max(...phases.map(p => p.nodes.length));
   const mainAreaH = TOP_MARGIN + PHASE_HDR_H + maxNodes * (NODE_H + NODE_GAP);
 
-  // 分支区域布局
   const branchStartY = mainAreaH + 40;
-  const branches = PIPELINE.branches;
+  const branches = pd.branches;
   const nBranches = branches.length;
   const branchTotalW = nBranches * COL_W + (nBranches - 1) * COL_GAP;
   const branchStartX = (SVG_W - branchTotalW) / 2;
@@ -404,10 +554,10 @@ function layout() {
 }
 
 // ============================================================
-// 渲染引擎
+// 渲染引擎 —— 纯函数，接受管线数据作为参数
 // ============================================================
-function render() {
-  const L = layout();
+function render(pd) {
+  const L = layout(pd);
   const g = document.getElementById('pipeline-content');
   let html = '';
 
@@ -415,9 +565,9 @@ function render() {
   html += `<rect x="0" y="0" width="${SVG_W}" height="1120" fill="none" stroke="#1e2330" stroke-width="0.5" stroke-dasharray="4 8" opacity="0.4"/>`;
 
   // ---------- 阶段间水平流动箭头 ----------
-  PIPELINE.phases.forEach((phase, pi) => {
-    if (pi === PIPELINE.phases.length - 1) return;
-    const nextPhase = PIPELINE.phases[pi + 1];
+  pd.phases.forEach((phase, pi) => {
+    if (pi === pd.phases.length - 1) return;
+    const nextPhase = pd.phases[pi + 1];
     const srcX = L.colCenters[pi] + COL_W / 2;
     const dstX = L.colCenters[pi + 1] - COL_W / 2;
     const count = Math.max(phase.nodes.length, nextPhase.nodes.length);
@@ -432,7 +582,7 @@ function render() {
   });
 
   // ---------- 节点 ----------
-  PIPELINE.phases.forEach((phase, pi) => {
+  pd.phases.forEach((phase, pi) => {
     const cx = L.colCenters[pi];
     const phaseHeaderY = L.TOP_MARGIN;
 
@@ -440,7 +590,7 @@ function render() {
     html += `<text x="${cx}" y="${phaseHeaderY}" class="phase-label">${phase.label}</text>`;
     html += `<text x="${cx}" y="${phaseHeaderY + 14}" class="phase-period">${phase.period}</text>`;
 
-    // 阶段节点
+    // 渲染单列内的所有节点
     phase.nodes.forEach((node, ri) => {
       const nx = cx - COL_W / 2;
       const ny = L.startY + ri * (NODE_H + L.NODE_GAP);
@@ -469,7 +619,7 @@ function render() {
   });
 
   // ---------- 主阶段到版本小结的连线 ----------
-  const lastCol = PIPELINE.phases[PIPELINE.phases.length - 1];
+  const lastCol = pd.phases[pd.phases.length - 1];
   const lastCx = L.colCenters[L.colCenters.length - 1];
   const lastBotY = L.startY + lastCol.nodes.length * (NODE_H + L.NODE_GAP) - L.NODE_GAP + NODE_H;
   const summaryY = lastBotY + 40;
@@ -495,7 +645,7 @@ function render() {
   const branchY = summaryY + 80;
   const branchHeaderY = branchY - 8;
 
-  PIPELINE.branches.forEach((branch, bi) => {
+  pd.branches.forEach((branch, bi) => {
     const bCx = L.branchColCenters[bi];
     const bNx = bCx - COL_W / 2;
 
@@ -542,47 +692,126 @@ function render() {
   g.innerHTML = html;
 
   // 动态更新 SVG 高度
-  const maxBranchHeight = Math.max(...PIPELINE.branches.map(b => b.nodes.length)) * (NODE_H + L.NODE_GAP);
+  const maxBranchHeight = Math.max(...pd.branches.map(b => b.nodes.length)) * (NODE_H + L.NODE_GAP);
   const totalH = branchY + maxBranchHeight + 40;
   document.getElementById('pipeline-svg').setAttribute('viewBox', `0 0 ${SVG_W} ${totalH}`);
 }
 
 // ============================================================
-// 支持从 JSON 文件加载（HTTP 模式）或使用内嵌数据（file:// 模式）
+// 三级渐进式数据加载 (v2.0)
+// Tier 1: HTTP API → Tier 2: 静态 JSON → Tier 3: 内嵌回退
 // ============================================================
-function init() {
-  // 尝试从 pipeline-data.json 加载最新数据
-  fetch('pipeline-data.json')
-    .then(r => r.json())
-    .then(data => {
-      // 数据更新成功，重新构建管道数据
-      console.log('[Pipeline] 从 pipeline-data.json 加载数据成功');
-      renderWithData(data);
-    })
-    .catch(() => {
-      // file:// 模式或网络不可用，使用内嵌数据
-      console.log('[Pipeline] 使用内嵌数据（file:// 模式）');
-      render();
-    });
-}
 
-function renderWithData(data) {
-  // 安全更新页面元数据
-  const metaEl = document.getElementById('headerMeta');
-  if (metaEl) {
-    metaEl.textContent = `版本 v${data.meta.version} · 代号 ${data.meta.codename} · ${data.kpi.testCases} 测试用例 · ${data.kpi.providers} 家模型提供商 · P5管线运维进行中`;
+/** 主初始化函数 —— 加载管线 + 仪表板数据，触发渲染 */
+async function init() {
+  // ---- Tier 1: 尝试 HTTP API ---- //
+  try {
+    const [pipelineRes, dashboardRes] = await Promise.all([
+      fetch('/api/pipeline'),
+      fetch('/api/dashboard')
+    ]);
+    if (pipelineRes.ok && dashboardRes.ok) {
+      const pipeJson = await pipelineRes.json();
+      pipelineData = {
+        phases: pipeJson.pipeline.phases,
+        branches: pipeJson.pipeline.branches,
+        kpi: pipeJson.kpi,
+        scoreHistory: pipeJson.scoreHistory
+      };
+      dashboardData = await dashboardRes.json();
+      dataSource = 'api';
+      console.log('[Pipeline] ✅ 从 HTTP API 加载（实时数据）');
+      applyDataAndRender();
+      return;
+    }
+  } catch (e) {
+    console.log('[Pipeline] API 不可用 (' + e.message + ')，尝试静态 JSON...');
   }
 
-  // 更新顶部仪表板（安全取值）
-  updateDash('dashTests', data.kpi.testCases);
-  updateDash('dashPass', data.kpi.testPassRate + '%');
-  updateDash('dashTools', data.kpi.tools);
-  updateDash('dashModels', data.kpi.providers);
-  updateDash('dashScore', data.kpi.scoreTotal);
-  updateDash('dashModes', data.kpi.modes || 4);
+  // ---- Tier 2: 尝试静态 JSON 文件 ---- //
+  try {
+    const res = await fetch('pipeline-data.json');
+    if (res.ok) {
+      const raw = await res.json();
+      pipelineData = transformJSONData(raw);
+      dashboardData = raw.dashboard || null;
+      dataSource = 'json';
+      console.log('[Pipeline] ✅ 从 pipeline-data.json 加载（静态快照）');
+      applyDataAndRender();
+      return;
+    }
+  } catch (e) {
+    console.log('[Pipeline] JSON 文件不可用 (' + e.message + ')，使用内嵌回退...');
+  }
 
-  // 使用内嵌数据渲染
-  render();
+  // ---- Tier 3: 内嵌最小回退 ---- //
+  pipelineData = EMBEDDED_PIPELINE;
+  dashboardData = null;
+  dataSource = 'embedded';
+  console.log('[Pipeline] ⚠️ 使用内嵌回退数据（骨架模式）');
+  applyDataAndRender();
+}
+
+/** 应用数据并触发渲染 —— 统一的渲染入口 */
+function applyDataAndRender() {
+  // 安全更新页面元数据
+  const metaEl = document.getElementById('headerMeta');
+  if (metaEl && pipelineData.meta) {
+    const m = pipelineData.meta;
+    const kpi = pipelineData.kpi || {};
+    metaEl.textContent = `版本 v${m.version} · 代号 ${m.codename} · ${kpi.testCases || '—'} 测试用例 · ${kpi.providers || '—'} 家模型提供商 · P5管线运维进行中`;
+  }
+
+  // 更新 KPI 仪表板数值
+  if (pipelineData.kpi) {
+    const k = pipelineData.kpi;
+    updateDash('dashTests', k.testCases);
+    updateDash('dashPass', k.testPassRate + '%');
+    updateDash('dashTools', k.tools);
+    updateDash('dashModels', k.providers);
+    updateDash('dashScore', k.scoreTotal);
+    updateDash('dashModes', k.modes || 4);
+    updateDash('dashFailCount', (k.testFailed || 0) + ' 失败');
+    // 动态更新通过率卡片副标题
+    updateDash('dashPassSub', (k.testFailed || 0) + ' 失败 / ' + (k.testSkipped || 0) + ' 跳过');
+  }
+
+  // 计算主线完工率和已完成模块数（基于管线数据中的节点状态）
+  if (pipelineData.phases) {
+    let totalDone = 0, mainTotal = 0, branchTotal = 0;
+    pipelineData.phases.forEach(p => {
+      p.nodes.forEach(n => {
+        mainTotal++;
+        if (n.status === 'done') totalDone++;
+      });
+    });
+    if (pipelineData.branches) {
+      pipelineData.branches.forEach(b => {
+        b.nodes.forEach(n => {
+          branchTotal++;
+          if (n.status === 'done') totalDone++;
+        });
+      });
+    }
+    const mainPct = mainTotal > 0 ? Math.round((pipelineData.phases.reduce((s, p) => s + p.nodes.filter(n => n.status === 'done').length, 0) / mainTotal) * 100) : 0;
+    updateDash('dashProgress', mainPct + '%');
+    updateDash('dashModuleDone', totalDone + '');
+    // 更新副标题中的总数
+    const moduleSubEl = document.querySelector('.dash-card.modules_progress .dash-sub');
+    if (moduleSubEl && (mainTotal + branchTotal) > 0) {
+      moduleSubEl.textContent = `/ ${mainTotal + branchTotal} 个模块`;
+    }
+  }
+
+  // 数据源标识更新
+  const sourceEl = document.getElementById('dashSource');
+  const sourceLabels = { api: '🟢 实时 · API', json: '🟡 快照 · JSON', embedded: '🔴 回退 · 骨架', loading: '⏳ 加载中...' };
+  if (sourceEl && dataSource !== 'loading') {
+    sourceEl.textContent = sourceLabels[dataSource] || dataSource;
+  }
+
+  // 触发当前风格的渲染
+  renderCurrentStyle();
 }
 
 /** 安全更新仪表板数值 */
@@ -593,7 +822,291 @@ function updateDash(id, value) {
   }
 }
 
-// 启动
+// ============================================================
+// 风格切换系统 —— 流程图 / 时序图双模式
+// ============================================================
+
+/** 当前视图风格，从 localStorage 恢复，默认 flow */
+let currentViewStyle = (() => {
+  try { return localStorage.getItem('pipeline-view-style') || 'flow'; }
+  catch { return 'flow'; }
+})();
+
+/**
+ * 切换视图风格
+ * @param {'flow'|'sequence'} style - 目标风格
+ */
+function switchViewStyle(style) {
+  if (style === currentViewStyle) return;
+  currentViewStyle = style;
+  try { localStorage.setItem('pipeline-view-style', style); } catch {}
+  // 更新按钮状态
+  document.querySelectorAll('.vt-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.style === style);
+  });
+  // 重渲染
+  if (pipelineData && pipelineData.phases) {
+    renderCurrentStyle();
+  }
+}
+
+/**
+ * 根据当前风格触发渲染
+ */
+function renderCurrentStyle() {
+  // 同步按钮状态
+  document.querySelectorAll('.vt-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.style === currentViewStyle);
+  });
+  if (!pipelineData || !pipelineData.phases) return;
+  if (currentViewStyle === 'sequence') {
+    renderSequenceDiagram(pipelineData);
+  } else {
+    render(pipelineData);
+  }
+}
+
+// ============================================================
+// 时序图渲染引擎 —— UML 时序图风格
+// ============================================================
+
+/** 时序图布局常量 —— 适配 1900px 宽 viewBox (6列情况下 totalW=1778, 左右各留61px) */
+const SEQ_PART_W = 268;      // 参与者（阶段）头部宽度  [268×6 + 34×5 = 1778 < 1900]
+const SEQ_PART_H = 56;       // 参与者头部高度
+const SEQ_MOD_W = 258;       // 模块卡片宽度 (略窄于参与者)
+const SEQ_MOD_H = 70;        // 模块卡片高度
+const SEQ_LIFELINE_TOP = 180;// 生命线起始 Y (下移避免覆盖头部按钮)
+const SEQ_COL_GAP = 34;      // 列间距
+const SEQ_MOD_GAP = 22;      // 模块间垂直间距
+const SEQ_TOP_TITLE = 80;    // 标题起始 Y (下移 50px 避免与 Header 重叠)
+
+/**
+ * 时序图布局计算
+ * @param {Object} pd - 管线数据
+ * @returns {Object} 布局坐标
+ */
+function seqLayout(pd) {
+  const phases = pd.phases;
+  const nCols = phases.length;
+  const totalW = nCols * SEQ_PART_W + (nCols - 1) * SEQ_COL_GAP;
+  const startX = (SVG_W - totalW) / 2;
+  const colCenters = phases.map((_, i) => startX + i * (SEQ_PART_W + SEQ_COL_GAP) + SEQ_PART_W / 2);
+  const maxNodes = Math.max(...phases.map(p => p.nodes.length));
+  const mainAreaH = SEQ_LIFELINE_TOP + maxNodes * (SEQ_MOD_H + SEQ_MOD_GAP);
+
+  // 分支布局
+  const branchSectionY = mainAreaH + 60;
+  const branches = pd.branches || [];
+  const nBranches = branches.length;
+  const branchTotalW = nBranches * SEQ_PART_W + (nBranches - 1) * SEQ_COL_GAP;
+  const branchStartX = (SVG_W - branchTotalW) / 2;
+  const branchColCenters = branches.map((_, i) => branchStartX + i * (SEQ_PART_W + SEQ_COL_GAP) + SEQ_PART_W / 2);
+  const maxBranchNodes = branches.length > 0 ? Math.max(...branches.map(b => b.nodes.length)) : 0;
+  const branchAreaH = maxBranchNodes * (SEQ_MOD_H + SEQ_MOD_GAP);
+
+  return {
+    colCenters, startX, maxNodes, mainAreaH,
+    branchColCenters, branchStartX, branchSectionY, branchAreaH, maxBranchNodes
+  };
+}
+
+/**
+ * 时序图渲染 —— UML 序列图风格
+ * 参与者 = 阶段，生命线 = 垂直虚线，模块 = 激活框，箭头 = 阶段间依赖
+ * @param {Object} pd - 管线数据
+ */
+function renderSequenceDiagram(pd) {
+  const L = seqLayout(pd);
+  const g = document.getElementById('pipeline-content');
+  let html = '';
+
+  // ---------- 背景（半透明暗底 + 可见网格线，覆盖整个画布） ----------
+  html += `<rect x="0" y="0" width="${SVG_W}" height="3000" fill="#0a0d14" opacity="0.85"/>`;
+  // 水平网格线（从标题区下方开始）
+  for (let gy = SEQ_TOP_TITLE + 50; gy < 2800; gy += 80) {
+    html += `<line x1="0" y1="${gy}" x2="${SVG_W}" y2="${gy}" stroke="#1a1f2e" stroke-width="0.5" opacity="0.5"/>`;
+  }
+
+  // ---------- 章节标题（下移至 SEQ_TOP_TITLE 区域，避免覆盖 Header 按钮） ----------
+  html += `<text x="${SVG_W/2}" y="${SEQ_TOP_TITLE}" text-anchor="middle" font-size="18" font-weight="700" fill="#a78bfa">EasyAgent 主线时序图</text>`;
+  html += `<text x="${SVG_W/2}" y="${SEQ_TOP_TITLE + 22}" text-anchor="middle" font-size="12" fill="#6e7681">P0 → P5 阶段关联 · 模块依赖流向 · UML 序列图风格</text>`;
+
+  // ---------- 参与者头部（阶段名称） ----------
+  pd.phases.forEach((phase, pi) => {
+    const cx = L.colCenters[pi];
+    const px = cx - SEQ_PART_W / 2;
+    const py = SEQ_TOP_TITLE + 40;  // 120px，给标题留足空间
+
+    // 参与者框 —— 深紫渐变头部（更大、更醒目）
+    html += `<g class="seq-participant-header">`;
+    html += `<rect x="${px}" y="${py}" width="${SEQ_PART_W}" height="${SEQ_PART_H}" rx="10" fill="#2d1b4e" stroke="#7c3aed" stroke-width="2"/>`;
+    // 渐变上半部
+    html += `<rect x="${px + 1}" y="${py + 1}" width="${SEQ_PART_W - 2}" height="${SEQ_PART_H/2 - 1}" rx="9" fill="#3b2460" stroke="none"/>`;
+    // 完整边框
+    html += `<rect x="${px}" y="${py}" width="${SEQ_PART_W}" height="${SEQ_PART_H}" rx="10" fill="none" stroke="#7c3aed" stroke-width="2"/>`;
+    html += `<text x="${cx}" y="${py + 24}" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">${phase.label}</text>`;
+    html += `<text x="${cx}" y="${py + 44}" text-anchor="middle" fill="#a78bfa" font-size="11">${phase.period}</text>`;
+    html += `</g>`;
+
+    // 生命线（垂直虚线——加粗、加亮）
+    const lifelineStart = py + SEQ_PART_H;
+    const lifelineEnd = L.mainAreaH + 40;
+    html += `<line x1="${cx}" y1="${lifelineStart}" x2="${cx}" y2="${lifelineEnd}" stroke="#5a6a80" stroke-width="2" stroke-dasharray="8 5" opacity="0.55"/>`;
+  });
+
+  // ---------- 模块激活框（放在生命线上） ----------
+  pd.phases.forEach((phase, pi) => {
+    const cx = L.colCenters[pi];
+    phase.nodes.forEach((node, ri) => {
+      const mx = cx - SEQ_MOD_W / 2;
+      const my = SEQ_LIFELINE_TOP + ri * (SEQ_MOD_H + SEQ_MOD_GAP);
+
+      // 按状态配色
+      const colors = {
+        'done':      { bg: '#0d2818', bd: '#2ea043', txt: '#7ee787', iconBg: '#1a3a2a' },
+        'in-progress': { bg: '#2d1b4e', bd: '#7c3aed', txt: '#a78bfa', iconBg: '#3b2460' },
+        'pending':   { bg: '#13161e', bd: '#373e47', txt: '#8b949e', iconBg: '#1a1d24' }
+      };
+      const c = colors[node.status] || colors.pending;
+      const isCurrent = node.status === 'in-progress';
+      const glowFilter = isCurrent ? ' filter="url(#glow)"' : '';
+
+      html += `<g${glowFilter} class="node-group seq-module-rect ${isCurrent ? 'current-glow' : ''}" onclick="openPanel('${node.id}')">`;
+      // 卡片背景（加粗边框）
+      html += `<rect x="${mx}" y="${my}" width="${SEQ_MOD_W}" height="${SEQ_MOD_H}" rx="10" fill="${c.bg}" stroke="${c.bd}" stroke-width="2"/>`;
+      // 左侧状态条（更宽）
+      html += `<rect x="${mx}" y="${my + 6}" width="5" height="${SEQ_MOD_H - 12}" rx="3" fill="${c.bd}"/>`;
+      // 图标背景圆（更大）
+      html += `<circle cx="${mx + 32}" cy="${my + SEQ_MOD_H/2}" r="18" fill="${c.iconBg}" stroke="${c.bd}" stroke-width="1.5"/>`;
+      html += `<text x="${mx + 32}" y="${my + SEQ_MOD_H/2 + 6}" text-anchor="middle" font-size="16">${node.icon}</text>`;
+      // 标签（更大字体）
+      html += `<text x="${mx + 60}" y="${my + 26}" fill="${c.txt}" font-size="14" font-weight="600">${node.label}</text>`;
+      // 描述（单行）
+      const desc = node.desc.split('\n')[0];
+      html += `<text x="${mx + 60}" y="${my + 48}" fill="#7a828e" font-size="11" textLength="${SEQ_MOD_W - 78}" lengthAdjust="spacing">${desc}</text>`;
+      // 状态标记（更显眼）
+      const badge = node.status === 'done' ? '✓' : node.status === 'in-progress' ? '◉' : '○';
+      html += `<text x="${mx + SEQ_MOD_W - 20}" y="${my + 22}" fill="${c.bd}" font-size="18" font-weight="700" text-anchor="middle">${badge}</text>`;
+      html += `</g>`;
+
+      // 生命线连接到模块（横线——加粗加亮）
+      html += `<line x1="${cx}" y1="${my + SEQ_MOD_H/2}" x2="${mx}" y2="${my + SEQ_MOD_H/2}" stroke="${c.bd}" stroke-width="2" opacity="0.6"/>`;
+      html += `<line x1="${mx + SEQ_MOD_W}" y1="${my + SEQ_MOD_H/2}" x2="${cx}" y2="${my + SEQ_MOD_H/2}" stroke="${c.bd}" stroke-width="2" opacity="0.6"/>`;
+    });
+  });
+
+  // ---------- 阶段间依赖箭头（加粗、加亮、加底色标签） ----------
+  pd.phases.forEach((phase, pi) => {
+    if (pi === pd.phases.length - 1) return;
+    const nextPhase = pd.phases[pi + 1];
+    const srcCx = L.colCenters[pi];
+    const dstCx = L.colCenters[pi + 1];
+
+    const count = Math.max(phase.nodes.length, nextPhase.nodes.length);
+    for (let r = 0; r < count; r++) {
+      const srcNode = phase.nodes[r];
+      const dstNode = nextPhase.nodes[r];
+      const srcY = SEQ_LIFELINE_TOP + r * (SEQ_MOD_H + SEQ_MOD_GAP) + SEQ_MOD_H / 2;
+      const dstY = SEQ_LIFELINE_TOP + r * (SEQ_MOD_H + SEQ_MOD_GAP) + SEQ_MOD_H / 2;
+
+      // 箭头颜色：两个节点都 done 则绿色，任一 in-progress 则紫色，否则浅灰
+      let arrowColor = '#5a657a';
+      if (srcNode && dstNode && srcNode.status === 'done' && dstNode.status === 'done') arrowColor = '#2ea043';
+      else if ((srcNode && srcNode.status === 'in-progress') || (dstNode && dstNode.status === 'in-progress')) arrowColor = '#a78bfa';
+
+      const isActive = (srcNode && srcNode.status === 'in-progress') || (dstNode && dstNode.status === 'in-progress');
+
+      // 箭头主线（加粗到 2.5px，提高不透明度到 0.7）
+      html += `<line x1="${srcCx + SEQ_PART_W/2 + 6}" y1="${srcY}" x2="${dstCx - SEQ_PART_W/2 - 6}" y2="${dstY}"
+        class="seq-arrow${isActive ? ' seq-active-arrow' : ''}"
+        stroke="${arrowColor}" stroke-width="2.5" marker-end="url(#arrowhead)" opacity="0.7"/>`;
+
+      // 箭头标签（带背景色块，更醒目）
+      if (srcNode && dstNode) {
+        const midX = (srcCx + dstCx) / 2;
+        const midY = (srcY + dstY) / 2;
+        const labelText = `${srcNode.label} → ${dstNode.label}`;
+        // 估算文字宽度（中文 ~14px/字，英文 ~8px/字）
+        const estW = labelText.length * 9;
+        html += `<rect x="${midX - estW/2 - 6}" y="${midY - 16}" width="${estW + 12}" height="18" rx="4" fill="#0d1117" stroke="${arrowColor}" stroke-width="1" opacity="0.9"/>`;
+        html += `<text x="${midX}" y="${midY - 3}" text-anchor="middle" fill="${arrowColor}" font-size="10" font-weight="600" opacity="1">${labelText}</text>`;
+      }
+    }
+  });
+
+  // ---------- 分支区域分隔线（加粗加亮） ----------
+  const branchTop = L.branchSectionY;
+  if (pd.branches && pd.branches.length > 0) {
+    html += `<line x1="60" y1="${branchTop - 20}" x2="${SVG_W - 60}" y2="${branchTop - 20}" stroke="#4a5568" stroke-width="1.5" stroke-dasharray="12 6" opacity="0.6"/>`;
+    html += `<text x="${SVG_W/2}" y="${branchTop - 32}" text-anchor="middle" font-size="14" font-weight="700" fill="#58a6ff">· 分支管线 ·</text>`;
+    html += `<text x="${SVG_W/2}" y="${branchTop - 12}" text-anchor="middle" font-size="11" fill="#7a828e">${pd.branches.map(b => b.label.replace('分支', '')).join(' · ')}</text>`;
+  }
+
+  // ---------- 分支参与者 ----------
+  if (pd.branches) {
+    pd.branches.forEach((branch, bi) => {
+      const bCx = L.branchColCenters[bi];
+      const bPx = bCx - SEQ_PART_W / 2;
+      const bPy = branchTop;
+
+      // 分支头部（更大、蓝色系）
+      html += `<g class="seq-branch-header">`;
+      html += `<rect x="${bPx}" y="${bPy}" width="${SEQ_PART_W}" height="44" rx="8" fill="#0d1b2a" stroke="#58a6ff" stroke-width="2"/>`;
+      html += `<text x="${bCx}" y="${bPy + 28}" text-anchor="middle" fill="#58a6ff" font-size="14" font-weight="700">${branch.label}</text>`;
+      html += `</g>`;
+
+      // 分支生命线（加粗）
+      const blLifelineEnd = branchTop + 44 + branch.nodes.length * (SEQ_MOD_H + SEQ_MOD_GAP) + 20;
+      html += `<line x1="${bCx}" y1="${bPy + 44}" x2="${bCx}" y2="${blLifelineEnd}" stroke="#5a6a80" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.45"/>`;
+
+      // 分支节点（与主线模块尺寸一致）
+      branch.nodes.forEach((node, ri) => {
+        const mnx = bCx - SEQ_MOD_W / 2;
+        const mny = branchTop + 54 + ri * (SEQ_MOD_H + SEQ_MOD_GAP);
+
+        const colors = {
+          'done':      { bg: '#0d2818', bd: '#2ea043', txt: '#7ee787', iconBg: '#1a3a2a' },
+          'in-progress': { bg: '#0d1b2a', bd: '#58a6ff', txt: '#79c0ff', iconBg: '#1a2b3a' },
+          'pending':   { bg: '#13161e', bd: '#373e47', txt: '#8b949e', iconBg: '#1a1d24' }
+        };
+        const c = colors[node.status] || colors.pending;
+        const isCurrent = node.status === 'in-progress';
+        const glowFilter = isCurrent ? ' filter="url(#glow)"' : '';
+
+        html += `<g${glowFilter} class="node-group seq-module-rect ${isCurrent ? 'current-glow' : ''}" onclick="openPanel('${node.id}')">`;
+        html += `<rect x="${mnx}" y="${mny}" width="${SEQ_MOD_W}" height="${SEQ_MOD_H}" rx="10" fill="${c.bg}" stroke="${c.bd}" stroke-width="2"/>`;
+        html += `<rect x="${mnx}" y="${mny + 6}" width="5" height="${SEQ_MOD_H - 12}" rx="3" fill="${c.bd}"/>`;
+        html += `<circle cx="${mnx + 32}" cy="${mny + SEQ_MOD_H/2}" r="18" fill="${c.iconBg}" stroke="${c.bd}" stroke-width="1.5"/>`;
+        html += `<text x="${mnx + 32}" y="${mny + SEQ_MOD_H/2 + 6}" text-anchor="middle" font-size="16">${node.icon}</text>`;
+        html += `<text x="${mnx + 60}" y="${mny + 26}" fill="${c.txt}" font-size="14" font-weight="600">${node.label}</text>`;
+        const desc = node.desc.split('\n')[0];
+        html += `<text x="${mnx + 60}" y="${mny + 48}" fill="#7a828e" font-size="11" textLength="${SEQ_MOD_W - 78}" lengthAdjust="spacing">${desc}</text>`;
+        const badge = node.status === 'done' ? '✓' : node.status === 'in-progress' ? '◉' : '○';
+        html += `<text x="${mnx + SEQ_MOD_W - 20}" y="${mny + 22}" fill="${c.bd}" font-size="18" font-weight="700" text-anchor="middle">${badge}</text>`;
+        html += `</g>`;
+      });
+    });
+  }
+
+  // ---------- 版本小结（更大更醒目的底部汇总） ----------
+  const summaryY = pd.branches && pd.branches.length > 0
+    ? branchTop + 44 + Math.max(...pd.branches.map(b => b.nodes.length)) * (SEQ_MOD_H + SEQ_MOD_GAP) + 100
+    : L.mainAreaH + 80;
+
+  html += `<rect x="${SVG_W/2 - 170}" y="${summaryY}" width="340" height="64" rx="32" fill="#13161e" stroke="#7c3aed" stroke-width="2.5" filter="url(#shadow)"/>`;
+  html += `<text x="${SVG_W/2}" y="${summaryY + 26}" text-anchor="middle" font-size="16" font-weight="700" fill="#a78bfa">v0.5.0 · 管线运维</text>`;
+  const totalMods = pd.phases.reduce((s,p)=>s+p.nodes.length,0) + (pd.branches||[]).reduce((s,b)=>s+b.nodes.length,0);
+  html += `<text x="${SVG_W/2}" y="${summaryY + 48}" text-anchor="middle" font-size="12" fill="#8b949e">${totalMods} 个模块 · 时序图模式</text>`;
+
+  // 应用渲染
+  g.innerHTML = html;
+
+  // 动态调整 SVG 高度
+  const totalH = summaryY + 100;
+  document.getElementById('pipeline-svg').setAttribute('viewBox', `0 0 ${SVG_W} ${totalH}`);
+}
+
+// 启动 —— 并行加载管线数据和问题数据
 document.addEventListener('DOMContentLoaded', () => {
   init();
   loadIssueData();
@@ -606,275 +1119,24 @@ let issueData = null;
 let currentModuleId = null;
 let panelMode = 'module'; // 'module' | 'card'
 
-/** 仪表板卡片详情数据 */
-const DASH_DETAILS = {
-  tests: {
-    title: '测试用例详情',
-    subtitle: '806 个测试用例 · Vitest 测试框架',
-    items: [
-      { label: '多模型适配器', val: '127 tests', note: 'f1 · 10 家提供商适配',
-        expandItems: [
-          {label:'DeepSeek 适配',val:'18'},{label:'智谱 GLM 适配',val:'15'},{label:'通义千问适配',val:'17'},
-          {label:'Kimi 适配',val:'13'},{label:'百度 ERNIE 适配',val:'12'},{label:'豆包适配',val:'11'},
-          {label:'混元适配',val:'14'},{label:'MiniMax 适配',val:'10'},{label:'OpenAI 适配',val:'9'},{label:'Ollama 本地',val:'8'},
-        ]},
-      { label: 'Agent 系统', val: '132 tests', note: 'f2 · ReAct 循环 + 协作',
-        expandItems: [
-          {label:'子 Agent 管理',val:'48'},{label:'Orchestrator 协调',val:'28'},{label:'Memory 记忆系统',val:'22'},
-          {label:'工具调用链',val:'19'},{label:'错误恢复',val:'15'},
-        ]},
-      { label: '工具系统', val: '115 tests', note: 'f3 · 51 个工具 17 分组',
-        expandItems: [
-          {label:'工具执行引擎',val:'32'},{label:'工具发现/注册',val:'25'},{label:'Schema 校验',val:'22'},
-          {label:'结果解析',val:'18'},{label:'批量调用',val:'18'},
-        ]},
-      { label: '知识库 RAG', val: '78 tests', note: 'f4 · 双作用域架构',
-        expandItems: [
-          {label:'索引构建',val:'22'},{label:'语义搜索',val:'25'},{label:'Embedding',val:'16'},{label:'分块策略',val:'15'},
-        ]},
-      { label: 'MCP 协议', val: '69 tests', note: 'f5 · JSON-RPC stdio',
-        expandItems: [
-          {label:'Client 端',val:'25'},{label:'Server 端',val:'20'},{label:'Transport 传输',val:'14'},{label:'工具发现协议',val:'10'},
-        ]},
-      { label: '沙箱执行环境', val: '58 tests', note: 'f6 · Docker + 本地降级',
-        expandItems: [
-          {label:'Docker 沙箱',val:'22'},{label:'本地降级策略',val:'18'},{label:'隔离机制',val:'10'},{label:'资源限制',val:'8'},
-        ]},
-      { label: 'Ink CLI', val: '52 tests', note: 'f7 · React Terminal',
-        expandItems: [
-          {label:'渲染引擎',val:'18'},{label:'输入处理',val:'14'},{label:'命令解析',val:'12'},{label:'输出格式化',val:'8'},
-        ]},
-      { label: 'Web Dashboard', val: '43 tests', note: 'f8 · 10 Store + WS',
-        expandItems: [
-          {label:'Store 状态管理',val:'15'},{label:'WebSocket 通信',val:'10'},{label:'UI 组件测试',val:'12'},{label:'路由导航',val:'6'},
-        ]},
-      { label: 'Desktop 原生应用', val: '36 tests', note: 'f9 · Electron + React',
-        expandItems: [
-          {label:'Electron 主进程',val:'14'},{label:'Renderer 渲染',val:'12'},{label:'IPC 通信',val:'7'},{label:'自动更新',val:'3'},
-        ]},
-      { label: '插件与技能系统', val: '31 tests', note: 'f10 · PluginManager',
-        expandItems: [
-          {label:'插件加载器',val:'12'},{label:'技能注册表',val:'10'},{label:'生命周期管理',val:'6'},{label:'沙箱隔离',val:'3'},
-        ]},
-      { label: 'IM 适配器', val: '28 tests', note: 'f11 · 3 平台消息路由',
-        expandItems: [
-          {label:'Telegram 适配',val:'10'},{label:'飞书适配',val:'9'},{label:'企业微信适配',val:'9'},
-        ]},
-      { label: 'i18n 国际化', val: '15 tests', note: 'f12 · zh-CN / en-US',
-        expandItems: [
-          {label:'zh-CN 中文',val:'8'},{label:'en-US 英文',val:'7'},
-        ]},
-      { label: '版本控制 + 发布', val: '22 tests', note: 'f13-f16 · 发布层 4 模块',
-        expandItems: [
-          {label:'版本管理器',val:'8'},{label:'发布流水线',val:'8'},{label:'Changelog',val:'6'},
-        ]},
-    ],
-    summary: '所有 16 个核心模块均已覆盖测试，总用例数 806，覆盖单元测试、集成测试、端到端测试三个层级'
-  },
-  pass: {
-    title: '测试通过率详情',
-    subtitle: '通过率 100% · 0 失败 / 0 跳过',
-    stats: [
-      { label: '✅ 通过', val: '806', color: '#3fb950' },
-      { label: '❌ 失败', val: '0', color: '#f85149' },
-      { label: '⏭️ 跳过', val: '0', color: '#8b949e' },
-    ],
-    items: [
-      { label: 'P0 基础层 (f1-f3)', val: '374', note: '127 + 132 + 115', rate: '100%',
-        expandItems: [
-          {label:'多模型适配器',val:'127 ✅'},{label:'Agent 系统',val:'132 ✅'},{label:'工具系统',val:'115 ✅'},
-        ]},
-      { label: 'P1 交互层 (f7-f9)', val: '131', note: '52 + 43 + 36', rate: '100%',
-        expandItems: [
-          {label:'Ink CLI',val:'52 ✅'},{label:'Web Dashboard',val:'43 ✅'},{label:'Desktop 原生',val:'36 ✅'},
-        ]},
-      { label: 'P2 扩展层 (f4-f6)', val: '205', note: '78 + 69 + 58', rate: '100%',
-        expandItems: [
-          {label:'知识库 RAG',val:'78 ✅'},{label:'MCP 协议',val:'69 ✅'},{label:'沙箱执行环境',val:'58 ✅'},
-        ]},
-      { label: 'P3 平台层 (f10-f12)', val: '74', note: '31 + 28 + 15', rate: '100%',
-        expandItems: [
-          {label:'插件与技能',val:'31 ✅'},{label:'IM 适配器',val:'28 ✅'},{label:'i18n 国际化',val:'15 ✅'},
-        ]},
-      { label: 'P4 发布层 (f13-f16)', val: '22', note: '4 模块合集', rate: '100%',
-        expandItems: [
-          {label:'版本控制',val:'8 ✅'},{label:'发布流水线',val:'8 ✅'},{label:'CI/CD',val:'4 ✅'},{label:'Changelog',val:'2 ✅'},
-        ]},
-    ],
-    summary: '所有模块测试均通过了 100%，无失败或跳过的用例。测试框架会继续作为 CI/CD 的一部分自动运行。'
-  },
-  tools: {
-    title: '内置工具详情',
-    subtitle: '51 个工具 · 17 个功能分组',
-    items: [
-      { label: '📁 文件操作', val: '8 tools', note: 'read/write/edit/delete/search/list/glob/mkdir',
-        expandItems: [
-          {label:'read_file',val:'读取文件内容'},{label:'write_to_file',val:'创建/覆盖文件'},{label:'replace_in_file',val:'精确替换'},{label:'delete_file',val:'删除文件'},
-          {label:'search_file',val:'文件名搜索'},{label:'list_dir',val:'目录列表'},{label:'search_content',val:'内容搜索(grep)'},{label:'read_lints',val:'linter 诊断'},
-        ]},
-      { label: '🔍 搜索', val: '4 tools', note: 'grep/file-search/codebase-search/content-search',
-        expandItems: [
-          {label:'search_content',val:'Ripgrep 全文搜索'},{label:'search_file',val:'Glob 模式匹配'},{label:'codebase_search',val:'语义代码搜索'},{label:'web_search',val:'互联网搜索'},
-        ]},
-      { label: '🔄 Git 操作', val: '6 tools', note: 'status/diff/log/branch/commit/stash',
-        expandItems: [
-          {label:'Git Status',val:'查看工作区状态'},{label:'Git Diff',val:'查看差异'},{label:'Git Log',val:'提交历史'},{label:'Git Branch',val:'分支操作'},{label:'Git Commit',val:'提交变更'},{label:'Git Stash',val:'暂存操作'},
-        ]},
-      { label: '📚 知识库', val: '3 tools', note: 'RAG-search/list-docs/refresh-index',
-        expandItems: [
-          {label:'RAG_search',val:'知识库语义检索'},{label:'知识库列表',val:'查看可用知识库'},{label:'索引刷新',val:'更新知识库索引'},
-        ]},
-      { label: '🧠 Agent 管理', val: '4 tools', note: 'task/team-create/team-delete/send-message',
-        expandItems: [
-          {label:'task',val:'启动子 Agent 任务'},{label:'team_create',val:'创建协作团队'},{label:'team_delete',val:'删除团队'},{label:'send_message',val:'团队消息通信'},
-        ]},
-      { label: '🔗 MCP 协议', val: '2 tools', note: 'connect/discover-tools',
-        expandItems: [
-          {label:'MCP Connect',val:'连接 MCP 服务器'},{label:'MCP Discover',val:'发现可用工具'},
-        ]},
-      { label: '🌐 Web', val: '3 tools', note: 'fetch/preview/search',
-        expandItems: [
-          {label:'web_fetch',val:'获取网页内容'},{label:'preview_url',val:'内嵌浏览器预览'},{label:'web_search',val:'网络搜索'},
-        ]},
-      { label: '🖼️ 媒体', val: '2 tools', note: 'image-gen/read-image',
-        expandItems: [
-          {label:'image_gen',val:'AI 图片生成'},{label:'read_image',val:'读取图片内容'},
-        ]},
-      { label: '⚙️ 系统', val: '5 tools', note: 'exec/install-binary/read-lints/automation/connect-cloud',
-        expandItems: [
-          {label:'execute_command',val:'执行 Shell 命令'},{label:'install_binary',val:'安装运行时'},{label:'read_lints',val:'读取诊断信息'},{label:'automation_update',val:'自动化任务管理'},{label:'connect_cloud_service',val:'云服务连接'},
-        ]},
-      { label: '📦 部署', val: '3 tools', note: 'invoke-integration/deploy/publish',
-        expandItems: [
-          {label:'invoke_integration',val:'触发集成服务'},{label:'Deploy',val:'一键部署'},{label:'Publish',val:'发布上线'},
-        ]},
-      { label: '📝 文档', val: '3 tools', note: 'memory-update/CHANGELOG/release-notes',
-        expandItems: [
-          {label:'update_memory',val:'持久化记忆'},{label:'CHANGELOG',val:'自动生成更新日志'},{label:'Release Notes',val:'版本发布说明'},
-        ]},
-      { label: '🔌 集成', val: '2 tools', note: 'supabase/cloudbase/lighthouse/eop',
-        expandItems: [
-          {label:'Supabase',val:'数据库/Auth'},{label:'CloudBase',val:'微信云开发'},{label:'Lighthouse',val:'轻量服务器'},{label:'EdgeOne Pages',val:'前端部署'},
-        ]},
-      { label: '📊 数据', val: '2 tools', note: 'json-parse/csv-export',
-        expandItems: [
-          {label:'JSON 解析',val:'结构化数据处理'},{label:'CSV 导出',val:'表格数据导出'},
-        ]},
-      { label: '🎨 前端', val: '2 tools', note: 'component-gen/style-lint',
-        expandItems: [
-          {label:'组件生成',val:'自动生成 UI 组件'},{label:'样式检查',val:'CSS/Tailwind 规范'},
-        ]},
-      { label: '📋 项目管理', val: '2 tools', note: 'sprint-plan/progress-track',
-        expandItems: [
-          {label:'Sprint 规划',val:'迭代计划'},{label:'进度追踪',val:'进度可视化'},
-        ]},
-    ],
-    summary: '51 个工具覆盖文件、搜索、Git、知识库、Agent、MCP、Web、系统等 17 个分组，构建了完整的 AI 编程助手工具链'
-  },
-  models: {
-    title: '模型提供商详情',
-    subtitle: '10 家提供商 · 国产大模型全覆盖',
-    items: [
-      { label: '🔴 DeepSeek', val: '4 models', note: 'V4/V4 Flash/V3/R1 · 推理专长',
-        expandItems: [
-          {label:'DeepSeek V4',val:'最新旗舰 · 超强推理'},{label:'DeepSeek V4 Flash',val:'快速推理'},{label:'DeepSeek V3',val:'通用能力'},{label:'DeepSeek R1',val:'专精推理'},
-        ]},
-      { label: '🟣 智谱 GLM', val: '4 models', note: 'GLM-5/Flash/4 Plus/4 Flash · 200K 上下文',
-        expandItems: [
-          {label:'GLM-5',val:'最新旗舰 · 200K ctx'},{label:'GLM-5 Flash',val:'快速版'},{label:'GLM-4 Plus',val:'高性能'},{label:'GLM-4 Flash',val:'轻量快速'},
-        ]},
-      { label: '🟠 通义千问', val: '6 models', note: 'Qwen3 Max/Plus/Turbo/Coder · 全场景',
-        expandItems: [
-          {label:'Qwen3 Max',val:'最强能力'},{label:'Qwen3 Plus',val:'均衡性能'},{label:'Qwen3 Turbo',val:'高速响应'},{label:'Qwen3 Coder',val:'代码专长'},{label:'Qwen 2.5',val:'经典版本'},{label:'Qwen VL',val:'多模态视觉'},
-        ]},
-      { label: '🟢 Kimi (月之暗面)', val: '4 models', note: 'K2.7 Code/K2.6/K2.5 · 代码专长',
-        expandItems: [
-          {label:'K2.7 Code',val:'最新代码专长'},{label:'K2.6',val:'增强版本'},{label:'K2.5',val:'稳定版本'},{label:'K2 Flash',val:'快速推理'},
-        ]},
-      { label: '🔵 百度 ERNIE', val: '4 models', note: '4.5/Speed/Lite/4.0 Turbo',
-        expandItems: [
-          {label:'ERNIE 4.5',val:'最新旗舰'},{label:'ERNIE Speed',val:'高速版本'},{label:'ERNIE Lite',val:'轻量版本'},{label:'ERNIE 4.0 Turbo',val:'经典加速'},
-        ]},
-      { label: '🟡 豆包 (字节)', val: '3 models', note: 'Seed 1.6/Pro 1.6/Lite 1.6',
-        expandItems: [
-          {label:'Seed 1.6',val:'旗舰模型'},{label:'Pro 1.6',val:'专业版'},{label:'Lite 1.6',val:'轻量版'},
-        ]},
-      { label: '⚪ 混元 (腾讯)', val: '4 models', note: 'TurboS Vision/T1/Pro/Lite',
-        expandItems: [
-          {label:'TurboS Vision',val:'多模态视觉'},{label:'T1',val:'推理专长'},{label:'Pro',val:'专业版'},{label:'Lite',val:'轻量版'},
-        ]},
-      { label: '🟤 MiniMax', val: '4 models', note: 'M3/M3 Flash/M1/ABAB 6.5s · 245K 上下文',
-        expandItems: [
-          {label:'M3',val:'最新旗舰 · 245K ctx'},{label:'M3 Flash',val:'快速推理'},{label:'M1',val:'经典版本'},{label:'ABAB 6.5s',val:'超长上下文'},
-        ]},
-      { label: '🔷 OpenAI', val: '2 models', note: 'GPT-4o/GPT-4o Mini · 备用',
-        expandItems: [
-          {label:'GPT-4o',val:'多模态旗舰'},{label:'GPT-4o Mini',val:'轻量高效'},
-        ]},
-      { label: '🟦 Ollama (本地)', val: 'N/A', note: '本地部署 · 灵活配置',
-        expandItems: [
-          {label:'Llama 系列',val:'开源可部署'},{label:'Qwen 系列',val:'本地运行'},{label:'Mistral',val:'轻量高效'},{label:'任意 GGUF',val:'自定义模型'},
-        ]},
-    ],
-    summary: '10 家模型提供商，覆盖 DeepSeek、智谱、通义千问、Kimi、ERNIE、豆包、混元、MiniMax、OpenAI 和 Ollama 本地部署'
-  },
-  score: {
-    title: '综合评分详情',
-    subtitle: '68.4 / 100 · 版本演进追踪',
-    history: [
-      { version: 'v0.1.0', date: '06-18', score: 30, note: 'P0 基础层完成' },
-      { version: 'v0.2.0', date: '06-19', score: 55, note: 'P1+P2 交互和扩展层' },
-      { version: 'v0.3.0', date: '06-20', score: 65, note: 'P3 平台层完成' },
-      { version: 'v0.4.0', date: '06-22', score: 68.4, note: 'P4 发布层完成' },
-    ],
-    dimensions: [
-      { label: '功能完整度', score: 96, max: 100, note: '16/16 模块完成' },
-      { label: '测试覆盖', score: 75, max: 100, note: '806 用例 · 全模块覆盖' },
-      { label: '代码质量', score: 68, max: 100, note: '架构评审 + lint 检查' },
-      { label: '文档完整度', score: 60, max: 100, note: 'PRD/ADD/CHANGELOG 齐全' },
-      { label: 'CI/CD 成熟度', score: 55, max: 100, note: 'GitHub Actions + 自动发布' },
-      { label: '生态建设', score: 30, max: 100, note: '10 分支优化项 · 6 待启动' },
-    ],
-    summary: '综合评分基于 6 个维度加权计算。功能完整度最高(96)，生态建设待提升(30)。目标 v1.0 达到 85+'
-  },
-  modes: {
-    title: '操作模式详情',
-    subtitle: '4 种操作模式 · 全场景覆盖',
-    items: [
-      { label: '🖥️ CLI 命令行', val: '✅ 已发布', note: 'Ink + React Terminal · 7 组件 10 命令 · 支持文件/管道/重定向',
-        expandItems: [
-          {label:'交互式聊天',val:'多轮对话 · 上下文管理'},{label:'文件操作',val:'读取/编辑/搜索/删除'},{label:'管道模式',val:'stdin/stdout 流式处理'},
-          {label:'命令系统',val:'10 个命令 · help/clear/export'},{label:'终端渲染',val:'Ink + React 组件 · 彩色输出'},
-        ]},
-      { label: '🌐 Web Dashboard', val: '✅ 已发布', note: 'WorkBuddy 风格 · 10 Store + WebSocket · 虚拟滚动 · 深色主题',
-        expandItems: [
-          {label:'状态管理',val:'10 个 Zustand Store'},{label:'实时通信',val:'WebSocket 双向推送'},{label:'虚拟滚动',val:'万级消息无卡顿'},
-          {label:'深色主题',val:'暗色/亮色切换'},{label:'响应式',val:'桌面/平板/手机适配'},
-        ]},
-      { label: '🖼️ Desktop 原生', val: '✅ 已发布', note: 'Electron + React · 六件套布局 · 系统托盘 · 自动升级',
-        expandItems: [
-          {label:'Electron 壳',val:'原生窗口 · 系统托盘'},{label:'六件套布局',val:'聊天/文件/终端/设置/仪表板'},{label:'自动更新',val:'electron-updater 增量更新'},
-          {label:'快捷键',val:'全局快捷键支持'},{label:'离线能力',val:'本地模型 Ollama 集成'},
-        ]},
-      { label: '💬 IM 适配器', val: '✅ 已发布', note: 'Telegram / 飞书 / 企业微信 · 3 平台消息路由 · 统一适配接口',
-        expandItems: [
-          {label:'Telegram',val:'Bot API · 消息/文件/按钮'},{label:'飞书',val:'开放平台 · 卡片消息'},{label:'企业微信',val:'自建应用 · 消息推送'},
-          {label:'统一接口',val:'BaseIMAdapter 抽象层'},
-        ]},
-    ],
-    summary: '4 种操作模式均已发布，覆盖从命令行到桌面到消息平台的完整交互体验'
-  },
-  issues: {
-    title: '问题记录详情',
-    subtitle: '实时追踪 · 模块级追溯',
-    items: [],
-    summary: '问题数据从 .codebuddy/memory/*.md 实时解析。点击流程图中的模块节点查看具体问题与修复记录。'
+/** 仪表板卡片详情数据 —— 从数据加载层动态获取（v2.0 库化） */
+function getDashboardDetail(cardId) {
+  // 优先使用动态加载的仪表板数据（来自 API 或 pipeline-data.json）
+  if (dashboardData && dashboardData[cardId]) {
+    return dashboardData[cardId];
   }
-};
+  // 回退：数据还未加载完成
+  return {
+    title: '数据加载中...',
+    subtitle: '正在从服务器获取最新数据',
+    items: [],
+    summary: '请稍候，数据正在加载中。如长时间未响应，请检查服务器是否启动（node docs/pipeline/server.mjs）。'
+  };
+}
 
 /** 打开卡片详情面板 */
 function openCardDetail(cardId) {
-  const detail = DASH_DETAILS[cardId];
+  const detail = getDashboardDetail(cardId);
   if (!detail) return;
 
   panelMode = 'card';
@@ -892,7 +1154,7 @@ function openCardDetail(cardId) {
   const body = document.getElementById('panelBody');
   let html = '';
 
-  // 通过率特殊样式：三色统计条
+  // 通过率特殊样式：三色统计条 + 图表/列表切换
   if (cardId === 'pass' && detail.stats) {
     html += `<div class="detail-chart"><div style="display:flex;gap:12px;margin-bottom:16px">`;
     detail.stats.forEach(s => {
@@ -902,6 +1164,80 @@ function openCardDetail(cardId) {
       </div>`;
     });
     html += `</div><div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3fb950,#238636);border-radius:4px"></div></div></div>`;
+    // 图表/列表切换标签
+    html += `<div class="chart-tabs">
+      <div class="chart-tab active" id="tab-list" onclick="switchPassTab('list')">📋 列表详情</div>
+      <div class="chart-tab" id="tab-chart" onclick="switchPassTab('chart')">📊 数据分析图表</div>
+    </div>`;
+    // 列表容器（默认显示）
+    html += `<div class="chart-container active" id="pass-list-container">`;
+    // 通过率四级展开列表渲染
+    if (detail.items && detail.items.length > 0) {
+      html += `<div class="detail-chart"><ul class="detail-list">`;
+      detail.items.forEach((item, idx) => {
+        const hasExpand = item.expandItems && item.expandItems.length > 0;
+        const uid = `exp-pass-${idx}`;
+        if (hasExpand) {
+          html += `<li class="expandable" onclick="toggleExpand('${uid}', event)">
+            <div class="item-row"><span class="chevron" id="chev-${uid}">▶</span>
+            <span class="li-label">${item.label}</span>
+            <span class="li-val" style="color:${item.rate==='100%'?'#3fb950':'var(--text2)'}">${item.val} · ${item.rate}</span></div>
+            <ul class="sub-list" id="${uid}">`;
+          item.expandItems.forEach((sub, si) => {
+            const hasSubExpand = sub.expandItems && sub.expandItems.length > 0;
+            const subUid = `exp-pass-${idx}-${si}`;
+            if (hasSubExpand) {
+              html += `<li class="expandable" onclick="toggleExpand('${subUid}', event)">
+                <div class="item-row"><span class="chevron chevron-sm" id="chev-${subUid}">▶</span>
+                <span class="sub-label">${sub.label}</span><span class="sub-val">${sub.val}</span></div>
+                <ul class="sub-list sub-list-deep" id="${subUid}">`;
+              sub.expandItems.forEach((ssub, ssi) => {
+                const hasL4Expand = ssub.expandItems && ssub.expandItems.length > 0;
+                const l4Uid = `exp-pass-${idx}-${si}-${ssi}`;
+                if (hasL4Expand) {
+                  html += `<li class="expandable" onclick="toggleExpand('${l4Uid}', event)">
+                    <div class="item-row"><span class="chevron chevron-xs" id="chev-${l4Uid}">▶</span>
+                    <span class="sub-label sub-label-sm">${ssub.label}</span><span class="sub-val">${ssub.val}</span></div>
+                    <ul class="sub-list sub-list-deep2" id="${l4Uid}">`;
+                  ssub.expandItems.forEach((l4, l4i) => {
+                    // 第5层：测试用例名称（如"主窗口创建"等）
+                    const hasL5Expand = l4.expandItems && l4.expandItems.length > 0;
+                    if (hasL5Expand) {
+                      const l5Uid = `${l4Uid}-${l4i}`;
+                      html += `<li class="expandable" onclick="toggleExpand('${l5Uid}', event)">
+                        <div class="item-row"><span class="chevron chevron-xs" id="chev-${l5Uid}">▶</span>
+                        <span class="sub-label sub-label-xs">${l4.label}</span><span class="sub-val">${l4.val}</span></div>
+                        <ul class="sub-list sub-list-deep3" id="${l5Uid}">`;
+                      l4.expandItems.forEach(l5 => {
+                        html += `<li><span class="sub-label sub-label-xxs">${l5.label}</span><span class="sub-val">${l5.val}</span></li>`;
+                      });
+                      html += `</ul></li>`;
+                    } else {
+                      html += `<li><span class="sub-label sub-label-xs">${l4.label}</span><span class="sub-val">${l4.val}</span></li>`;
+                    }
+                  });
+                  html += `</ul></li>`;
+                } else {
+                  html += `<li><span class="sub-label">${ssub.label}</span><span class="sub-val">${ssub.val}</span></li>`;
+                }
+              });
+              html += `</ul></li>`;
+            } else {
+              html += `<li><span class="sub-label">${sub.label}</span><span class="sub-val">${sub.val}</span></li>`;
+            }
+          });
+          html += `</ul></li>`;
+        } else {
+          html += `<li><span class="li-label">${item.label}</span><span class="li-val">${item.val}${item.note ? ' · ' + item.note : ''}</span></li>`;
+        }
+      });
+      html += `</ul></div>`;
+    }
+    html += `</div>`;
+    // 图表容器（默认隐藏）
+    html += `<div class="chart-container" id="pass-chart-container"><div class="detail-chart"></div></div>`;
+    // 延迟渲染图表（确保 DOM 就位后计算）
+    setTimeout(() => { passChartData = detail.items || []; renderPassCharts(detail.items || [], detail.stats); }, 100);
   }
 
   // 评分特殊样式：历史曲线 + 维度评分条
@@ -931,25 +1267,114 @@ function openCardDetail(cardId) {
     }
   }
 
-  // 问题记录特殊处理：显示模块问题总览
+  // 分期进度特殊处理：进度条 + 可展开
+  if (cardId === 'progress' && detail.items) {
+    html += `<div class="detail-chart"><ul class="detail-list">`;
+    detail.items.forEach((item, idx) => {
+      const hasExpand = item.expandItems && item.expandItems.length > 0;
+      const uid = `exp-progress-${idx}`;
+      html += `<li${hasExpand ? ` class="expandable" onclick="toggleExpand('${uid}', event)"` : ''}>
+        <div class="item-row">
+          ${hasExpand ? `<span class="chevron" id="chev-${uid}">▶</span>` : ''}
+          <span class="li-label" style="min-width:120px">${item.label}</span>
+          <span class="progress-bar-pct" style="color:${item.color}">${item.val}</span>
+        </div>
+        <div class="progress-bar-row"><div class="progress-bar-track"><div class="progress-bar-fill" style="width:${item.pct}%;background:${item.color}"></div></div></div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">${item.note}</div>`;
+      if (hasExpand) {
+        html += `<ul class="sub-list" id="${uid}">`;
+        item.expandItems.forEach(sub => {
+          html += `<li><span class="sub-label">${sub.label}</span><span class="sub-val">${sub.val}</span></li>`;
+        });
+        html += `</ul>`;
+      }
+      html += `</li>`;
+    });
+    html += `</ul></div>`;
+  }
+
+  // 问题记录特殊处理：显示模块问题详情（四级展开）
   if (cardId === 'issues' && issueData) {
     const mods = issueData.modules;
     const modKeys = Object.keys(mods);
-    html += `<div class="detail-chart"><h4>📋 各模块问题分布</h4><div class="detail-list">`;
+    // 按阶段分组
+    const phaseGroups = {};
     modKeys.forEach(mid => {
       const m = mods[mid];
-      const total = m.issues.length;
-      const resolved = m.issues.filter(i => i.status === 'resolved').length;
-      if (total > 0) {
-        html += `<li><span class="li-label">${m.name}</span><span class="li-val">${resolved}/${total} resolved · ${m.phase || '-'}</span></li>`;
-      }
+      const phaseId = m.phase || 'unknown';
+      if (!phaseGroups[phaseId]) phaseGroups[phaseId] = [];
+      phaseGroups[phaseId].push(m);
     });
-    html += `</div></div>`;
-    html += `<div style="text-align:center;padding:12px;color:var(--text2);font-size:12px;margin-top:8px">💡 点击流程图中任意模块节点查看具体问题与修复时间线</div>`;
+    
+    const phaseNames = {
+      'P0': '📐 基础层 P0', 'P1': '🔗 交互层 P1', 'P2': '🚀 扩展层 P2',
+      'P3': '💻 平台层 P3', 'P4': '📦 发布层 P4', 'P5': '🔧 管线层 P5'
+    };
+    const phaseOrder = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5'];
+    
+    html += `<div class="detail-chart"><h4>📋 问题分布 · 按模块展开</h4>`;
+    
+    // 先统计
+    let totalIssues = 0, totalResolved = 0;
+    modKeys.forEach(mid => {
+      const m = mods[mid];
+      totalIssues += m.issues.length;
+      totalResolved += m.issues.filter(i => i.status === 'resolved').length;
+    });
+    html += `<div style="font-size:10px;color:var(--text2);margin-bottom:12px">总计 ${totalIssues} 个问题 · ${totalResolved} 已解决 · 来自 ${modKeys.length} 个模块</div>`;
+    
+    // 四级展开: 阶段 → 模块 → 问题 → 问题详情(问题+解决方案)
+    html += `<ul class="detail-list">`;
+    phaseOrder.forEach(pid => {
+      const pMods = phaseGroups[pid];
+      if (!pMods || pMods.length === 0) return;
+      const phaseResolved = pMods.reduce((s, m) => s + m.issues.filter(i => i.status === 'resolved').length, 0);
+      const phaseTotal = pMods.reduce((s, m) => s + m.issues.length, 0);
+      const phaseUid = `iss-phase-${pid}`;
+      
+      html += `<li class="expandable" onclick="toggleExpand('${phaseUid}', event)">
+        <div class="item-row"><span class="chevron" id="chev-${phaseUid}">▶</span>
+        <span class="li-label">${phaseNames[pid] || pid}</span>
+        <span class="li-val">${phaseResolved}/${phaseTotal} resolved · ${pMods.length} 模块</span></div>
+        <ul class="sub-list" id="${phaseUid}">`;
+      
+      pMods.forEach((m, mi) => {
+        const modUid = `${phaseUid}-m-${mi}`;
+        const mResolved = m.issues.filter(i => i.status === 'resolved').length;
+        const mTotal = m.issues.length;
+        html += `<li class="expandable" onclick="toggleExpand('${modUid}', event)">
+          <div class="item-row"><span class="chevron chevron-sm" id="chev-${modUid}">▶</span>
+          <span class="sub-label">${m.name}</span>
+          <span class="sub-val">${mResolved}/${mTotal} · ${m.phase || '-'}</span></div>
+          <ul class="sub-list sub-list-deep" id="${modUid}">`;
+        
+        m.issues.forEach((issue, ii) => {
+          const issUid = `${modUid}-i-${ii}`;
+          const isResolved = issue.status === 'resolved';
+          html += `<li class="expandable" onclick="toggleExpand('${issUid}', event)">
+            <div class="item-row"><span class="chevron chevron-xs" id="chev-${issUid}">▶</span>
+            <span class="sub-label sub-label-sm">${isResolved ? '✅' : '⬜'} ${issue.date} — ${issue.title}</span>
+            <span class="sub-val">${isResolved ? '已解决' : '待处理'}</span></div>
+            <ul class="sub-list sub-list-deep2" id="${issUid}">
+              <li><span class="sub-label sub-label-xs" style="color:var(--warn);flex:none;width:48px">问题:</span><span style="font-size:10px;color:var(--text)">${escapeHtml(issue.problem || '')}</span></li>
+              <li><span class="sub-label sub-label-xs" style="color:var(--done);flex:none;width:48px">解决:</span><span style="font-size:10px;color:var(--text)">${escapeHtml(issue.solution || '')}</span></li>
+              ${issue.files ? `<li><span class="sub-label sub-label-xs" style="color:var(--text2);flex:none;width:48px">文件:</span><span style="font-size:9px;color:var(--text2)">${escapeHtml(Array.isArray(issue.files)?issue.files.join(', '):issue.files)}</span></li>` : ''}
+            </ul></li>`;
+        });
+        
+        html += `</ul></li>`;
+      });
+      
+      html += `</ul></li>`;
+    });
+    html += `</ul></div>`;
+    
+    // 底部提示
+    html += `<div style="text-align:center;padding:12px;color:var(--text2);font-size:10px;margin-top:8px;border-top:1px solid var(--border)">💡 也可点击流程图中任意模块节点查看问题时间线</div>`;
   }
 
-  // 通用详细列表（可展开）
-  if (detail.items && detail.items.length > 0) {
+  // 通用详细列表（可展开）- pass 面板已单独处理，跳过
+  if (detail.items && detail.items.length > 0 && cardId !== 'pass') {
     html += `<div class="detail-chart"><ul class="detail-list">`;
     detail.items.forEach((item, idx) => {
       const hasExpand = item.expandItems && item.expandItems.length > 0;
@@ -958,8 +1383,32 @@ function openCardDetail(cardId) {
         html += `<li class="expandable" onclick="toggleExpand('${uid}', event)">
           <div class="item-row"><span class="chevron" id="chev-${uid}">▶</span><span class="li-label">${item.label}</span><span class="li-val">${item.val}${item.note ? ' · ' + item.note : ''}</span></div>
           <ul class="sub-list" id="${uid}">`;
-        item.expandItems.forEach(sub => {
-          html += `<li><span class="sub-label">${sub.label}</span><span class="sub-val">${sub.val}</span></li>`;
+        item.expandItems.forEach((sub, si) => {
+          const hasSubExpand = sub.expandItems && Array.isArray(sub.expandItems) && sub.expandItems.length > 0;
+          const subUid = `exp-${cardId}-${idx}-${si}`;
+          if (hasSubExpand) {
+            html += `<li class="expandable" onclick="toggleExpand('${subUid}', event)">
+              <div class="item-row"><span class="chevron chevron-sm" id="chev-${subUid}">▶</span><span class="sub-label">${sub.label}</span><span class="sub-val">${sub.val}</span></div>
+              <ul class="sub-list sub-list-deep" id="${subUid}">`;
+            sub.expandItems.forEach(ssub => {
+              const hasL4Expand = ssub.expandItems && Array.isArray(ssub.expandItems) && ssub.expandItems.length > 0;
+              const l4Uid = `exp-${cardId}-${idx}-${si}-${sub.expandItems.indexOf(ssub)}`;
+              if (hasL4Expand) {
+                html += `<li class="expandable" onclick="toggleExpand('${l4Uid}', event)">
+                  <div class="item-row"><span class="chevron chevron-xs" id="chev-${l4Uid}">▶</span><span class="sub-label sub-label-sm">${ssub.label}</span><span class="sub-val">${ssub.val}</span></div>
+                  <ul class="sub-list sub-list-deep2" id="${l4Uid}">`;
+                ssub.expandItems.forEach(l4 => {
+                  html += `<li><span class="sub-label sub-label-xs">${l4.label}</span><span class="sub-val">${l4.val}</span></li>`;
+                });
+                html += `</ul></li>`;
+              } else {
+                html += `<li><span class="sub-label">${ssub.label}</span><span class="sub-val">${ssub.val}</span></li>`;
+              }
+            });
+            html += `</ul></li>`;
+          } else {
+            html += `<li><span class="sub-label">${sub.label}</span><span class="sub-val">${sub.val}</span></li>`;
+          }
         });
         html += `</ul></li>`;
       } else {
@@ -1049,6 +1498,13 @@ function updateAllBadges() {
 }
 
 /** 打开右侧问题面板（模块节点点击） */
+/** 仅打开右侧面板（不绑定模块数据） */
+function openSidePanel() {
+  document.getElementById('issuePanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
 function openPanel(moduleId) {
   if (!issueData) return;
   const mod = issueData.modules[moduleId];
@@ -1100,6 +1556,206 @@ function openPanel(moduleId) {
   document.body.style.overflow = 'hidden';
 }
 
+// ============================================================
+// 测试四级报告 (v2.3)
+// ============================================================
+let testDetailCache = null;
+
+/** 打开测试报告面板 */
+async function openTestReport() {
+  panelMode = 'test_report';
+  currentModuleId = null;
+  document.getElementById('panelTitle').textContent = '🧪 测试详情报告';
+  document.getElementById('panelSub').textContent = '四级树形展开 · 查看每个测试用例的通过/失败状态及原因';
+  document.getElementById('statResolved').parentElement.style.display = 'none';
+  document.getElementById('statUnresolved').parentElement.style.display = 'none';
+  document.getElementById('statTotal').parentElement.style.display = 'none';
+  
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '<div class="tr-empty"><div class="tr-empty-icon">⏳</div><div>正在加载测试数据...</div></div>';
+  openSidePanel();
+  
+  // 获取数据
+  if (!testDetailCache) {
+    try {
+      const resp = await fetch('/api/test-detail');
+      testDetailCache = await resp.json();
+      // 同时更新卡片
+      if (testDetailCache.summary) {
+        updateDash('dashFailCount', testDetailCache.summary.totalFailed + ' 失败');
+      }
+    } catch (e) {
+      body.innerHTML = '<div class="tr-empty"><div class="tr-empty-icon">❌</div><div>加载失败: ' + e.message + '</div></div>';
+      return;
+    }
+  }
+  
+  if (!testDetailCache.packages || testDetailCache.packages.length === 0) {
+    body.innerHTML = '<div class="tr-empty"><div class="tr-empty-icon">📭</div><div>暂无测试数据，请运行 vitest 生成报告</div></div>';
+    return;
+  }
+  
+  renderTestReport(testDetailCache, body);
+}
+
+/** 渲染测试报告 */
+function renderTestReport(data, container) {
+  const { summary, packages } = data;
+  
+  // 顶部汇总栏
+  let html = '<div class="tr-summary">';
+  html += `<div class="tr-stat"><div class="tr-stat-val">${summary.totalTests}</div><div class="tr-stat-lbl">总测试数</div></div>`;
+  html += `<div class="tr-stat pass"><div class="tr-stat-val">${summary.totalPassed}</div><div class="tr-stat-lbl">✅ 通过</div></div>`;
+  html += `<div class="tr-stat fail"><div class="tr-stat-val">${summary.totalFailed}</div><div class="tr-stat-lbl">❌ 失败</div></div>`;
+  html += `<div class="tr-stat rate"><div class="tr-stat-val">${summary.passRate}%</div><div class="tr-stat-lbl">通过率</div></div>`;
+  html += '</div>';
+  
+  // 包标签页
+  html += '<div class="tr-tabs">';
+  packages.forEach((pkg, i) => {
+    html += `<div class="tr-tab${i === 0 ? ' active' : ''}" onclick="switchTestPkg(${i})">
+      ${pkg.label}
+      <span class="tr-tab-badge pass">${pkg.passed}</span>
+      ${pkg.failed > 0 ? `<span class="tr-tab-badge fail">${pkg.failed}</span>` : ''}
+    </div>`;
+  });
+  html += '</div>';
+  
+  // 包内容
+  html += '<div class="tr-body">';
+  packages.forEach((pkg, pi) => {
+    html += `<div class="tr-pkg-content" id="tr-pkg-${pi}" style="display:${pi === 0 ? 'block' : 'none'}">`;
+    
+    pkg.suites.forEach((suite, si) => {
+      const sid = `tr-suite-${pi}-${si}`;
+      const hasCases = suite.groups && suite.groups.length > 0;
+      const isFail = suite.status !== 'passed';
+      const statusClass = suite.status === 'compile_error' ? 'compile' : suite.status === 'failed' ? 'fail' : 'pass';
+      const statusIcon = suite.status === 'compile_error' ? '⚠️' : suite.status === 'failed' ? '❌' : '✅';
+      
+      html += `<div class="tr-suite">`;
+      // Suite header
+      html += `<div class="tr-suite-header" onclick="toggleSuite('${sid}')">
+        <span class="tr-suite-arrow" id="${sid}-arrow">▶</span>
+        <span class="tr-suite-status-icon ${statusClass}"></span>
+        <span class="tr-suite-name">${suite.name}</span>
+        <span class="tr-suite-ext">.${suite.ext || 'ts'}</span>
+        <span class="tr-suite-meta">`;
+      if (suite.status === 'compile_error') {
+        html += `<span style="color:var(--warn)">编译错误</span>`;
+      } else {
+        html += `<span class="tr-suite-pass">${suite.passCount} 通过</span>`;
+        if (suite.failCount > 0) html += `<span class="tr-suite-fail">${suite.failCount} 失败</span>`;
+        if (suite.passCount + suite.failCount > 0) {
+          const r = Math.round((suite.passCount / (suite.passCount + suite.failCount)) * 100);
+          html += `<span class="tr-suite-ratio">${r}%</span>`;
+        }
+      }
+      html += `</span></div>`;
+      
+      // 编译错误消息
+      if (suite.status === 'compile_error' && suite.message) {
+        html += `<div class="tr-compile-error" id="${sid}-compile">${escapeHtml(suite.message)}</div>`;
+      }
+      
+      // 测试分组 (L3)
+      html += `<div class="tr-suite-body" id="${sid}-body">`;
+      if (hasCases) {
+        suite.groups.forEach((group, gi) => {
+          const gid = `${sid}-g-${gi}`;
+          const gFailed = group.failed > 0;
+          html += `<div class="tr-group">
+            <div class="tr-group-header" onclick="toggleGroup('${gid}')">
+              <span class="tr-group-arrow" id="${gid}-arrow">▶</span>
+              <span class="tr-group-name">${group.name}</span>
+              <span class="tr-group-meta">
+                <span class="pass">${group.passed}</span>
+                ${group.failed > 0 ? `<span class="fail">/${group.failed}</span>` : ''}
+                <span style="color:var(--text2);font-size:10px">${group.total} cases</span>
+              </span>
+            </div>
+            <div class="tr-group-body" id="${gid}-body">`;
+          
+          // 测试用例 (L4)
+          group.cases.forEach((tc, ci) => {
+            const isFailed = tc.status === 'failed';
+            const fpsLabel = isFailed ? 'fail' : 'pass';
+            html += `<div class="tr-case">
+              <div class="tr-case-header">
+                <span class="tr-case-icon ${fpsLabel}">${isFailed ? '✕' : '✓'}</span>
+                <div class="tr-case-content">
+                  <div class="tr-case-title${isFailed ? ' fail' : ''}">${escapeHtml(tc.title)}</div>
+                  <div class="tr-case-meta">
+                    <span class="tr-case-dur">⏱ ${tc.duration}ms</span>
+                    <span style="color:${isFailed ? 'var(--error)' : 'var(--done)'}">${isFailed ? '失败' : '通过'}</span>
+                  </div>`;
+            // 失败信息
+            if (isFailed && tc.failureMessage) {
+              const fid = `${gid}-c-${ci}`;
+              html += `<span class="tr-case-toggle" onclick="toggleFailure('${fid}')">📋 查看失败原因</span>
+                <div class="tr-case-failure" id="${fid}">${escapeHtml(tc.failureMessage)}</div>`;
+            }
+            html += `</div></div></div>`;
+          });
+          
+          html += `</div></div>`;
+        });
+      } else {
+        // 空suite
+        html += `<div style="padding:16px 24px;font-size:11px;color:var(--text2)">无测试用例</div>`;
+      }
+      html += `</div></div>`; // close suite-body, suite
+    });
+    
+    html += '</div>'; // close pkg-content
+  });
+  html += '</div>'; // close tr-body
+  
+  container.innerHTML = html;
+}
+
+/** 展开/折叠测试套件 */
+function toggleSuite(sid) {
+  const body = document.getElementById(sid + '-body');
+  const arrow = document.getElementById(sid + '-arrow');
+  if (body) { body.classList.toggle('open'); }
+  if (arrow) { arrow.classList.toggle('open'); }
+}
+
+/** 展开/折叠测试分组 */
+function toggleGroup(gid) {
+  const body = document.getElementById(gid + '-body');
+  const arrow = document.getElementById(gid + '-arrow');
+  if (body) { body.classList.toggle('open'); }
+  if (arrow) { arrow.classList.toggle('open'); }
+}
+
+/** 展开/折叠失败信息 */
+function toggleFailure(fid) {
+  const el = document.getElementById(fid);
+  if (el) {
+    el.classList.toggle('show');
+    const toggle = el.previousElementSibling;
+    if (toggle) {
+      toggle.textContent = el.classList.contains('show') ? '📋 收起失败原因' : '📋 查看失败原因';
+    }
+  }
+}
+
+/** 切换包标签页 */
+function switchTestPkg(idx) {
+  // 标签激活
+  document.querySelectorAll('.tr-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  // 内容切换
+  document.querySelectorAll('.tr-pkg-content').forEach((c, i) => c.style.display = i === idx ? 'block' : 'none');
+}
+
+/** HTML 转义 */
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 /** 关闭右侧面板 */
 function closePanel() {
   document.getElementById('issuePanel').classList.remove('open');
@@ -1117,6 +1773,136 @@ function toggleExpand(uid, event) {
   if (!subList || !chev) return;
   const isOpen = subList.classList.toggle('open');
   chev.classList.toggle('open', isOpen);
+}
+
+// ============================================================
+// 通过率图表可视化 (纯 SVG，无外部依赖)
+// ============================================================
+/** 缓存 pass 的 items 数据，以便切换标签时重新渲染图表 */
+let passChartData = [];
+let passStatsData = [];
+
+/** 切换 pass 面板的列表/图表标签 */
+function switchPassTab(mode) {
+  document.getElementById('tab-list').classList.toggle('active', mode === 'list');
+  document.getElementById('tab-chart').classList.toggle('active', mode === 'chart');
+  document.getElementById('pass-list-container').classList.toggle('active', mode === 'list');
+  document.getElementById('pass-chart-container').classList.toggle('active', mode === 'chart');
+  if (mode === 'chart' && passChartData.length > 0) {
+    renderPassCharts(passChartData, passStatsData);
+  }
+}
+
+/** 渲染通过率图表：环形图 + 水平柱状图 + 阶段详情 */
+function renderPassCharts(items, stats) {
+  passChartData = items;
+  passStatsData = stats || [];
+  const container = document.getElementById('pass-chart-container');
+  if (!container || !items || items.length === 0) return;
+
+  // 计算各阶段数据
+  const phaseData = items.map((item, i) => {
+    const val = parseInt(item.val) || 0;
+    const rate = item.rate === '100%' ? 100 : (parseFloat(item.rate) || 0);
+    return { label: item.label.replace(/\(.*\)/, '').trim(), val, rate, note: item.note || '' };
+  });
+  const totalTests = phaseData.reduce((s, d) => s + d.val, 0);
+  const failedTests = stats.find(s => s.label.includes('失败')) ? parseInt(stats.find(s => s.label.includes('失败')).val) || 0 : 0;
+  const skippedTests = stats.find(s => s.label.includes('跳过')) ? parseInt(stats.find(s => s.label.includes('跳过')).val) || 0 : 0;
+  const passedTests = totalTests - failedTests - skippedTests;
+
+  // 配色方案
+  const colors = ['#7c3aed', '#58a6ff', '#3fb950', '#d2991d', '#f0883e', '#a78bfa'];
+  const chartColors = phaseData.map((_, i) => colors[i % colors.length]);
+
+  // ---- 环形图 SVG 数据 ----
+  const donutR = 85;
+  const donutW = 22;
+  const donutCY = 105;
+  const donutSVG_W = 240;
+  const donutSVG_H = 220;
+
+  // 计算环形图弧段
+  let currentAngle = -90; // 从顶部开始
+  const donutPaths = [];
+  phaseData.forEach((d, i) => {
+    const pct = d.val / totalTests;
+    const sweepAngle = pct * 360;
+    if (sweepAngle <= 0) return;
+    const startRad = (currentAngle * Math.PI) / 180;
+    const endRad = ((currentAngle + sweepAngle) * Math.PI) / 180;
+    const x1 = donutCY + donutR * Math.cos(startRad);
+    const y1 = donutCY + donutR * Math.sin(startRad);
+    const x2 = donutCY + donutR * Math.cos(endRad);
+    const y2 = donutCY + donutR * Math.sin(endRad);
+    const largeArc = sweepAngle > 180 ? 1 : 0;
+    donutPaths.push({ d: `M ${x1} ${y1} A ${donutR} ${donutR} 0 ${largeArc} 1 ${x2} ${y2}`, color: chartColors[i], pct: Math.round(pct * 100) });
+    currentAngle += sweepAngle;
+  });
+
+  // ---- 生成图表 HTML ----
+  let html = '<div class="chart-row">';
+
+  // 卡片1: 环形图
+  html += `<div class="chart-card"><h5>🔴 通过率环形分布</h5>
+    <svg viewBox="0 0 ${donutSVG_W} ${donutSVG_H}" width="100%" height="200">
+      <g transform="translate(15,0)">`;
+  // 环形弧段
+  donutPaths.forEach(seg => {
+    html += `<path d="${seg.d}" fill="none" stroke="${seg.color}" stroke-width="${donutW}" stroke-linecap="butt" opacity="0.85"/>`;
+  });
+  // 中心文字
+  html += `<text x="${donutCY}" y="${donutCY - 8}" text-anchor="middle" class="donut-center">${passedTests}</text>
+    <text x="${donutCY}" y="${donutCY + 14}" text-anchor="middle" class="donut-label">/ ${totalTests} 通过</text>
+    </g></svg>
+    <div class="legend-row">`;
+  phaseData.forEach((d, i) => {
+    html += `<span class="legend-text"><span class="legend-dot-sm" style="background:${chartColors[i]}"></span>${d.label}:${d.val}</span>`;
+  });
+  html += `</div></div>`;
+
+  // 卡片2: 水平柱状图
+  const barW = 180;
+  const barH = 20;
+  const barGap = 14;
+  const barSVG_H = phaseData.length * (barH + barGap) + 24;
+  html += `<div class="chart-card"><h5>📊 各阶段测试用例分布</h5>
+    <svg viewBox="0 0 340 ${barSVG_H}" width="100%" height="${barSVG_H}">
+    <g transform="translate(110,12)">`;
+  const maxVal = Math.max(...phaseData.map(d => d.val), 1);
+  phaseData.forEach((d, i) => {
+    const y = i * (barH + barGap);
+    const fillW = Math.max((d.val / maxVal) * barW, 4);
+    html += `<rect x="0" y="${y}" width="${barW}" height="${barH}" class="bar-track"/>
+      <rect x="0" y="${y}" width="${fillW}" height="${barH}" class="bar-fill" fill="${chartColors[i]}" opacity="0.9"/>
+      <text x="${fillW + 6}" y="${y + barH/2 + 3}" class="bar-value" fill="${chartColors[i]}">${d.val}</text>`;
+  });
+  html += `</g></svg></div>`;
+
+  html += `</div>`; // end chart-row
+
+  // 卡片3: 阶段详情表
+  html += `<div class="chart-row"><div class="chart-card" style="min-width:100%"><h5>📋 各阶段通过率详情</h5>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">`;
+  html += `<tr style="border-bottom:1px solid var(--border);color:var(--text2);font-size:10px;text-transform:uppercase">
+    <td style="padding:6px 8px">阶段</td><td style="padding:6px 8px;text-align:center">用例数</td>
+    <td style="padding:6px 8px;text-align:center">通过率</td><td style="padding:6px 8px;text-align:right">总计占比</td></tr>`;
+  phaseData.forEach((d, i) => {
+    const pct = totalTests > 0 ? Math.round((d.val / totalTests) * 100) : 0;
+    html += `<tr style="border-bottom:1px dashed var(--border)">
+      <td style="padding:8px;display:flex;align-items:center;gap:8px"><span class="legend-dot-sm" style="background:${chartColors[i]}"></span>${d.label}</td>
+      <td style="padding:8px;text-align:center;font-weight:700">${d.val}</td>
+      <td style="padding:8px;text-align:center;color:${d.rate >= 100 ? '#3fb950' : d.rate >= 80 ? '#d2991d' : '#f85149'};font-weight:700">${d.rate}%</td>
+      <td style="padding:8px;text-align:right;color:var(--text2)">${pct}%</td></tr>`;
+  });
+  html += `<tr style="font-weight:700">
+    <td style="padding:10px 8px;color:var(--accent2)">📊 总计</td>
+    <td style="padding:10px 8px;text-align:center;color:var(--accent2)">${totalTests}</td>
+    <td style="padding:10px 8px;text-align:center;color:#3fb950">100%</td>
+    <td style="padding:10px 8px;text-align:right;color:var(--accent2)">100%</td></tr>`;
+  html += `</table></div></div>`;
+
+  container.innerHTML = html;
 }
 
 // 键盘 ESC 关闭面板

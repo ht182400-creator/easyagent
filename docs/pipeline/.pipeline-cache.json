@@ -1,8 +1,8 @@
 {
   "snapshots": {
     "2026-06-18.md": {
-      "mtimeMs": 1781798935361.3545,
-      "size": 29245
+      "mtimeMs": 1782147306127.24,
+      "size": 29271
     },
     "2026-06-19.md": {
       "mtimeMs": 1781886468452.5415,
@@ -20,379 +20,3073 @@
       "mtimeMs": 1782143907683.6384,
       "size": 19886
     },
-    "MEMORY.md": {
-      "mtimeMs": 1782143885087.1145,
-      "size": 14446
-    },
     "2026-06-23.md": {
-      "mtimeMs": 1782144308037.3606,
-      "size": 1426
+      "mtimeMs": 1782221930682.4187,
+      "size": 32594
+    },
+    "MEMORY.md": {
+      "mtimeMs": 1782218623292.3752,
+      "size": 24711
+    },
+    "README.md": {
+      "mtimeMs": 1782176165708.7427,
+      "size": 759
     }
   },
   "fileResults": {
     "2026-06-18.md": [
       {
+        "moduleId": "f3",
+        "date": "2026-06-18",
+        "title": "Server Web 可用性测试体系建立 (23:50)",
+        "problem": "Server Web 可用性测试体系建立 (23:50)",
+        "solution": "1. `/api/tools` 工具名映射完全重写 (错误名→实际70工具名: grep/glob/web_search/exec 等) 2. 新增 `/api/*` 404中间件 (修复SPA fallback吞掉未知API路由) 3. 修复 `requiresConfirm`: `exec_command` → `exec`；依赖: vitest + supertest + @types/supertest；全量验证: Core 20文件/516通过 + Server 3文件/32通过 = **548 tests 全部通过**；命令: `pnpm test:server` `pnpm test:all`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-18",
+        "title": "晚间修复: better-sqlite3 测试失败 (16:57-17:02)",
+        "problem": "晚间修复: better-sqlite3 测试失败 (16:57-17:02)",
+        "solution": "创建 `src/__mocks__/better-sqlite3.ts` — 用内存 Map 模拟 SQLite CRUD 操作；Mock 支持: CREATE TABLE / INSERT OR REPLACE / SELECT with WHERE + ORDER BY / DELETE；在 `vitest.config.ts` 中通过 `resolve.alias` 将 `better-sqlite3` 重定向到 mock；这是业界标准做法：单元测试不应依赖原生编译环境",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7"
+        ]
+      },
+      {
         "moduleId": "f7",
         "date": "2026-06-18",
-        "title": "下午: 六大功能点全面落实 (14:28-16:30)",
-        "problem": "下午: 六大功能点全面落实 (14:28-16:30)",
-        "solution": "修复 tsup ESM 打包 (4个config)",
+        "title": "晚间修复: better-sqlite3 测试失败 (16:57-17:02)",
+        "problem": "晚间修复: better-sqlite3 测试失败 (16:57-17:02)",
+        "solution": "创建 `src/__mocks__/better-sqlite3.ts` — 用内存 Map 模拟 SQLite CRUD 操作；Mock 支持: CREATE TABLE / INSERT OR REPLACE / SELECT with WHERE + ORDER BY / DELETE；在 `vitest.config.ts` 中通过 `resolve.alias` 将 `better-sqlite3` 重定向到 mock；这是业界标准做法：单元测试不应依赖原生编译环境",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f2",
+          "f7"
+        ]
       },
       {
-        "moduleId": "f10",
-        "date": "2026-06-18",
-        "title": "晚上: 虚拟滚动 + Skills/Plugins 系统 (16:25-16:46)",
-        "problem": "晚上: 虚拟滚动 + Skills/Plugins 系统 (16:25-16:46)",
-        "solution": "修复预存bug: Sessions.tsx 缺少 totalTokens 字段",
-        "status": "resolved",
-        "_tagModuleIds": []
-      },
-      {
-        "moduleId": "f7",
+        "moduleId": "b2b",
         "date": "2026-06-18",
         "title": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
-        "problem": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
-        "solution": "重启后仍被锁，用户手动删除后解决",
+        "problem": "之前打包因 `release\\win-unpacked\\resources\\app.asar` 被系统进程锁定而失败；重启后仍被锁，用户手动删除后解决；NSIS 资源文件 `nsis-resources-3.4.1.7z` 从 GitHub 下载被墙",
+        "solution": "用户手动下载 `nsis-resources-3.4.1.7z` 放到 `%LOCALAPPDATA%\\electron-builder\\Cache\\nsis\\`；重新打包：成功生成了 `EasyAgent Setup 0.2.0.exe` (85.7MB) + `win-unpacked\\EasyAgent.exe` (168.9MB)；输出目录: `packages/desktop/release/`",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "b2b"
+        ]
       },
       {
-        "moduleId": "f13",
+        "moduleId": "f2",
         "date": "2026-06-18",
-        "title": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
-        "problem": "Pino 修复后 NSIS 最终打包 (21:55-21:57)",
-        "solution": "重启后仍被锁，用户手动删除后解决",
+        "title": "Server/Web 启动问题修复 (22:08-22:28)",
+        "problem": "Server/Web 启动问题修复 (22:08-22:28)",
+        "solution": "从 electron-rebuild 编译好的 `.ignored_better-sqlite3/build/Release/better_sqlite3.node` 复制到正式位置： xcopy /Y \"...\\@easyagent\\desktop\\...\\.ignored_better-sqlite3\\build\\Release\\better_sqlite3.node\" \"...\\better-sqlite3@12.11.1\\...\\build\\Release\\\"；验证: `require()` 和 `dlopen()` 均能加载，`new Database(':memory:')` 功能正常",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f2",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "Server/Web 启动问题修复 (22:08-22:28)",
+        "problem": "Server/Web 启动问题修复 (22:08-22:28)",
+        "solution": "从 electron-rebuild 编译好的 `.ignored_better-sqlite3/build/Release/better_sqlite3.node` 复制到正式位置： xcopy /Y \"...\\@easyagent\\desktop\\...\\.ignored_better-sqlite3\\build\\Release\\better_sqlite3.node\" \"...\\better-sqlite3@12.11.1\\...\\build\\Release\\\"；验证: `require()` 和 `dlopen()` 均能加载，`new Database(':memory:')` 功能正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9"
+        ]
       }
     ],
     "2026-06-19.md": [
       {
-        "moduleId": "f13",
+        "moduleId": "f1",
         "date": "2026-06-19",
         "title": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
         "problem": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
-        "solution": "后端 `:3456` 已重启（含修复）",
+        "solution": "`ConfigManager.setApiKey()` 修复** (`packages/core/src/config/ConfigManager.ts`)；当预设提供商不在可用列表时，从 `PROVIDER_PRESETS` 查找完整配置（baseURL、name、apiFormat、models），而非创建空 baseURL 条目；自定义提供商（不在预设中）使用 `https://api.openai.com/v1` 作为默认 baseURL；同时更新了编译产物 `ConfigManager.js` 和 `dist/config/ConfigManager.js`；服务端错误提示改进** (`packages/server/src/index.ts` + `index.js`)；`POST /api/providers/:id/test` 未配置时返回环境变量指引：`请先配置 API 密钥：设置环境变量 ${preset.apiKeyEnv} 或在页面中手动输入密钥`；`POST /api/providers/:id/models/refresh` 未配置时跳过动态获取；前端 UX 改进** (`packages/web/src/pages/Providers.tsx`)；添加 `hasKey` 字段支持；提供商卡片显示「已配置」/「未配置」标签；未配置的提供商让用户一目了然",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "problem": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "solution": "`ConfigManager.setApiKey()` 修复** (`packages/core/src/config/ConfigManager.ts`)；当预设提供商不在可用列表时，从 `PROVIDER_PRESETS` 查找完整配置（baseURL、name、apiFormat、models），而非创建空 baseURL 条目；自定义提供商（不在预设中）使用 `https://api.openai.com/v1` 作为默认 baseURL；同时更新了编译产物 `ConfigManager.js` 和 `dist/config/ConfigManager.js`；服务端错误提示改进** (`packages/server/src/index.ts` + `index.js`)；`POST /api/providers/:id/test` 未配置时返回环境变量指引：`请先配置 API 密钥：设置环境变量 ${preset.apiKeyEnv} 或在页面中手动输入密钥`；`POST /api/providers/:id/models/refresh` 未配置时跳过动态获取；前端 UX 改进** (`packages/web/src/pages/Providers.tsx`)；添加 `hasKey` 字段支持；提供商卡片显示「已配置」/「未配置」标签；未配置的提供商让用户一目了然",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "problem": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "solution": "`ConfigManager.setApiKey()` 修复** (`packages/core/src/config/ConfigManager.ts`)；当预设提供商不在可用列表时，从 `PROVIDER_PRESETS` 查找完整配置（baseURL、name、apiFormat、models），而非创建空 baseURL 条目；自定义提供商（不在预设中）使用 `https://api.openai.com/v1` 作为默认 baseURL；同时更新了编译产物 `ConfigManager.js` 和 `dist/config/ConfigManager.js`；服务端错误提示改进** (`packages/server/src/index.ts` + `index.js`)；`POST /api/providers/:id/test` 未配置时返回环境变量指引：`请先配置 API 密钥：设置环境变量 ${preset.apiKeyEnv} 或在页面中手动输入密钥`；`POST /api/providers/:id/models/refresh` 未配置时跳过动态获取；前端 UX 改进** (`packages/web/src/pages/Providers.tsx`)；添加 `hasKey` 字段支持；提供商卡片显示「已配置」/「未配置」标签；未配置的提供商让用户一目了然",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-19",
+        "title": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "problem": "提供商配置缺陷修复 + 全面测试 (19:48-19:53)",
+        "solution": "`ConfigManager.setApiKey()` 修复** (`packages/core/src/config/ConfigManager.ts`)；当预设提供商不在可用列表时，从 `PROVIDER_PRESETS` 查找完整配置（baseURL、name、apiFormat、models），而非创建空 baseURL 条目；自定义提供商（不在预设中）使用 `https://api.openai.com/v1` 作为默认 baseURL；同时更新了编译产物 `ConfigManager.js` 和 `dist/config/ConfigManager.js`；服务端错误提示改进** (`packages/server/src/index.ts` + `index.js`)；`POST /api/providers/:id/test` 未配置时返回环境变量指引：`请先配置 API 密钥：设置环境变量 ${preset.apiKeyEnv} 或在页面中手动输入密钥`；`POST /api/providers/:id/models/refresh` 未配置时跳过动态获取；前端 UX 改进** (`packages/web/src/pages/Providers.tsx`)；添加 `hasKey` 字段支持；提供商卡片显示「已配置」/「未配置」标签；未配置的提供商让用户一目了然",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-19",
+        "title": "JSX 解析错误根本修复 (19:35)",
+        "problem": ": Vite 默认扩展名解析顺序 `.js` > `.tsx`，导致 `import './Tools'` 解析到 tsc 编译生成的 `Tools.js`（含 JSX）而非 `Tools.tsx`",
+        "solution": "`vite.config.ts` 添加 `resolve.extensions: ['.tsx', '.ts', '.jsx', '.js', ...]`，让 `.tsx` 优先；废弃: 之前的 `esbuild.loader` / `optimizeDeps.esbuildOptions.loader` 方案是治标不治本，已移除；后端 PID 16408(:3456), 前端 PID 11348(:5173)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f8",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "JSX 解析错误根本修复 (19:35)",
+        "problem": ": Vite 默认扩展名解析顺序 `.js` > `.tsx`，导致 `import './Tools'` 解析到 tsc 编译生成的 `Tools.js`（含 JSX）而非 `Tools.tsx`",
+        "solution": "`vite.config.ts` 添加 `resolve.extensions: ['.tsx', '.ts', '.jsx', '.js', ...]`，让 `.tsx` 优先；废弃: 之前的 `esbuild.loader` / `optimizeDeps.esbuildOptions.loader` 方案是治标不治本，已移除；后端 PID 16408(:3456), 前端 PID 11348(:5173)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f8",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "JSX 解析错误根本修复 (19:35)",
+        "problem": ": Vite 默认扩展名解析顺序 `.js` > `.tsx`，导致 `import './Tools'` 解析到 tsc 编译生成的 `Tools.js`（含 JSX）而非 `Tools.tsx`",
+        "solution": "`vite.config.ts` 添加 `resolve.extensions: ['.tsx', '.ts', '.jsx', '.js', ...]`，让 `.tsx` 优先；废弃: 之前的 `esbuild.loader` / `optimizeDeps.esbuildOptions.loader` 方案是治标不治本，已移除；后端 PID 16408(:3456), 前端 PID 11348(:5173)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f8",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
       },
       {
         "moduleId": "f7",
         "date": "2026-06-19",
-        "title": "后端 Server 启动 & ESM 修复 (00:15)",
-        "problem": "后端 Server 启动 & ESM 修复 (00:15)",
-        "solution": "修复 packages/server/src/index.ts: 添加 ESM 兼容的 __dirname 定义",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-19",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-19",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-19",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-19",
+        "title": "模型目录动态更新系统 (08:04)",
+        "problem": "模型目录动态更新系统 (08:04)",
+        "solution": "启动时从 GitHub/CDN 下载最新 models-catalog.json → 缓存到本地 24h；新增 `ModelRegistry` 类 (`packages/core/src/config/ModelRegistry.ts`):；单例模式，管理远程目录下载、缓存、合并；fetchWithTimeout 支持超时(15s) + 备用URL (jsdelivr CDN)；启动时异步下载不阻塞，后台完成后自动 mergeRemoteModels()；数据源优先级: ModelRegistry远程目录 > 提供商 /models API > ProviderPresets硬编码；ConfigManager.load() 自动调 mergeRemoteModels() + initModelRegistry()；Desktop/CLI/Server 三个入口均启动时调用 getModelRegistry().initialize()；Server 新增 POST /api/providers/catalog/refresh + GET /api/providers/catalog/status；远程文件: `models-catalog.json` (项目根，托管 GitHub)；更新 ProviderPresets: 包含所有2026最新模型(V4/GLM-5/Qwen3/K2.7/ERNIE4.5/Seed1.6/TurboS/M3)；新模型在前作为默认，旧版保留供历史使用；修改文件: ModelRegistry.ts(新增), ConfigManager.ts, ProviderPresets.ts, core/index.ts, server/index.ts, desktop/main.ts, cli/main.tsx - 全部零lint错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f7",
+          "f9",
+          "f11",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-19",
+        "title": "前端模型选择器修复 & 本地兜底 (08:33)",
+        "problem": ": 后端API `/api/providers/all-models` 已返回正确的2026模型数据，问题出在前端Store默认值",
+        "solution": "ModelRegistry 新增 `readBundledCatalog()` 四级降级链: 1. 远程GitHub/CDN下载 2. 本地缓存 `~/.easyagent/models-catalog.json`(24h) 3. 项目内置 `models-catalog.json`(新增兜底) 4. ProviderPresets 硬编码(最终兜底)；首次无网络时自动从项目内置文件写入缓存，后续启动直接使用；修改文件: ModelRegistry.ts(+readBundledCatalog, 更新doInitialize), providerStore.ts(默认模型)；服务重启验证: catalog/status 返回 ready:true, 11 providers, all-models 首位 DeepSeek V4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "f15",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "config.getConfig 崩溃修复 & 全场 deepseek-chat → deepsee",
+        "problem": ": server/index.ts 中 `config` 是 `configManager.load()` 返回的 `AppConfig` 对象(纯数据)，不是 ConfigManager 实例，没有 `getConfig()` 方法",
+        "solution": "3处 `config.getConfig()` → 直接使用 `config` (它就是配置对象)；`/api/config/templates`: `config.getConfig().templates` → `config.templates`；`/api/config/allowed-commands`: `config.getConfig().security?.allowedCommands` → `config.security?.allowedCommands`；`PUT /api/config/allowed-commands`: `config.getConfig().security` → `config.security`；全场默认模型更新: 所有硬编码 `deepseek-chat`(V3) → `deepseek-v4`(V4)；ConfigManager.ts DEFAULT_CONFIG；AgentEngine.ts 构造函数兜底；SessionManager.ts 两处兜底 (还原 + 新建)；config-manager.test.ts 断言更新；远程URL 404: GitHub `easyagent/easyagent` 仓库不存在，但内置 models-catalog.json 兜底已生效；验证: 重启后 /api/health, /api/config/templates, /api/config/allowed-commands 全部正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f13",
+          "f14",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "config.getConfig 崩溃修复 & 全场 deepseek-chat → deepsee",
+        "problem": ": server/index.ts 中 `config` 是 `configManager.load()` 返回的 `AppConfig` 对象(纯数据)，不是 ConfigManager 实例，没有 `getConfig()` 方法",
+        "solution": "3处 `config.getConfig()` → 直接使用 `config` (它就是配置对象)；`/api/config/templates`: `config.getConfig().templates` → `config.templates`；`/api/config/allowed-commands`: `config.getConfig().security?.allowedCommands` → `config.security?.allowedCommands`；`PUT /api/config/allowed-commands`: `config.getConfig().security` → `config.security`；全场默认模型更新: 所有硬编码 `deepseek-chat`(V3) → `deepseek-v4`(V4)；ConfigManager.ts DEFAULT_CONFIG；AgentEngine.ts 构造函数兜底；SessionManager.ts 两处兜底 (还原 + 新建)；config-manager.test.ts 断言更新；远程URL 404: GitHub `easyagent/easyagent` 仓库不存在，但内置 models-catalog.json 兜底已生效；验证: 重启后 /api/health, /api/config/templates, /api/config/allowed-commands 全部正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f13",
+          "f14",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "config.getConfig 崩溃修复 & 全场 deepseek-chat → deepsee",
+        "problem": ": server/index.ts 中 `config` 是 `configManager.load()` 返回的 `AppConfig` 对象(纯数据)，不是 ConfigManager 实例，没有 `getConfig()` 方法",
+        "solution": "3处 `config.getConfig()` → 直接使用 `config` (它就是配置对象)；`/api/config/templates`: `config.getConfig().templates` → `config.templates`；`/api/config/allowed-commands`: `config.getConfig().security?.allowedCommands` → `config.security?.allowedCommands`；`PUT /api/config/allowed-commands`: `config.getConfig().security` → `config.security`；全场默认模型更新: 所有硬编码 `deepseek-chat`(V3) → `deepseek-v4`(V4)；ConfigManager.ts DEFAULT_CONFIG；AgentEngine.ts 构造函数兜底；SessionManager.ts 两处兜底 (还原 + 新建)；config-manager.test.ts 断言更新；远程URL 404: GitHub `easyagent/easyagent` 仓库不存在，但内置 models-catalog.json 兜底已生效；验证: 重启后 /api/health, /api/config/templates, /api/config/allowed-commands 全部正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f13",
+          "f14",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "config.getConfig 崩溃修复 & 全场 deepseek-chat → deepsee",
+        "problem": ": server/index.ts 中 `config` 是 `configManager.load()` 返回的 `AppConfig` 对象(纯数据)，不是 ConfigManager 实例，没有 `getConfig()` 方法",
+        "solution": "3处 `config.getConfig()` → 直接使用 `config` (它就是配置对象)；`/api/config/templates`: `config.getConfig().templates` → `config.templates`；`/api/config/allowed-commands`: `config.getConfig().security?.allowedCommands` → `config.security?.allowedCommands`；`PUT /api/config/allowed-commands`: `config.getConfig().security` → `config.security`；全场默认模型更新: 所有硬编码 `deepseek-chat`(V3) → `deepseek-v4`(V4)；ConfigManager.ts DEFAULT_CONFIG；AgentEngine.ts 构造函数兜底；SessionManager.ts 两处兜底 (还原 + 新建)；config-manager.test.ts 断言更新；远程URL 404: GitHub `easyagent/easyagent` 仓库不存在，但内置 models-catalog.json 兜底已生效；验证: 重启后 /api/health, /api/config/templates, /api/config/allowed-commands 全部正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f13",
+          "f14",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-19",
+        "title": "config.getConfig 崩溃修复 & 全场 deepseek-chat → deepsee",
+        "problem": ": server/index.ts 中 `config` 是 `configManager.load()` 返回的 `AppConfig` 对象(纯数据)，不是 ConfigManager 实例，没有 `getConfig()` 方法",
+        "solution": "3处 `config.getConfig()` → 直接使用 `config` (它就是配置对象)；`/api/config/templates`: `config.getConfig().templates` → `config.templates`；`/api/config/allowed-commands`: `config.getConfig().security?.allowedCommands` → `config.security?.allowedCommands`；`PUT /api/config/allowed-commands`: `config.getConfig().security` → `config.security`；全场默认模型更新: 所有硬编码 `deepseek-chat`(V3) → `deepseek-v4`(V4)；ConfigManager.ts DEFAULT_CONFIG；AgentEngine.ts 构造函数兜底；SessionManager.ts 两处兜底 (还原 + 新建)；config-manager.test.ts 断言更新；远程URL 404: GitHub `easyagent/easyagent` 仓库不存在，但内置 models-catalog.json 兜底已生效；验证: 重启后 /api/health, /api/config/templates, /api/config/allowed-commands 全部正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f13",
+          "f14",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "Logger UTF-8 乱码根本性修复 (08:39)",
+        "problem": ": pino v9 transport 使用 worker 线程，Windows 下 worker 线程的 stderr 编码不是 UTF-8，中文被 GBK 误解码",
+        "solution": "PowerShell 窗口默认添加 `[Console]::OutputEncoding = UTF8`；修改文件: `packages/core/src/utils/logger.ts` (核心修改)；服务重启验证正常，中文日志应可正常显示",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "Logger UTF-8 乱码根本性修复 (08:39)",
+        "problem": ": pino v9 transport 使用 worker 线程，Windows 下 worker 线程的 stderr 编码不是 UTF-8，中文被 GBK 误解码",
+        "solution": "PowerShell 窗口默认添加 `[Console]::OutputEncoding = UTF8`；修改文件: `packages/core/src/utils/logger.ts` (核心修改)；服务重启验证正常，中文日志应可正常显示",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-19",
+        "title": "util._extend 弃用警告抑制 (08:44)",
+        "problem": ": Node.js v24 弃用了 `util._extend`, TailwindCSS v3 内部依赖使用了该 API",
+        "solution": "`packages/web/package.json` dev 脚本加 `set NODE_OPTIONS=--no-deprecation &&`；仅为抑制第三方弃用警告，不影响功能，等 TailwindCSS v4 可从源头解决",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "EasyAgent 本地 Ollama 对话无响应修复 (09:14)",
+        "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
+        "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "EasyAgent 本地 Ollama 对话无响应修复 (09:14)",
+        "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
+        "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "EasyAgent 本地 Ollama 对话无响应修复 (09:14)",
+        "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
+        "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "EasyAgent 本地 Ollama 对话无响应修复 (09:14)",
+        "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
+        "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "EasyAgent 本地 Ollama 对话无响应修复 (09:14)",
+        "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
+        "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3a",
+        "date": "2026-06-19",
+        "title": "EasyAgent 本地 Ollama 对话无响应修复 (09:14)",
+        "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
+        "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-19",
+        "title": "EasyAgent 本地 Ollama 对话无响应修复 (09:14)",
+        "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
+        "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "WebSocket ECONNABORTED 修复 & 前端报错统一处理 (09:44)",
+        "problem": "[现象] : 前端聊天发送消息后报 ECONNABORTED 错误，但 Ollama API 直连测试正常 [排查] : [根因] : 原始代码多处直接 `ws.send(JSON.stringify(...))`，当 WebSocket 连接意外关闭或未就绪时抛出 ECONNABORTED",
+        "solution": "`packages/server/src/index.ts` 新增 `safeSend()` 函数:；发送前检查 `ws.readyState === WebSocket.OPEN`；未就绪时 warn 日志并返回 false；try-catch 包裹 send 调用，失败时 error 日志；替换所有 15+ 处 `ws.send(JSON.stringify(...))` → `safeSend(ws, {...})`；额外改进: Agent.run 前后添加详细日志(sid, provider, model, chunkCount, responseLen)；重建: `npx tsup` 编译 server 包；重启: 后端(3456) + 前端(5173) 均已重启，页面已打开可测试",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "WebSocket ECONNABORTED 修复 & 前端报错统一处理 (09:44)",
+        "problem": "[现象] : 前端聊天发送消息后报 ECONNABORTED 错误，但 Ollama API 直连测试正常 [排查] : [根因] : 原始代码多处直接 `ws.send(JSON.stringify(...))`，当 WebSocket 连接意外关闭或未就绪时抛出 ECONNABORTED",
+        "solution": "`packages/server/src/index.ts` 新增 `safeSend()` 函数:；发送前检查 `ws.readyState === WebSocket.OPEN`；未就绪时 warn 日志并返回 false；try-catch 包裹 send 调用，失败时 error 日志；替换所有 15+ 处 `ws.send(JSON.stringify(...))` → `safeSend(ws, {...})`；额外改进: Agent.run 前后添加详细日志(sid, provider, model, chunkCount, responseLen)；重建: `npx tsup` 编译 server 包；重启: 后端(3456) + 前端(5173) 均已重启，页面已打开可测试",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "WebSocket ECONNABORTED 修复 & 前端报错统一处理 (09:44)",
+        "problem": "[现象] : 前端聊天发送消息后报 ECONNABORTED 错误，但 Ollama API 直连测试正常 [排查] : [根因] : 原始代码多处直接 `ws.send(JSON.stringify(...))`，当 WebSocket 连接意外关闭或未就绪时抛出 ECONNABORTED",
+        "solution": "`packages/server/src/index.ts` 新增 `safeSend()` 函数:；发送前检查 `ws.readyState === WebSocket.OPEN`；未就绪时 warn 日志并返回 false；try-catch 包裹 send 调用，失败时 error 日志；替换所有 15+ 处 `ws.send(JSON.stringify(...))` → `safeSend(ws, {...})`；额外改进: Agent.run 前后添加详细日志(sid, provider, model, chunkCount, responseLen)；重建: `npx tsup` 编译 server 包；重启: 后端(3456) + 前端(5173) 均已重启，页面已打开可测试",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "WebSocket ECONNABORTED 修复 & 前端报错统一处理 (09:44)",
+        "problem": "[现象] : 前端聊天发送消息后报 ECONNABORTED 错误，但 Ollama API 直连测试正常 [排查] : [根因] : 原始代码多处直接 `ws.send(JSON.stringify(...))`，当 WebSocket 连接意外关闭或未就绪时抛出 ECONNABORTED",
+        "solution": "`packages/server/src/index.ts` 新增 `safeSend()` 函数:；发送前检查 `ws.readyState === WebSocket.OPEN`；未就绪时 warn 日志并返回 false；try-catch 包裹 send 调用，失败时 error 日志；替换所有 15+ 处 `ws.send(JSON.stringify(...))` → `safeSend(ws, {...})`；额外改进: Agent.run 前后添加详细日志(sid, provider, model, chunkCount, responseLen)；重建: `npx tsup` 编译 server 包；重启: 后端(3456) + 前端(5173) 均已重启，页面已打开可测试",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "WebSocket ECONNABORTED 修复 & 前端报错统一处理 (09:44)",
+        "problem": "[现象] : 前端聊天发送消息后报 ECONNABORTED 错误，但 Ollama API 直连测试正常 [排查] : [根因] : 原始代码多处直接 `ws.send(JSON.stringify(...))`，当 WebSocket 连接意外关闭或未就绪时抛出 ECONNABORTED",
+        "solution": "`packages/server/src/index.ts` 新增 `safeSend()` 函数:；发送前检查 `ws.readyState === WebSocket.OPEN`；未就绪时 warn 日志并返回 false；try-catch 包裹 send 调用，失败时 error 日志；替换所有 15+ 处 `ws.send(JSON.stringify(...))` → `safeSend(ws, {...})`；额外改进: Agent.run 前后添加详细日志(sid, provider, model, chunkCount, responseLen)；重建: `npx tsup` 编译 server 包；重启: 后端(3456) + 前端(5173) 均已重启，页面已打开可测试",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-19",
+        "title": "WebSocket ECONNABORTED 修复 & 前端报错统一处理 (09:44)",
+        "problem": "[现象] : 前端聊天发送消息后报 ECONNABORTED 错误，但 Ollama API 直连测试正常 [排查] : [根因] : 原始代码多处直接 `ws.send(JSON.stringify(...))`，当 WebSocket 连接意外关闭或未就绪时抛出 ECONNABORTED",
+        "solution": "`packages/server/src/index.ts` 新增 `safeSend()` 函数:；发送前检查 `ws.readyState === WebSocket.OPEN`；未就绪时 warn 日志并返回 false；try-catch 包裹 send 调用，失败时 error 日志；替换所有 15+ 处 `ws.send(JSON.stringify(...))` → `safeSend(ws, {...})`；额外改进: Agent.run 前后添加详细日志(sid, provider, model, chunkCount, responseLen)；重建: `npx tsup` 编译 server 包；重启: 后端(3456) + 前端(5173) 均已重启，页面已打开可测试",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "Vite JSX .js 文件解析修复 (19:30)",
+        "problem": ": Vite 报 `Failed to parse source for import analysis` — src 下有 tsc 编译生成的 .js 文件含 JSX 语法",
+        "solution": "`vite.config.ts` 添加 `esbuild.loader: { '.js': 'jsx' }` + `optimizeDeps.esbuildOptions.loader: { '.js': 'jsx' }`；清除 `.vite` 缓存后用 `--force` 启动成功",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "Vite JSX .js 文件解析修复 (19:30)",
+        "problem": ": Vite 报 `Failed to parse source for import analysis` — src 下有 tsc 编译生成的 .js 文件含 JSX 语法",
+        "solution": "`vite.config.ts` 添加 `esbuild.loader: { '.js': 'jsx' }` + `optimizeDeps.esbuildOptions.loader: { '.js': 'jsx' }`；清除 `.vite` 缓存后用 `--force` 启动成功",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-19",
+        "title": "Vite JSX .js 文件解析修复 (19:30)",
+        "problem": ": Vite 报 `Failed to parse source for import analysis` — src 下有 tsc 编译生成的 .js 文件含 JSX 语法",
+        "solution": "`vite.config.ts` 添加 `esbuild.loader: { '.js': 'jsx' }` + `optimizeDeps.esbuildOptions.loader: { '.js': 'jsx' }`；清除 `.vite` 缓存后用 `--force` 启动成功",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "Sandbox.tsx TDZ 引用错误导致白屏修复 (19:11)",
+        "problem": "[现象] : 沙箱页面 `localhost:5173/sandbox` 完全空白，看不到任何功能 [根因] : `renderMainContent` 用 `const` 在第90行定义，但在本地模式分支(原第112行 `{renderMainContent()}`)提前引用了它 → TDZ ReferenceError → 组件崩溃白屏",
+        "solution": "`packages/web/src/pages/Sandbox.tsx` — 将 `const renderMainContent = () => (...)` 定义移到所有条件 return 之前(第86-90行)，确保任何分支访问时均已定义；服务: 前后端重启，PID 10080(后端3456) / 18684(前端5173)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f6",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-19",
+        "title": "Sandbox.tsx TDZ 引用错误导致白屏修复 (19:11)",
+        "problem": "[现象] : 沙箱页面 `localhost:5173/sandbox` 完全空白，看不到任何功能 [根因] : `renderMainContent` 用 `const` 在第90行定义，但在本地模式分支(原第112行 `{renderMainContent()}`)提前引用了它 → TDZ ReferenceError → 组件崩溃白屏",
+        "solution": "`packages/web/src/pages/Sandbox.tsx` — 将 `const renderMainContent = () => (...)` 定义移到所有条件 return 之前(第86-90行)，确保任何分支访问时均已定义；服务: 前后端重启，PID 10080(后端3456) / 18684(前端5173)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f6",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "Sandbox.tsx TDZ 引用错误导致白屏修复 (19:11)",
+        "problem": "[现象] : 沙箱页面 `localhost:5173/sandbox` 完全空白，看不到任何功能 [根因] : `renderMainContent` 用 `const` 在第90行定义，但在本地模式分支(原第112行 `{renderMainContent()}`)提前引用了它 → TDZ ReferenceError → 组件崩溃白屏",
+        "solution": "`packages/web/src/pages/Sandbox.tsx` — 将 `const renderMainContent = () => (...)` 定义移到所有条件 return 之前(第86-90行)，确保任何分支访问时均已定义；服务: 前后端重启，PID 10080(后端3456) / 18684(前端5173)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f6",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "Vite WebSocket 代理 ECONNABORTED 根源修复 (09:49)",
+        "problem": "[现象] : Vite 代理层报 `ws proxy socket error: write ECONNABORTED`，前端通过代理 `ws://localhost:5173/ws` → 后端 `ws://localhost:3456/ws` 时数据转发失败 [根因] : Vite 内置 WebSocket 代理在转发流式数据时连接被重置",
+        "solution": "`chatStore.ts` 开发模式下直连后端 WebSocket `ws://localhost:3456/ws`，绕过 Vite 代理；`import.meta.env.DEV` 判断: 开发 → `ws://localhost:3456/ws`，生产 → 仍走 `/ws` 路径；后端日志确认: Agent 收到消息并开始执行(`Agent循环迭代 turn:1`)，证明后端正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "Vite WebSocket 代理 ECONNABORTED 根源修复 (09:49)",
+        "problem": "[现象] : Vite 代理层报 `ws proxy socket error: write ECONNABORTED`，前端通过代理 `ws://localhost:5173/ws` → 后端 `ws://localhost:3456/ws` 时数据转发失败 [根因] : Vite 内置 WebSocket 代理在转发流式数据时连接被重置",
+        "solution": "`chatStore.ts` 开发模式下直连后端 WebSocket `ws://localhost:3456/ws`，绕过 Vite 代理；`import.meta.env.DEV` 判断: 开发 → `ws://localhost:3456/ws`，生产 → 仍走 `/ws` 路径；后端日志确认: Agent 收到消息并开始执行(`Agent循环迭代 turn:1`)，证明后端正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "Vite WebSocket 代理 ECONNABORTED 根源修复 (09:49)",
+        "problem": "[现象] : Vite 代理层报 `ws proxy socket error: write ECONNABORTED`，前端通过代理 `ws://localhost:5173/ws` → 后端 `ws://localhost:3456/ws` 时数据转发失败 [根因] : Vite 内置 WebSocket 代理在转发流式数据时连接被重置",
+        "solution": "`chatStore.ts` 开发模式下直连后端 WebSocket `ws://localhost:3456/ws`，绕过 Vite 代理；`import.meta.env.DEV` 判断: 开发 → `ws://localhost:3456/ws`，生产 → 仍走 `/ws` 路径；后端日志确认: Agent 收到消息并开始执行(`Agent循环迭代 turn:1`)，证明后端正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "Vite WebSocket 代理 ECONNABORTED 根源修复 (09:49)",
+        "problem": "[现象] : Vite 代理层报 `ws proxy socket error: write ECONNABORTED`，前端通过代理 `ws://localhost:5173/ws` → 后端 `ws://localhost:3456/ws` 时数据转发失败 [根因] : Vite 内置 WebSocket 代理在转发流式数据时连接被重置",
+        "solution": "`chatStore.ts` 开发模式下直连后端 WebSocket `ws://localhost:3456/ws`，绕过 Vite 代理；`import.meta.env.DEV` 判断: 开发 → `ws://localhost:3456/ws`，生产 → 仍走 `/ws` 路径；后端日志确认: Agent 收到消息并开始执行(`Agent循环迭代 turn:1`)，证明后端正常",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f8",
+          "f11"
+        ]
       },
       {
         "moduleId": "f3",
         "date": "2026-06-19",
         "title": "工具系统页面交互重构 (19:57-20:05)",
         "problem": "工具系统页面交互重构 (19:57-20:05)",
-        "solution": "前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
+        "solution": "`ToolRegistry.list()` (TS + JS): 返回值新增 `parameters` 字段 → 前端可展示参数schema；`/api/tools` 端点通过 `...t` 自动继承新字段；tsup 重新编译 core dist；前端 `Tools.tsx` 完整重写** (92行 → 270行)；点击工具卡片展开/折叠详情: 显示分组、内置状态、参数列表(JSON Schema 渲染：类型、描述、必需标记、枚举值)；分类卡片可点击筛选: 点击分组卡片过滤工具网格，再次点击取消筛选，顶部显示\"清除筛选\"按钮；搜索框: 按工具名或描述实时过滤；统计区域: 底部展示各分组工具数量，也可点击筛选；交互反馈: hover 变色、展开时高亮边框、过渡动画；`vite.config.ts`: 添加 `host: true` 消除 `use --host to expose` 提示；前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f3",
+          "f8",
+          "f4",
+          "p5c"
+        ]
       },
       {
         "moduleId": "f8",
         "date": "2026-06-19",
         "title": "工具系统页面交互重构 (19:57-20:05)",
         "problem": "工具系统页面交互重构 (19:57-20:05)",
-        "solution": "前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
+        "solution": "`ToolRegistry.list()` (TS + JS): 返回值新增 `parameters` 字段 → 前端可展示参数schema；`/api/tools` 端点通过 `...t` 自动继承新字段；tsup 重新编译 core dist；前端 `Tools.tsx` 完整重写** (92行 → 270行)；点击工具卡片展开/折叠详情: 显示分组、内置状态、参数列表(JSON Schema 渲染：类型、描述、必需标记、枚举值)；分类卡片可点击筛选: 点击分组卡片过滤工具网格，再次点击取消筛选，顶部显示\"清除筛选\"按钮；搜索框: 按工具名或描述实时过滤；统计区域: 底部展示各分组工具数量，也可点击筛选；交互反馈: hover 变色、展开时高亮边框、过渡动画；`vite.config.ts`: 添加 `host: true` 消除 `use --host to expose` 提示；前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f3",
+          "f8",
+          "f4",
+          "p5c"
+        ]
       },
       {
         "moduleId": "f4",
         "date": "2026-06-19",
-        "title": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
-        "problem": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
-        "solution": "`uploadImage()`: 原代码 `imageUrl.startsWith('http') ? undefined : undefined` → 改为完整的下载/Base64/本地文件 → Blob → FormData multipart 上传",
+        "title": "工具系统页面交互重构 (19:57-20:05)",
+        "problem": "工具系统页面交互重构 (19:57-20:05)",
+        "solution": "`ToolRegistry.list()` (TS + JS): 返回值新增 `parameters` 字段 → 前端可展示参数schema；`/api/tools` 端点通过 `...t` 自动继承新字段；tsup 重新编译 core dist；前端 `Tools.tsx` 完整重写** (92行 → 270行)；点击工具卡片展开/折叠详情: 显示分组、内置状态、参数列表(JSON Schema 渲染：类型、描述、必需标记、枚举值)；分类卡片可点击筛选: 点击分组卡片过滤工具网格，再次点击取消筛选，顶部显示\"清除筛选\"按钮；搜索框: 按工具名或描述实时过滤；统计区域: 底部展示各分组工具数量，也可点击筛选；交互反馈: hover 变色、展开时高亮边框、过渡动画；`vite.config.ts`: 添加 `host: true` 消除 `use --host to expose` 提示；前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f3",
+          "f8",
+          "f4",
+          "p5c"
+        ]
       },
       {
-        "moduleId": "f11",
+        "moduleId": "p5c",
         "date": "2026-06-19",
-        "title": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
-        "problem": "扩展模块全栈实现：知识库 + 自动化 + IM修复 (22:09-22:55)",
-        "solution": "`uploadImage()`: 原代码 `imageUrl.startsWith('http') ? undefined : undefined` → 改为完整的下载/Base64/本地文件 → Blob → FormData multipart 上传",
+        "title": "工具系统页面交互重构 (19:57-20:05)",
+        "problem": "工具系统页面交互重构 (19:57-20:05)",
+        "solution": "`ToolRegistry.list()` (TS + JS): 返回值新增 `parameters` 字段 → 前端可展示参数schema；`/api/tools` 端点通过 `...t` 自动继承新字段；tsup 重新编译 core dist；前端 `Tools.tsx` 完整重写** (92行 → 270行)；点击工具卡片展开/折叠详情: 显示分组、内置状态、参数列表(JSON Schema 渲染：类型、描述、必需标记、枚举值)；分类卡片可点击筛选: 点击分组卡片过滤工具网格，再次点击取消筛选，顶部显示\"清除筛选\"按钮；搜索框: 按工具名或描述实时过滤；统计区域: 底部展示各分组工具数量，也可点击筛选；交互反馈: hover 变色、展开时高亮边框、过渡动画；`vite.config.ts`: 添加 `host: true` 消除 `use --host to expose` 提示；前端改为 `npm run dev` 启动，应用 `--no-deprecation` 消除 util._extend 警告",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f3",
+          "f8",
+          "f4",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "技能激活功能实现 (20:07-20:10)",
+        "problem": "技能激活功能实现 (20:07-20:10)",
+        "solution": "后端 `POST /api/skills/:name/activate`；新增端点，在内置技能和插件技能中查找技能；调用 `skill.onActivate(context)` 回调（如果存在）；返回技能信息、prompt 和增强后的上下文；修改文件: `server/src/index.ts`, `server/src/index.js`, `server/dist/index.js`；前端 `Skills.tsx`；新增 `handleActivate()` 函数，POST 请求激活技能；新增 `activating`/`feedback` 状态管理；按钮点击后显示 loading 动画（\"激活中...\"）；成功后显示绿色反馈，失败显示红色错误信息；防止重复点击（disabled 状态）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "技能激活功能实现 (20:07-20:10)",
+        "problem": "技能激活功能实现 (20:07-20:10)",
+        "solution": "后端 `POST /api/skills/:name/activate`；新增端点，在内置技能和插件技能中查找技能；调用 `skill.onActivate(context)` 回调（如果存在）；返回技能信息、prompt 和增强后的上下文；修改文件: `server/src/index.ts`, `server/src/index.js`, `server/dist/index.js`；前端 `Skills.tsx`；新增 `handleActivate()` 函数，POST 请求激活技能；新增 `activating`/`feedback` 状态管理；按钮点击后显示 loading 动画（\"激活中...\"）；成功后显示绿色反馈，失败显示红色错误信息；防止重复点击（disabled 状态）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-19",
+        "title": "技能激活功能实现 (20:07-20:10)",
+        "problem": "技能激活功能实现 (20:07-20:10)",
+        "solution": "后端 `POST /api/skills/:name/activate`；新增端点，在内置技能和插件技能中查找技能；调用 `skill.onActivate(context)` 回调（如果存在）；返回技能信息、prompt 和增强后的上下文；修改文件: `server/src/index.ts`, `server/src/index.js`, `server/dist/index.js`；前端 `Skills.tsx`；新增 `handleActivate()` 函数，POST 请求激活技能；新增 `activating`/`feedback` 状态管理；按钮点击后显示 loading 动画（\"激活中...\"）；成功后显示绿色反馈，失败显示红色错误信息；防止重复点击（disabled 状态）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "技能市场全面重构 (20:09-20:20)",
+        "problem": "技能市场全面重构 (20:09-20:20)",
+        "solution": "`handleSelectSkill` 切换技能时清除 feedback；卡片视图: 右上角快速操作按钮，保留原有；来源筛选栏: 全部/内置/插件/自定义 四个标签页；新增技能表单: 名称、描述、标签、提示词，可折叠展开；统计区域: N 已激活 / N 总计；激活/停用: 表格行内按钮 + 详情面板按钮，双向切换；自定义技能: 支持删除（确认弹窗 + 红色样式按钮）；视图切换按钮(表格/卡片)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-19",
+        "title": "技能市场全面重构 (20:09-20:20)",
+        "problem": "技能市场全面重构 (20:09-20:20)",
+        "solution": "`handleSelectSkill` 切换技能时清除 feedback；卡片视图: 右上角快速操作按钮，保留原有；来源筛选栏: 全部/内置/插件/自定义 四个标签页；新增技能表单: 名称、描述、标签、提示词，可折叠展开；统计区域: N 已激活 / N 总计；激活/停用: 表格行内按钮 + 详情面板按钮，双向切换；自定义技能: 支持删除（确认弹窗 + 红色样式按钮）；视图切换按钮(表格/卡片)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-19",
+        "title": "技能市场全面重构 (20:09-20:20)",
+        "problem": "技能市场全面重构 (20:09-20:20)",
+        "solution": "`handleSelectSkill` 切换技能时清除 feedback；卡片视图: 右上角快速操作按钮，保留原有；来源筛选栏: 全部/内置/插件/自定义 四个标签页；新增技能表单: 名称、描述、标签、提示词，可折叠展开；统计区域: N 已激活 / N 总计；激活/停用: 表格行内按钮 + 详情面板按钮，双向切换；自定义技能: 支持删除（确认弹窗 + 红色样式按钮）；视图切换按钮(表格/卡片)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "Skills 页面切换标签清空详情面板 (21:57)",
+        "problem": ": 切换来源标签(内置→自定义)时，右侧详情面板残留上一个选中的技能信息",
+        "solution": "`Skills.tsx` 第 245 行，`setSourceFilter(src)` 同时执行 `setActiveSkill(null)`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-19",
+        "title": "后端崩溃 & 知识库 404 修复 (22:56-23:00)",
+        "problem": "[现象] : 知识库页面一直显示\"加载中...\"，WebView 报 `getBoundingClientRect` 错误 [排查] : `/api/knowledge` 返回 ECONNREFUSED → 后端已崩溃 [根因] : Server `dist/index.js` 是旧版本（44KB），缺少 KnowledgeService/AutomationManager 导入和知识库 API 路由。Core 的 `dist/index.js` 虽然包含 KnowledgeService 类，但 Server 未重新编译导致新模块未打进 dist。",
+        "solution": "`npx tsup` 重新编译 Server 包（44KB→52KB），随后 `Start-Process` 重启后端；验证: `/api/health` 200 / `/api/knowledge` 200 (空文档列表正常返回)；教训: 修改 core/src 后必须同时重新编译 core + server 的 dist，否则 server 仍使用旧的 core dist 且新路由未编译进 server dist",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "后端崩溃 & 知识库 404 修复 (22:56-23:00)",
+        "problem": "[现象] : 知识库页面一直显示\"加载中...\"，WebView 报 `getBoundingClientRect` 错误 [排查] : `/api/knowledge` 返回 ECONNREFUSED → 后端已崩溃 [根因] : Server `dist/index.js` 是旧版本（44KB），缺少 KnowledgeService/AutomationManager 导入和知识库 API 路由。Core 的 `dist/index.js` 虽然包含 KnowledgeService 类，但 Server 未重新编译导致新模块未打进 dist。",
+        "solution": "`npx tsup` 重新编译 Server 包（44KB→52KB），随后 `Start-Process` 重启后端；验证: `/api/health` 200 / `/api/knowledge` 200 (空文档列表正常返回)；教训: 修改 core/src 后必须同时重新编译 core + server 的 dist，否则 server 仍使用旧的 core dist 且新路由未编译进 server dist",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-19",
+        "title": "后端崩溃 & 知识库 404 修复 (22:56-23:00)",
+        "problem": "[现象] : 知识库页面一直显示\"加载中...\"，WebView 报 `getBoundingClientRect` 错误 [排查] : `/api/knowledge` 返回 ECONNREFUSED → 后端已崩溃 [根因] : Server `dist/index.js` 是旧版本（44KB），缺少 KnowledgeService/AutomationManager 导入和知识库 API 路由。Core 的 `dist/index.js` 虽然包含 KnowledgeService 类，但 Server 未重新编译导致新模块未打进 dist。",
+        "solution": "`npx tsup` 重新编译 Server 包（44KB→52KB），随后 `Start-Process` 重启后端；验证: `/api/health` 200 / `/api/knowledge` 200 (空文档列表正常返回)；教训: 修改 core/src 后必须同时重新编译 core + server 的 dist，否则 server 仍使用旧的 core dist 且新路由未编译进 server dist",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-19",
+        "title": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "problem": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "solution": "1. **删除** `packages/server/src/index.js` — 旧 artifact，vitest 现在正确加载 `.ts` 源文件 2. **调整路由顺序** — 将 `:id` 路由移到 `stats/summary` 之后，在所有具体路径路由之后 3. **重新编译** `dist/index.js` (59.12 KB) — 用 `npx tsup src/index.ts --format esm`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "problem": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "solution": "1. **删除** `packages/server/src/index.js` — 旧 artifact，vitest 现在正确加载 `.ts` 源文件 2. **调整路由顺序** — 将 `:id` 路由移到 `stats/summary` 之后，在所有具体路径路由之后 3. **重新编译** `dist/index.js` (59.12 KB) — 用 `npx tsup src/index.ts --format esm`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "problem": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "solution": "1. **删除** `packages/server/src/index.js` — 旧 artifact，vitest 现在正确加载 `.ts` 源文件 2. **调整路由顺序** — 将 `:id` 路由移到 `stats/summary` 之后，在所有具体路径路由之后 3. **重新编译** `dist/index.js` (59.12 KB) — 用 `npx tsup src/index.ts --format esm`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "problem": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "solution": "全部 41 测试通过 (3 test files: api + websocket + static-files)；Core 知识库单元测试: 40/40 通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "problem": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "solution": "全部 41 测试通过 (3 test files: api + websocket + static-files)；Core 知识库单元测试: 40/40 通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "problem": "双作用域知识库 + 文件上传 — 测试修复与文档更新 (23:42-23:50)",
+        "solution": "全部 41 测试通过 (3 test files: api + websocket + static-files)；Core 知识库单元测试: 40/40 通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f10"
+        ]
       }
     ],
     "2026-06-20.md": [
       {
         "moduleId": "f4",
         "date": "2026-06-20",
-        "title": "MEMORY.md 增加操作铁律 (00:29)",
-        "problem": "MEMORY.md 增加操作铁律 (00:29)",
-        "solution": "新增\"双作用域知识库测试修复\"内容追加至 2026-06-19.md 末尾",
+        "title": "知识库中文文件名/内容乱码修复 (00:31-00:34)",
+        "problem": ": 添加全局文档后，文档标题/内容显示为乱码 [根因] : multer/busboy 在 Windows 下将 UTF-8 文件名按 Latin-1 误解码",
+        "solution": "文件名: `Buffer.from(fileName, 'latin1').toString('utf8')` + `decodeURIComponent` 备选；内容: 先用 UTF-8 读取，若含 `\\ufffd` 用 iconv-lite 降级 GBK；编译: tsup (60.02 KB) + 重启后端 (PID 20420已杀→新窗口)",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f4",
+          "f13",
+          "f14"
+        ]
       },
       {
-        "moduleId": "f10",
+        "moduleId": "f13",
         "date": "2026-06-20",
-        "title": "MEMORY.md 增加操作铁律 (00:29)",
-        "problem": "MEMORY.md 增加操作铁律 (00:29)",
-        "solution": "新增\"双作用域知识库测试修复\"内容追加至 2026-06-19.md 末尾",
+        "title": "知识库中文文件名/内容乱码修复 (00:31-00:34)",
+        "problem": ": 添加全局文档后，文档标题/内容显示为乱码 [根因] : multer/busboy 在 Windows 下将 UTF-8 文件名按 Latin-1 误解码",
+        "solution": "文件名: `Buffer.from(fileName, 'latin1').toString('utf8')` + `decodeURIComponent` 备选；内容: 先用 UTF-8 读取，若含 `\\ufffd` 用 iconv-lite 降级 GBK；编译: tsup (60.02 KB) + 重启后端 (PID 20420已杀→新窗口)",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f4",
+          "f13",
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-20",
+        "title": "知识库中文文件名/内容乱码修复 (00:31-00:34)",
+        "problem": ": 添加全局文档后，文档标题/内容显示为乱码 [根因] : multer/busboy 在 Windows 下将 UTF-8 文件名按 Latin-1 误解码",
+        "solution": "文件名: `Buffer.from(fileName, 'latin1').toString('utf8')` + `decodeURIComponent` 备选；内容: 先用 UTF-8 读取，若含 `\\ufffd` 用 iconv-lite 降级 GBK；编译: tsup (60.02 KB) + 重启后端 (PID 20420已杀→新窗口)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f13",
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "知识库文档预览\"空内容\"修复 (00:37)",
+        "problem": ": 点击文档卡片弹窗显示\"(空内容)\"，无法预览文档 [根因] : `GET /api/knowledge` 列表接口返回的 `DocIndex[]` 不含 `content` 字段，而页面 `onClick` 直接把摘要对象传给预览弹窗",
+        "solution": "`knowledgeBaseStore.ts`: 新增 `getDocument(id)` action，调用 `GET /api/knowledge/:id` 获取完整内容；`KnowledgeBase.tsx`: 新增 `handleViewDoc()` → setViewDoc(null) → getDocument(id) → setViewDoc(fullDoc)；新增 `loadingDoc` 状态 + 弹窗加载动画；弹窗条件改为 `(viewDoc || loadingDoc)`，加载中显示 spinner，加载完成显示完整内容",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4"
+        ]
       },
       {
         "moduleId": "f4",
         "date": "2026-06-20",
         "title": "知识库文档预览\"空内容\"修复 (00:37)",
-        "problem": "知识库文档预览\"空内容\"修复 (00:37)",
-        "solution": "弹窗条件改为 `(viewDoc || loadingDoc)`，加载中显示 spinner，加载完成显示完整内容",
+        "problem": ": 点击文档卡片弹窗显示\"(空内容)\"，无法预览文档 [根因] : `GET /api/knowledge` 列表接口返回的 `DocIndex[]` 不含 `content` 字段，而页面 `onClick` 直接把摘要对象传给预览弹窗",
+        "solution": "`knowledgeBaseStore.ts`: 新增 `getDocument(id)` action，调用 `GET /api/knowledge/:id` 获取完整内容；`KnowledgeBase.tsx`: 新增 `handleViewDoc()` → setViewDoc(null) → getDocument(id) → setViewDoc(fullDoc)；新增 `loadingDoc` 状态 + 弹窗加载动画；弹窗条件改为 `(viewDoc || loadingDoc)`，加载中显示 spinner，加载完成显示完整内容",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f7",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "problem": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "solution": "`AutomationTask` 类型 (automationStore.ts + AutomationManager.ts): 新增 `provider`/`model` 可选字段；`server/index.ts`: executor 优先用任务指定的 provider/model，错误信息区分\"任务指定但未配置\"和\"未设置默认\"；`Automation.tsx`:；创建表单新增模型选择器（提供商下拉→模型下拉，联动；显示未配置警告）；执行历史：失败条目可点击展开显示红色错误详情卡片；任务列表卡片显示模型信息；导入 `useProviderStore` 获取可用提供商；编译: server tsup (60.71 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "problem": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "solution": "`AutomationTask` 类型 (automationStore.ts + AutomationManager.ts): 新增 `provider`/`model` 可选字段；`server/index.ts`: executor 优先用任务指定的 provider/model，错误信息区分\"任务指定但未配置\"和\"未设置默认\"；`Automation.tsx`:；创建表单新增模型选择器（提供商下拉→模型下拉，联动；显示未配置警告）；执行历史：失败条目可点击展开显示红色错误详情卡片；任务列表卡片显示模型信息；导入 `useProviderStore` 获取可用提供商；编译: server tsup (60.71 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-20",
+        "title": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "problem": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "solution": "`AutomationTask` 类型 (automationStore.ts + AutomationManager.ts): 新增 `provider`/`model` 可选字段；`server/index.ts`: executor 优先用任务指定的 provider/model，错误信息区分\"任务指定但未配置\"和\"未设置默认\"；`Automation.tsx`:；创建表单新增模型选择器（提供商下拉→模型下拉，联动；显示未配置警告）；执行历史：失败条目可点击展开显示红色错误详情卡片；任务列表卡片显示模型信息；导入 `useProviderStore` 获取可用提供商；编译: server tsup (60.71 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-20",
+        "title": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "problem": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "solution": "`AutomationTask` 类型 (automationStore.ts + AutomationManager.ts): 新增 `provider`/`model` 可选字段；`server/index.ts`: executor 优先用任务指定的 provider/model，错误信息区分\"任务指定但未配置\"和\"未设置默认\"；`Automation.tsx`:；创建表单新增模型选择器（提供商下拉→模型下拉，联动；显示未配置警告）；执行历史：失败条目可点击展开显示红色错误详情卡片；任务列表卡片显示模型信息；导入 `useProviderStore` 获取可用提供商；编译: server tsup (60.71 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-20",
+        "title": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "problem": "自动化任务: 错误详情显示 + 模型选择 (00:37-00:44)",
+        "solution": "`AutomationTask` 类型 (automationStore.ts + AutomationManager.ts): 新增 `provider`/`model` 可选字段；`server/index.ts`: executor 优先用任务指定的 provider/model，错误信息区分\"任务指定但未配置\"和\"未设置默认\"；`Automation.tsx`:；创建表单新增模型选择器（提供商下拉→模型下拉，联动；显示未配置警告）；执行历史：失败条目可点击展开显示红色错误详情卡片；任务列表卡片显示模型信息；导入 `useProviderStore` 获取可用提供商；编译: server tsup (60.71 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "自动化任务: 显示所有提供商选择 (00:51)",
+        "problem": ": 创建任务时模型选择只显示已配置密钥的提供商，用户无法看到所有选项",
+        "solution": "改用 `allProviders` 显示所有提供商，未配置的标注\"(未配置密钥)\"，选中后显示黄色提示条",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-20",
+        "title": "自动化任务: 显示所有提供商选择 (00:51)",
+        "problem": ": 创建任务时模型选择只显示已配置密钥的提供商，用户无法看到所有选项",
+        "solution": "改用 `allProviders` 显示所有提供商，未配置的标注\"(未配置密钥)\"，选中后显示黄色提示条",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-20",
+        "title": "自动化任务: 显示所有提供商选择 (00:51)",
+        "problem": ": 创建任务时模型选择只显示已配置密钥的提供商，用户无法看到所有选项",
+        "solution": "改用 `allProviders` 显示所有提供商，未配置的标注\"(未配置密钥)\"，选中后显示黄色提示条",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "自动化任务: 实时执行进度推送 (00:51-00:55)",
+        "problem": ": Agent 执行过程中的工具调用、错误等仅记录在服务端日志，前端只看\"执行中\"状态，不知道具体进展",
+        "solution": "WebSocket 实时推送执行进度；新增 `automationSubscriptions: Set<WebSocket>` 用于自动化进度订阅；新增 `broadcastAutomationProgress()` 函数，向所有订阅者广播进度事件；WebSocket 协议新增 `subscribe_automation`/`unsubscribe_automation` 消息类型；Executor 新增 agent 事件监听：`turn_start`、`tool_call`、`tool_result` → 广播到前端；新增 `AutomationManager` 生命周期监听：`task:start`、`task:complete`、`task:error`；`automationStore.ts`: 新增 `AutomationProgressLog`/`AutomationProgressEvent` 类型；新增 `progressLogs: Map<string, AutomationProgressLog[]>` 状态；新增 `addProgre；`Automation.tsx`: 新增 WebSocket useEffect（连接 + 重连），监听 `automation_progress` 事件；运行任务卡片下方显示实时执行日志（时间戳 + 类型着色 + 详情；最多显示20条）；`runTaskNow` 开始时自动清除上次的进度日志；编译: server tsup (64.38 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f3",
+          "f8",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-20",
+        "title": "自动化任务: 实时执行进度推送 (00:51-00:55)",
+        "problem": ": Agent 执行过程中的工具调用、错误等仅记录在服务端日志，前端只看\"执行中\"状态，不知道具体进展",
+        "solution": "WebSocket 实时推送执行进度；新增 `automationSubscriptions: Set<WebSocket>` 用于自动化进度订阅；新增 `broadcastAutomationProgress()` 函数，向所有订阅者广播进度事件；WebSocket 协议新增 `subscribe_automation`/`unsubscribe_automation` 消息类型；Executor 新增 agent 事件监听：`turn_start`、`tool_call`、`tool_result` → 广播到前端；新增 `AutomationManager` 生命周期监听：`task:start`、`task:complete`、`task:error`；`automationStore.ts`: 新增 `AutomationProgressLog`/`AutomationProgressEvent` 类型；新增 `progressLogs: Map<string, AutomationProgressLog[]>` 状态；新增 `addProgre；`Automation.tsx`: 新增 WebSocket useEffect（连接 + 重连），监听 `automation_progress` 事件；运行任务卡片下方显示实时执行日志（时间戳 + 类型着色 + 详情；最多显示20条）；`runTaskNow` 开始时自动清除上次的进度日志；编译: server tsup (64.38 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f3",
+          "f8",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-20",
+        "title": "自动化任务: 实时执行进度推送 (00:51-00:55)",
+        "problem": ": Agent 执行过程中的工具调用、错误等仅记录在服务端日志，前端只看\"执行中\"状态，不知道具体进展",
+        "solution": "WebSocket 实时推送执行进度；新增 `automationSubscriptions: Set<WebSocket>` 用于自动化进度订阅；新增 `broadcastAutomationProgress()` 函数，向所有订阅者广播进度事件；WebSocket 协议新增 `subscribe_automation`/`unsubscribe_automation` 消息类型；Executor 新增 agent 事件监听：`turn_start`、`tool_call`、`tool_result` → 广播到前端；新增 `AutomationManager` 生命周期监听：`task:start`、`task:complete`、`task:error`；`automationStore.ts`: 新增 `AutomationProgressLog`/`AutomationProgressEvent` 类型；新增 `progressLogs: Map<string, AutomationProgressLog[]>` 状态；新增 `addProgre；`Automation.tsx`: 新增 WebSocket useEffect（连接 + 重连），监听 `automation_progress` 事件；运行任务卡片下方显示实时执行日志（时间戳 + 类型着色 + 详情；最多显示20条）；`runTaskNow` 开始时自动清除上次的进度日志；编译: server tsup (64.38 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f3",
+          "f8",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "自动化任务: 实时执行进度推送 (00:51-00:55)",
+        "problem": ": Agent 执行过程中的工具调用、错误等仅记录在服务端日志，前端只看\"执行中\"状态，不知道具体进展",
+        "solution": "WebSocket 实时推送执行进度；新增 `automationSubscriptions: Set<WebSocket>` 用于自动化进度订阅；新增 `broadcastAutomationProgress()` 函数，向所有订阅者广播进度事件；WebSocket 协议新增 `subscribe_automation`/`unsubscribe_automation` 消息类型；Executor 新增 agent 事件监听：`turn_start`、`tool_call`、`tool_result` → 广播到前端；新增 `AutomationManager` 生命周期监听：`task:start`、`task:complete`、`task:error`；`automationStore.ts`: 新增 `AutomationProgressLog`/`AutomationProgressEvent` 类型；新增 `progressLogs: Map<string, AutomationProgressLog[]>` 状态；新增 `addProgre；`Automation.tsx`: 新增 WebSocket useEffect（连接 + 重连），监听 `automation_progress` 事件；运行任务卡片下方显示实时执行日志（时间戳 + 类型着色 + 详情；最多显示20条）；`runTaskNow` 开始时自动清除上次的进度日志；编译: server tsup (64.38 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f3",
+          "f8",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-20",
+        "title": "自动化任务: 实时执行进度推送 (00:51-00:55)",
+        "problem": ": Agent 执行过程中的工具调用、错误等仅记录在服务端日志，前端只看\"执行中\"状态，不知道具体进展",
+        "solution": "WebSocket 实时推送执行进度；新增 `automationSubscriptions: Set<WebSocket>` 用于自动化进度订阅；新增 `broadcastAutomationProgress()` 函数，向所有订阅者广播进度事件；WebSocket 协议新增 `subscribe_automation`/`unsubscribe_automation` 消息类型；Executor 新增 agent 事件监听：`turn_start`、`tool_call`、`tool_result` → 广播到前端；新增 `AutomationManager` 生命周期监听：`task:start`、`task:complete`、`task:error`；`automationStore.ts`: 新增 `AutomationProgressLog`/`AutomationProgressEvent` 类型；新增 `progressLogs: Map<string, AutomationProgressLog[]>` 状态；新增 `addProgre；`Automation.tsx`: 新增 WebSocket useEffect（连接 + 重连），监听 `automation_progress` 事件；运行任务卡片下方显示实时执行日志（时间戳 + 类型着色 + 详情；最多显示20条）；`runTaskNow` 开始时自动清除上次的进度日志；编译: server tsup (64.38 KB) + 重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f3",
+          "f8",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "自动化页面功能卡片交互化 (01:09)",
+        "problem": ": 三个介绍卡片(定时执行/立即触发/执行历史)只是静态展示，没有点击功能",
+        "solution": "FEATURES 数组新增 `action` 字段 ('templates'|'tasklist'|'history')；新增 `taskListRef`/`templatesRef` + `handleFeatureClick` useCallback；卡片: cursor-pointer + hover 动效 + onClick；点击分别滚动到任务模板/任务列表/展开执行历史面板；使用 `scrollIntoView({ behavior: 'smooth' })` 平滑滚动",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-20",
+        "title": "自动化页面功能卡片交互化 (01:09)",
+        "problem": ": 三个介绍卡片(定时执行/立即触发/执行历史)只是静态展示，没有点击功能",
+        "solution": "FEATURES 数组新增 `action` 字段 ('templates'|'tasklist'|'history')；新增 `taskListRef`/`templatesRef` + `handleFeatureClick` useCallback；卡片: cursor-pointer + hover 动效 + onClick；点击分别滚动到任务模板/任务列表/展开执行历史面板；使用 `scrollIntoView({ behavior: 'smooth' })` 平滑滚动",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "problem": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "solution": "FEATURES 新增 `action` 字段('import'|'search'|'category')；新增 `searchRef`/`categoryFilterRef`/`searchInputRef` + `handleFeatureClick`；卡片: 同自动化页面的 hover 动效交互；点击\"文档导入\"→直接弹窗添加文档；\"智能搜索\"→滚动到搜索栏并聚焦；\"分类管理\"→滚动到分类筛选区；\"已索引文档\"改为 `documents.length`(替代 `stats.totalDocs`)；分类分布改为 `documents.forEach` 客户端计算(替代 `stats.categories`)；分类筛选按钮计数改为 `documents.filter` 客户端计算；标签筛选新增文档计数显示 `documents.filter((d)=>d.tags.includes(tag)).length`；所有计数基于实际 documents 数组，消除服务端数据不一致的影响；编译: 零 lint 错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f11",
+          "f16"
+        ]
       },
       {
         "moduleId": "f4",
         "date": "2026-06-20",
         "title": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
         "problem": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
-        "solution": "\"已索引文档\"改为 `documents.length`(替代 `stats.totalDocs`)",
+        "solution": "FEATURES 新增 `action` 字段('import'|'search'|'category')；新增 `searchRef`/`categoryFilterRef`/`searchInputRef` + `handleFeatureClick`；卡片: 同自动化页面的 hover 动效交互；点击\"文档导入\"→直接弹窗添加文档；\"智能搜索\"→滚动到搜索栏并聚焦；\"分类管理\"→滚动到分类筛选区；\"已索引文档\"改为 `documents.length`(替代 `stats.totalDocs`)；分类分布改为 `documents.forEach` 客户端计算(替代 `stats.categories`)；分类筛选按钮计数改为 `documents.filter` 客户端计算；标签筛选新增文档计数显示 `documents.filter((d)=>d.tags.includes(tag)).length`；所有计数基于实际 documents 数组，消除服务端数据不一致的影响；编译: 零 lint 错误",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-20",
+        "title": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "problem": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "solution": "FEATURES 新增 `action` 字段('import'|'search'|'category')；新增 `searchRef`/`categoryFilterRef`/`searchInputRef` + `handleFeatureClick`；卡片: 同自动化页面的 hover 动效交互；点击\"文档导入\"→直接弹窗添加文档；\"智能搜索\"→滚动到搜索栏并聚焦；\"分类管理\"→滚动到分类筛选区；\"已索引文档\"改为 `documents.length`(替代 `stats.totalDocs`)；分类分布改为 `documents.forEach` 客户端计算(替代 `stats.categories`)；分类筛选按钮计数改为 `documents.filter` 客户端计算；标签筛选新增文档计数显示 `documents.filter((d)=>d.tags.includes(tag)).length`；所有计数基于实际 documents 数组，消除服务端数据不一致的影响；编译: 零 lint 错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "problem": "知识库页面: 功能卡片交互化 + 显示数修正 (01:14)",
+        "solution": "FEATURES 新增 `action` 字段('import'|'search'|'category')；新增 `searchRef`/`categoryFilterRef`/`searchInputRef` + `handleFeatureClick`；卡片: 同自动化页面的 hover 动效交互；点击\"文档导入\"→直接弹窗添加文档；\"智能搜索\"→滚动到搜索栏并聚焦；\"分类管理\"→滚动到分类筛选区；\"已索引文档\"改为 `documents.length`(替代 `stats.totalDocs`)；分类分布改为 `documents.forEach` 客户端计算(替代 `stats.categories`)；分类筛选按钮计数改为 `documents.filter` 客户端计算；标签筛选新增文档计数显示 `documents.filter((d)=>d.tags.includes(tag)).length`；所有计数基于实际 documents 数组，消除服务端数据不一致的影响；编译: 零 lint 错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
       },
       {
         "moduleId": "f7",
         "date": "2026-06-20",
         "title": "首页统计卡片交互化 (01:33)",
-        "problem": "首页统计卡片交互化 (01:33)",
-        "solution": "`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
       },
       {
         "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-20",
+        "title": "首页统计卡片交互化 (01:33)",
+        "problem": ": 4个统计卡片(已配置模型/活跃会话/可用工具/Token用量)只是数字展示，无点击功能",
+        "solution": "提取 `STAT_CARDS` 配置数组，含 path 字段；`StatCard` 由 `<div>` 改为 `<button>`，新增 `onClick` prop；卡片映射: 已配置模型→/providers, 活跃会话→/sessions, 可用工具→/tools, Token用量→/token-usage；交互: cursor-pointer, hover上浮shadow, 图标放大, tooltip提示；重启前端 (PID 2864→15920)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f7",
+          "f8",
+          "f13",
+          "f14",
+          "p5c",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5c",
         "date": "2026-06-20",
         "title": "Token 用量分析中心 - 全新专业页面 (01:35-01:41)",
-        "problem": "Token 用量分析中心 - 全新专业页面 (01:35-01:41)",
-        "solution": "`Dashboard.tsx`: Token用量卡片 path 改为 `/token-usage`",
-        "status": "resolved",
-        "_tagModuleIds": []
+        "problem": ": Token用量点击跳转到自动化页面不合适；缺乏独立的Token统计/图表/费用分析",
+        "solution": "详见原文",
+        "status": "pending",
+        "_tagModuleIds": [
+          "p5c"
+        ]
       },
       {
-        "moduleId": "f8",
+        "moduleId": "f16",
         "date": "2026-06-20",
-        "title": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
-        "problem": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
-        "solution": "多行 import 插入问题已修复 (Dashboard.tsx, TokenUsage.tsx)",
+        "title": "🔴 问题 14: Express body-parser 子依赖缺失 (14:33-14:41)",
+        "problem": "🔴 问题 14: Express body-parser 子依赖缺失 (14:33-14:41)",
+        "solution": "1. `package.json` dependencies 显式添加 `\"body-parser\": \"^1.20.0\"` 2. `pnpm install`",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f16"
+        ]
       },
       {
-        "moduleId": "f9",
+        "moduleId": "f16",
         "date": "2026-06-20",
-        "title": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
-        "problem": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
-        "solution": "多行 import 插入问题已修复 (Dashboard.tsx, TokenUsage.tsx)",
+        "title": "🔴 问题 15: Express depd 子依赖缺失 (14:46)",
+        "problem": "🔴 问题 15: Express depd 子依赖缺失 (14:46)",
+        "solution": "决定一次性将 Express 4.22.2 的 30 个直接依赖全部显式加入 `package.json`",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f16"
+        ]
       },
       {
-        "moduleId": "f11",
+        "moduleId": "f16",
         "date": "2026-06-20",
-        "title": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
-        "problem": "Desktop 全功能移植 - Web→Electron (01:49-02:20)",
-        "solution": "多行 import 插入问题已修复 (Dashboard.tsx, TokenUsage.tsx)",
+        "title": "🔴 问题 16: Express 30 个子依赖批量声明 (14:46-14:48)",
+        "problem": "🔴 问题 16: Express 30 个子依赖批量声明 (14:46-14:48)",
+        "solution": "`package.json` dependencies 新增 20+ 个 Express 子依赖；覆盖: accepts, array-flatten, content-disposition, content-type, cookie, cookie-signature, debug, depd, encodeurl, escape-html, etag, finalhandler, fres",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-20",
+        "title": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "problem": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "solution": "1. `taskkill /f /im EasyAgent.exe & taskkill /f /im electron.exe` 2. `rmdir /s /q release` 删除整个旧目录 3. 重新打包 → ✅",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f11"
+        ]
       },
       {
         "moduleId": "f7",
         "date": "2026-06-20",
-        "title": "Desktop EXE 打包标准化总结 (14:21-14:35)",
-        "problem": "Desktop EXE 打包标准化总结 (14:21-14:35)",
-        "solution": "13 个已解决问题的完整清单（现象/原因/修复/教训）",
+        "title": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "problem": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "solution": "1. `taskkill /f /im EasyAgent.exe & taskkill /f /im electron.exe` 2. `rmdir /s /q release` 删除整个旧目录 3. 重新打包 → ✅",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f11"
+        ]
       },
       {
         "moduleId": "f9",
         "date": "2026-06-20",
-        "title": "Desktop EXE 打包标准化总结 (14:21-14:35)",
-        "problem": "Desktop EXE 打包标准化总结 (14:21-14:35)",
-        "solution": "13 个已解决问题的完整清单（现象/原因/修复/教训）",
+        "title": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "problem": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "solution": "1. `taskkill /f /im EasyAgent.exe & taskkill /f /im electron.exe` 2. `rmdir /s /q release` 删除整个旧目录 3. 重新打包 → ✅",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-20",
+        "title": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "problem": "🟡 问题 17: win-unpacked 目录文件被锁 (14:50)",
+        "solution": "1. `taskkill /f /im EasyAgent.exe & taskkill /f /im electron.exe` 2. `rmdir /s /q release` 删除整个旧目录 3. 重新打包 → ✅",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "🟢 问题 18: build.bat 中文编码乱码 (14:48-14:54)",
+        "problem": "🟢 问题 18: build.bat 中文编码乱码 (14:48-14:54)",
+        "solution": "`build.bat` 全部改为英文，删除 `chcp 65001`；如: `echo BUILD SUCCESS` / `echo Output: packages\\desktop\\release\\`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4"
+        ]
       },
       {
         "moduleId": "f4",
         "date": "2026-06-20",
         "title": "🟢 问题 18: build.bat 中文编码乱码 (14:48-14:54)",
         "problem": "🟢 问题 18: build.bat 中文编码乱码 (14:48-14:54)",
-        "solution": "`build.bat` 全部改为英文，删除 `chcp 65001`",
+        "solution": "`build.bat` 全部改为英文，删除 `chcp 65001`；如: `echo BUILD SUCCESS` / `echo Output: packages\\desktop\\release\\`",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f9",
+          "f4"
+        ]
       },
       {
-        "moduleId": "f2",
+        "moduleId": "f8",
         "date": "2026-06-20",
-        "title": "版本控制与升级系统 (20:07-20:14)",
-        "problem": "版本控制与升级系统 (20:07-20:14)",
-        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "title": "🔴 问题 24: Desktop Dashboard 数据不显示 - IPv4/IPv6 不一致 ",
+        "problem": "[现象] : Desktop 版本 Dashboard 统计卡片显示 `--`、模板显示\"加载中...\"，而 Web 版本正常 [根因] : `main.ts` 后端绑定 `127.0.0.1` (纯 IPv4)，但多处硬编码 `localhost`。Windows 上 `localhost` 可能解析为 IPv6 `::1`，导致 API 请求全部失败",
+        "solution": "共修改 5 个文件： 1. `api.ts`: `http://localhost:3456` → `http://127.0.0.1:3456` 2. `index.html`: CSP `connect-src` 中 `localhost` → `127.0.0.1` 3. `App.tsx`: 私有 `API_BASE` 常量 `localhost` → `127.0.0.1` 4. `chatStore.ts`: WS URL `ws://localhost:3456/ws` → `ws://127.0.0.1:3456/ws` 5. `Automation.tsx`: WS host `localhost:3456` → `127.0.0.1:3456`；验证: 清理 dist/renderer 后重新 Vite build，编译产物中 `localhost:3456` 清零，仅含 `127.0.0.1:3456`；教训: 全局搜索替换时不能只看主要入口文件，每个直接使用 URL 的地方都要改。务必清理 dist 后再编译避免缓存",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f8",
+          "f9",
+          "f14",
+          "f15",
+          "p5b",
+          "p5c"
+        ]
       },
       {
         "moduleId": "f9",
         "date": "2026-06-20",
-        "title": "版本控制与升级系统 (20:07-20:14)",
-        "problem": "版本控制与升级系统 (20:07-20:14)",
-        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "title": "🔴 问题 24: Desktop Dashboard 数据不显示 - IPv4/IPv6 不一致 ",
+        "problem": "[现象] : Desktop 版本 Dashboard 统计卡片显示 `--`、模板显示\"加载中...\"，而 Web 版本正常 [根因] : `main.ts` 后端绑定 `127.0.0.1` (纯 IPv4)，但多处硬编码 `localhost`。Windows 上 `localhost` 可能解析为 IPv6 `::1`，导致 API 请求全部失败",
+        "solution": "共修改 5 个文件： 1. `api.ts`: `http://localhost:3456` → `http://127.0.0.1:3456` 2. `index.html`: CSP `connect-src` 中 `localhost` → `127.0.0.1` 3. `App.tsx`: 私有 `API_BASE` 常量 `localhost` → `127.0.0.1` 4. `chatStore.ts`: WS URL `ws://localhost:3456/ws` → `ws://127.0.0.1:3456/ws` 5. `Automation.tsx`: WS host `localhost:3456` → `127.0.0.1:3456`；验证: 清理 dist/renderer 后重新 Vite build，编译产物中 `localhost:3456` 清零，仅含 `127.0.0.1:3456`；教训: 全局搜索替换时不能只看主要入口文件，每个直接使用 URL 的地方都要改。务必清理 dist 后再编译避免缓存",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f8",
+          "f9",
+          "f14",
+          "f15",
+          "p5b",
+          "p5c"
+        ]
       },
       {
-        "moduleId": "f13",
+        "moduleId": "f14",
         "date": "2026-06-20",
-        "title": "版本控制与升级系统 (20:07-20:14)",
-        "problem": "版本控制与升级系统 (20:07-20:14)",
-        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "title": "🔴 问题 24: Desktop Dashboard 数据不显示 - IPv4/IPv6 不一致 ",
+        "problem": "[现象] : Desktop 版本 Dashboard 统计卡片显示 `--`、模板显示\"加载中...\"，而 Web 版本正常 [根因] : `main.ts` 后端绑定 `127.0.0.1` (纯 IPv4)，但多处硬编码 `localhost`。Windows 上 `localhost` 可能解析为 IPv6 `::1`，导致 API 请求全部失败",
+        "solution": "共修改 5 个文件： 1. `api.ts`: `http://localhost:3456` → `http://127.0.0.1:3456` 2. `index.html`: CSP `connect-src` 中 `localhost` → `127.0.0.1` 3. `App.tsx`: 私有 `API_BASE` 常量 `localhost` → `127.0.0.1` 4. `chatStore.ts`: WS URL `ws://localhost:3456/ws` → `ws://127.0.0.1:3456/ws` 5. `Automation.tsx`: WS host `localhost:3456` → `127.0.0.1:3456`；验证: 清理 dist/renderer 后重新 Vite build，编译产物中 `localhost:3456` 清零，仅含 `127.0.0.1:3456`；教训: 全局搜索替换时不能只看主要入口文件，每个直接使用 URL 的地方都要改。务必清理 dist 后再编译避免缓存",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f8",
+          "f9",
+          "f14",
+          "f15",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-20",
+        "title": "🔴 问题 24: Desktop Dashboard 数据不显示 - IPv4/IPv6 不一致 ",
+        "problem": "[现象] : Desktop 版本 Dashboard 统计卡片显示 `--`、模板显示\"加载中...\"，而 Web 版本正常 [根因] : `main.ts` 后端绑定 `127.0.0.1` (纯 IPv4)，但多处硬编码 `localhost`。Windows 上 `localhost` 可能解析为 IPv6 `::1`，导致 API 请求全部失败",
+        "solution": "共修改 5 个文件： 1. `api.ts`: `http://localhost:3456` → `http://127.0.0.1:3456` 2. `index.html`: CSP `connect-src` 中 `localhost` → `127.0.0.1` 3. `App.tsx`: 私有 `API_BASE` 常量 `localhost` → `127.0.0.1` 4. `chatStore.ts`: WS URL `ws://localhost:3456/ws` → `ws://127.0.0.1:3456/ws` 5. `Automation.tsx`: WS host `localhost:3456` → `127.0.0.1:3456`；验证: 清理 dist/renderer 后重新 Vite build，编译产物中 `localhost:3456` 清零，仅含 `127.0.0.1:3456`；教训: 全局搜索替换时不能只看主要入口文件，每个直接使用 URL 的地方都要改。务必清理 dist 后再编译避免缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f9",
+          "f14",
+          "f15",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-20",
+        "title": "🔴 问题 24: Desktop Dashboard 数据不显示 - IPv4/IPv6 不一致 ",
+        "problem": "[现象] : Desktop 版本 Dashboard 统计卡片显示 `--`、模板显示\"加载中...\"，而 Web 版本正常 [根因] : `main.ts` 后端绑定 `127.0.0.1` (纯 IPv4)，但多处硬编码 `localhost`。Windows 上 `localhost` 可能解析为 IPv6 `::1`，导致 API 请求全部失败",
+        "solution": "共修改 5 个文件： 1. `api.ts`: `http://localhost:3456` → `http://127.0.0.1:3456` 2. `index.html`: CSP `connect-src` 中 `localhost` → `127.0.0.1` 3. `App.tsx`: 私有 `API_BASE` 常量 `localhost` → `127.0.0.1` 4. `chatStore.ts`: WS URL `ws://localhost:3456/ws` → `ws://127.0.0.1:3456/ws` 5. `Automation.tsx`: WS host `localhost:3456` → `127.0.0.1:3456`；验证: 清理 dist/renderer 后重新 Vite build，编译产物中 `localhost:3456` 清零，仅含 `127.0.0.1:3456`；教训: 全局搜索替换时不能只看主要入口文件，每个直接使用 URL 的地方都要改。务必清理 dist 后再编译避免缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f9",
+          "f14",
+          "f15",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-20",
+        "title": "🔴 问题 24: Desktop Dashboard 数据不显示 - IPv4/IPv6 不一致 ",
+        "problem": "[现象] : Desktop 版本 Dashboard 统计卡片显示 `--`、模板显示\"加载中...\"，而 Web 版本正常 [根因] : `main.ts` 后端绑定 `127.0.0.1` (纯 IPv4)，但多处硬编码 `localhost`。Windows 上 `localhost` 可能解析为 IPv6 `::1`，导致 API 请求全部失败",
+        "solution": "共修改 5 个文件： 1. `api.ts`: `http://localhost:3456` → `http://127.0.0.1:3456` 2. `index.html`: CSP `connect-src` 中 `localhost` → `127.0.0.1` 3. `App.tsx`: 私有 `API_BASE` 常量 `localhost` → `127.0.0.1` 4. `chatStore.ts`: WS URL `ws://localhost:3456/ws` → `ws://127.0.0.1:3456/ws` 5. `Automation.tsx`: WS host `localhost:3456` → `127.0.0.1:3456`；验证: 清理 dist/renderer 后重新 Vite build，编译产物中 `localhost:3456` 清零，仅含 `127.0.0.1:3456`；教训: 全局搜索替换时不能只看主要入口文件，每个直接使用 URL 的地方都要改。务必清理 dist 后再编译避免缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f9",
+          "f14",
+          "f15",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "🔴 问题 25: Desktop API 数据不显示 - apiFetch 双重 .json() ",
+        "problem": "[现象] : 修复 IPv4/IPv6 localhost 后，Dashboard 仍显示 `--`、模板\"加载中...\" [根因] : `apiFetch` 已内部调用 `.json()` 返回解析后的对象，但 3 处代码再次调用了 `.then((r) => r.json())`：",
+        "solution": "去掉 `.then((r) => r.json())` 中间步骤；直接使用 `apiFetch<Type>(url).then(data => ...)` 泛型形式；打包: Vite build (16:22) → 清旧 asar → electron-builder --dir --win (16:29)；dist JS: `localhost:3456=0`, `double .json()=0` ✅；asar JS: `localhost:3456=0`, `double .json()=0` ✅；asar CSP: `connect-src http://127.0.0.1:3456 ws://127.0.0.1:3456` ✅；教训: `apiFetch` 封装已做 JSON 解析，所有调用处直接拿 data，不要再调 `.json()`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f8",
+          "f9",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "🔴 问题 25: Desktop API 数据不显示 - apiFetch 双重 .json() ",
+        "problem": "[现象] : 修复 IPv4/IPv6 localhost 后，Dashboard 仍显示 `--`、模板\"加载中...\" [根因] : `apiFetch` 已内部调用 `.json()` 返回解析后的对象，但 3 处代码再次调用了 `.then((r) => r.json())`：",
+        "solution": "去掉 `.then((r) => r.json())` 中间步骤；直接使用 `apiFetch<Type>(url).then(data => ...)` 泛型形式；打包: Vite build (16:22) → 清旧 asar → electron-builder --dir --win (16:29)；dist JS: `localhost:3456=0`, `double .json()=0` ✅；asar JS: `localhost:3456=0`, `double .json()=0` ✅；asar CSP: `connect-src http://127.0.0.1:3456 ws://127.0.0.1:3456` ✅；教训: `apiFetch` 封装已做 JSON 解析，所有调用处直接拿 data，不要再调 `.json()`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f8",
+          "f9",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "🔴 问题 25: Desktop API 数据不显示 - apiFetch 双重 .json() ",
+        "problem": "[现象] : 修复 IPv4/IPv6 localhost 后，Dashboard 仍显示 `--`、模板\"加载中...\" [根因] : `apiFetch` 已内部调用 `.json()` 返回解析后的对象，但 3 处代码再次调用了 `.then((r) => r.json())`：",
+        "solution": "去掉 `.then((r) => r.json())` 中间步骤；直接使用 `apiFetch<Type>(url).then(data => ...)` 泛型形式；打包: Vite build (16:22) → 清旧 asar → electron-builder --dir --win (16:29)；dist JS: `localhost:3456=0`, `double .json()=0` ✅；asar JS: `localhost:3456=0`, `double .json()=0` ✅；asar CSP: `connect-src http://127.0.0.1:3456 ws://127.0.0.1:3456` ✅；教训: `apiFetch` 封装已做 JSON 解析，所有调用处直接拿 data，不要再调 `.json()`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f8",
+          "f9",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "🔴 问题 25: Desktop API 数据不显示 - apiFetch 双重 .json() ",
+        "problem": "[现象] : 修复 IPv4/IPv6 localhost 后，Dashboard 仍显示 `--`、模板\"加载中...\" [根因] : `apiFetch` 已内部调用 `.json()` 返回解析后的对象，但 3 处代码再次调用了 `.then((r) => r.json())`：",
+        "solution": "去掉 `.then((r) => r.json())` 中间步骤；直接使用 `apiFetch<Type>(url).then(data => ...)` 泛型形式；打包: Vite build (16:22) → 清旧 asar → electron-builder --dir --win (16:29)；dist JS: `localhost:3456=0`, `double .json()=0` ✅；asar JS: `localhost:3456=0`, `double .json()=0` ✅；asar CSP: `connect-src http://127.0.0.1:3456 ws://127.0.0.1:3456` ✅；教训: `apiFetch` 封装已做 JSON 解析，所有调用处直接拿 data，不要再调 `.json()`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f8",
+          "f9",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-20",
+        "title": "🔴 问题 25: Desktop API 数据不显示 - apiFetch 双重 .json() ",
+        "problem": "[现象] : 修复 IPv4/IPv6 localhost 后，Dashboard 仍显示 `--`、模板\"加载中...\" [根因] : `apiFetch` 已内部调用 `.json()` 返回解析后的对象，但 3 处代码再次调用了 `.then((r) => r.json())`：",
+        "solution": "去掉 `.then((r) => r.json())` 中间步骤；直接使用 `apiFetch<Type>(url).then(data => ...)` 泛型形式；打包: Vite build (16:22) → 清旧 asar → electron-builder --dir --win (16:29)；dist JS: `localhost:3456=0`, `double .json()=0` ✅；asar JS: `localhost:3456=0`, `double .json()=0` ✅；asar CSP: `connect-src http://127.0.0.1:3456 ws://127.0.0.1:3456` ✅；教训: `apiFetch` 封装已做 JSON 解析，所有调用处直接拿 data，不要再调 `.json()`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f8",
+          "f9",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f5",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-20",
+        "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
+        "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
+        "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f3",
+          "f8",
+          "f9",
+          "f4",
+          "f5",
+          "f10",
+          "f11",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-20",
+        "title": "release-publish.bat 编码与转义修复 (22:45)",
+        "problem": "release-publish.bat 编码与转义修复 (22:45)",
+        "solution": "**全英文重写**，零中文字符，彻底消除编码依赖；版本号前导空格用 `for /f` 自动 trim；改进: 版本选择菜单显示动态计算的实际目标版本号；更新 MEMORY.md 陷阱表 #12、#13（#13 最终修正为全英文方案）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f16"
+        ]
       },
       {
         "moduleId": "f16",
         "date": "2026-06-20",
-        "title": "版本控制与升级系统 (20:07-20:14)",
-        "problem": "版本控制与升级系统 (20:07-20:14)",
-        "solution": "Desktop: 修复 electron-updater (仓库 `ht182400-creator/easyagent`)",
+        "title": "release-publish.bat 编码与转义修复 (22:45)",
+        "problem": "release-publish.bat 编码与转义修复 (22:45)",
+        "solution": "**全英文重写**，零中文字符，彻底消除编码依赖；版本号前导空格用 `for /f` 自动 trim；改进: 版本选择菜单显示动态计算的实际目标版本号；更新 MEMORY.md 陷阱表 #12、#13（#13 最终修正为全英文方案）",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "release-publish.bat Step 2 持续报错 \"此时不应有 :。\" 修复 (22:",
+        "problem": ": `replace_in_file` 工具对 `:::` 开头的行存在匹配 bug，始终无法直接编辑这些行",
+        "solution": "1. **全文件重写**: 用 `write_to_file` 完整重写 `release-publish.bat`（542行） 2. **所有 `:::` 注释 → `rem`**: 消除潜在的 CMD label 解析问题（`:::` 在特定上下文可能被误解析为非法 label） 3. **合并检查**: uncommitted + untracked 合并为单次 `git status --porcelain > tempfile` + 文件大小判断 4. **去掉 `git diff-index --quiet HEAD --`**: 该命令与 CMD 解析器可能冲突 5. **简化变量引用**: `%AUTO_MODE%` → `\"!AUTO_MODE!\"` 统一用延迟扩展，避免 parse-time 扩展问题；建教训: CMD 批处理中不要使用 `:::` 多冒号注释，统一用 `rem`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "release-publish.bat Step 2 持续报错 \"此时不应有 :。\" 修复 (22:",
+        "problem": ": `replace_in_file` 工具对 `:::` 开头的行存在匹配 bug，始终无法直接编辑这些行",
+        "solution": "1. **全文件重写**: 用 `write_to_file` 完整重写 `release-publish.bat`（542行） 2. **所有 `:::` 注释 → `rem`**: 消除潜在的 CMD label 解析问题（`:::` 在特定上下文可能被误解析为非法 label） 3. **合并检查**: uncommitted + untracked 合并为单次 `git status --porcelain > tempfile` + 文件大小判断 4. **去掉 `git diff-index --quiet HEAD --`**: 该命令与 CMD 解析器可能冲突 5. **简化变量引用**: `%AUTO_MODE%` → `\"!AUTO_MODE!\"` 统一用延迟扩展，避免 parse-time 扩展问题；建教训: CMD 批处理中不要使用 `:::` 多冒号注释，统一用 `rem`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-20",
+        "title": "release-publish.bat Step 2 持续报错 \"此时不应有 :。\" 修复 (22:",
+        "problem": ": `replace_in_file` 工具对 `:::` 开头的行存在匹配 bug，始终无法直接编辑这些行",
+        "solution": "1. **全文件重写**: 用 `write_to_file` 完整重写 `release-publish.bat`（542行） 2. **所有 `:::` 注释 → `rem`**: 消除潜在的 CMD label 解析问题（`:::` 在特定上下文可能被误解析为非法 label） 3. **合并检查**: uncommitted + untracked 合并为单次 `git status --porcelain > tempfile` + 文件大小判断 4. **去掉 `git diff-index --quiet HEAD --`**: 该命令与 CMD 解析器可能冲突 5. **简化变量引用**: `%AUTO_MODE%` → `\"!AUTO_MODE!\"` 统一用延迟扩展，避免 parse-time 扩展问题；建教训: CMD 批处理中不要使用 `:::` 多冒号注释，统一用 `rem`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "release-publish.bat Step 2 持续报错 \"此时不应有 :。\" 修复 (22:",
+        "problem": ": `replace_in_file` 工具对 `:::` 开头的行存在匹配 bug，始终无法直接编辑这些行",
+        "solution": "1. **全文件重写**: 用 `write_to_file` 完整重写 `release-publish.bat`（542行） 2. **所有 `:::` 注释 → `rem`**: 消除潜在的 CMD label 解析问题（`:::` 在特定上下文可能被误解析为非法 label） 3. **合并检查**: uncommitted + untracked 合并为单次 `git status --porcelain > tempfile` + 文件大小判断 4. **去掉 `git diff-index --quiet HEAD --`**: 该命令与 CMD 解析器可能冲突 5. **简化变量引用**: `%AUTO_MODE%` → `\"!AUTO_MODE!\"` 统一用延迟扩展，避免 parse-time 扩展问题；建教训: CMD 批处理中不要使用 `:::` 多冒号注释，统一用 `rem`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "scripts/release.mjs TypeScript 注解 + 路径空格修复 (23:26-",
+        "problem": "scripts/release.mjs TypeScript 注解 + 路径空格修复 (23:26-23:35)",
+        "solution": "1. `release.mjs`: 移除全部 14+ 处 TS 类型注解（参数/返回/变量类型 + `as Error` 断言） 2. `release.mjs` line 214: `node ${path}` → `node \"${path}\"`（路径加双引号）；教训: `.mjs` 是纯 JS ESM，不能写 TS 语法；`execSync` 拼接文件路径必须加引号防空格截断；更新 MEMORY.md 陷阱表 #15: 路径空格 + execSync 引号",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
       }
     ],
     "2026-06-21.md": [
       {
-        "moduleId": "f4",
+        "moduleId": "f2",
         "date": "2026-06-21",
-        "title": "重新打包 - 2026-06-21 02:29",
-        "problem": "重新打包 - 2026-06-21 02:29",
-        "solution": "asar 验证：double .json() 修复已确认编码到产物中 ✅",
+        "title": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "problem": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "solution": "修改 `packages/desktop/package.json`：；`asarUnpack` 中移除 better-sqlite3；`extraResources` 将 better-sqlite3 复制到 `resources/node_modules/better-sqlite3/`",
         "status": "resolved",
-        "_tagModuleIds": []
-      },
-      {
-        "moduleId": "f7",
-        "date": "2026-06-21",
-        "title": "重新打包 - 2026-06-21 02:29",
-        "problem": "重新打包 - 2026-06-21 02:29",
-        "solution": "asar 验证：double .json() 修复已确认编码到产物中 ✅",
-        "status": "resolved",
-        "_tagModuleIds": []
-      },
-      {
-        "moduleId": "f7",
-        "date": "2026-06-21",
-        "title": "快速重新打包 - 2026-06-21 02:42",
-        "problem": "快速重新打包 - 2026-06-21 02:42",
-        "solution": "包含 Chat.tsx 全部 3 项修复",
-        "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f4",
+          "f16"
+        ]
       },
       {
         "moduleId": "f9",
         "date": "2026-06-21",
-        "title": "build.bat pause导致父脚本提前终止 - 2026-06-21 03:35",
-        "problem": "build.bat pause导致父脚本提前终止 - 2026-06-21 03:35",
-        "solution": "修复：改用 CMD 内置的 `if errorlevel 1` 语法，完全不依赖变量展开",
+        "title": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "problem": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "solution": "修改 `packages/desktop/package.json`：；`asarUnpack` 中移除 better-sqlite3；`extraResources` 将 better-sqlite3 复制到 `resources/node_modules/better-sqlite3/`",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f4",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-21",
+        "title": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "problem": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "solution": "修改 `packages/desktop/package.json`：；`asarUnpack` 中移除 better-sqlite3；`extraResources` 将 better-sqlite3 复制到 `resources/node_modules/better-sqlite3/`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f4",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-21",
+        "title": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "problem": "better-sqlite3 在 asar 中加载失败 - 已修复，待用户验证",
+        "solution": "修改 `packages/desktop/package.json`：；`asarUnpack` 中移除 better-sqlite3；`extraResources` 将 better-sqlite3 复制到 `resources/node_modules/better-sqlite3/`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f4",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "修复 Release 版 \"Cannot find module 'mime'\" - 2026-06",
+        "problem": "修复 Release 版 \"Cannot find module 'mime'\" - 2026-06-21 02:14",
+        "solution": "1. `desktop/package.json` 添加 `\"mime\": \"^1.6.0\"`（注意是 v1，不是 v2） 2. `verify-build.cjs` #11 更新：不仅检测 mime@2.x 冲突，还确保 top-level mime 存在 3. `verify-build.cjs` #7 关键依赖列表加入 `mime` 和 `send` 4. MEMORY.md #21 陷阱描述更新为准确根因",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-21",
+        "title": "修复 Release 版 \"Cannot find module 'mime'\" - 2026-06",
+        "problem": "修复 Release 版 \"Cannot find module 'mime'\" - 2026-06-21 02:14",
+        "solution": "1. `desktop/package.json` 添加 `\"mime\": \"^1.6.0\"`（注意是 v1，不是 v2） 2. `verify-build.cjs` #11 更新：不仅检测 mime@2.x 冲突，还确保 top-level mime 存在 3. `verify-build.cjs` #7 关键依赖列表加入 `mime` 和 `send` 4. MEMORY.md #21 陷阱描述更新为准确根因",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-21",
+        "title": "修复 Release 版 \"Cannot find module 'mime'\" - 2026-06",
+        "problem": "修复 Release 版 \"Cannot find module 'mime'\" - 2026-06-21 02:14",
+        "solution": "1. `desktop/package.json` 添加 `\"mime\": \"^1.6.0\"`（注意是 v1，不是 v2） 2. `verify-build.cjs` #11 更新：不仅检测 mime@2.x 冲突，还确保 top-level mime 存在 3. `verify-build.cjs` #7 关键依赖列表加入 `mime` 和 `send` 4. MEMORY.md #21 陷阱描述更新为准确根因",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "problem": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "solution": "#### desktop/package.json 新增 8 个依赖；`fs-extra: ^10.1.0`；`js-yaml: ^4.1.0`；`lazy-val: ^1.0.5`；`lodash.escaperegexp: ^4.1.2`；`lodash.isequal: ^4.5.0`；`tiny-typed-emitter: ^2.1.0`；`builder-util-runtime: 9.7.0`；`semver: ~7.7.3` #### verify-build.cjs 新增 2 项检查；#12: electron-updater 传递依赖完整性（强制 PASS）；#13: Express 生态版本兼容性（WARN 级别）；UTF-8 检查重新编号：12→14 #### MEMORY.md 更新；新增陷阱 #23: electron-updater 传递依赖缺失；新增陷阱 #24: Express 版本不兼容；更新陷阱 #18 验证项编号 (12→14)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "f13",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-21",
+        "title": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "problem": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "solution": "#### desktop/package.json 新增 8 个依赖；`fs-extra: ^10.1.0`；`js-yaml: ^4.1.0`；`lazy-val: ^1.0.5`；`lodash.escaperegexp: ^4.1.2`；`lodash.isequal: ^4.5.0`；`tiny-typed-emitter: ^2.1.0`；`builder-util-runtime: 9.7.0`；`semver: ~7.7.3` #### verify-build.cjs 新增 2 项检查；#12: electron-updater 传递依赖完整性（强制 PASS）；#13: Express 生态版本兼容性（WARN 级别）；UTF-8 检查重新编号：12→14 #### MEMORY.md 更新；新增陷阱 #23: electron-updater 传递依赖缺失；新增陷阱 #24: Express 版本不兼容；更新陷阱 #18 验证项编号 (12→14)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "f13",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-21",
+        "title": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "problem": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "solution": "#### desktop/package.json 新增 8 个依赖；`fs-extra: ^10.1.0`；`js-yaml: ^4.1.0`；`lazy-val: ^1.0.5`；`lodash.escaperegexp: ^4.1.2`；`lodash.isequal: ^4.5.0`；`tiny-typed-emitter: ^2.1.0`；`builder-util-runtime: 9.7.0`；`semver: ~7.7.3` #### verify-build.cjs 新增 2 项检查；#12: electron-updater 传递依赖完整性（强制 PASS）；#13: Express 生态版本兼容性（WARN 级别）；UTF-8 检查重新编号：12→14 #### MEMORY.md 更新；新增陷阱 #23: electron-updater 传递依赖缺失；新增陷阱 #24: Express 版本不兼容；更新陷阱 #18 验证项编号 (12→14)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "f13",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-21",
+        "title": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "problem": "系统性 Dev/Release 兼容性审计 - 2026-06-21 02:18",
+        "solution": "#### desktop/package.json 新增 8 个依赖；`fs-extra: ^10.1.0`；`js-yaml: ^4.1.0`；`lazy-val: ^1.0.5`；`lodash.escaperegexp: ^4.1.2`；`lodash.isequal: ^4.5.0`；`tiny-typed-emitter: ^2.1.0`；`builder-util-runtime: 9.7.0`；`semver: ~7.7.3` #### verify-build.cjs 新增 2 项检查；#12: electron-updater 传递依赖完整性（强制 PASS）；#13: Express 生态版本兼容性（WARN 级别）；UTF-8 检查重新编号：12→14 #### MEMORY.md 更新；新增陷阱 #23: electron-updater 传递依赖缺失；新增陷阱 #24: Express 版本不兼容；更新陷阱 #18 验证项编号 (12→14)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "f13",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-21",
+        "title": "修复会话详情页\"无消息内容\"和\"返回黑屏\"问题 - 2026-06-21 02:38",
+        "problem": "修复会话详情页\"无消息内容\"和\"返回黑屏\"问题 - 2026-06-21 02:38",
+        "solution": "#### `Chat.tsx` 3 处修改： 1. **黑白屏修复**：`<a href=\"/sessions\">` → `<button onClick={() => navigate('/sessions')}>`，`<a href=\"/chat\">` → `<button onClick={() => navigate('/chat')} 2. **API URL 编码**：`/api/sessions/${urlSessionId}` → `/api/sessions/${encodeURIComponent(urlSessionId)}` 3. **错误反馈**：catch 块新增 `console.error` + `addNotification` 错误提示",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-21",
+        "title": "修复工具系统页面\"HTTP undefined\"错误 [🖥️ Desktop专属] - 2026-",
+        "problem": "修复工具系统页面\"HTTP undefined\"错误 [🖥️ Desktop专属] - 2026-06-21 02:47",
+        "solution": "`apiFetch('/api/tools').then(r => { if (!r.ok) ... return r.json() })` → `apiFetch<ToolInfo[]>('/api/tools').then(data => setTools(Array.isArray(data)；添加 `console.error` 错误日志",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "修复工具系统页面\"HTTP undefined\"错误 [🖥️ Desktop专属] - 2026-",
+        "problem": "修复工具系统页面\"HTTP undefined\"错误 [🖥️ Desktop专属] - 2026-06-21 02:47",
+        "solution": "`apiFetch('/api/tools').then(r => { if (!r.ok) ... return r.json() })` → `apiFetch<ToolInfo[]>('/api/tools').then(data => setTools(Array.isArray(data)；添加 `console.error` 错误日志",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "修复 Desktop 知识库/自动化/技能数据不互通 [🖥️ Desktop专属] - 2026-",
+        "problem": "修复 Desktop 知识库/自动化/技能数据不互通 [🖥️ Desktop专属] - 2026-06-21 03:02",
+        "solution": "1. **`packages/server/src/index.ts`**：；新增 `CreateAppOptions` 接口，支持 `projectRoot?: string`；`createApp()` 接受 `options: CreateAppOptions = {}`；PROJECT_ROOT = `options.projectRoot || resolve(__dirname, '..', '..', '..')` 2. **`packages/desktop/src/main.ts`**：；导入 `homedir` from `node:os`；`createApp({ projectRoot: homedir() })` — 传入用户 home 目录",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-21",
+        "title": "修复 Desktop 知识库/自动化/技能数据不互通 [🖥️ Desktop专属] - 2026-",
+        "problem": "修复 Desktop 知识库/自动化/技能数据不互通 [🖥️ Desktop专属] - 2026-06-21 03:02",
+        "solution": "1. **`packages/server/src/index.ts`**：；新增 `CreateAppOptions` 接口，支持 `projectRoot?: string`；`createApp()` 接受 `options: CreateAppOptions = {}`；PROJECT_ROOT = `options.projectRoot || resolve(__dirname, '..', '..', '..')` 2. **`packages/desktop/src/main.ts`**：；导入 `homedir` from `node:os`；`createApp({ projectRoot: homedir() })` — 传入用户 home 目录",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-21",
+        "title": "修复 Desktop 知识库/自动化/技能数据不互通 [🖥️ Desktop专属] - 2026-",
+        "problem": "修复 Desktop 知识库/自动化/技能数据不互通 [🖥️ Desktop专属] - 2026-06-21 03:02",
+        "solution": "1. **`packages/server/src/index.ts`**：；新增 `CreateAppOptions` 接口，支持 `projectRoot?: string`；`createApp()` 接受 `options: CreateAppOptions = {}`；PROJECT_ROOT = `options.projectRoot || resolve(__dirname, '..', '..', '..')` 2. **`packages/desktop/src/main.ts`**：；导入 `homedir` from `node:os`；`createApp({ projectRoot: homedir() })` — 传入用户 home 目录",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f10"
+        ]
       }
     ],
     "2026-06-22.md": [
       {
-        "moduleId": "f1",
+        "moduleId": "f9",
         "date": "2026-06-22",
-        "title": "自动化任务失败诊断",
-        "problem": "自动化任务失败诊断",
-        "solution": "解决：在「设置 → 模型提供商」中配置 DeepSeek API Key",
+        "title": "release-publish.bat 修复 + Token 泄露清理",
+        "problem": "release-publish.bat 修复 + Token 泄露清理",
+        "solution": "全部 4 处版本读取改用 `node -e \"console.log(require('./version.json').version)\"`；`&` 转义: `echo Drag & drop` 中 `&` 被 CMD 解析为命令分隔符 → 改为 `Drag ^& drop`；构建流程问题: `build.bat` 末尾 `pause` 在被 `call` 调用时阻塞父脚本 → 已移除；`if errorlevel 1` goto 模式替代延迟展开比较",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f16"
+        ]
       },
       {
-        "moduleId": "f3",
+        "moduleId": "f4",
         "date": "2026-06-22",
-        "title": "工具系统优化：自动分组 + 启用/禁用持久化",
-        "problem": "工具系统优化：自动分组 + 启用/禁用持久化",
-        "solution": "修复：`tsup.config.ts` 关闭 treeshake（外部调用的类方法被移除）；清理 src/ 下 64 个过时 .js/.d.ts 文件",
+        "title": "release-publish.bat 修复 + Token 泄露清理",
+        "problem": "release-publish.bat 修复 + Token 泄露清理",
+        "solution": "全部 4 处版本读取改用 `node -e \"console.log(require('./version.json').version)\"`；`&` 转义: `echo Drag & drop` 中 `&` 被 CMD 解析为命令分隔符 → 改为 `Drag ^& drop`；构建流程问题: `build.bat` 末尾 `pause` 在被 `call` 调用时阻塞父脚本 → 已移除；`if errorlevel 1` goto 模式替代延迟展开比较",
         "status": "resolved",
-        "_tagModuleIds": []
-      },
-      {
-        "moduleId": "f2",
-        "date": "2026-06-22",
-        "title": "DTS 类型错误永久修复",
-        "problem": "DTS 类型错误永久修复",
-        "solution": "`WeChatAdapter.ts:232`: `timestamp` 从 `number`（`parseInt * 1000`）改为 `string`（`new Date(...).toISOString()`）",
-        "status": "resolved",
-        "_tagModuleIds": []
-      },
-      {
-        "moduleId": "f11",
-        "date": "2026-06-22",
-        "title": "DTS 类型错误永久修复",
-        "problem": "DTS 类型错误永久修复",
-        "solution": "`WeChatAdapter.ts:232`: `timestamp` 从 `number`（`parseInt * 1000`）改为 `string`（`new Date(...).toISOString()`）",
-        "status": "resolved",
-        "_tagModuleIds": []
-      },
-      {
-        "moduleId": "f11",
-        "date": "2026-06-22",
-        "title": "release-publish.bat Token 自动加载修复",
-        "problem": "release-publish.bat Token 自动加载修复",
-        "solution": "将 `set /p ... <file` 改为 `for /f \"usebackq delims=\" %%t in (\"file\") do set \"VAR=%%t\"` 方式读取",
-        "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f16"
+        ]
       },
       {
         "moduleId": "f16",
         "date": "2026-06-22",
-        "title": "release-publish.bat Token 自动加载修复",
-        "problem": "release-publish.bat Token 自动加载修复",
-        "solution": "将 `set /p ... <file` 改为 `for /f \"usebackq delims=\" %%t in (\"file\") do set \"VAR=%%t\"` 方式读取",
+        "title": "release-publish.bat 修复 + Token 泄露清理",
+        "problem": "release-publish.bat 修复 + Token 泄露清理",
+        "solution": "全部 4 处版本读取改用 `node -e \"console.log(require('./version.json').version)\"`；`&` 转义: `echo Drag & drop` 中 `&` 被 CMD 解析为命令分隔符 → 改为 `Drag ^& drop`；构建流程问题: `build.bat` 末尾 `pause` 在被 `call` 调用时阻塞父脚本 → 已移除；`if errorlevel 1` goto 模式替代延迟展开比较",
         "status": "resolved",
-        "_tagModuleIds": []
-      },
-      {
-        "moduleId": "f16",
-        "date": "2026-06-22",
-        "title": "P0 实施完成",
-        "problem": "P0 实施完成",
-        "solution": "`package.json` engines 改为 `\">=18.0.0 <24.0.0\"`",
-        "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f16"
+        ]
       },
       {
         "moduleId": "f7",
         "date": "2026-06-22",
+        "title": "GitHub Release v0.4.0 发布 + Token 自动化上传",
+        "problem": "：每次上传都需手动粘贴 GitHub Token",
+        "solution": "创建 `scripts/.release_token`（单行 Token）→ `.gitignore` 排除 → `release-publish.bat` option 2 自动读取；bat 改动：在 `:UPLOAD_TOKEN` 标签处，先检测 `scripts\\.release_token` 是否存在，存在则 `set /p GITHUB_TOKEN=<scripts\\.release_token`，否则才提示输入；Token 已写入 `%USERPROFILE%\\.config\\gh\\hosts.yml`（gh CLI 配置），以后 option 1 也可用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "GitHub Release v0.4.0 发布 + Token 自动化上传",
+        "problem": "：每次上传都需手动粘贴 GitHub Token",
+        "solution": "创建 `scripts/.release_token`（单行 Token）→ `.gitignore` 排除 → `release-publish.bat` option 2 自动读取；bat 改动：在 `:UPLOAD_TOKEN` 标签处，先检测 `scripts\\.release_token` 是否存在，存在则 `set /p GITHUB_TOKEN=<scripts\\.release_token`，否则才提示输入；Token 已写入 `%USERPROFILE%\\.config\\gh\\hosts.yml`（gh CLI 配置），以后 option 1 也可用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-22",
+        "title": "release-publish.bat Token 自动加载修复",
+        "problem": "release-publish.bat Token 自动加载修复",
+        "solution": "将 `set /p ... <file` 改为 `for /f \"usebackq delims=\" %%t in (\"file\") do set \"VAR=%%t\"` 方式读取；逻辑重构：先尝试读文件 → 成功则 `goto :TOKEN_READY` 跳过提示 → 否则 fall through 到手动输入；`:TOKEN_READY` 标签后统一检查 GITHUB_TOKEN 是否为空",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "release-publish.bat Token 自动加载修复",
+        "problem": "release-publish.bat Token 自动加载修复",
+        "solution": "将 `set /p ... <file` 改为 `for /f \"usebackq delims=\" %%t in (\"file\") do set \"VAR=%%t\"` 方式读取；逻辑重构：先尝试读文件 → 成功则 `goto :TOKEN_READY` 跳过提示 → 否则 fall through 到手动输入；`:TOKEN_READY` 标签后统一检查 GITHUB_TOKEN 是否为空",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-22",
+        "title": "release-publish.bat Release 已存在时自动上传",
+        "problem": "release-publish.bat Release 已存在时自动上传",
+        "solution": "1. **422 自动处理**：检测到 \"already_exists\" 后，通过 GET `/releases/tags/:tag` 获取已有 Release 的 upload_url，然后自动上传文件 2. **提取 upload_url 统一到 `:EXTRACT_UPLOAD_URL` 标签**：新建和已有 Release 两条路径共享 3. **手动上传指引更新**：明确警告 25MB 限制，提供 gh CLI 命令作为替代方案",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "release-publish.bat Release 已存在时自动上传",
+        "problem": "release-publish.bat Release 已存在时自动上传",
+        "solution": "1. **422 自动处理**：检测到 \"already_exists\" 后，通过 GET `/releases/tags/:tag` 获取已有 Release 的 upload_url，然后自动上传文件 2. **提取 upload_url 统一到 `:EXTRACT_UPLOAD_URL` 标签**：新建和已有 Release 两条路径共享 3. **手动上传指引更新**：明确警告 25MB 限制，提供 gh CLI 命令作为替代方案",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-22",
+        "title": "P1-2: GitHub Actions CI/CD",
+        "problem": "：better-sqlite3 在 CI Windows 镜像上需要从源码编译，但 node-gyp 找不到 VS C++ 编译工具 [根因] ：镜像上有未知版本的 VS 18 Enterprise 干扰了 node-gyp 的 VS 版本检测",
+        "solution": "在两个 workflow 文件的每个 job 中，`pnpm install` 前添加 `uses: ilammy/msvc-dev-cmd@v1`，正确设置 MSVC 编译环境变量；影响范围: `ci.yml` (3 个 job) + `release.yml` (2 个 job)，共 5 处",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-22",
+        "title": "P1-2: GitHub Actions CI/CD",
+        "problem": "：better-sqlite3 在 CI Windows 镜像上需要从源码编译，但 node-gyp 找不到 VS C++ 编译工具 [根因] ：镜像上有未知版本的 VS 18 Enterprise 干扰了 node-gyp 的 VS 版本检测",
+        "solution": "在两个 workflow 文件的每个 job 中，`pnpm install` 前添加 `uses: ilammy/msvc-dev-cmd@v1`，正确设置 MSVC 编译环境变量；影响范围: `ci.yml` (3 个 job) + `release.yml` (2 个 job)，共 5 处",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-22",
+        "title": "P1-2: GitHub Actions CI/CD",
+        "problem": "：better-sqlite3 在 CI Windows 镜像上需要从源码编译，但 node-gyp 找不到 VS C++ 编译工具 [根因] ：镜像上有未知版本的 VS 18 Enterprise 干扰了 node-gyp 的 VS 版本检测",
+        "solution": "在两个 workflow 文件的每个 job 中，`pnpm install` 前添加 `uses: ilammy/msvc-dev-cmd@v1`，正确设置 MSVC 编译环境变量；影响范围: `ci.yml` (3 个 job) + `release.yml` (2 个 job)，共 5 处",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-22",
         "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
         "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
-        "solution": "修复 `getBoundingClientRect` 错误：KPI 更新增加 null 安全检查",
+        "solution": "` 等模式，支持多行修复方案（- 子项续行）；关键词映射: 26 个模块（f1-f16 主线 + b1a-b3c 分支），通过关键词库进行模块分类匹配；提取效果: 动态解析 39 个问题（相比手工 curation 的 81 个，覆盖率 ~48%），分布在 f1/f2/f3/f4/f7/f8/f9/f10/f11/f13/f16 共 11 个模块 1. 优先 `fetch('/api/issues')` → 实时数据（仪表板显示 🟢 实时 + 时间戳） 2. 失败回退 `fetch('issue-data.json')` → 快照数据（显示 🟡 快照）；7 个彩色卡片代替原底部 KPI 栏：测试用例(806)/通过率(100%)/工具数(51)/模型提供商(10)/综合评分(68.4)/操作模式(4)/问题记录(39·实时)；每张卡片顶部渐变色条 + hover 上浮效果；最后一栏动态显示问题总数和数据来源标识；-06-22 23:55 Memory 记录格式规范化 + 文件级缓存**:",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-22",
+        "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "solution": "` 等模式，支持多行修复方案（- 子项续行）；关键词映射: 26 个模块（f1-f16 主线 + b1a-b3c 分支），通过关键词库进行模块分类匹配；提取效果: 动态解析 39 个问题（相比手工 curation 的 81 个，覆盖率 ~48%），分布在 f1/f2/f3/f4/f7/f8/f9/f10/f11/f13/f16 共 11 个模块 1. 优先 `fetch('/api/issues')` → 实时数据（仪表板显示 🟢 实时 + 时间戳） 2. 失败回退 `fetch('issue-data.json')` → 快照数据（显示 🟡 快照）；7 个彩色卡片代替原底部 KPI 栏：测试用例(806)/通过率(100%)/工具数(51)/模型提供商(10)/综合评分(68.4)/操作模式(4)/问题记录(39·实时)；每张卡片顶部渐变色条 + hover 上浮效果；最后一栏动态显示问题总数和数据来源标识；-06-22 23:55 Memory 记录格式规范化 + 文件级缓存**:",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
       },
       {
         "moduleId": "f13",
         "date": "2026-06-22",
         "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
         "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
-        "solution": "修复 `getBoundingClientRect` 错误：KPI 更新增加 null 安全检查",
+        "solution": "` 等模式，支持多行修复方案（- 子项续行）；关键词映射: 26 个模块（f1-f16 主线 + b1a-b3c 分支），通过关键词库进行模块分类匹配；提取效果: 动态解析 39 个问题（相比手工 curation 的 81 个，覆盖率 ~48%），分布在 f1/f2/f3/f4/f7/f8/f9/f10/f11/f13/f16 共 11 个模块 1. 优先 `fetch('/api/issues')` → 实时数据（仪表板显示 🟢 实时 + 时间戳） 2. 失败回退 `fetch('issue-data.json')` → 快照数据（显示 🟡 快照）；7 个彩色卡片代替原底部 KPI 栏：测试用例(806)/通过率(100%)/工具数(51)/模型提供商(10)/综合评分(68.4)/操作模式(4)/问题记录(39·实时)；每张卡片顶部渐变色条 + hover 上浮效果；最后一栏动态显示问题总数和数据来源标识；-06-22 23:55 Memory 记录格式规范化 + 文件级缓存**:",
         "status": "resolved",
-        "_tagModuleIds": []
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-22",
+        "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "solution": "` 等模式，支持多行修复方案（- 子项续行）；关键词映射: 26 个模块（f1-f16 主线 + b1a-b3c 分支），通过关键词库进行模块分类匹配；提取效果: 动态解析 39 个问题（相比手工 curation 的 81 个，覆盖率 ~48%），分布在 f1/f2/f3/f4/f7/f8/f9/f10/f11/f13/f16 共 11 个模块 1. 优先 `fetch('/api/issues')` → 实时数据（仪表板显示 🟢 实时 + 时间戳） 2. 失败回退 `fetch('issue-data.json')` → 快照数据（显示 🟡 快照）；7 个彩色卡片代替原底部 KPI 栏：测试用例(806)/通过率(100%)/工具数(51)/模型提供商(10)/综合评分(68.4)/操作模式(4)/问题记录(39·实时)；每张卡片顶部渐变色条 + hover 上浮效果；最后一栏动态显示问题总数和数据来源标识；-06-22 23:55 Memory 记录格式规范化 + 文件级缓存**:",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-22",
+        "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "solution": "` 等模式，支持多行修复方案（- 子项续行）；关键词映射: 26 个模块（f1-f16 主线 + b1a-b3c 分支），通过关键词库进行模块分类匹配；提取效果: 动态解析 39 个问题（相比手工 curation 的 81 个，覆盖率 ~48%），分布在 f1/f2/f3/f4/f7/f8/f9/f10/f11/f13/f16 共 11 个模块 1. 优先 `fetch('/api/issues')` → 实时数据（仪表板显示 🟢 实时 + 时间戳） 2. 失败回退 `fetch('issue-data.json')` → 快照数据（显示 🟡 快照）；7 个彩色卡片代替原底部 KPI 栏：测试用例(806)/通过率(100%)/工具数(51)/模型提供商(10)/综合评分(68.4)/操作模式(4)/问题记录(39·实时)；每张卡片顶部渐变色条 + hover 上浮效果；最后一栏动态显示问题总数和数据来源标识；-06-22 23:55 Memory 记录格式规范化 + 文件级缓存**:",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-22",
+        "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "problem": ": `server.mjs` 解析器通过关键词匹配将 entry 分配到模块，匹配不准确（覆盖率仅 48%），且每次请求重新扫描全部文件",
+        "solution": "1. 新增 `[模块:ID]` 标签机制 — Section 标题中可嵌入显式模块 ID，绕过关键词匹配 2. 新增文件级 mtime 缓存 — 存量文件（非今天 + mtime 未变）直接复用缓存结果，仅今天的新文件重新解析 3. 新增 `- **状态**:` 字段支持（✅ resolved / ⏳ pending / ❌ open）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
       }
     ],
-    "MEMORY.md": [],
-    "2026-06-23.md": []
+    "2026-06-23.md": [
+      {
+        "moduleId": "f4",
+        "date": "2026-06-23",
+        "title": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "problem": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "solution": "`docs/pipeline/lib/pipeline-config.mjs`: KPI_DEFAULTS.testCases 806→864；`docs/pipeline/pipeline-data.json`: testCases 806→864、subtitle \"806\"→\"864\"；`docs/pipeline/project-progress-data.json`: 新增 P5 管线运维阶段（4 任务：p5a看板/p5b采集/p5c追踪/p5d自测试）、meta 更新（v0.5.0, 40 tests, 10 models）、scoreHistory 新增 v0.5.0=73；`docs/pipeline/index.html`: dashTests 默认值 806→864；`docs/pipeline/__tests__/pipeline-config.test.mjs`: testCases 断言 ≥806→≥864；`docs/03_测试案例文档.md`: testCases≥806→≥864；共修复 6 个文件，消除所有 806 遗留引用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f13",
+          "p5a",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-23",
+        "title": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "problem": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "solution": "`docs/pipeline/lib/pipeline-config.mjs`: KPI_DEFAULTS.testCases 806→864；`docs/pipeline/pipeline-data.json`: testCases 806→864、subtitle \"806\"→\"864\"；`docs/pipeline/project-progress-data.json`: 新增 P5 管线运维阶段（4 任务：p5a看板/p5b采集/p5c追踪/p5d自测试）、meta 更新（v0.5.0, 40 tests, 10 models）、scoreHistory 新增 v0.5.0=73；`docs/pipeline/index.html`: dashTests 默认值 806→864；`docs/pipeline/__tests__/pipeline-config.test.mjs`: testCases 断言 ≥806→≥864；`docs/03_测试案例文档.md`: testCases≥806→≥864；共修复 6 个文件，消除所有 806 遗留引用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f13",
+          "p5a",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "problem": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "solution": "`docs/pipeline/lib/pipeline-config.mjs`: KPI_DEFAULTS.testCases 806→864；`docs/pipeline/pipeline-data.json`: testCases 806→864、subtitle \"806\"→\"864\"；`docs/pipeline/project-progress-data.json`: 新增 P5 管线运维阶段（4 任务：p5a看板/p5b采集/p5c追踪/p5d自测试）、meta 更新（v0.5.0, 40 tests, 10 models）、scoreHistory 新增 v0.5.0=73；`docs/pipeline/index.html`: dashTests 默认值 806→864；`docs/pipeline/__tests__/pipeline-config.test.mjs`: testCases 断言 ≥806→≥864；`docs/03_测试案例文档.md`: testCases≥806→≥864；共修复 6 个文件，消除所有 806 遗留引用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f13",
+          "p5a",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-23",
+        "title": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "problem": "全景项目进度页面管线信息补全 (09:42-09:50)",
+        "solution": "`docs/pipeline/lib/pipeline-config.mjs`: KPI_DEFAULTS.testCases 806→864；`docs/pipeline/pipeline-data.json`: testCases 806→864、subtitle \"806\"→\"864\"；`docs/pipeline/project-progress-data.json`: 新增 P5 管线运维阶段（4 任务：p5a看板/p5b采集/p5c追踪/p5d自测试）、meta 更新（v0.5.0, 40 tests, 10 models）、scoreHistory 新增 v0.5.0=73；`docs/pipeline/index.html`: dashTests 默认值 806→864；`docs/pipeline/__tests__/pipeline-config.test.mjs`: testCases 断言 ≥806→≥864；`docs/03_测试案例文档.md`: testCases≥806→≥864；共修复 6 个文件，消除所有 806 遗留引用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f13",
+          "p5a",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "仪表板卡片交互增强 + in-progress 节点闪烁动画 (00:04)",
+        "problem": ": 顶部 7 个 KPI 卡片只能看汇总数值，无法了解统计值的详细构成",
+        "solution": "1. 每个卡片添加 `onclick=\"openCardDetail('cardId')\"` 2. 新建 `DASH_DETAILS` 数据对象，包含 7 类卡片的细分内容（测试用例/通过率/工具/模型/评分/模式/问题） 3. 复用右侧面板显示卡片详情：工具列表、模型提供商清单、评分维度条、版本历史柱状图等 4. 右侧面板支持双模式切换：`panelMode = 'module' | 'card'`，关闭时自动恢复",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "仪表板卡片交互增强 + in-progress 节点闪烁动画 (00:04)",
+        "problem": ": 分支优化节点 `b1a` (Web↔Desktop 前端合并) 为 `in-progress` 蓝色状态，但没有可见的闪烁/动画效果",
+        "solution": "1. 新增 CSS keyframes `rectPulse` — stroke-opacity 在 1 ↔ 0.35、stroke-width 在 2 ↔ 2.8 之间交替 2. `.node-rect.in-progress` 类绑定 `animation: rectPulse 1.6s ease-in-out infinite` 3. 同时保留原有 `current-glow` 和 `current-blink` 动画（glow 过滤器 + 徽章闪烁）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "详情列表项可展开显示子内容 (00:10)",
+        "problem": ": 点击卡片详情面板中的列表项（如\"多模型适配器 127 tests\"）没有反馈，看不到子类细分内容",
+        "solution": "1. 添加 CSS 样式：`.expandable` 可点击行、`.chevron` 箭头旋转动画、`.sub-list` 折叠/展开子列表 2. 为所有 `DASH_DETAILS` 中的列表项添加 `expandItems` 子数据：；tests: 13 个模块各自的测试细分（按提供商/组件拆分）；pass: 5 个阶段的各模块测试数；tools: 15 个工具分组的具体工具名称和说明；models: 10 家提供的具体模型名称；modes: 4 种模式的功能点列表 3. 新增 `toggleExpand(uid, event)` 函数处理点击展开/折叠 4. 渲染时检查每个 item 是否有 `expandItems`，有则渲染为可展开行",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "管线模块 v2.0 库化架构重构 (00:37)",
+        "problem": ": `index.html` 中有 500+ 行硬编码数据（PIPELINE 对象 ~60 行 + DASH_DETAILS 对象 ~264 行），与 `pipeline-config.mjs`、`pipeline-data.json` 三处各有管线结构定义，任一模块变更需同步修改 3 个文件 [根因] : 架构演进过程中数据源逐渐分散，缺乏统一配置源设计",
+        "solution": "1. **单一配置源**: `pipeline-config.mjs` 成为唯一配置源（MODULES + PHASES + BRANCHES + KPI_DEFAULTS + generateDashboard()） 2. **三级渐进式加载**: `init()` 函数实现 Tier 1 (HTTP API `/api/pipeline`) → Tier 2 (静态 JSON `pipeline-data.json`) → Tier 3 (内嵌 EMBEDDED_PIPELINE 骨架回退) 3. **渲染引擎纯函数化**: `layout(pd)` 和 `render(pd)` 接受数据参数，不访问全局变量，与数据源完全解耦 4. **DASH_DETAILS 移除**: 264 行硬编码替换为 `getDashboardDetail(cardId)` 动态获取，数据来自 API 或 `pipeline-data.json.dashboard` 段 5. **格式转换层**: `transformJSONData()` 通过 PHASE_ID_MAP/BRANCH_ID_MAP/NODE_ID_MAP 将 JSON 描述性 ID 转换为渲染器短 ID 6. **pipeline-data.json 扩展**: 新增 `dashboard` 段（~280 行），包含 7 张卡片的详细工具列表、模型目录、测试分布等静态产品目录数据 7. **架构文档**: 新建 `ARCHITECTURE.md`（454 行），包含架构总览、7 组件职责、11 项优化机会、短中长期扩展路线图；硬编码行数: ~530 → 0 (-100%)；配置源数量: 3 → 1 (-67%)；index.html: ~1130 行 → ~924 行；模块变更影响: 3 文件同步 → 仅改 pipeline-config.mjs",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "管线问题追踪解析器修复 (01:00-01:08)",
+        "problem": ": 管线可视化页面中 p5a/p5b/p5c/b2b 等多个模块节点显示 0 个问题，但实际开发过程中已记录大量问题 [根因] : 三个同时存在的问题：",
+        "solution": "1. 修正内存文件标签：`2026-06-23.md` 中 4 条 p5a 条目从 `[模块:F8]` 改为 `[模块:p5a]` 2. 转换格式：3 条 `**date title**:` 条目改为 `## title (time)` 格式 3. 为 `2026-06-18.md` 添加 `[模块:b2b]` 标签到 2 个 CI/CD 相关 section 4. 解析器 6 处 regex 修复：`\\*\\*问题[：:]\\*\\*` → `\\*\\*问题[：:]?\\*\\*`（冒号可选），同样修复状态/根因/现象/诊断/修复等所有字段 5. 放宽 section 过滤：移除 `文档|GitHub|发布|打包|workflow` 跳过模式，仅保留 `前后端|编译|启动|重启|停止|验证|测试通过|清理` 6. 新增 h3 子节识别：支持 `### 问题回顾`/`问题诊断`/`问题根因`/`问题修复` 和 `### 解决`/`解决方案` 自由格式 7. 新增自由格式条目捕获：在 problem capture 模式下捕获 `- ` 开头的子弹行 8. 修复去重逻辑：从 `date + title` 改为 `date + title + problem` 三重匹配；总问题数：39 → 63 (+61.5%)；p5a：0 → 4（管线数据看板）✅；p5b：0 → 1（自动数据采集）✅；p5c：0 → 3（实时问题追踪）✅；b2b：0 → 3（GitHub Actions CI/CD）✅；新增填充模块：b3a(1)、b3b(3)、f6(1)；缓存命中率修复：删除了 `.pipeline-cache.json` 强制重新解析，服务器 PID 18756 正常运行于端口 8898",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "管线解析器深入修复 —— 消除\"详见原文\" (01:08-01:12)",
+        "problem": ": 管线页面中大量条目显示\"详见原文\"（44/64 = 69%），而非具体解决信息；用户点击无法展开原文 [根因] : 解析器的 solution 提取 regex 无法匹配多种实际使用的格式：",
+        "solution": "1. solution section 模式扩展为 `解决|解决方案|修复(?:过程|内容|措施|方案)?|处理[方式方案]?`，用 `(?![一-龥\\w])` 替代 `\\b` 2. `fixStart` regex 改为匹配任何含\"修复/正确方案/核心方案/最终方案/解决\"的粗体标签，允许括号内容：`\\*\\*(?:.*(?:修复|...).*)\\*\\*` 3. `fixHeader` 同样扩展，识别标题行（无行内内容）进入 solution 块采集模式 4. solution 块内新增 `- **key**: value` 粗体键值对捕获 5. solution 块内新增 `**N. 描述**` 编号条目捕获 6. `### ` 问题/解决子段之间不 reset `currentProblem`，`### 解决` 时不提前 push entry 7. problem 模式新增 `- **非标准键**: value` 格式捕获（如\"提供商不存在\"等自定义字段）；总问题数: 39 → 64 → 87 → 143 → 189 (+385%)；方案覆盖率: 31%→69%→91%→99.5%",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "仪表板测试分类第4层可展开支持 (01:24-01:27)",
+        "problem": ": 仪表板 → 测试分类 → \"DeepSeek 适配\"展开后 → \"流式对话测试 4\" 点击无反应。用户想看 4 个具体测试用例但无法展开 [根因] : ① `TEST_LEVEL3_MAP` 只定义到第 3 层（label + val），无第 4 层数据 ② 渲染代码中 level-3 项（ssub）渲染为纯 `<li>`，无点击事件",
+        "solution": "1. `pipeline-config.mjs` 新增 `TEST_LEVEL4_MAP`（40+ 条具体测试用例名称），涵盖 DeepSeek/智谱GLM/通义千问 等厂家的测试项 2. `attachLevel3()` 扩展为 `attachLevel4`：在注入第 3 层后继续为每个 level-3 项注入第 4 层 `expandItems` 3. `index.html` 渲染代码新增第 4 层判断：检查 `ssub.expandItems`，有则渲染为可展开行（带 ▶ 箭头），否则保持原样 4. CSS 新增 `.chevron-xs`、`.sub-label-sm`、`.sub-label-xs`、`.sub-list-deep2` 样式；效果: \"流式对话测试 4\" 点击可展开查看 4 个具体测试用例",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "仪表板 cards 扩展: tools L3 + 新增分期进度/模块进度 (08:42)",
+        "problem": ": ① 仅 `tests` 卡片支持 4 级展开，`tools`/`models`/`modes`/`pass` 只有 L1→L2 ② 仪表板缺少分期进度和模块完成率展示",
+        "solution": "1. **tools 卡片 L3 参数详情**: 新增 `TOOL_PARAMS_MAP`（30 个工具的参数签名），`attachToolParams()` 自动注入，点击工具名即可查看参数（如 read_file → [filePath, offset, limit]） 2. **新增\"分期进度\"卡片**: `generatePhaseProgressItems()` 基于 MODULES 实时计算 P0~P5 + B1~B3 每期完成率，带进度条+可展开模块明细。主线 95%，分支 20% 3. **新增\"模块进度\"卡片**: `generateModuleStatusItems()` 按状态分组展示所有 29 个模块（20 done / 2 in-progress / 7 pending），可展开查看详情 4. `index.html` 新增 2 个 dash-card（progress / modules_progress）+ progress-bar CSS + openCardDetail 进度条渲染 + applyDataAndRender 动态计算；效果: 仪表板从 7 张卡片扩展到 9 张，tools 点击可展开 30 个工具的参数签名，分期进度带可视化进度条",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "L4 测试用例全覆盖：F2-F16 模块 (08:51)",
+        "problem": ": `TEST_LEVEL4_MAP` 仅覆盖 F1（多模型适配器），F2~F16 的 L3 项点击没有第 4 级具体用例名称",
+        "solution": "为 `TEST_LEVEL4_MAP` 补全所有模块的 L4 具体用例数据：；F1 补全: 通义千问(文件处理/错误码/超时)、Kimi(共13条)、ERNIE(11)、豆包(8)、混元(12)、MiniMax(8)、OpenAI(7)、Ollama(7)；F2 Agent系统: 子Agent管理(20条)、Orchestrator(15)、Memory(13)、工具调用链(9)、错误恢复(8)；F3 工具系统: 执行引擎(17条)、发现/注册(12)、Schema校验(12)、结果解析(9)、批量调用(7)；F4 知识库RAG: 索引构建(11)、语义搜索(11)、Embedding(10)、分块策略(8)；F5 MCP协议: Client(10)、Server(10)、Transport(7)、工具发现(6)；F6 沙箱: Docker沙箱(10)、降级策略(8)、隔离机制(6)、资源限制(5)；F7 Ink CLI: 渲染引擎(8)、输入处理(8)、命令解析(6)、输出格式化(5)；F8 Web Dashboard: Store(8)、WS通信(6)、UI组件(5)、路由(4)；F9 Desktop: 主进程(7)、Renderer(6)、IPC(5)、更新(3)；F10 插件: 加载器(6)、注册表(5)、生命周期(4)、沙箱(3)；F11 IM适配: Telegram(7)、飞书(6)、企业微信(7)；F12 i18n: zh-CN(6)、en-US(5)；F13/F16: 版本管理(6)、发布流水线(5)、Changelog(5)；结果: L3 209项 → L4 209项（100% 覆盖），13 个模块全部通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "ARCHITECTURE.md 更新 + memory-format-spec 定位 (08:55)",
+        "problem": ": ARCHITECTURE.md 版本号/指标/卡片数/API描述均停留在 v2.0 重构时的状态，未反映 L4 全覆盖和进度卡片等变动",
+        "solution": "1. **版本号**: v2.0 → v2.1，副标题新增\"四级渐进展开\" 2. **关键指标表**: 新增 Dashboard 卡片(6→9)和 L4 覆盖率(21%→100%)两项 3. **架构图**: 更新仪表板卡片系统描述，列出 9 张卡片 4. **generateDashboardDetails**: 更新返回值和内部辅助函数清单 5. **API 端点表**: `/api/dashboard` 6→9 张卡片 6. **已完成项**: 新增 Dashboard 四级展开、进度卡片、Tools L3 三条 7. **新增 4.5 节**: 四级渐进展开设计原理 + 数据注入机制 8. **6.0 短期路线图**: 四级展开+架构文档完成度更新",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-23",
+        "title": "管线模块测试案例建设 + 通过率记录 (09:00-09:30)",
+        "problem": ": 管线模块 (p5a/p5b/p5c) 虽然 `done`/`in-progress`，但完全没有测试文件、测试用例或测试结果记录；`docs/03_测试案例文档.md` 只覆盖到 f1-f16，缺少管线运维模块",
+        "solution": "1. **创建 4 个测试文件** (`docs/pipeline/__tests__/`):；`pipeline-config.test.mjs`: 29 用例（MODULES/PHASES/BRANCHES/KPI/View/Dashboard/Keywords/Score）；`pipeline-cache.test.mjs`: 15+1 用例（createEmpty/loadSave往返/损坏JSON/快照/isCacheValid/100压力）；`pipeline-parser.test.mjs`: 8 用例（显式标签/关键词回退/去重/缓存/状态识别/p5c自我/完整结构/空目录）；`pipeline-api.test.mjs`: 14 用例（6端点/JSON/CORS/404/模块容器） 2. **修复解析器 bug**: `pipeline-parser.mjs` 中 `- **` 问题捕获块存在标准字段名跳过bug——排除列表中的字段(问题/根因/状态/修复)被 `continue` 跳过，无法到达下方专用处理器。修复: 将 `continue` 移入 `if(kvMatch & 3. **扩展 p5a 关键词**: 添加 `['管线数据', 'KPI', '仪表板']` 增强回退匹配能力 4. **配置数据更新**: `pipeline-config.mjs` 新增：；`TEST_LEVEL3_MAP` 加 P5 3 个 L3 项（管线数据看板/自动数据采集/实时问题追踪）；`TEST_LEVEL4_MAP` 加 58 条 P5 L4 具体用例（全部 ✅）；`generateTestItems()` 加\"管线运维\"大类（58 tests）；`generatePassRateItems()` 加\"P5 管线层\"通过率项（58 ✅ 100%） 5. **文档更新**:；`03_测试案例文档.md`: 新增 3.28-3.31 四节（管线配置/缓存/解析/API）+ 更新全量汇总表(806→864)；`ARCHITECTURE.md`: v2.1→v2.2 + 已完成项加4条 + 指标表加管线自测试行 + 文件树加__tests__；`README.md`: 新增\"测试\"章节含运行命令；`pipeline-data.json`: 快照同步更新；结果: 管线模块 4 文件 × 58 用例，68 项 subtests 全部通过（67→68，排除 1 项debug修复），通过率 100%。全量测试 806→864(+7.2%)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4",
+          "f14",
+          "p5a",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-23",
+        "title": "管线模块测试案例建设 + 通过率记录 (09:00-09:30)",
+        "problem": ": 管线模块 (p5a/p5b/p5c) 虽然 `done`/`in-progress`，但完全没有测试文件、测试用例或测试结果记录；`docs/03_测试案例文档.md` 只覆盖到 f1-f16，缺少管线运维模块",
+        "solution": "1. **创建 4 个测试文件** (`docs/pipeline/__tests__/`):；`pipeline-config.test.mjs`: 29 用例（MODULES/PHASES/BRANCHES/KPI/View/Dashboard/Keywords/Score）；`pipeline-cache.test.mjs`: 15+1 用例（createEmpty/loadSave往返/损坏JSON/快照/isCacheValid/100压力）；`pipeline-parser.test.mjs`: 8 用例（显式标签/关键词回退/去重/缓存/状态识别/p5c自我/完整结构/空目录）；`pipeline-api.test.mjs`: 14 用例（6端点/JSON/CORS/404/模块容器） 2. **修复解析器 bug**: `pipeline-parser.mjs` 中 `- **` 问题捕获块存在标准字段名跳过bug——排除列表中的字段(问题/根因/状态/修复)被 `continue` 跳过，无法到达下方专用处理器。修复: 将 `continue` 移入 `if(kvMatch & 3. **扩展 p5a 关键词**: 添加 `['管线数据', 'KPI', '仪表板']` 增强回退匹配能力 4. **配置数据更新**: `pipeline-config.mjs` 新增：；`TEST_LEVEL3_MAP` 加 P5 3 个 L3 项（管线数据看板/自动数据采集/实时问题追踪）；`TEST_LEVEL4_MAP` 加 58 条 P5 L4 具体用例（全部 ✅）；`generateTestItems()` 加\"管线运维\"大类（58 tests）；`generatePassRateItems()` 加\"P5 管线层\"通过率项（58 ✅ 100%） 5. **文档更新**:；`03_测试案例文档.md`: 新增 3.28-3.31 四节（管线配置/缓存/解析/API）+ 更新全量汇总表(806→864)；`ARCHITECTURE.md`: v2.1→v2.2 + 已完成项加4条 + 指标表加管线自测试行 + 文件树加__tests__；`README.md`: 新增\"测试\"章节含运行命令；`pipeline-data.json`: 快照同步更新；结果: 管线模块 4 文件 × 58 用例，68 项 subtests 全部通过（67→68，排除 1 项debug修复），通过率 100%。全量测试 806→864(+7.2%)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4",
+          "f14",
+          "p5a",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-23",
+        "title": "管线模块测试案例建设 + 通过率记录 (09:00-09:30)",
+        "problem": ": 管线模块 (p5a/p5b/p5c) 虽然 `done`/`in-progress`，但完全没有测试文件、测试用例或测试结果记录；`docs/03_测试案例文档.md` 只覆盖到 f1-f16，缺少管线运维模块",
+        "solution": "1. **创建 4 个测试文件** (`docs/pipeline/__tests__/`):；`pipeline-config.test.mjs`: 29 用例（MODULES/PHASES/BRANCHES/KPI/View/Dashboard/Keywords/Score）；`pipeline-cache.test.mjs`: 15+1 用例（createEmpty/loadSave往返/损坏JSON/快照/isCacheValid/100压力）；`pipeline-parser.test.mjs`: 8 用例（显式标签/关键词回退/去重/缓存/状态识别/p5c自我/完整结构/空目录）；`pipeline-api.test.mjs`: 14 用例（6端点/JSON/CORS/404/模块容器） 2. **修复解析器 bug**: `pipeline-parser.mjs` 中 `- **` 问题捕获块存在标准字段名跳过bug——排除列表中的字段(问题/根因/状态/修复)被 `continue` 跳过，无法到达下方专用处理器。修复: 将 `continue` 移入 `if(kvMatch & 3. **扩展 p5a 关键词**: 添加 `['管线数据', 'KPI', '仪表板']` 增强回退匹配能力 4. **配置数据更新**: `pipeline-config.mjs` 新增：；`TEST_LEVEL3_MAP` 加 P5 3 个 L3 项（管线数据看板/自动数据采集/实时问题追踪）；`TEST_LEVEL4_MAP` 加 58 条 P5 L4 具体用例（全部 ✅）；`generateTestItems()` 加\"管线运维\"大类（58 tests）；`generatePassRateItems()` 加\"P5 管线层\"通过率项（58 ✅ 100%） 5. **文档更新**:；`03_测试案例文档.md`: 新增 3.28-3.31 四节（管线配置/缓存/解析/API）+ 更新全量汇总表(806→864)；`ARCHITECTURE.md`: v2.1→v2.2 + 已完成项加4条 + 指标表加管线自测试行 + 文件树加__tests__；`README.md`: 新增\"测试\"章节含运行命令；`pipeline-data.json`: 快照同步更新；结果: 管线模块 4 文件 × 58 用例，68 项 subtests 全部通过（67→68，排除 1 项debug修复），通过率 100%。全量测试 806→864(+7.2%)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4",
+          "f14",
+          "p5a",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "管线模块测试案例建设 + 通过率记录 (09:00-09:30)",
+        "problem": ": 管线模块 (p5a/p5b/p5c) 虽然 `done`/`in-progress`，但完全没有测试文件、测试用例或测试结果记录；`docs/03_测试案例文档.md` 只覆盖到 f1-f16，缺少管线运维模块",
+        "solution": "1. **创建 4 个测试文件** (`docs/pipeline/__tests__/`):；`pipeline-config.test.mjs`: 29 用例（MODULES/PHASES/BRANCHES/KPI/View/Dashboard/Keywords/Score）；`pipeline-cache.test.mjs`: 15+1 用例（createEmpty/loadSave往返/损坏JSON/快照/isCacheValid/100压力）；`pipeline-parser.test.mjs`: 8 用例（显式标签/关键词回退/去重/缓存/状态识别/p5c自我/完整结构/空目录）；`pipeline-api.test.mjs`: 14 用例（6端点/JSON/CORS/404/模块容器） 2. **修复解析器 bug**: `pipeline-parser.mjs` 中 `- **` 问题捕获块存在标准字段名跳过bug——排除列表中的字段(问题/根因/状态/修复)被 `continue` 跳过，无法到达下方专用处理器。修复: 将 `continue` 移入 `if(kvMatch & 3. **扩展 p5a 关键词**: 添加 `['管线数据', 'KPI', '仪表板']` 增强回退匹配能力 4. **配置数据更新**: `pipeline-config.mjs` 新增：；`TEST_LEVEL3_MAP` 加 P5 3 个 L3 项（管线数据看板/自动数据采集/实时问题追踪）；`TEST_LEVEL4_MAP` 加 58 条 P5 L4 具体用例（全部 ✅）；`generateTestItems()` 加\"管线运维\"大类（58 tests）；`generatePassRateItems()` 加\"P5 管线层\"通过率项（58 ✅ 100%） 5. **文档更新**:；`03_测试案例文档.md`: 新增 3.28-3.31 四节（管线配置/缓存/解析/API）+ 更新全量汇总表(806→864)；`ARCHITECTURE.md`: v2.1→v2.2 + 已完成项加4条 + 指标表加管线自测试行 + 文件树加__tests__；`README.md`: 新增\"测试\"章节含运行命令；`pipeline-data.json`: 快照同步更新；结果: 管线模块 4 文件 × 58 用例，68 项 subtests 全部通过（67→68，排除 1 项debug修复），通过率 100%。全量测试 806→864(+7.2%)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4",
+          "f14",
+          "p5a",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-23",
+        "title": "管线模块测试案例建设 + 通过率记录 (09:00-09:30)",
+        "problem": ": 管线模块 (p5a/p5b/p5c) 虽然 `done`/`in-progress`，但完全没有测试文件、测试用例或测试结果记录；`docs/03_测试案例文档.md` 只覆盖到 f1-f16，缺少管线运维模块",
+        "solution": "1. **创建 4 个测试文件** (`docs/pipeline/__tests__/`):；`pipeline-config.test.mjs`: 29 用例（MODULES/PHASES/BRANCHES/KPI/View/Dashboard/Keywords/Score）；`pipeline-cache.test.mjs`: 15+1 用例（createEmpty/loadSave往返/损坏JSON/快照/isCacheValid/100压力）；`pipeline-parser.test.mjs`: 8 用例（显式标签/关键词回退/去重/缓存/状态识别/p5c自我/完整结构/空目录）；`pipeline-api.test.mjs`: 14 用例（6端点/JSON/CORS/404/模块容器） 2. **修复解析器 bug**: `pipeline-parser.mjs` 中 `- **` 问题捕获块存在标准字段名跳过bug——排除列表中的字段(问题/根因/状态/修复)被 `continue` 跳过，无法到达下方专用处理器。修复: 将 `continue` 移入 `if(kvMatch & 3. **扩展 p5a 关键词**: 添加 `['管线数据', 'KPI', '仪表板']` 增强回退匹配能力 4. **配置数据更新**: `pipeline-config.mjs` 新增：；`TEST_LEVEL3_MAP` 加 P5 3 个 L3 项（管线数据看板/自动数据采集/实时问题追踪）；`TEST_LEVEL4_MAP` 加 58 条 P5 L4 具体用例（全部 ✅）；`generateTestItems()` 加\"管线运维\"大类（58 tests）；`generatePassRateItems()` 加\"P5 管线层\"通过率项（58 ✅ 100%） 5. **文档更新**:；`03_测试案例文档.md`: 新增 3.28-3.31 四节（管线配置/缓存/解析/API）+ 更新全量汇总表(806→864)；`ARCHITECTURE.md`: v2.1→v2.2 + 已完成项加4条 + 指标表加管线自测试行 + 文件树加__tests__；`README.md`: 新增\"测试\"章节含运行命令；`pipeline-data.json`: 快照同步更新；结果: 管线模块 4 文件 × 58 用例，68 项 subtests 全部通过（67→68，排除 1 项debug修复），通过率 100%。全量测试 806→864(+7.2%)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4",
+          "f14",
+          "p5a",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "管线模块测试案例建设 + 通过率记录 (09:00-09:30)",
+        "problem": ": 管线模块 (p5a/p5b/p5c) 虽然 `done`/`in-progress`，但完全没有测试文件、测试用例或测试结果记录；`docs/03_测试案例文档.md` 只覆盖到 f1-f16，缺少管线运维模块",
+        "solution": "1. **创建 4 个测试文件** (`docs/pipeline/__tests__/`):；`pipeline-config.test.mjs`: 29 用例（MODULES/PHASES/BRANCHES/KPI/View/Dashboard/Keywords/Score）；`pipeline-cache.test.mjs`: 15+1 用例（createEmpty/loadSave往返/损坏JSON/快照/isCacheValid/100压力）；`pipeline-parser.test.mjs`: 8 用例（显式标签/关键词回退/去重/缓存/状态识别/p5c自我/完整结构/空目录）；`pipeline-api.test.mjs`: 14 用例（6端点/JSON/CORS/404/模块容器） 2. **修复解析器 bug**: `pipeline-parser.mjs` 中 `- **` 问题捕获块存在标准字段名跳过bug——排除列表中的字段(问题/根因/状态/修复)被 `continue` 跳过，无法到达下方专用处理器。修复: 将 `continue` 移入 `if(kvMatch & 3. **扩展 p5a 关键词**: 添加 `['管线数据', 'KPI', '仪表板']` 增强回退匹配能力 4. **配置数据更新**: `pipeline-config.mjs` 新增：；`TEST_LEVEL3_MAP` 加 P5 3 个 L3 项（管线数据看板/自动数据采集/实时问题追踪）；`TEST_LEVEL4_MAP` 加 58 条 P5 L4 具体用例（全部 ✅）；`generateTestItems()` 加\"管线运维\"大类（58 tests）；`generatePassRateItems()` 加\"P5 管线层\"通过率项（58 ✅ 100%） 5. **文档更新**:；`03_测试案例文档.md`: 新增 3.28-3.31 四节（管线配置/缓存/解析/API）+ 更新全量汇总表(806→864)；`ARCHITECTURE.md`: v2.1→v2.2 + 已完成项加4条 + 指标表加管线自测试行 + 文件树加__tests__；`README.md`: 新增\"测试\"章节含运行命令；`pipeline-data.json`: 快照同步更新；结果: 管线模块 4 文件 × 58 用例，68 项 subtests 全部通过（67→68，排除 1 项debug修复），通过率 100%。全量测试 806→864(+7.2%)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4",
+          "f14",
+          "p5a",
+          "p5b",
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-23",
+        "title": "BMAD 插件评估与移除 (09:32-09:36)",
+        "problem": "BMAD 插件评估与移除 (09:32-09:36)",
+        "solution": "：",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-23",
+        "title": "BMAD 插件评估与移除 (09:32-09:36)",
+        "problem": "BMAD 插件评估与移除 (09:32-09:36)",
+        "solution": "：",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "管线 API 修复：KPI_DEFAULTS 导入缺失 (19:03)",
+        "problem": ": 管线服务器 `/api/status` 返回500错误 `KPI_DEFAULTS is not defined`，导致 `/api/pipeline` 等端点也无法正常使用 [根因] : `pipeline-api.mjs` 第84行使用了 `KPI_DEFAULTS` 但未从 `pipeline-config.mjs` 导入（v2.0重构时遗漏）",
+        "solution": "1. 在 `pipeline-api.mjs` import 中添加 `KPI_DEFAULTS` 2. 修复 `modules` 计数逻辑：从 `Object.keys(KPI_DEFAULTS).length`（KPI键数≈12）改为遍历 `getPipelineView()` 的真实模块数（29）；验证: `/api/status` 正常返回 `{phases: 6, modules: 29}`，`/api/pipeline` KPI 动态计算876用例/95%通过率/765通过/39失败",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "测试四级详情报告 (20:39-21:10)",
+        "problem": ":",
+        "solution": "1. **新建测试分析脚本** `_analyze_tests.mjs`（临时，结果已入 `_test_detail.json`）：；解析 3 个 vitest JSON 报告（core/server/desktop）；提取四级结构：包→文件→describe分组→具体用例；提取失败消息（smart简化，跳过ANSI/HTML噪音）；统计：808 测试断言, 765 通过, 43 失败 (95%) 2. **pipeline-config.mjs 新增函数**:；`loadTestDetail()`: 从 `_test_detail.json` 同步加载；`generateTestDetailPanel()`: 格式化四级结构为前端渲染友好的数据 3. **pipeline-api.mjs 新增端点**:；`GET /api/test-detail`: 返回四级测试详情 JSON 4. **index.html 新增卡片 + 报告面板**:；新增 \"📋 测试报告\" 卡片（显示失败数），紫色左边框高亮；新增 ~150 行 CSS 样式（.tr-summary/.tr-tabs/.tr-suite/.tr-group/.tr-case）；新增 `openTestReport()` 异步获取数据；新增 `renderTestReport()` 渲染四级树形: 顶部汇总栏(4 stats) → 包标签页(core/server/desktop) → 测试套件(展开) → 测试分组(展开) → 测试用例(含失败原因)；新增 `toggleSuite()/toggleGroup()/toggleFailure()` 交互函数；新增 `switchTestPkg()` 包切换；新增 `escapeHtml()` 安全转义；通过率/失败数动态更新到卡片；结果: 仪表板新增第 10 张卡片\"测试报告\"，点击进入面板可看到：；L1: 3 个包 (core: 634P/2F, server: 41P/0F, desktop: 90P/41F)；L2: 每个包下的测试文件 (~40个), 带展开箭头+状态圆点+通过/失败计数；L3: describe 分组（如\"会话管理\"\"工具调用管理\"）；L4: 每个测试用例（✓/✕ 图标 + 标题 + 耗时 + \"查看失败原因\" 按钮）；失败原因点击展开（等宽字体 + 红色边框 + 滚动容器）；35 个具体失败用例全部可追踪（编译错误4 + ChatView13 + Sidebar1 + StatusBar1 + version1 + sessionStore24）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "L5 展开 + 模块名修复 (21:03-21:10)",
+        "problem": "L5 展开 + 模块名修复 (21:03-21:10)",
+        "solution": "1. `pipeline-config.mjs`: `generatePassRateItems` 改为 `MODULES[nodeId]?.name || modData?.name || nodeId` 链式回退 2. `index.html`:；添加 L5 展开检查 `hasL5Expand`，第5层项渲染为可展开的 `<li class=\"expandable\">`；新增 CSS: `sub-list-deep3`（padding-left:10px, font-size:.78em）、`sub-label-xxs`（font-size:.75em）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-23",
+        "title": "测试失败数不一致修复 (21:10-21:18)",
+        "problem": "测试失败数不一致修复 (21:10-21:18)",
+        "solution": "1. **重新生成 `_test_detail.json`**：从最新 `_vitest-*.json` 重建，保留旧 group 信息 2. **`generateTestDetailPanel` 使用 `loadVitestResults()` 作为权威 summary**：防止未来再出现不一致 3. **新增 `autoRegenerateTestDetail()`**：每次请求时检测 vitest 与 `_test_detail.json` 是否一致，不一致则自动重新生成 4. **新增 `regenerateTestDetail()`**：从 `_vitest-*.json` 重建 `_test_detail.json`，保留旧 group 映射 5. 导入添加 `writeFileSync`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      }
+    ],
+    "MEMORY.md": [
+      {
+        "moduleId": "f9",
+        "date": "",
+        "title": "⚠️ Web ↔ Desktop 代码隔离约束",
+        "problem": "⚠️ Web ↔ Desktop 代码隔离约束",
+        "solution": "1. **MEMORY.md** ── 在陷阱表中新增一行，**必须标注 🎯 范围标记**（🖥️=Desktop / 🌐=Web / 🔀=两者） 2. **verify-build.cjs** ── 添加对应的自动检查逻辑；目的：让脚本替人记住教训，下次构建自动拦截",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      }
+    ],
+    "README.md": []
   },
-  "generatedAt": "2026-06-22T16:10:12.910Z"
+  "generatedAt": "2026-06-23T13:39:56.981Z"
 }

@@ -5,6 +5,11 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
+    // 输出 JSON 报告供管线自动采集
+    reporters: ['default', 'json'],
+    outputFile: {
+      json: '../../docs/pipeline/_vitest-core.json',
+    },
   },
   resolve: {
     alias: {

@@ -1,12 +1,12 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-22T16:31:22.710Z",
+    "lastUpdated": "2026-06-23T01:42:00.000Z",
     "engine": "auto-detected",
-    "totalTests": 36,
-    "modelsSupported": 4
+    "totalTests": 40,
+    "modelsSupported": 10
   },
   "phases": [
     {
@@ -163,6 +163,65 @@
           }
         }
       ]
+    },
+    {
+      "id": "P5",
+      "name": "管线运维",
+      "status": "running",
+      "priority": "p5",
+      "tasks": [
+        {
+          "id": "p5a-dashboard",
+          "name": "管线数据看板",
+          "desc": "SVG 流程图渲染 · KPI 仪表板 · 问题面板 · 四级渐进展开 · file:// 离线支持",
+          "status": "in-progress",
+          "time": "持续",
+          "detect": {
+            "files": [
+              "docs/pipeline/index.html",
+              "docs/pipeline/pipeline-data.json"
+            ]
+          }
+        },
+        {
+          "id": "p5b-data-collect",
+          "name": "自动数据采集",
+          "desc": "pipeline-data.json 快照同步 · memory MD 实时解析 · 文件缓存系统",
+          "status": "done",
+          "time": "持续",
+          "detect": {
+            "files": [
+              "docs/pipeline/lib/pipeline-config.mjs",
+              "docs/pipeline/lib/pipeline-parser.mjs"
+            ]
+          }
+        },
+        {
+          "id": "p5c-issue-track",
+          "name": "实时问题追踪",
+          "desc": "MD 文件解析 · 模块级追溯 · 状态统计 · API 端点暴露",
+          "status": "done",
+          "time": "持续",
+          "detect": {
+            "files": [
+              "docs/pipeline/lib/pipeline-parser.mjs",
+              "docs/pipeline/server.mjs"
+            ]
+          }
+        },
+        {
+          "id": "p5d-self-test",
+          "name": "管线自测试体系",
+          "desc": "4 测试文件 · 58 用例 · 100% 通过率 · node --test 运行器",
+          "status": "done",
+          "time": "4h",
+          "detect": {
+            "files": [
+              "docs/pipeline/__tests__/"
+            ]
+          }
+        }
+      ]
     }
   ],
   "scoreHistory": [
@@ -173,6 +232,10 @@
     {
       "label": "P0 完成",
       "value": 72
+    },
+    {
+      "label": "v0.5.0 管线运维",
+      "value": 73.4
     },
     {
       "label": "全量完成",
