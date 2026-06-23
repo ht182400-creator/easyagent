@@ -21,8 +21,8 @@
       "size": 19886
     },
     "2026-06-23.md": {
-      "mtimeMs": 1782221930682.4187,
-      "size": 32594
+      "mtimeMs": 1782225917797.9834,
+      "size": 35123
     },
     "MEMORY.md": {
       "mtimeMs": 1782218623292.3752,
@@ -3071,6 +3071,30 @@
         "_tagModuleIds": [
           "f4"
         ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "再次提交 (21:46)",
+        "problem": "再次提交 (21:46)",
+        "solution": "TypeError: `syncPipelineData` 中 `pipelineData.meta.version` → `pipelineData.version` (pipeline-data.json 结构不匹配)；同时修复 `pipelineData.mainLane.phases` → `pipelineData.pipeline.phases`、`pipelineData.branchLanes` → `pipelineData.pipeline.branches`；安全加固: `.gitignore` 增加规则排除 history_*.md (含 GitHub Token)、临时测试脚本 _*.mjs、packages/docs/；经历 2 次 GitHub Push Protection 拦截后，通过 `git reset --soft` 回溯干净提交解决",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-23",
+        "title": "再次提交 (21:46)",
+        "problem": "再次提交 (21:46)",
+        "solution": "TypeError: `syncPipelineData` 中 `pipelineData.meta.version` → `pipelineData.version` (pipeline-data.json 结构不匹配)；同时修复 `pipelineData.mainLane.phases` → `pipelineData.pipeline.phases`、`pipelineData.branchLanes` → `pipelineData.pipeline.branches`；安全加固: `.gitignore` 增加规则排除 history_*.md (含 GitHub Token)、临时测试脚本 _*.mjs、packages/docs/；经历 2 次 GitHub Push Protection 拦截后，通过 `git reset --soft` 回溯干净提交解决",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a",
+          "p5b"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -3088,5 +3112,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-23T13:39:56.981Z"
+  "generatedAt": "2026-06-23T15:29:08.692Z"
 }

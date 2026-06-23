@@ -149,7 +149,7 @@ export const MODULES = {
   // ========== 分支模块 B1 架构优化 ==========
   b1a: {
     id: 'b1a', name: 'Web↔Desktop 前端合并', phase: 'B1', icon: '🔀',
-    desc: 'packages/frontend\n消除80%代码重复', status: 'in-progress',
+    desc: 'packages/frontend\n消除80%代码重复', status: 'done',
     keywords: ['前端合并', 'frontend', '代码重复', 'Web↔Desktop'],
     detect: { files: ['packages/frontend/package.json'] },
   },
@@ -443,7 +443,7 @@ export function getKPI() {
     testSkipped: totalSkipped,
     tools: 51,
     providers: 10,
-    scoreTotal: 73.4,
+    scoreTotal: 75.0,
     modes: 4,
     _source: vtResult.totalTests > 0 ? `vitest-reports(${vtResult.files.length} files)` : 'test-case-mapping.json',
     _totalFiles: mapping?._meta?.totalTestFiles || 0,
@@ -464,6 +464,7 @@ export const SCORE_HISTORY = [
   { version: 'v0.3.0', date: '2026-06-20', score: 65 },
   { version: 'v0.4.0', date: '2026-06-22', score: 68 },
   { version: 'v0.5.0', date: '2026-06-23', score: 73.4 },
+  { version: 'v0.4.1', date: '2026-06-23', score: 75.0, note: '前端合并+CI/CD完成' },
 ];
 
 // ============================================================

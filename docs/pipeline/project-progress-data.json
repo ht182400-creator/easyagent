@@ -3,7 +3,7 @@
     "repo": "ht182400-creator/easyagent",
     "version": "0.4.1",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-23T13:55:15.880Z",
+    "lastUpdated": "2026-06-23T15:33:24.669Z",
     "engine": "auto-detected",
     "totalTests": 36,
     "modelsSupported": 4
@@ -65,7 +65,7 @@
           "id": "p1-frontend-merge",
           "name": "合并 Web ↔ Desktop 前端代码",
           "desc": "创建 packages/frontend 共享包，统一 apiFetch 行为",
-          "status": "pending",
+          "status": "done",
           "time": null,
           "detect": {
             "files": [
@@ -236,6 +236,10 @@
     {
       "label": "v0.5.0 管线运维",
       "value": 73.4
+    },
+    {
+      "label": "v0.4.1 前端合并+CI/CD",
+      "value": 75
     },
     {
       "label": "全量完成",

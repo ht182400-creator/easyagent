@@ -188,7 +188,7 @@
             "icon": "🔀",
             "label": "Web↔Desktop 前端合并",
             "desc": "packages/frontend\n消除80%代码重复",
-            "status": "in-progress"
+            "status": "done"
           },
           {
             "id": "b1b",
@@ -6549,14 +6549,14 @@
         },
         {
           "label": "B1 架构优化分支",
-          "val": "25%",
+          "val": "50%",
           "note": "1/2 完成 (分支)",
-          "pct": 25,
+          "pct": 50,
           "color": "#58a6ff",
           "expandItems": [
             {
               "label": "🔀 Web↔Desktop 前端合并",
-              "val": "⏳"
+              "val": "✅"
             },
             {
               "label": "🛡️ PluginManager 沙箱",
@@ -6802,7 +6802,7 @@
     "testPassRate": 100,
     "tools": 51,
     "providers": 4,
-    "scoreTotal": 73.4,
+    "scoreTotal": 75,
     "modes": 4
   },
   "scoreHistory": [
@@ -6830,12 +6830,17 @@
       "version": "v0.5.0",
       "date": "2026-06-23",
       "score": 73.4
+    },
+    {
+      "version": "v0.4.1",
+      "date": "2026-06-23",
+      "score": 75
     }
   ],
-  "generatedAt": "2026-06-23T13:55:15.880Z",
+  "generatedAt": "2026-06-23T15:33:24.669Z",
   "version": "0.4.1",
   "meta": {
     "version": "0.4.1",
-    "generatedAt": "2026-06-23T13:55:15.880Z"
+    "generatedAt": "2026-06-23T15:33:24.669Z"
   }
 }

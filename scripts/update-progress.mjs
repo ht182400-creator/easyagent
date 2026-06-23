@@ -334,18 +334,18 @@ function syncPipelineData(progressData, info) {
     }
   }
 
-  // 同步分支节点状态
+  // 同步分支节点状态（ID 需与 pipeline-data.json 中 branch nodes 一致）
   const branchDetect = {
-    'opt-p2a': ['packages/core/src/benchmark/BenchmarkRunner.ts'],
-    'opt-p2b': ['.github/workflows/ci.yml', '.github/workflows/release.yml'],
-    'opt-p1a': ['packages/frontend/package.json'],
-    'opt-p1b': ['packages/core/src/plugin/PluginPermission.ts'],
-    'opt-p2c': ['packages/core/src/__tests__/integration/'],
-    'opt-p2d': ['docs/benchmark-report.md'],
-    'opt-p2e': ['packages/core/src/analytics/'],
-    'opt-p3a': ['scripts/install.sh'],
-    'opt-p3b': ['packages/vscode/package.json'],
-    'opt-p3c': ['.github/CONTRIBUTING.md'],
+    'b2a': ['packages/core/src/benchmark/BenchmarkRunner.ts'],
+    'b2b': ['.github/workflows/ci.yml', '.github/workflows/release.yml'],
+    'b1a': ['packages/frontend/package.json'],
+    'b1b': ['packages/core/src/plugin/PluginPermission.ts'],
+    'b2c': ['packages/core/src/__tests__/integration/'],
+    'b2d': ['docs/benchmark-report.md'],
+    'b2e': ['packages/core/src/analytics/'],
+    'b3a': ['scripts/install.sh'],
+    'b3b': ['packages/vscode/package.json'],
+    'b3c': ['.github/CONTRIBUTING.md'],
   };
 
   const branchLanes = pipelineData.pipeline && pipelineData.pipeline.branches ? pipelineData.pipeline.branches : [];
