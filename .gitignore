@@ -24,6 +24,18 @@ desktop/release/
 # 临时文件
 .codebuddy/temp/
 # 对话历史日志（可能含敏感信息，仅本地保留）
+history_*.md
 docs/history_*.md
+# 临时测试/调试脚本
+_test_*.mjs
+docs/pipeline/_test_*.mjs
+docs/pipeline/_test_*.json
+docs/pipeline/_add_*.mjs
+docs/pipeline/_check_*.mjs
+docs/pipeline/_debug.mjs
+docs/pipeline/_direct_test.mjs
+docs/pipeline/_scan_issues.mjs
+docs/pipeline/_vitest-*.json
+packages/docs/
 # GitHub Token（仅本地使用，勿提交）
 scripts/.release_token

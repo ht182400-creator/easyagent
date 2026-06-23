@@ -301,9 +301,15 @@ function syncPipelineData(progressData, info) {
     return;
   }
 
-  // 更新 meta
+  // 确保 meta 对象存在
+  if (!pipelineData.meta) {
+    pipelineData.meta = {};
+  }
+  // 更新 meta 与顶层字段
   pipelineData.meta.version = info.version;
   pipelineData.meta.generatedAt = info.now;
+  pipelineData.version = info.version;
+  pipelineData.generatedAt = info.now;
 
   // 更新 KPI 数据
   pipelineData.kpi.testCases = info.testCount;
@@ -318,11 +324,10 @@ function syncPipelineData(progressData, info) {
   }
 
   // 同步主阶段节点状态（用检测结果覆盖）
-  for (const phase of pipelineData.mainLane.phases) {
+  // pipeline-data.json 中 data.pipeline.phases 对应阶段列表
+  const mainPhases = pipelineData.pipeline && pipelineData.pipeline.phases ? pipelineData.pipeline.phases : [];
+  for (const phase of mainPhases) {
     for (const node of phase.nodes) {
-      // 查找对应的检测任务状态
-      // 项目进度数据中的 task.id 与管线数据中的 node.id 不完全一致
-      // 这里只更新那些有明确检测规则的
       if (detectMap.has(node.id)) {
         node.status = detectMap.get(node.id);
       }
@@ -343,7 +348,8 @@ function syncPipelineData(progressData, info) {
     'opt-p3c': ['.github/CONTRIBUTING.md'],
   };
 
-  for (const branch of pipelineData.branchLanes) {
+  const branchLanes = pipelineData.pipeline && pipelineData.pipeline.branches ? pipelineData.pipeline.branches : [];
+  for (const branch of branchLanes) {
     for (const node of branch.nodes) {
       const files = branchDetect[node.id];
       if (files && files.length > 0) {

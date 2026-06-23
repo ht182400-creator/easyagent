@@ -6798,10 +6798,10 @@
     }
   },
   "kpi": {
-    "testCases": 864,
+    "testCases": 36,
     "testPassRate": 100,
     "tools": 51,
-    "providers": 10,
+    "providers": 4,
     "scoreTotal": 73.4,
     "modes": 4
   },
@@ -6832,6 +6832,10 @@
       "score": 73.4
     }
   ],
-  "generatedAt": "2026-06-23T01:11:31.206Z",
-  "version": "2.2"
+  "generatedAt": "2026-06-23T13:49:03.831Z",
+  "version": "0.4.0",
+  "meta": {
+    "version": "0.4.0",
+    "generatedAt": "2026-06-23T13:49:03.831Z"
+  }
 }
