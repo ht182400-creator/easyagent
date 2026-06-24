@@ -7,9 +7,12 @@ on:
 
 jobs:
   test:
-    name: Quick Test
+    name: Test with pnpm
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - name: Echo test
-        run: echo "CI on Windows is working!"
+        run: echo "pnpm setup succeeded"
