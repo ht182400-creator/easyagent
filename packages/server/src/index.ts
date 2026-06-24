@@ -2062,7 +2062,7 @@ export async function createApp(options: CreateAppOptions = {}) {
           categories,
           tags: [...new Set([...projectTags, ...globalTags])].sort(),
           project: { totalDocs: projectStats.totalDocs, totalSize: projectStats.totalSize },
-          global: { totalDocs: globalStats.totalSize, totalSize: globalStats.totalSize },
+          global: { totalDocs: globalStats.totalDocs, totalSize: globalStats.totalSize },
           scope: 'merged',
         });
       }

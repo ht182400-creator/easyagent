@@ -459,7 +459,12 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
 
     case 'token_usage': {
       const usage = data.usage as { input: number; output: number; total: number };
-      store.updateMessage(sessionId, '', { tokenUsage: usage }); // placeholder
+      // 找到最后一条 assistant 消息，更新其 token 用量统计
+      const session = store.sessions[sessionId];
+      const lastMsg = session?.messages?.filter((m) => m.role === 'assistant').pop();
+      if (lastMsg) {
+        store.updateMessage(sessionId, lastMsg.id, { tokenUsage: usage });
+      }
       break;
     }
   }
