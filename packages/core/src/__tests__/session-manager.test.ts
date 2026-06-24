@@ -87,7 +87,7 @@ describe('SessionManager - 会话创建与获取', () => {
     const manager = new SessionManager(testDir);
     const session = manager.getOrCreate('default-session');
     expect(session.modelConfig.provider).toBe('deepseek');
-    expect(session.modelConfig.model).toBe('deepseek-chat');
+    expect(session.modelConfig.model).toBe('deepseek-v4');  // v0.4+ 默认模型
 
     manager.close();
   });

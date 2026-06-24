@@ -327,9 +327,17 @@ describe('KnowledgeService - 文档 CRUD', () => {
     });
 
     it('不存在的绝对路径应返回错误', () => {
-      const result = service.importFromAbsolutePath('/nonexistent/path/file.md');
+      // 使用工作区内的路径，但文件不存在 — 验证文件存在检查生效
+      const nonexistentFile = resolve(service.workspace, 'nonexistent-file.md');
+      const result = service.importFromAbsolutePath(nonexistentFile);
       expect(result.success).toBe(false);
       expect(result.error).toContain('文件不存在');
+    });
+
+    it('workspace 外的绝对路径应返回安全限制错误', () => {
+      const result = service.importFromAbsolutePath('/etc/passwd');
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('安全限制');
     });
   });
 

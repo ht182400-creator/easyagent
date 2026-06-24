@@ -165,7 +165,7 @@ describe('SandboxManager - 沙箱管理器', () => {
       expect(result.version).toBe('24.0.7');
     });
 
-    it('应优雅处理Docker不可用', async () => {
+    it('应优雅处理Docker不可用并降级为本地模式', async () => {
       // 重置缓存 + 重设 mock 为抛出异常
       resetDockerCache();
       mockExecSync.mockImplementation(() => {
@@ -175,7 +175,9 @@ describe('SandboxManager - 沙箱管理器', () => {
       const mgr = SandboxManager.getInstance();
       const result = await mgr.init();
       
-      expect(result.available).toBe(false);
+      // Docker 不可用时自动降级为本地进程模式
+      expect(result.available).toBe(true);
+      expect(result.mode).toBe('local');
       // 恢复 mock 以免影响后续测试
       mockExecSync.mockReturnValue('24.0.7');
     });
