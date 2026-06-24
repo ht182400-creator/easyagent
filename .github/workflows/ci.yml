@@ -1,28 +1,157 @@
-name: CI Test
+name: CI
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 env:
   NODE_VERSION: '20'
+  # windows-latest (2025) 只有 VS 2026，node-gyp v10 不支持
+  # 使用 windows-2022 固定 VS 2022 编译环境
+  npm_config_msvs_version: '2022'
 
 jobs:
-  test:
-    name: Test pnpm install (no VS version constraint)
-    runs-on: windows-latest
+  # ===== 测试 =====
+  test-core:
+    name: Test Core
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+
       - uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Echo test
-        run: echo "pnpm install succeeded!"
+
+      - name: Build core (tsup + DTS)
+        run: cd packages/core && npx tsup --dts
+
+      - name: Run core tests
+        run: cd packages/core && npx vitest run
+
+  test-server:
+    name: Test Server
+    needs: test-core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+
+      - name: Build server
+        run: cd packages/server && npx tsup
+
+      - name: Run server tests
+        run: cd packages/server && npx vitest run
+
+  # ===== 覆盖率门禁 =====
+  coverage:
+    name: Coverage Gate
+    needs:
+      - test-core
+      - test-server
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+
+      - name: Build server
+        run: cd packages/server && npx tsup
+
+      - name: Core coverage check (thresholds: 35/25/30/35)
+        run: cd packages/core && npx vitest run --coverage
+
+      - name: Server coverage check (thresholds: 30/20/25/30)
+        run: cd packages/server && npx vitest run --coverage
+
+  # ===== 管线自测试 =====
+  test-pipeline:
+    name: Test Pipeline
+    needs: test-core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run pipeline self-tests
+        run: node --test docs/pipeline/__tests__/pipeline-*.test.mjs
+
+  # ===== 编译验证 =====
+  build-check:
+    name: Build Verification
+    needs: test-core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../cli && npx tsup
+          cd ../server && npx tsup
+          cd ../desktop && npx tsup
+          cd ../frontend && npx vite build
+
+      - name: Verify build output
+        run: node packages/desktop/scripts/verify-build.cjs

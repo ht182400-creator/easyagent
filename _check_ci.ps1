@@ -3,28 +3,26 @@ $headers = @{
     Authorization = "token $token"
     Accept = "application/vnd.github.v3+json"
 }
+$runs = Invoke-RestMethod -Uri "https://api.github.com/repos/ht182400-creator/easyagent/actions/runs?per_page=1" -Headers $headers
+$run = $runs.workflow_runs[0]
+Write-Host "Latest run: #$($run.run_number) ID: $($run.id)"
 
-# Get #31 failed job details
-$jobs = Invoke-RestMethod -Uri "https://api.github.com/repos/ht182400-creator/easyagent/actions/runs/28113846681/jobs" -Headers $headers
-foreach ($job in $jobs.jobs) {
-    if ($job.conclusion -eq "failure") {
-        Write-Host "Failed Job: $($job.name)" -ForegroundColor Red
-        $log = Invoke-RestMethod -Uri "$($job.url)/logs" -Headers $headers
+$jobs = Invoke-RestMethod -Uri $run.jobs_url -Headers $headers
+foreach ($j in $jobs.jobs) {
+    if ($j.conclusion -eq "failure") {
+        Write-Host "Getting log for: $($j.name)" -ForegroundColor Yellow
+        $log = Invoke-RestMethod -Uri ($j.url + "/logs") -Headers $headers
         $lines = $log -split "`r`n"
-        # Find error lines
-        $startFound = $false
+        $inErr = $false
         foreach ($line in $lines) {
-            if ($line -match "(ERR_|error|Error|ERROR|fail|Fail|FAIL)") {
-                if (-not $startFound) {
-                    Write-Host "" 
-                    Write-Host "--- Error lines ---" -ForegroundColor Yellow
-                    $startFound = $true
+            if ($line -match "gyp ERR|GYP ERR|better-sqlite3.*install.*gyp") { $inErr = $true }
+            if ($inErr) {
+                Write-Host $line
+                if ($line -match "ELIFECYCLE|##\[error\]") { 
+                    Write-Host $line
+                    break 
                 }
-                Write-Host $line -ForegroundColor Red
             }
         }
-        Write-Host ""
-        Write-Host "--- Last 20 lines ---" -ForegroundColor Yellow
-        $lines | Select-Object -Last 20 | ForEach-Object { Write-Host $_ }
     }
 }
