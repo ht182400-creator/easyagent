@@ -7,11 +7,10 @@ on:
 
 env:
   NODE_VERSION: '20'
-  npm_config_msvs_version: '2022'
 
 jobs:
   test:
-    name: Test with setup-node+cache
+    name: Test pnpm install (no VS version constraint)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,4 +25,4 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Echo test
-        run: echo "setup-node with cache works"
+        run: echo "pnpm install succeeded!"
