@@ -7,12 +7,13 @@ on:
 
 jobs:
   test:
-    name: Test with pnpm
+    name: Test msvc-dev-cmd
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+      - uses: ilammy/msvc-dev-cmd@v1
       - name: Echo test
-        run: echo "pnpm setup succeeded"
+        run: echo "msvc-dev-cmd succeeded"
