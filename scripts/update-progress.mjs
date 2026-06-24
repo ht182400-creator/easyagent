@@ -297,8 +297,10 @@ async function main() {
       console.log(`📊 动态评分: ${dynScore.total} / 100`);
 
       // 自动更新 project-progress-data.json 中的评分历史（仅当与上次不同时追加）
-      const lastScore = data.scoreHistory?.[data.scoreHistory.length - 2]?.value; // 跳过"全量完成"占位
-      if (lastScore !== dynScore.total && !data.scoreHistory?.some(e => e.label === '自动评分（五维度加权）')) {
+      // 查找倒数第二个非 projected/非 dynamic 的实际评分条目（避免硬编码索引 -2）
+      const realScores = (data.scoreHistory || []).filter(e => !e.projected && !e.dynamic);
+      const lastRealScore = realScores.length > 0 ? realScores[realScores.length - 1].value : null;
+      if (lastRealScore !== dynScore.total && !data.scoreHistory?.some(e => e.label === '自动评分（五维度加权）')) {
         // 在"全量完成"之前插入动态评分条目
         const projectedIdx = data.scoreHistory?.findIndex(e => e.projected);
         if (projectedIdx >= 0) {

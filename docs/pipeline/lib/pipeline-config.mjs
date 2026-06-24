@@ -415,9 +415,21 @@ function calcPhasePassRate(vtResult, moduleIds) {
  * 
  * 各维度数据来源均为自动检测（文件存在性 / vitest 报告 / MODULES 状态），无硬编码。
  * 
+ * 评分结果带 5 秒 TTL 内存缓存，避免同一请求周期内重复扫描文件系统。
+ * 
  * @returns {{ total: number, dimensions: Array<{label:string, score:number, max:number, note:string}> }}
  */
+let _scoreCache = null;
+let _scoreCacheTime = 0;
+const SCORE_CACHE_TTL = 5000;
+
 export function calculateScore() {
+  // 若缓存有效则直接返回
+  const now = Date.now();
+  if (_scoreCache && (now - _scoreCacheTime) < SCORE_CACHE_TTL) {
+    return _scoreCache;
+  }
+
   const vitestResult = loadVitestResults();
   const ROOT = resolve(__dirname, '../../..');  // docs/pipeline/lib → workspace root
 
@@ -490,7 +502,13 @@ export function calculateScore() {
       note: `${docExist}/${docFiles.length} 文档齐全` },
   ];
 
-  return { total, dimensions };
+  const result = { total, dimensions };
+
+  // 更新缓存
+  _scoreCache = result;
+  _scoreCacheTime = now;
+
+  return result;
 }
 
 /**
