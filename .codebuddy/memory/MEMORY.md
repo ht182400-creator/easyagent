@@ -41,7 +41,7 @@
 - **唯一版本源**: `version.json` (v0.4.0)，修改后运行 `node scripts/sync-version.mjs` 同步
 - **禁止硬编码**: UI 组件通过 `/api/version` API 获取版本号，严禁写死
 - **发布**: `node scripts/release.mjs patch|minor|major` 版本标记；`release-publish.bat` 全流程交互发布
-- **CI/CD**: `.github/workflows/ci.yml` (日常测试) + `release.yml` (Tag 推送自动构建+发布)
+- **CI/CD**: `.github/workflows/ci.yml` (日常测试) + `release.yml` (Tag 推送自动构建+发布)。⚠️ **必须使用 `windows-2022` runner**，`windows-latest` (Server 2025 + VS 2026) 不被 node-gyp v10.3.1 识别。
 - verify-build.cjs 第 6 项自动拦截旧版本号硬编码
 - 模型列表通过 `/v1/models` API 动态获取，ProviderPresets 仅兜底
 - 命令白名单从 `EASYAGENT_ALLOWED_COMMANDS` 环境变量加载
@@ -107,6 +107,7 @@
 | 25 | 🖥️ | **apiFetch 双重 .json() 解析导致数据为空** | `apiFetch` 已内置 `res.json()` 返回解析后数据，但直接使用 `apiFetch().then(r => r.json())` 会导致 TypeError（数组/对象没有 .json() 方法），被 catch 静默吞掉 | 使用 `apiFetch<T>` 泛型直接获取数据，不要调用 `.then(r => r.json())`；原生 `fetch()` 才需要手动 `.json()`
 | 26 | 🖥️ | **HashRouter 下 `<a href>` 导致黑屏/页面跳转** | Desktop 使用 HashRouter（路由 `/#/xxx`），但 `<a href="/sessions">` 绕过 React Router 触发全页面导航 | 在所有 tsx 中应使用 `<Link to="/sessions">` 或 `navigate('/sessions')`；仅外部链接（`target="_blank"`）可用 `<a href>`；verify #15 自动检测
 | 27 | 🖥️ | **Desktop asar 内 PROJECT_ROOT 指向只读归档** | `createApp()` 中 `PROJECT_ROOT = resolve(__dirname, '..', '..', '..')` 在 asar 内解析到只读路径，知识库写入失败(400)、读取返回空 | 1) `createApp()` 接受 `options.projectRoot` 参数；2) Desktop main.ts 传入 `homedir()` 作为 projectRoot |
+| 28 | 🔀 | **CI windows-latest 已升级 VS 2026，node-gyp 不兼容** | CI 显示 0 jobs 或 better-sqlite3 编译失败，node-gyp v10.3.1 找不到 VS 2026 | ci.yml + release.yml 全部固定 `windows-2022`，确保 VS 2022 编译环境可用 |
 
 
 

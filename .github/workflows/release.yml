@@ -57,6 +57,12 @@ jobs:
       - name: Run server tests
         run: cd packages/server && npx vitest run
 
+      - name: Build shared frontend
+        run: cd packages/frontend && npx vite build
+
+      - name: Run desktop tests
+        run: cd packages/desktop && npx vitest run
+
   # ===== Job 2: 构建 Desktop EXE =====
   build-desktop:
     name: Build Desktop EXE
