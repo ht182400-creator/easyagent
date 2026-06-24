@@ -6798,7 +6798,7 @@
     }
   },
   "kpi": {
-    "testCases": 36,
+    "testCases": 35,
     "testPassRate": 100,
     "tools": 51,
     "providers": 4,
@@ -6837,11 +6837,11 @@
       "score": 75
     }
   ],
-  "generatedAt": "2026-06-24T13:56:24.200Z",
+  "generatedAt": "2026-06-24T14:10:06.534Z",
   "version": "0.4.1",
   "meta": {
     "version": "0.4.1",
-    "generatedAt": "2026-06-24T13:56:24.200Z"
+    "generatedAt": "2026-06-24T14:10:06.534Z"
   },
   "scoreDimensions": [
     {
@@ -6854,7 +6854,7 @@
       "label": "测试覆盖",
       "score": 95,
       "max": 100,
-      "note": "765/804 用例通过"
+      "note": "768/805 用例通过"
     },
     {
       "label": "分支优化",

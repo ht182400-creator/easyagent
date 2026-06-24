@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react';
 import { MessageSquare, Settings, Database, Zap, Monitor, ChevronLeft, Plus, SidebarOpenIcon } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useSessionStore } from '@/stores/sessionStore';
+import { useChatStore } from '@/stores/chatStore';
 import type { FC } from 'react';
 
 interface SidebarProps {
@@ -23,9 +24,8 @@ const NAV_ITEMS = [
 export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
   const { activeView, setActiveView, toggleSidebar, sidebarOpen } = useUIStore();
   const sessions = useSessionStore((s) => s.sessions);
-  const currentSessionId = useSessionStore((s) => s.currentSessionId);
-  const setCurrentSessionId = useSessionStore((s) => s.setCurrentSessionId);
-  const clearMessages = useSessionStore((s) => s.clearMessages);
+  const activeSessionId = useSessionStore((s) => s.activeSessionId);
+  const setActiveSession = useSessionStore((s) => s.setActiveSession);
   const openTab = useUIStore((s) => s.openTab);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -38,8 +38,9 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
 
   const handleSessionClick = useCallback(
     (session: typeof sessions[0]) => {
-      setCurrentSessionId(session.id);
-      clearMessages();
+      setActiveSession(session.id);
+      // 清空该会话的聊天消息
+      useChatStore.getState().clearMessages(session.id);
       openTab({
         id: `session_${session.id}`,
         type: 'chat',
@@ -48,14 +49,13 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
         closable: true,
       });
     },
-    [setCurrentSessionId, clearMessages, openTab],
+    [setActiveSession, openTab],
   );
 
   const handleNewChat = useCallback(() => {
-    setCurrentSessionId(null);
-    clearMessages();
+    setActiveSession(null);
     setActiveView('chat');
-  }, [setCurrentSessionId, clearMessages, setActiveView]);
+  }, [setActiveSession, setActiveView]);
 
   const filteredSessions = searchQuery
     ? sessions.filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -146,7 +146,7 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
                   key={session.id}
                   onClick={() => handleSessionClick(session)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-150 group
-                    ${currentSessionId === session.id
+                    ${activeSessionId === session.id
                       ? 'bg-surface-overlay text-text-primary'
                       : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                     }`}
