@@ -85,6 +85,9 @@ jobs:
           cd ../server && npx tsup
           cd ../desktop && npx tsup
 
+      - name: Build shared frontend (type-check)
+        run: cd packages/frontend && npx tsc --noEmit
+
       - name: Build web frontend
         run: cd packages/web && npm run build
 

@@ -429,6 +429,16 @@ export async function createApp(options: CreateAppOptions = {}) {
   }));
   app.use(express.json({ limit: '10mb' }));
 
+  /** 安全 HTTP 头中间件：防止常见 Web 攻击 */
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+    next();
+  });
+
   // ========== 系统API ==========
 
   /** 当前应用版本号（从构建环境或 package.json 读取） */
@@ -768,8 +778,16 @@ export async function createApp(options: CreateAppOptions = {}) {
   /** 获取配置 */
   app.get('/api/config', (_req, res) => {
     const cfg = configManager.getConfig();
+    // 白名单方式返回配置，避免 ...cfg 暴露未来新增的敏感字段
     const safeConfig = {
-      ...cfg,
+      version: cfg.version,
+      agent: cfg.agent,
+      security: cfg.security,
+      preferences: cfg.preferences,
+      sandbox: cfg.sandbox,
+      semantic: cfg.semantic,
+      knowledge: cfg.knowledge,
+      im: cfg.im,
       providers: cfg.providers.map((p) => ({
         ...p,
         apiKey: p.apiKey ? '••••••••' : '',
@@ -2285,8 +2303,18 @@ export async function createApp(options: CreateAppOptions = {}) {
     }
   }
 
-  wss.on('connection', (ws: WebSocket) => {
-    logger.info('WebSocket 客户端已连接');
+  wss.on('connection', (ws: WebSocket, req) => {
+    // WebSocket 基本认证：通过 query token 或 header 进行简单校验
+    const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+    const reqToken = url.searchParams.get('token') || req.headers['x-auth-token'];
+    const serverToken = process.env.EASYAGENT_WS_TOKEN;
+    if (serverToken && reqToken !== serverToken) {
+      logger.warn({ ip: req.socket.remoteAddress }, 'WebSocket 认证失败');
+      safeSend(ws, { type: 'error', error: '认证失败' });
+      ws.close(4001, 'Unauthorized');
+      return;
+    }
+    logger.info({ ip: req.socket.remoteAddress }, 'WebSocket 客户端已连接');
 
     // 发送连接确认
     safeSend(ws, { type: 'connected', timestamp: Date.now() });

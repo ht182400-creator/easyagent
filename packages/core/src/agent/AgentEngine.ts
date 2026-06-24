@@ -230,7 +230,9 @@ export class AgentEngine {
               toolInput = {};
             }
 
-            logger.info({ tool: toolName, input: toolInput }, '执行工具');
+            // 脱敏工具输入，避免日志泄露 API Key / 密码等敏感字段
+            const sanitizedInput = sanitizeToolInput(toolInput);
+            logger.info({ tool: toolName, input: sanitizedInput }, '执行工具');
 
             const result = await this.tools.execute(toolName, toolInput, {
               workspace,
@@ -406,4 +408,30 @@ ${this.config.allowTools ? this.tools.getDescriptions() : '工具调用已禁用
     this.turnCount = 0;
     logger.info({ sessionId }, '会话已清除');
   }
+}
+
+/**
+ * 脱敏工具输入参数，防止日志泄露敏感信息
+ * 对常见敏感字段（apiKey, token, password, secret, key 等）的值进行掩码
+ */
+function sanitizeToolInput(input: Record<string, unknown>): Record<string, unknown> {
+  const sensitiveKeys = ['apiKey', 'apikey', 'api_key',
+    'token', 'accessToken', 'access_token', 'refreshToken',
+    'password', 'passwd', 'secret', 'privateKey', 'private_key',
+    'key', 'credential', 'auth'];
+  const sanitized: Record<string, unknown> = {};
+
+  for (const [k, v] of Object.entries(input)) {
+    const lowerKey = k.toLowerCase();
+    if (sensitiveKeys.some((sk) => lowerKey === sk || lowerKey.includes(sk))) {
+      sanitized[k] = typeof v === 'string' && v.length > 3
+        ? v.slice(0, 3) + '***'
+        : '***';
+    } else if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+      sanitized[k] = sanitizeToolInput(v as Record<string, unknown>);
+    } else {
+      sanitized[k] = v;
+    }
+  }
+  return sanitized;
 }

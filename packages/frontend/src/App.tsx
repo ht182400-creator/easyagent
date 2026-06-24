@@ -75,10 +75,12 @@ export default function App() {
       }
     };
 
-    check();
+    // 首次检查延迟，避免后端启动慢时闪烁"未连接"通知
+    const checkTimeout = setTimeout(check, isDesktop ? 3000 : 500);
     const interval = setInterval(check, 30000);
     return () => {
       cancelled = true;
+      clearTimeout(checkTimeout);
       clearInterval(interval);
     };
   }, [apiBase, isDesktop, setServerConnected, addNotification]);

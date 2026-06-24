@@ -13,7 +13,7 @@ const { execSync } = require('child_process');
 const EXPECTED_VERSION = '123'; // Electron 30 = Node.js v20
 const CACHE_FILE = path.join(__dirname, '..', 'node_modules', 'better-sqlite3', '.module_version_cache');
 const NODE_FILE = path.join(__dirname, '..', 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node');
-const REBUILD_CMD = 'npx @electron/rebuild -f -w better-sqlite3 -v 30.0.0';
+const REBUILD_CMD = 'pnpm exec @electron/rebuild -f -w better-sqlite3 -v 30.0.0';
 
 function main() {
   console.log('[postinstall] Checking better-sqlite3 module version...');
@@ -60,7 +60,7 @@ function main() {
     console.log('[postinstall] electron-rebuild completed successfully');
   } catch (err) {
     console.warn('[postinstall] electron-rebuild failed:', err.message);
-    console.warn('[postinstall] You may need to manually run: cd packages/desktop && npx @electron/rebuild -f -w better-sqlite3 -v 30.0.0');
+    console.warn('[postinstall] You may need to manually run: cd packages/desktop && pnpm exec @electron/rebuild -f -w better-sqlite3 -v 30.0.0');
     // 不阻止安装继续
   }
 }

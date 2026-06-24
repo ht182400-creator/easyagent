@@ -421,14 +421,7 @@ export function MessageList({ sessionId }: { sessionId: string }) {
                 key={hint}
                 className="btn btn-secondary text-xs"
                 onClick={() => {
-                  const el = document.querySelector(
-                    'textarea[data-chat-input]'
-                  ) as HTMLTextAreaElement;
-                  if (el) {
-                    el.value = hint;
-                    el.focus();
-                    el.dispatchEvent(new Event('input', { bubbles: true }));
-                  }
+                  useChatStore.getState().setComposerPrefill(hint);
                 }}
               >
                 {hint}

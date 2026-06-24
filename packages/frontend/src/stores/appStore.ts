@@ -68,9 +68,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   setGlobalLoading: (loading) => set({ globalLoading: loading }),
   setViewMode: (mode) => set({ viewMode: mode }),
 
+  /** 
+   * 添加通知（最多保留 10 条，超出的老通知自动丢弃）
+   * @param notification 通知对象（不含 id/timestamp）
+   * @param notification.duration 显示时长(ms)，默认 5000，设为 0 则不自动消失
+   */
   addNotification: (notification) => {
     const id = `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const newNotif = { ...notification, id, timestamp: Date.now() };
+    // 最多保留 10 条通知，通过 .slice(-9) 实现（9 条旧 + 1 条新 = 10）
     set((s) => ({ notifications: [...s.notifications.slice(-9), newNotif] }));
     if (notification.duration !== 0) {
       setTimeout(() => {

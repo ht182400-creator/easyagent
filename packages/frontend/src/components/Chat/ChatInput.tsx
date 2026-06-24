@@ -189,16 +189,17 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
     return () => { cancelled = true; };
   }, []);
 
-  // 当 providers store 更新时也刷新模型列表
-  const providers = useProviderStore((s) => s.providers);
+  // 当 providers store 更新时也刷新模型列表（避免数组引用变化导致重复请求）
+  const providersId = useProviderStore((s) => s.providers.map((p) => p.id).sort().join(','));
   useEffect(() => {
-    if (providers.length > 0) {
+    const upstreamProviders = useProviderStore.getState().providers;
+    if (upstreamProviders.length > 0) {
       fetch('/api/providers/all-models')
         .then((r) => r.json())
         .then((data) => { if (data.success) setAvailableModels(data.models || []); })
         .catch(() => {});
     }
-  }, [providers]);
+  }, [providersId]);
 
   // 模型选择
   const handleModelSelect = useCallback((provider: string, model: string) => {

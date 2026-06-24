@@ -20,7 +20,7 @@
     "test:all": "cd packages/core && npx vitest run && cd ../server && npx vitest run",
     "benchmark": "node scripts/swe-bench/run-benchmark.mjs",
     "benchmark:dry": "node scripts/swe-bench/run-benchmark.mjs --dry-run",
-    "lint": "echo 'lint TODO'",
+    "lint": "eslint packages/*/src --ext .ts,.tsx --max-warnings 50",
     "update-progress": "node scripts/update-progress.mjs",
     "update-progress:dry": "node scripts/update-progress.mjs --dry",
     "install-hooks": "node scripts/install-git-hooks.mjs",

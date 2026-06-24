@@ -141,9 +141,9 @@
     }
   },
   "dependencies": {
-    "@easyagent/core": "../core",
+    "@easyagent/core": "workspace:*",
     "@easyagent/frontend": "workspace:*",
-    "@easyagent/server": "../server",
+    "@easyagent/server": "workspace:*",
     "accepts": "^1.3.8",
     "append-field": "^1.0.0",
     "array-flatten": "^1.1.1",
