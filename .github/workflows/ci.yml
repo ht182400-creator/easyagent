@@ -7,9 +7,11 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 env:
   NODE_VERSION: '20'
@@ -78,7 +80,9 @@ jobs:
   # ===== 覆盖率门禁 (DV-05) =====
   coverage:
     name: Coverage Gate
-    needs: [test-core, test-server]
+    needs:
+      - test-core
+      - test-server
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
