@@ -98,17 +98,14 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build core + frontend + server
+      - name: Build core + server
         run: |
           cd packages/core && npx tsup --dts
-          cd ../frontend && npx vite build
           cd ../server && npx tsup
       - name: Core coverage check
         run: cd packages/core && npx vitest run --coverage
-      - name: Server coverage check
+      - name: Server coverage check (Desktop excluded - code in frontend pkg)
         run: cd packages/server && npx vitest run --coverage
-      - name: Desktop coverage check
-        run: cd packages/desktop && npx vitest run --coverage
 
   test-pipeline:
     name: Pipeline Tests

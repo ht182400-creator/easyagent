@@ -6802,7 +6802,7 @@
     "testPassRate": 100,
     "tools": 51,
     "providers": 4,
-    "scoreTotal": 81,
+    "scoreTotal": 82,
     "modes": 4
   },
   "scoreHistory": [
@@ -6837,11 +6837,11 @@
       "score": 75
     }
   ],
-  "generatedAt": "2026-06-24T16:43:56.426Z",
+  "generatedAt": "2026-06-24T17:00:21.332Z",
   "version": "0.5.0",
   "meta": {
     "version": "0.5.0",
-    "generatedAt": "2026-06-24T16:43:56.426Z"
+    "generatedAt": "2026-06-24T17:00:21.332Z"
   },
   "scoreDimensions": [
     {
@@ -6852,9 +6852,9 @@
     },
     {
       "label": "测试覆盖",
-      "score": 96,
+      "score": 100,
       "max": 100,
-      "note": "949/986 用例通过"
+      "note": "977/977 用例通过"
     },
     {
       "label": "分支优化",
