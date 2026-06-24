@@ -1,261 +1,233 @@
 /**
- * Session Store 单元测试
- * 覆盖会话、消息、Agent状态管理
+ * 会话 Store 单元测试
+ * 覆盖: 会话CRUD、乐观更新、回滚、搜索
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// 使用 vi.hoisted 确保 mock 变量在 vi.mock 工厂之前初始化
+const { mockApiRequest } = vi.hoisted(() => ({
+  mockApiRequest: vi.fn(),
+}));
+
+vi.mock('@/request', () => ({
+  apiRequest: mockApiRequest,
+  setApiBase: vi.fn(),
+  getApiBase: vi.fn(() => ''),
+}));
+
+// Mock appStore 的通知
+const mockAddNotification = vi.fn();
+vi.mock('@/stores/appStore', () => ({
+  useAppStore: {
+    getState: () => ({ addNotification: mockAddNotification }),
+  },
+}));
+
 import { useSessionStore } from '@/stores/sessionStore';
+
+/** 构造测试用的会话元数据 */
+function makeSession(overrides: Partial<ReturnType<typeof useSessionStore.getState>['sessions'][number]> = {}) {
+  return {
+    id: 'session-1',
+    workspace: '/test/workspace',
+    metadata: {
+      title: '测试会话',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+      status: 'active' as const,
+      tokenUsage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+    },
+    ...overrides,
+  };
+}
 
 describe('sessionStore', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     useSessionStore.setState({
       sessions: [],
-      messages: [],
-      isRunning: false,
-      currentSessionId: null,
+      loading: false,
+      searchQuery: '',
+      activeSessionId: null,
     });
   });
 
-  // ==================== 会话管理 ====================
+  // ==================== 初始状态 ====================
 
-  describe('会话管理', () => {
-    const createSession = (overrides = {}) => ({
-      id: 'session-1',
-      title: '测试会话',
-      workspace: '/test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: 'active' as const,
-      messageCount: 0,
-      tokenUsage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
-      ...overrides,
+  describe('初始状态', () => {
+    it('会话列表初始为空', () => {
+      expect(useSessionStore.getState().sessions).toEqual([]);
     });
 
-    it('addSession 应添加会话到列表头部', () => {
-      const session = createSession();
-      useSessionStore.getState().addSession(session);
+    it('初始加载状态为 false', () => {
+      expect(useSessionStore.getState().loading).toBe(false);
+    });
+
+    it('初始搜索关键词为空', () => {
+      expect(useSessionStore.getState().searchQuery).toBe('');
+    });
+
+    it('初始活跃会话为 null', () => {
+      expect(useSessionStore.getState().activeSessionId).toBeNull();
+    });
+  });
+
+  // ==================== fetchSessions ====================
+
+  describe('fetchSessions', () => {
+    it('成功获取应填充会话列表', async () => {
+      const mockData = [makeSession(), makeSession({ id: 'session-2', metadata: { ...makeSession().metadata, title: '会话2' } })];
+      mockApiRequest.mockResolvedValue(mockData);
+
+      await useSessionStore.getState().fetchSessions();
       const state = useSessionStore.getState();
-      expect(state.sessions).toHaveLength(1);
+
+      expect(state.sessions).toHaveLength(2);
+      expect(state.sessions[0].id).toBe('session-1');
+      expect(state.loading).toBe(false);
+    });
+
+    it('请求期间 loading 应为 true', async () => {
+      mockApiRequest.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve([makeSession()]), 50))
+      );
+
+      const promise = useSessionStore.getState().fetchSessions();
+      expect(useSessionStore.getState().loading).toBe(true);
+      await promise;
+    });
+
+    it('网络失败应保持空列表', async () => {
+      mockApiRequest.mockRejectedValue(new Error('网络错误'));
+      await useSessionStore.getState().fetchSessions();
+      const state = useSessionStore.getState();
+
+      expect(state.sessions).toEqual([]);
+      expect(state.loading).toBe(false);
+    });
+
+    it('返回非数组数据应设为空列表', async () => {
+      mockApiRequest.mockResolvedValue(null);
+      await useSessionStore.getState().fetchSessions();
+      expect(useSessionStore.getState().sessions).toEqual([]);
+    });
+  });
+
+  // ==================== deleteSession ====================
+
+  describe('deleteSession', () => {
+    it('应立即从列表移除 (乐观更新)', async () => {
+      useSessionStore.setState({
+        sessions: [makeSession(), makeSession({ id: 'session-2' })],
+      });
+
+      const promise = useSessionStore.getState().deleteSession('session-1');
+      // 乐观更新：立即从列表移除
+      expect(useSessionStore.getState().sessions).toHaveLength(1);
+      expect(useSessionStore.getState().sessions[0].id).toBe('session-2');
+
+      await promise;
+    });
+
+    it('API 失败应回滚列表', async () => {
+      const s1 = makeSession();
+      const s2 = makeSession({ id: 'session-2' });
+      useSessionStore.setState({ sessions: [s1, s2] });
+
+      mockApiRequest.mockRejectedValue(new Error('删除失败'));
+
+      await useSessionStore.getState().deleteSession('session-1');
+      const state = useSessionStore.getState();
+
+      // 应回滚到原始状态
+      expect(state.sessions).toHaveLength(2);
       expect(state.sessions[0].id).toBe('session-1');
     });
 
-    it('addSession 新会话应排在最前面', () => {
-      const s1 = createSession({ id: 's1', title: '旧会话' });
-      const s2 = createSession({ id: 's2', title: '新会话' });
-      useSessionStore.getState().addSession(s1);
-      useSessionStore.getState().addSession(s2);
-      const state = useSessionStore.getState();
-      expect(state.sessions[0].id).toBe('s2');
-      expect(state.sessions[1].id).toBe('s1');
-    });
+    it('删除不存在的会话应无副作用', async () => {
+      useSessionStore.setState({ sessions: [makeSession()] });
 
-    it('setSessions 应替换整个会话列表', () => {
-      const sessions = [createSession({ id: 'a' }), createSession({ id: 'b' })];
-      useSessionStore.getState().setSessions(sessions);
-      expect(useSessionStore.getState().sessions).toHaveLength(2);
-    });
-
-    it('removeSession 应移除指定会话', () => {
-      useSessionStore.getState().addSession(createSession({ id: 's1' }));
-      useSessionStore.getState().addSession(createSession({ id: 's2' }));
-      useSessionStore.getState().removeSession('s1');
-      const state = useSessionStore.getState();
-      expect(state.sessions).toHaveLength(1);
-      expect(state.sessions[0].id).toBe('s2');
-    });
-
-    it('removeSession 移除不存在的会话应无副作用', () => {
-      useSessionStore.getState().addSession(createSession());
-      useSessionStore.getState().removeSession('non-existent');
+      await useSessionStore.getState().deleteSession('non-existent');
       expect(useSessionStore.getState().sessions).toHaveLength(1);
     });
+  });
 
-    it('setCurrentSessionId 应设置当前会话', () => {
-      useSessionStore.getState().setCurrentSessionId('session-1');
-      expect(useSessionStore.getState().currentSessionId).toBe('session-1');
+  // ==================== archiveSession ====================
 
-      useSessionStore.getState().setCurrentSessionId(null);
-      expect(useSessionStore.getState().currentSessionId).toBeNull();
+  describe('archiveSession', () => {
+    it('应立即将会话标记为 archived (乐观更新)', async () => {
+      useSessionStore.setState({ sessions: [makeSession()] });
+
+      const promise = useSessionStore.getState().archiveSession('session-1');
+      const state = useSessionStore.getState();
+
+      expect(state.sessions[0].metadata.status).toBe('archived');
+      await promise;
+    });
+
+    it('API 失败应回滚状态', async () => {
+      useSessionStore.setState({ sessions: [makeSession()] });
+      mockApiRequest.mockRejectedValue(new Error('归档失败'));
+
+      await useSessionStore.getState().archiveSession('session-1');
+      expect(useSessionStore.getState().sessions[0].metadata.status).toBe('active');
+    });
+
+    it('归档不存在的会话应无副作用', async () => {
+      useSessionStore.setState({ sessions: [makeSession()] });
+
+      await useSessionStore.getState().archiveSession('non-existent');
+      expect(useSessionStore.getState().sessions[0].metadata.status).toBe('active');
     });
   });
 
-  // ==================== 消息管理 ====================
+  // ==================== setSearchQuery ====================
 
-  describe('消息管理', () => {
-    it('addMessage 应添加消息并返回 ID', () => {
-      const msg = { role: 'user' as const, content: '你好', timestamp: new Date() };
-      const id = useSessionStore.getState().addMessage(msg);
-      const state = useSessionStore.getState();
-      expect(state.messages).toHaveLength(1);
-      expect(state.messages[0].id).toBe(id);
-      expect(state.messages[0].role).toBe('user');
-      expect(state.messages[0].content).toBe('你好');
-      expect(id).toMatch(/^msg_\d+$/);
+  describe('setSearchQuery', () => {
+    it('应更新搜索关键词', () => {
+      useSessionStore.getState().setSearchQuery('测试');
+      expect(useSessionStore.getState().searchQuery).toBe('测试');
     });
 
-    it('消息 ID 应递增', () => {
-      const id1 = useSessionStore.getState().addMessage({ role: 'user', content: 'A', timestamp: new Date() });
-      const id2 = useSessionStore.getState().addMessage({ role: 'user', content: 'B', timestamp: new Date() });
-      const num1 = parseInt(id1.replace('msg_', ''));
-      const num2 = parseInt(id2.replace('msg_', ''));
-      expect(num2).toBeGreaterThan(num1);
-    });
-
-    it('appendToLastMessage 应追加内容到最后一条 assistant 消息', () => {
-      useSessionStore.getState().addMessage({ role: 'assistant', content: 'Hello', timestamp: new Date() });
-      useSessionStore.getState().appendToLastMessage(' World');
-      const last = useSessionStore.getState().messages[0];
-      expect(last.content).toBe('Hello World');
-    });
-
-    it('appendToLastMessage 应创建新 assistant 消息如果最后一条不是 assistant', () => {
-      useSessionStore.getState().addMessage({ role: 'user', content: 'Hi', timestamp: new Date() });
-      useSessionStore.getState().appendToLastMessage('Response');
-      const state = useSessionStore.getState();
-      expect(state.messages).toHaveLength(2);
-      expect(state.messages[1].role).toBe('assistant');
-      expect(state.messages[1].isStreaming).toBe(true);
-    });
-
-    it('appendToLastMessage 空消息列表应创建新消息', () => {
-      useSessionStore.getState().appendToLastMessage('New');
-      const state = useSessionStore.getState();
-      expect(state.messages).toHaveLength(1);
-      expect(state.messages[0].role).toBe('assistant');
-    });
-
-    it('setLastMessageStreaming 应设置流式状态', () => {
-      useSessionStore.getState().addMessage({ role: 'assistant', content: '测试', timestamp: new Date() });
-      useSessionStore.getState().setLastMessageStreaming(true);
-      expect(useSessionStore.getState().messages[0].isStreaming).toBe(true);
-
-      useSessionStore.getState().setLastMessageStreaming(false);
-      expect(useSessionStore.getState().messages[0].isStreaming).toBe(false);
-    });
-
-    it('setLastMessageStreaming 空列表应无副作用', () => {
-      useSessionStore.getState().setLastMessageStreaming(true);
-      expect(useSessionStore.getState().messages).toHaveLength(0);
-    });
-
-    it('clearMessages 应清空所有消息', () => {
-      useSessionStore.getState().addMessage({ role: 'user', content: 'A', timestamp: new Date() });
-      useSessionStore.getState().addMessage({ role: 'assistant', content: 'B', timestamp: new Date() });
-      useSessionStore.getState().clearMessages();
-      expect(useSessionStore.getState().messages).toHaveLength(0);
+    it('应可清空搜索关键词', () => {
+      useSessionStore.getState().setSearchQuery('关键词');
+      useSessionStore.getState().setSearchQuery('');
+      expect(useSessionStore.getState().searchQuery).toBe('');
     });
   });
 
-  // ==================== 工具调用 ====================
+  // ==================== setActiveSession ====================
 
-  describe('工具调用管理', () => {
-    it('addToolCall 应附加到最后一条 assistant 消息', () => {
-      useSessionStore.getState().addMessage({ role: 'assistant', content: 'Processing...', timestamp: new Date() });
-      useSessionStore.getState().addToolCall({
-        id: 'tc-1',
-        name: 'read_file',
-        input: { path: '/test.ts' },
-        status: 'running',
-      });
-      const msg = useSessionStore.getState().messages[0];
-      expect(msg.toolCalls).toHaveLength(1);
-      expect(msg.toolCalls![0].name).toBe('read_file');
+  describe('setActiveSession', () => {
+    it('应设置活跃会话 ID', () => {
+      useSessionStore.getState().setActiveSession('session-abc');
+      expect(useSessionStore.getState().activeSessionId).toBe('session-abc');
     });
 
-    it('addToolCall 最后一条非 assistant 消息应忽略', () => {
-      // 没有 assistant 消息时不应崩溃
-      useSessionStore.getState().addToolCall({
-        id: 'tc-1',
-        name: 'test',
-        input: {},
-        status: 'running',
-      });
-      // 不应添加消息或抛出异常
-      expect(useSessionStore.getState().messages).toHaveLength(0);
-    });
-
-    it('updateToolCall 应更新工具调用状态', () => {
-      useSessionStore.getState().addMessage({ role: 'assistant', content: '', timestamp: new Date() });
-      useSessionStore.getState().addToolCall({ id: 'tc-1', name: 'search', input: {}, status: 'running' });
-      useSessionStore.getState().updateToolCall('tc-1', {
-        output: '找到 3 个结果',
-        status: 'done',
-      });
-      const tc = useSessionStore.getState().messages[0].toolCalls![0];
-      expect(tc.status).toBe('done');
-      expect(tc.output).toBe('找到 3 个结果');
-    });
-
-    it('updateToolCall 不存在的 ID 应无副作用', () => {
-      useSessionStore.getState().addMessage({ role: 'assistant', content: '', timestamp: new Date() });
-      useSessionStore.getState().updateToolCall('non-existent', { status: 'done' });
-      // 不应崩溃
-    });
-
-    it('多个工具调用应独立更新', () => {
-      useSessionStore.getState().addMessage({ role: 'assistant', content: '', timestamp: new Date() });
-      useSessionStore.getState().addToolCall({ id: 'tc-1', name: 'tool-a', input: {}, status: 'running' });
-      useSessionStore.getState().addToolCall({ id: 'tc-2', name: 'tool-b', input: {}, status: 'running' });
-      useSessionStore.getState().updateToolCall('tc-1', { status: 'done', output: 'OK' });
-      useSessionStore.getState().updateToolCall('tc-2', { status: 'error', error: 'Failed' });
-      const msg = useSessionStore.getState().messages[0];
-      expect(msg.toolCalls![0].status).toBe('done');
-      expect(msg.toolCalls![1].status).toBe('error');
-    });
-  });
-
-  // ==================== Agent 状态 ====================
-
-  describe('Agent 运行状态', () => {
-    it('初始状态应为非运行中', () => {
-      expect(useSessionStore.getState().isRunning).toBe(false);
-    });
-
-    it('setIsRunning 应切换运行状态', () => {
-      useSessionStore.getState().setIsRunning(true);
-      expect(useSessionStore.getState().isRunning).toBe(true);
-
-      useSessionStore.getState().setIsRunning(false);
-      expect(useSessionStore.getState().isRunning).toBe(false);
+    it('应可设为 null', () => {
+      useSessionStore.getState().setActiveSession('session-abc');
+      useSessionStore.getState().setActiveSession(null);
+      expect(useSessionStore.getState().activeSessionId).toBeNull();
     });
   });
 
   // ==================== 异常边界 ====================
 
   describe('异常边界', () => {
-    it('大量消息应正常工作', () => {
-      for (let i = 0; i < 100; i++) {
-        useSessionStore.getState().addMessage({
-          role: i % 2 === 0 ? 'user' : 'assistant',
-          content: `消息 ${i}`,
-          timestamp: new Date(),
-        });
+    it('大量会话操作应正常', () => {
+      const sessions = Array.from({ length: 100 }, (_, i) =>
+        makeSession({ id: `session-${i}`, metadata: { ...makeSession().metadata, title: `会话 ${i}` } })
+      );
+      useSessionStore.setState({ sessions });
+      expect(useSessionStore.getState().sessions).toHaveLength(100);
+    });
+
+    it('特殊字符的搜索关键词应正常', () => {
+      const specialQueries = ['<script>', '&amp;', '你好👋', 'select * from'];
+      for (const q of specialQueries) {
+        useSessionStore.getState().setSearchQuery(q);
+        expect(useSessionStore.getState().searchQuery).toBe(q);
       }
-      expect(useSessionStore.getState().messages).toHaveLength(100);
-    });
-
-    it('特殊字符内容应正常存储', () => {
-      useSessionStore.getState().addMessage({
-        role: 'user',
-        content: '<script>alert("XSS")</script>\n```\n{ "json": true }\n```',
-        timestamp: new Date(),
-      });
-      expect(useSessionStore.getState().messages[0].content).toContain('<script>');
-    });
-
-    it('空字符串内容应正常存储', () => {
-      useSessionStore.getState().addMessage({
-        role: 'user',
-        content: '',
-        timestamp: new Date(),
-      });
-      expect(useSessionStore.getState().messages[0].content).toBe('');
-    });
-
-    it('快速交替 setRunning 应保持最终状态', () => {
-      useSessionStore.getState().setIsRunning(true);
-      useSessionStore.getState().setIsRunning(false);
-      useSessionStore.getState().setIsRunning(true);
-      expect(useSessionStore.getState().isRunning).toBe(true);
     });
   });
 });

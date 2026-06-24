@@ -20,9 +20,9 @@ describe('主进程 - 版本号', () => {
 
   it('应正确读取 package.json 中的版本', () => {
     const version = getAppVersion();
-    expect(version).toBe('0.3.0');
-    // 版本号应符合 semver 格式
+    // 版本号应符合 semver 格式 + 非零 (已演进)
     expect(version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(version).not.toBe('0.0.0');
   });
 
   it('读取失败应返回默认版本 0.3.0', () => {

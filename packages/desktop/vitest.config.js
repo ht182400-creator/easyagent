@@ -17,7 +17,8 @@ export default defineConfig({
         testTimeout: 10000,
         // 路径别名 - 匹配 tsconfig
         alias: {
-            '@': path.resolve(__dirname, 'src/renderer'),
+            // 与 tsconfig.json 中 paths 保持一致，指向共享前端包
+            '@': path.resolve(__dirname, '../frontend/src'),
         },
         // CSS/Less/静态资源 mock
         css: false,
