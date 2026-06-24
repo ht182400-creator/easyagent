@@ -3,6 +3,7 @@
  * 管理: 消息列表、WebSocket流式连接、输入状态、工具调用展示
  */
 import { create } from 'zustand';
+import { emit } from '../events';
 
 /** 消息角色 */
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool';
@@ -56,6 +57,10 @@ interface ChatState {
   ws: WebSocket | null;
   /** 输入框预填文本 */
   composerPrefill: string;
+  /** 重连计数器 */
+  _reconnectAttempts: number;
+  /** 重连最大间隔(ms) */
+  _reconnectTimer: ReturnType<typeof setTimeout> | null;
 
   // Actions
   setActiveSession: (sessionId: string) => void;
@@ -115,6 +120,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   activeSessionId: null,
   ws: null,
   composerPrefill: '',
+  _reconnectAttempts: 0,
+  _reconnectTimer: null,
 
   setActiveSession: (sessionId) => set({ activeSessionId: sessionId }),
 
@@ -205,6 +212,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   // WebSocket 连接管理
   connectWebSocket: (sessionId, wsUrl?: string) => {
     const state = get();
+    // 清除之前的重连计时器
+    if (state._reconnectTimer) {
+      clearTimeout(state._reconnectTimer);
+    }
     // 关闭已有连接
     if (state.ws) {
       state.ws.close();
@@ -214,7 +225,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
     /** 桌面版 + 开发模式直连后端 WebSocket (127.0.0.1:3456)
      *  生产 Web 模式或代理模式使用相对路径 */
     const isDesktop = !!(window as any).easyAgent || window.location.protocol === 'file:';
-    const defaultUrl = (import.meta.env.DEV || isDesktop)
+    // 使用运行时检测替代 import.meta.env.DEV，兼容非 Vite 构建环境
+    const isDev = window.location.hostname === 'localhost'
+      || window.location.hostname === '127.0.0.1'
+      || window.location.hostname.includes('local');
+    const defaultUrl = (isDev || isDesktop)
       ? 'ws://127.0.0.1:3456/ws'
       : `${protocol}//${window.location.host}/ws`;
     const url = wsUrl || defaultUrl;
@@ -222,62 +237,111 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((s) => {
       const session = { ...ensureSession(s, sessionId) };
       session.connectionState = 'connecting';
-      return { sessions: { ...s.sessions, [sessionId]: session }, activeSessionId: sessionId };
+      return {
+        sessions: { ...s.sessions, [sessionId]: session },
+        activeSessionId: sessionId,
+        _reconnectAttempts: 0, // 重置重连计数
+      };
     });
 
-    try {
-      const ws = new WebSocket(url);
+    /** 执行 WebSocket 连接创建 */
+    function createConnection() {
+      const s = get();
+      // 清理旧的重连计时器
+      if (s._reconnectTimer) {
+        clearTimeout(s._reconnectTimer);
+        set({ _reconnectTimer: null });
+      }
 
-      ws.onopen = () => {
-        set((s) => {
-          const session = { ...ensureSession(s, sessionId) };
-          session.connectionState = 'connected';
-          return { sessions: { ...s.sessions, [sessionId]: session } };
-        });
-        // 注册到会话
-        ws.send(JSON.stringify({ type: 'subscribe', sessionId }));
-      };
+      try {
+        const ws = new WebSocket(url);
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          handleWSMessage(sessionId, data);
-        } catch (err) {
-          console.warn('无法解析WebSocket消息:', event.data);
-        }
-      };
+        ws.onopen = () => {
+          set((s) => {
+            const session = { ...ensureSession(s, sessionId) };
+            session.connectionState = 'connected';
+            return {
+              sessions: { ...s.sessions, [sessionId]: session },
+              _reconnectAttempts: 0,
+            };
+          });
+          // 注册到会话
+          ws.send(JSON.stringify({ type: 'subscribe', sessionId }));
+        };
 
-      ws.onerror = () => {
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            handleWSMessage(sessionId, data);
+          } catch (err) {
+            console.warn('无法解析WebSocket消息:', event.data);
+          }
+        };
+
+        ws.onerror = () => {
+          set((s) => {
+            const session = { ...ensureSession(s, sessionId) };
+            session.connectionState = 'error';
+            return { sessions: { ...s.sessions, [sessionId]: session } };
+          });
+        };
+
+        ws.onclose = (event) => {
+          set((s) => {
+            const session = { ...ensureSession(s, sessionId) };
+            session.connectionState = 'disconnected';
+            return { sessions: { ...s.sessions, [sessionId]: session } };
+          });
+
+          // 非正常关闭时自动重连（指数退避）
+          if (event.code !== 1000 && event.code !== 1001) {
+            const state = get();
+            const attempts = state._reconnectAttempts;
+            const maxReconnect = 10;
+            if (attempts < maxReconnect) {
+              // 指数退避：1s, 2s, 4s, 8s, ... , 最大 30s
+              const delay = Math.min(1000 * Math.pow(2, attempts), 30000);
+              console.warn(`WebSocket 断开，${delay}ms 后重连 (${attempts + 1}/${maxReconnect})`);
+
+              const timer = setTimeout(() => {
+                set((s) => {
+                  const session = { ...ensureSession(s, sessionId) };
+                  session.connectionState = 'connecting';
+                  return {
+                    sessions: { ...s.sessions, [sessionId]: session },
+                    _reconnectAttempts: attempts + 1,
+                  };
+                });
+                createConnection();
+              }, delay);
+              set({ _reconnectTimer: timer });
+            } else {
+              console.error('WebSocket 重连次数已达上限');
+            }
+          }
+        };
+
+        set({ ws });
+      } catch (err) {
         set((s) => {
           const session = { ...ensureSession(s, sessionId) };
           session.connectionState = 'error';
           return { sessions: { ...s.sessions, [sessionId]: session } };
         });
-      };
-
-      ws.onclose = () => {
-        set((s) => {
-          const session = { ...ensureSession(s, sessionId) };
-          session.connectionState = 'disconnected';
-          return { sessions: { ...s.sessions, [sessionId]: session } };
-        });
-      };
-
-      set({ ws });
-    } catch (err) {
-      set((s) => {
-        const session = { ...ensureSession(s, sessionId) };
-        session.connectionState = 'error';
-        return { sessions: { ...s.sessions, [sessionId]: session } };
-      });
+      }
     }
+
+    createConnection();
   },
 
   disconnectWebSocket: () => {
-    const { ws } = get();
+    const { ws, _reconnectTimer } = get();
+    if (_reconnectTimer) {
+      clearTimeout(_reconnectTimer);
+    }
     if (ws) {
-      ws.close();
-      set({ ws: null });
+      ws.close(1000, '用户主动断开');
+      set({ ws: null, _reconnectTimer: null });
     }
   },
 
@@ -380,6 +444,16 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
 
     case 'done': {
       store.setGenerating(sessionId, false);
+      break;
+    }
+
+    case 'automation_started':
+    case 'automation_progress':
+    case 'automation_completed':
+    case 'automation_failed':
+    case 'automation_stopped': {
+      // 转发自动化事件到共享事件总线，供 automationStore 消费
+      emit(data.type as string, data);
       break;
     }
 

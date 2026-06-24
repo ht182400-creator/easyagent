@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** 模型定价 */
 export interface ModelPricing {
@@ -65,29 +66,28 @@ export const useProviderStore = create<ProviderState>((set, get) => ({
   fetchProviders: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/providers');
-      const data = await res.json();
-      const providers = Array.isArray(data) ? data : [];
+      const providers = await apiRequest<Provider[]>('/api/providers');
+      const list = Array.isArray(providers) ? providers : [];
       
       // 智能选择默认模型：优先选已配置密钥的提供商，其次选第一个
       const currentState = get();
       // 当前选中但该提供商无密钥 → 不算有效选择
-      const currentHasKey = providers.find((p: Provider) => p.id === currentState.currentProvider)?.hasKey;
+      const currentHasKey = list.find((p: Provider) => p.id === currentState.currentProvider)?.hasKey;
       const hasValidSelection = currentState.currentProvider && currentState.currentModel && currentHasKey;
       
-      if (!hasValidSelection && providers.length > 0) {
+      if (!hasValidSelection && list.length > 0) {
         // 优先选有密钥的提供商（Ollama 本地模型总是有密钥）
-        const withKey = providers.find((p: Provider) => p.hasKey);
-        const target = withKey || providers[0];
+        const withKey = list.find((p: Provider) => p.hasKey);
+        const target = withKey || list[0];
         const defaultModel = target.models?.[0]?.id || '';
         set({
-          providers,
+          providers: list,
           loading: false,
           currentProvider: target.id,
           currentModel: defaultModel,
         });
       } else {
-        set({ providers, loading: false });
+        set({ providers: list, loading: false });
       }
     } catch (err) {
       console.error('获取提供商列表失败:', err);
@@ -101,9 +101,8 @@ export const useProviderStore = create<ProviderState>((set, get) => ({
 
   setApiKey: async (providerId, apiKey) => {
     try {
-      await fetch(`/api/providers/${providerId}/key`, {
+      await apiRequest(`/api/providers/${providerId}/key`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey }),
       });
       useAppStore.getState().addNotification({
@@ -123,8 +122,9 @@ export const useProviderStore = create<ProviderState>((set, get) => ({
   testConnection: async (providerId) => {
     set((s) => ({ testResults: { ...s.testResults, [providerId]: null } }));
     try {
-      const res = await fetch(`/api/providers/${providerId}/test`, { method: 'POST' });
-      const data = await res.json();
+      const data = await apiRequest<{ success: boolean }>(`/api/providers/${providerId}/test`, {
+        method: 'POST',
+      });
       const success = !!data.success;
       set((s) => ({ testResults: { ...s.testResults, [providerId]: success } }));
       useAppStore.getState().addNotification({

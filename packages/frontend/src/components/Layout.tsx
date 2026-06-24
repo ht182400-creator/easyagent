@@ -57,7 +57,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   } = useAppStore();
   const location = useLocation();
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
-  const [appVersion, setAppVersion] = useState('v0.3.0');
+  const [appVersion, setAppVersion] = useState('v0.4.1');
 
   /** 从 API 获取当前版本号 */
   useEffect(() => {

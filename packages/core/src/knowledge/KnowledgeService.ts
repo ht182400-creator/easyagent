@@ -129,6 +129,10 @@ export class KnowledgeService {
       // 从文件读取
       if (!content && filePath) {
         const fullPath = resolve(this.workspace, filePath);
+        // 路径安全检查：确保不越出工作区
+        if (!fullPath.startsWith(resolve(this.workspace))) {
+          return { success: false, error: `路径越界: ${filePath}` };
+        }
         if (!existsSync(fullPath)) {
           return { success: false, error: `文件不存在: ${filePath}` };
         }
@@ -408,6 +412,18 @@ export class KnowledgeService {
    */
   importFromAbsolutePath(absolutePath: string): { success: boolean; docId?: string; error?: string } {
     try {
+      // 安全白名单检查：只允许从工作区、上传目录或系统临时目录导入文件
+      const allowedDirs = [
+        resolve(this.workspace),
+        resolve(homedir(), '.easyagent', 'uploads'),
+        resolve(process.env.TEMP || process.env.TMP || '/tmp'),
+      ];
+      const normalizedPath = resolve(absolutePath);
+      const isAllowed = allowedDirs.some((dir) => normalizedPath.startsWith(dir));
+      if (!isAllowed) {
+        return { success: false, error: '安全限制: 只能从工作区或上传目录导入文件' };
+      }
+
       if (!existsSync(absolutePath)) {
         return { success: false, error: `文件不存在: ${absolutePath}` };
       }

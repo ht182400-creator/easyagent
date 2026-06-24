@@ -232,8 +232,9 @@ if %AUTO_MODE%==0 (
 echo   Running: build.bat --release
 echo   ----------------------------------------
 call build.bat --release
-echo [DEBUG A] errorlevel=%errorlevel%
-if errorlevel 1 goto :BUILD_FAILED
+set _BUILD_ERR=%errorlevel%
+echo [DEBUG A] errorlevel=%_BUILD_ERR%
+if %_BUILD_ERR% neq 0 goto :BUILD_FAILED
 goto :BUILD_OK
 
 :BUILD_FAILED

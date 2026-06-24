@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** 会话元数据 */
 export interface SessionMeta {
@@ -49,8 +50,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   fetchSessions: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/sessions');
-      const data = await res.json();
+      const data = await apiRequest<SessionMeta[]>('/api/sessions');
       set({ sessions: Array.isArray(data) ? data : [], loading: false });
     } catch (err) {
       console.error('获取会话列表失败:', err);
@@ -59,9 +59,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   deleteSession: async (id) => {
+    const oldSessions = get().sessions;
+    set((s) => ({ sessions: s.sessions.filter((sess) => sess.id !== id) }));
     try {
-      await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
-      set((s) => ({ sessions: s.sessions.filter((sess) => sess.id !== id) }));
+      await apiRequest(`/api/sessions/${id}`, { method: 'DELETE' });
       useAppStore.getState().addNotification({
         type: 'info',
         message: '会话已删除',
@@ -69,6 +70,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       });
     } catch (err) {
       console.error('删除会话失败:', err);
+      set({ sessions: oldSessions }); // 回滚
       useAppStore.getState().addNotification({
         type: 'error',
         message: '删除失败',
@@ -77,16 +79,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   archiveSession: async (id) => {
+    const oldSessions = get().sessions;
+    set((s) => ({
+      sessions: s.sessions.map((sess) =>
+        sess.id === id
+          ? { ...sess, metadata: { ...sess.metadata, status: 'archived' as const } }
+          : sess
+      ),
+    }));
     try {
-      await fetch(`/api/sessions/${id}/archive`, { method: 'POST' });
-      // 更新本地状态
-      set((s) => ({
-        sessions: s.sessions.map((sess) =>
-          sess.id === id
-            ? { ...sess, metadata: { ...sess.metadata, status: 'archived' as const } }
-            : sess
-        ),
-      }));
+      await apiRequest(`/api/sessions/${id}/archive`, { method: 'POST' });
       useAppStore.getState().addNotification({
         type: 'success',
         message: '会话已归档',
@@ -94,6 +96,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       });
     } catch (err) {
       console.error('归档会话失败:', err);
+      set({ sessions: oldSessions }); // 回滚
+      useAppStore.getState().addNotification({
+        type: 'error',
+        message: '归档失败',
+      });
     }
   },
 

@@ -103,6 +103,7 @@ jobs:
           cd ../cli && npx tsup
           cd ../server && npx tsup
           cd ../desktop && npx tsup
+          cd ../frontend && npx vite build
 
       - name: Verify build output
         run: node packages/desktop/scripts/verify-build.cjs

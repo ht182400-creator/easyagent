@@ -347,6 +347,9 @@ export async function createApp(options: CreateAppOptions = {}) {
     });
   });
 
+  // 初始化会话管理器
+  const sessionManager = new SessionManager();
+
   // 初始化 IM 适配器管理器
   const imManager = new IMManager({
     messageHandler: async (message: IMMessage) => {
@@ -416,12 +419,14 @@ export async function createApp(options: CreateAppOptions = {}) {
     },
   });
 
-  // 初始化会话管理器
-  const sessionManager = new SessionManager();
-
   // Express应用
   const app = express();
-  app.use(cors());
+  // CORS 配置：仅允许可信来源跨域访问
+  app.use(cors({
+    origin: process.env.CORS_ORIGIN || 'http://127.0.0.1:3456',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  }));
   app.use(express.json({ limit: '10mb' }));
 
   // ========== 系统API ==========
@@ -1192,7 +1197,11 @@ export async function createApp(options: CreateAppOptions = {}) {
       if (!message) {
         return res.status(400).json({ error: '缺少message参数' });
       }
-      const providerConfig = configManager.getCurrentProvider();
+      // 如果请求指定了 provider，优先使用指定的提供商配置
+      // 如果请求指定了 provider，优先使用指定的提供商配置
+      const providerConfig = provider 
+        ? configManager.getProvider(provider as Parameters<typeof configManager.getProvider>[0])
+        : configManager.getCurrentProvider();
       if (!providerConfig) {
         return res.status(500).json({ error: '未配置模型提供商' });
       }
@@ -1202,7 +1211,7 @@ export async function createApp(options: CreateAppOptions = {}) {
         sessionManager,
         {
           model: model || config.currentModel.model,
-          provider: config.currentModel.provider,
+          provider: provider || config.currentModel.provider,
         },
       );
       const response = await agent.run(message, {
@@ -1239,7 +1248,13 @@ export async function createApp(options: CreateAppOptions = {}) {
       if (!pluginPath) {
         return res.status(400).json({ error: '缺少 path 参数' });
       }
-      const plugin = await pluginManager.loadPlugin(pluginPath);
+      // 安全检查：插件路径必须限定在用户插件目录内
+      const pluginsDir = join(process.cwd(), '.easyagent', 'plugins');
+      const resolvedPluginPath = resolve(pluginPath);
+      if (!resolvedPluginPath.startsWith(pluginsDir)) {
+        return res.status(403).json({ error: '安全限制: 插件必须位于 .easyagent/plugins 目录内' });
+      }
+      const plugin = await pluginManager.loadPlugin(resolvedPluginPath);
       res.json({
         name: plugin.name,
         version: plugin.version,
@@ -1759,11 +1774,16 @@ export async function createApp(options: CreateAppOptions = {}) {
       if (!filePath) {
         return res.status(400).json({ error: '缺少 path 参数' });
       }
+      // 路径安全检查：确保不越出项目根目录
+      const resolvedPath = resolve(filePath);
+      if (!resolvedPath.startsWith(PROJECT_ROOT)) {
+        return res.status(403).json({ error: '路径越界，仅允许访问项目目录内的文件' });
+      }
       const { existsSync } = await import('node:fs');
-      if (!existsSync(filePath)) {
+      if (!existsSync(resolvedPath)) {
         return res.status(404).json({ error: '文件不存在' });
       }
-      const info = analyzeFile(filePath);
+      const info = analyzeFile(resolvedPath);
       res.json({
         success: true,
         filePath: info.filePath,
@@ -2225,6 +2245,8 @@ export async function createApp(options: CreateAppOptions = {}) {
   const wsSubscriptions = new Map<WebSocket, string>();
   /** 订阅自动化进度推送的客户端集合 */
   const automationSubscriptions = new Set<WebSocket>();
+  /** 每个连接的 AbortController，用于中断正在运行的 Agent */
+  const wsAbortControllers = new WeakMap<WebSocket, AbortController>();
 
   /**
    * 安全发送 WebSocket 消息，避免在连接关闭时抛错
@@ -2378,8 +2400,13 @@ export async function createApp(options: CreateAppOptions = {}) {
               let fullResponse = '';
               let chunkCount = 0;
 
+              // 创建 AbortController 用于支持 stop 消息
+              const abortController = new AbortController();
+              wsAbortControllers.set(ws, abortController);
+
               await agent.run(message, {
                 sessionId: sid,
+                signal: abortController.signal,
                 onPartialResponse: (text: string) => {
                   fullResponse += text;
                   chunkCount++;
@@ -2410,6 +2437,12 @@ export async function createApp(options: CreateAppOptions = {}) {
           case 'stop': {
             const sid = msg.sessionId || wsSubscriptions.get(ws);
             logger.info({ sessionId: sid }, '客户端请求停止生成');
+            // 通过 AbortController 中断正在运行的 Agent
+            const ctrl = wsAbortControllers.get(ws);
+            if (ctrl) {
+              ctrl.abort();
+              wsAbortControllers.delete(ws);
+            }
             safeSend(ws, { type: 'done', sessionId: sid });
             break;
           }
@@ -2451,12 +2484,14 @@ export async function createApp(options: CreateAppOptions = {}) {
       logger.info('WebSocket 客户端已断开');
       wsSubscriptions.delete(ws);
       automationSubscriptions.delete(ws);
+      wsAbortControllers.delete(ws);
     });
 
     ws.on('error', (err) => {
       logger.error({ error: err.message }, 'WebSocket 错误');
       wsSubscriptions.delete(ws);
       automationSubscriptions.delete(ws);
+      wsAbortControllers.delete(ws);
     });
   });
 

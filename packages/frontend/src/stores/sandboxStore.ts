@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** 沙箱信息 */
 export interface SandboxInfo {
@@ -109,9 +110,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
   loadStatus: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/sandbox/status');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: DockerStatus = await res.json();
+      const data = await apiRequest<DockerStatus>('/api/sandbox/status');
       set({ dockerStatus: data, sandboxes: data.sandbox.sandboxes, loading: false });
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -124,9 +123,8 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
   createSandbox: async (options) => {
     set({ creating: true });
     try {
-      const res = await fetch('/api/sandbox', {
+      const data = await apiRequest<any>('/api/sandbox', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image: options.image || 'node:20-alpine',
           readOnly: options.readOnly,
@@ -135,11 +133,6 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
           cpuLimit: options.cpuLimit || 0.5,
         }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || `HTTP ${res.status}`);
-      }
-      const data = await res.json();
       if (data.success) {
         const { sandboxes } = get();
         set({ sandboxes: [...sandboxes, data.sandbox], selectedSandbox: data.sandbox, creating: false });
@@ -159,16 +152,10 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
   execCommand: async (sandboxId, command, timeout) => {
     set({ executing: true });
     try {
-      const res = await fetch(`/api/sandbox/${sandboxId}/exec`, {
+      const data = await apiRequest<SandboxExecResult>(`/api/sandbox/${sandboxId}/exec`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command, timeout: timeout || 30000 }),
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || `HTTP ${res.status}`);
-      }
-      const data: SandboxExecResult = await res.json();
       const history = get().commandHistory;
       set({
         execResult: data,
@@ -187,9 +174,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
   /** 获取沙箱信息 */
   getSandbox: async (id) => {
     try {
-      const res = await fetch(`/api/sandbox/${id}`);
-      if (!res.ok) return null;
-      return await res.json();
+      return await apiRequest<SandboxInfo>(`/api/sandbox/${id}`);
     } catch (err) {
       return null;
     }
@@ -198,8 +183,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
   /** 销毁沙箱 */
   destroySandbox: async (id) => {
     try {
-      const res = await fetch(`/api/sandbox/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await apiRequest(`/api/sandbox/${id}`, { method: 'DELETE' });
       const { sandboxes, selectedSandbox } = get();
       const updated = sandboxes.filter(s => s.id !== id);
       set({

@@ -42,12 +42,10 @@ const DEFAULT_ALLOWED_COMMANDS = [
   // 编译工具
   'tsc', 'make', 'cmake', 'gcc', 'g++', 'clang',
   // 文件操作
-  'ls', 'dir', 'cat', 'echo', 'mkdir', 'rm', 'cp', 'mv', 'touch', 'find',
+  'ls', 'dir', 'cat', 'echo', 'mkdir', 'cp', 'mv', 'touch', 'find',
   'grep', 'head', 'tail', 'wc', 'sort', 'uniq', 'sed', 'awk',
   // 系统信息
   'whoami', 'hostname', 'uname', 'ps', 'top',
-  // 网络
-  'curl', 'wget',
   // 压缩
   'tar', 'zip', 'unzip', 'gzip', 'gunzip',
 ];
@@ -65,9 +63,10 @@ const DEFAULT_CONFIG: AppConfig = {
     temperature: 0.7,
   },
   security: {
-    allowedCommands: parseAllowedCommandsFromEnv().length > 0 
-      ? parseAllowedCommandsFromEnv() 
-      : DEFAULT_ALLOWED_COMMANDS,
+    allowedCommands: (() => {
+      const envCmds = parseAllowedCommandsFromEnv();
+      return envCmds.length > 0 ? envCmds : DEFAULT_ALLOWED_COMMANDS;
+    })(),
     requireConfirmation: true,
     dailyTokenLimit: 1_000_000,
   },

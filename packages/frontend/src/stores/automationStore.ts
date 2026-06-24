@@ -1,9 +1,13 @@
 /**
  * 自动化任务状态管理
  * 管理: 定时任务、一次性任务、任务历史、任务模板
+ *
+ * 实时更新: 通过共享事件总线接收 WebSocket 推送，不再使用轮询
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { on } from '../events';
+import { apiRequest } from '../request';
 
 /** 调度类型 */
 export type ScheduleType = 'recurring' | 'once';
@@ -114,11 +118,8 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
   fetchTasks: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/automations');
-      if (res.ok) {
-        const data = await res.json();
-        set({ tasks: Array.isArray(data) ? data : [], loading: false });
-      }
+      const data = await apiRequest<AutomationTask[]>('/api/automations');
+      set({ tasks: Array.isArray(data) ? data : [], loading: false });
     } catch (err) {
       set({ loading: false });
     }
@@ -126,11 +127,8 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
 
   fetchHistory: async () => {
     try {
-      const res = await fetch('/api/automations/history');
-      if (res.ok) {
-        const data = await res.json();
-        set({ history: Array.isArray(data) ? data : [] });
-      }
+      const data = await apiRequest<AutomationRun[]>('/api/automations/history');
+      set({ history: Array.isArray(data) ? data : [] });
     } catch (err) { /* ignore */ }
   },
 
@@ -142,6 +140,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
       runCount: 0,
     };
 
+    // 乐观更新
     set((s) => ({ tasks: [...s.tasks, newTask] }));
 
     useAppStore.getState().addNotification({
@@ -150,36 +149,47 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     });
 
     try {
-      const res = await fetch('/api/automations', {
+      const serverTask = await apiRequest<AutomationTask>('/api/automations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTask),
       });
-      if (res.ok) {
-        const serverTask = await res.json();
-        // 用服务端返回的任务（含正确 ID）替换本地副本
-        set((s) => ({
-          tasks: s.tasks.map((t) => (t.id === newTask.id ? serverTask : t)),
-        }));
-      }
-    } catch (err) { /* 本地存储 */ }
+      set((s) => ({
+        tasks: s.tasks.map((t) => (t.id === newTask.id ? serverTask : t)),
+      }));
+    } catch (err) {
+      // 网络错误，回滚乐观更新
+      set((s) => ({ tasks: s.tasks.filter((t) => t.id !== newTask.id) }));
+      useAppStore.getState().addNotification({
+        type: 'error',
+        message: `创建任务失败: ${(err as Error).message}`,
+      });
+    }
   },
 
   updateTask: async (id, updates) => {
+    // 保存旧状态用于回滚
+    const oldTasks = get().tasks;
     set((s) => ({
       tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
     }));
 
     try {
-      await fetch(`/api/automations/${id}`, {
+      await apiRequest(`/api/automations/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
-    } catch (err) { /* ignore */ }
+    } catch (err) {
+      // 网络错误，回滚
+      set({ tasks: oldTasks });
+      useAppStore.getState().addNotification({
+        type: 'error',
+        message: `更新任务失败: ${(err as Error).message}`,
+      });
+    }
   },
 
   deleteTask: async (id) => {
+    const oldTasks = get().tasks;
     set((s) => ({
       tasks: s.tasks.filter((t) => t.id !== id),
     }));
@@ -191,11 +201,18 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     });
 
     try {
-      await fetch(`/api/automations/${id}`, { method: 'DELETE' });
-    } catch (err) { /* ignore */ }
+      await apiRequest(`/api/automations/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      set({ tasks: oldTasks });
+      useAppStore.getState().addNotification({
+        type: 'error',
+        message: `删除任务失败: ${(err as Error).message}`,
+      });
+    }
   },
 
   toggleTask: async (id, active) => {
+    const oldTasks = get().tasks;
     set((s) => ({
       tasks: s.tasks.map((t) =>
         t.id === id ? { ...t, status: active ? 'ACTIVE' : 'PAUSED' } : t
@@ -203,12 +220,17 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     }));
 
     try {
-      await fetch(`/api/automations/${id}/toggle`, {
+      await apiRequest(`/api/automations/${id}/toggle`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active }),
       });
-    } catch (err) { /* ignore */ }
+    } catch (err) {
+      set({ tasks: oldTasks });
+      useAppStore.getState().addNotification({
+        type: 'error',
+        message: `切换状态失败: ${(err as Error).message}`,
+      });
+    }
   },
 
   runTaskNow: async (id) => {
@@ -237,73 +259,9 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
       message: `正在执行任务: ${task.name}`,
     });
 
-    // 通过 API 触发服务端执行
+    // 通过 API 触发服务端执行，后续状态通过 WebSocket 事件更新（不再轮询）
     try {
-      const res = await fetch(`/api/automations/${id}/run`, { method: 'POST' });
-      if (res.ok) {
-        const serverRun = await res.json();
-        // 服务端已开始执行，等待完成通知
-        // 轮询检查任务状态
-        let attempts = 0;
-        const maxAttempts = 120; // 最多等 2 分钟
-        while (attempts < maxAttempts) {
-          await new Promise((r) => setTimeout(r, 1000));
-          attempts++;
-
-          // 检查是否被手动停止
-          if (!get().running.has(id)) {
-            return;
-          }
-
-          // 拉取最新历史
-          try {
-            const histRes = await fetch(`/api/automations/history?taskId=${id}&limit=1`);
-            if (histRes.ok) {
-              const history: AutomationRun[] = await histRes.json();
-              const latest = history[0];
-              if (latest && latest.status !== 'running') {
-                // 执行完成
-                set((s) => {
-                  const newRunning = new Set(s.running);
-                  newRunning.delete(id);
-                  return {
-                    running: newRunning,
-                    history: s.history.map((h) =>
-                      h.id === runId ? { ...latest, id: runId } : h
-                    ),
-                    tasks: s.tasks.map((t) =>
-                      t.id === id
-                        ? { ...t, lastRunAt: latest.endTime || new Date().toISOString(), runCount: t.runCount + 1 }
-                        : t
-                    ),
-                    lastRun: { ...latest, id: runId },
-                  };
-                });
-
-                useAppStore.getState().addNotification({
-                  type: latest.status === 'completed' ? 'success' : 'error',
-                  message: `任务 "${task.name}" ${latest.status === 'completed' ? '执行完成' : '执行失败'}`,
-                  duration: 3000,
-                });
-                return;
-              }
-            }
-          } catch (err) { /* 继续轮询 */ }
-        }
-
-        // 超时
-        set((s) => {
-          const newRunning = new Set(s.running);
-          newRunning.delete(id);
-          return { running: newRunning };
-        });
-        useAppStore.getState().addNotification({
-          type: 'warning',
-          message: `任务 "${task.name}" 执行超时`,
-        });
-      } else {
-        throw new Error('API 调用失败');
-      }
+      await apiRequest(`/api/automations/${id}/run`, { method: 'POST' });
     } catch (err) {
       set((s) => {
         const newRunning = new Set(s.running);
@@ -335,7 +293,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     });
 
     // 通知服务端停止
-    fetch(`/api/automations/${id}/stop`, { method: 'POST' }).catch(() => {});
+    apiRequest(`/api/automations/${id}/stop`, { method: 'POST' }).catch(() => {});
 
     useAppStore.getState().addNotification({
       type: 'warning',
@@ -382,3 +340,128 @@ export const SCHEDULE_PRESETS = [
   { label: '每周一 9:00', rrule: 'FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0' },
   { label: '每周五 17:00', rrule: 'FREQ=WEEKLY;BYDAY=FR;BYHOUR=17;BYMINUTE=0' },
 ];
+
+// ===== WebSocket 事件订阅（替代轮询） =====
+
+/**
+ * 处理自动化进度事件
+ */
+function handleAutomationProgress(data: AutomationProgressEvent) {
+  const store = useAutomationStore.getState();
+  store.addProgressLog(data.taskId, {
+    timestamp: data.timestamp || Date.now(),
+    type: data.type,
+    message: data.message,
+    detail: data.detail,
+  });
+}
+
+/**
+ * 处理自动化完成事件
+ */
+function handleAutomationCompleted(data: { taskId: string; runId: string; endTime: string; tokenUsage?: { input: number; output: number; total: number } }) {
+  const store = useAutomationStore.getState();
+  const taskName = store.tasks.find((t) => t.id === data.taskId)?.name || '未知任务';
+
+  setImmediateOrTimeout(() => {
+    const s = useAutomationStore.getState();
+    const newRunning = new Set(s.running);
+    newRunning.delete(data.taskId);
+
+    setDirectly({
+      running: newRunning,
+      history: s.history.map((h) =>
+        h.taskId === data.taskId && h.status === 'running'
+          ? { ...h, endTime: data.endTime, status: 'completed', tokenUsage: data.tokenUsage }
+          : h
+      ),
+      tasks: s.tasks.map((t) =>
+        t.id === data.taskId
+          ? { ...t, lastRunAt: data.endTime, runCount: t.runCount + 1 }
+          : t
+      ),
+      lastRun: {
+        ...s.history.find((h) => h.taskId === data.taskId && h.status === 'running') || {
+          id: data.runId,
+          taskId: data.taskId,
+          taskName,
+          startTime: '',
+        },
+        endTime: data.endTime,
+        status: 'completed',
+        tokenUsage: data.tokenUsage,
+      },
+    });
+
+    useAppStore.getState().addNotification({
+      type: 'success',
+      message: `任务 "${taskName}" 执行完成`,
+      duration: 3000,
+    });
+  });
+}
+
+/**
+ * 处理自动化失败事件
+ */
+function handleAutomationFailed(data: { taskId: string; runId: string; endTime: string; error?: string }) {
+  const store = useAutomationStore.getState();
+  const taskName = store.tasks.find((t) => t.id === data.taskId)?.name || '未知任务';
+
+  setImmediateOrTimeout(() => {
+    const s = useAutomationStore.getState();
+    const newRunning = new Set(s.running);
+    newRunning.delete(data.taskId);
+
+    setDirectly({
+      running: newRunning,
+      history: s.history.map((h) =>
+        h.taskId === data.taskId && h.status === 'running'
+          ? { ...h, endTime: data.endTime, status: 'failed', error: data.error }
+          : h
+      ),
+      lastRun: {
+        ...s.history.find((h) => h.taskId === data.taskId && h.status === 'running') || {
+          id: data.runId,
+          taskId: data.taskId,
+          taskName,
+          startTime: '',
+        },
+        endTime: data.endTime,
+        status: 'failed',
+        error: data.error,
+      },
+    });
+
+    useAppStore.getState().addNotification({
+      type: 'error',
+      message: `任务 "${taskName}" 执行失败`,
+      duration: 3000,
+    });
+  });
+}
+
+/** 在下一个微任务执行 set，避免在事件处理中状态冲突 */
+function setImmediateOrTimeout(fn: () => void) {
+  if (typeof queueMicrotask === 'function') {
+    queueMicrotask(fn);
+  } else {
+    setTimeout(fn, 0);
+  }
+}
+
+/** 直接调用 Zustand setState 进行批量更新 */
+function setDirectly(partial: Partial<ReturnType<typeof useAutomationStore.getState>>) {
+  useAutomationStore.setState(partial);
+}
+
+// 注册 WebSocket 事件监听器
+on('automation_progress', (payload) => {
+  handleAutomationProgress(payload as AutomationProgressEvent);
+});
+on('automation_completed', (payload) => {
+  handleAutomationCompleted(payload as { taskId: string; runId: string; endTime: string; tokenUsage?: { input: number; output: number; total: number } });
+});
+on('automation_failed', (payload) => {
+  handleAutomationFailed(payload as { taskId: string; runId: string; endTime: string; error?: string });
+});

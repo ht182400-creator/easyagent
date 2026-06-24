@@ -27,7 +27,6 @@ const requiredFiles = [
   ['installer.nsh', 'Custom NSIS script'],
   ['index.html', 'Electron entry HTML'],
   ['src/renderer/index.css', 'Global CSS'],
-  ['src/renderer/api.ts', 'API client'],
 ];
 
 for (const [f, desc] of requiredFiles) {
@@ -209,7 +208,7 @@ if (!foundDoubleJson) {
 // 6. 硬编码版本号检查 (版本号必须从 API/package.json 获取，不得硬编码)
 // ============================================================
 console.log('\n--- Checking for hardcoded version numbers !== 0.3.0 ---');
-const CURRENT_VERSION = '0.3.0';
+const CURRENT_VERSION = '0.4.1';
 const versionCheckFiles = [
   'src/renderer/components/Layout.tsx',
   'src/renderer/pages/Settings.tsx',
@@ -273,11 +272,11 @@ console.log('\n--- Checking for incompatible catch syntax (esbuild 0.20.1) ---')
 
 // 检查所有子包的 src 目录
 const subPackages = [
-  path.join(ROOT, '..', '..', '..', 'cli', 'src'),
-  path.join(ROOT, '..', '..', '..', 'core', 'src'),
-  path.join(ROOT, '..', '..', '..', 'desktop', 'src'),
-  path.join(ROOT, '..', '..', '..', 'server', 'src'),
-  path.join(ROOT, '..', '..', '..', 'web', 'src'),
+  path.join(ROOT, '..', '..', 'cli', 'src'),
+  path.join(ROOT, '..', '..', 'core', 'src'),
+  path.join(ROOT, '..', '..', 'desktop', 'src'),
+  path.join(ROOT, '..', '..', 'server', 'src'),
+  path.join(ROOT, '..', '..', 'web', 'src'),
 ];
 let foundCatchBinding = false;
 for (const pkgDir of subPackages) {
@@ -315,17 +314,6 @@ const EXPECTED_ELECTRON_VERSION = 123; // Electron 30 = Node v20
 try {
   const betterSqlite3Node = path.join(ROOT, 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node');
   if (fs.existsSync(betterSqlite3Node)) {
-    // 用 node 读取并检查 .node 文件的 NODE_MODULE_VERSION
-    const checkScript = `
-      try {
-        // 尝试加载模块来获取 MODULE_VERSION
-        const m = process.binding('natives');
-        const currentVersion = process.versions.modules || 'unknown';
-        console.log('SYSTEM_NODE_MODULES=' + currentVersion);
-      } catch(e) {
-        console.log('SYSTEM_NODE_MODULES=unknown');
-      }
-    `;
     const { execSync } = require('child_process');
     
     // 检查是否存在缓存标记，避免每次都执行耗时的 node-gyp 操作

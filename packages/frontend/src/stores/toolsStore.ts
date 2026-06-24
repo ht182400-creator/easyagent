@@ -4,6 +4,7 @@
  * 与 core 的 ToolRegistry 保持同步
  */
 import { create } from 'zustand';
+import { apiRequest } from '../request';
 
 /** 工具分组信息 */
 export interface ToolGroup {
@@ -85,8 +86,7 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
   fetchTools: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/tools');
-      const data = await res.json();
+      const data = await apiRequest<ToolInfo[]>('/api/tools');
       const tools: ToolInfo[] = Array.isArray(data) ? data : [];
       set({
         tools,
@@ -110,10 +110,9 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
     }));
     // 调用后端 API 持久化状态
     try {
-      await apiFetch(`/api/tools/${encodeURIComponent(toolName)}`, {
+      await apiRequest(`/api/tools/${encodeURIComponent(toolName)}`, {
         method: 'POST',
         body: JSON.stringify({ enabled }),
-        headers: { 'Content-Type': 'application/json' },
       });
     } catch (err) {
       console.error(`[toolsStore] 切换工具状态失败:`, err);

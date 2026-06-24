@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
+import { HashRouter, BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { ConfigProvider } from './config';
 import './styles/index.css';
@@ -26,7 +26,7 @@ export function mountApp(
     throw new Error(`找不到挂载容器 #${containerId}`);
   }
 
-  const Router = useHashRouter ? HashRouter : HashRouter; // 统一使用 HashRouter（兼容性最好）
+  const Router = useHashRouter ? HashRouter : BrowserRouter;
 
   ReactDOM.createRoot(container).render(
     <React.StrictMode>

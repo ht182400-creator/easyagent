@@ -4,6 +4,9 @@
  * 使用AES-256-GCM加密
  */
 import crypto from 'node:crypto';
+import { homedir } from 'node:os';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { logger } from './logger.js';
 
 /** 加密算法 */
@@ -27,15 +30,52 @@ function deriveKey(password: string, salt: Buffer): Buffer {
 
 /**
  * 获取或创建主密码
- * 从环境变量或机器标识派生
+ * 优先从环境变量 EASYAGENT_MASTER_KEY 读取，否则从密钥文件读取，
+ * 均不存在时生成随机密钥并持久化到 ~/.easyagent/secret.key
+ * @returns 主密码字符串
  */
 function getMasterPassword(): string {
+  // 优先使用环境变量设置的密钥
   const envPassword = process.env.EASYAGENT_MASTER_KEY;
   if (envPassword) return envPassword;
 
-  // 使用机器标识作为后备密码
-  const machineId = `${process.env.COMPUTERNAME || ''}${process.env.USER || ''}${process.env.HOME || ''}`;
-  return crypto.createHash('sha256').update(machineId).digest('hex');
+  // 密钥文件路径：~/.easyagent/secret.key
+  const secretDir = join(homedir(), '.easyagent');
+  const secretFile = join(secretDir, 'secret.key');
+
+  try {
+    // 如果密钥文件已存在，直接读取返回
+    if (existsSync(secretFile)) {
+      const key = readFileSync(secretFile, 'utf8').trim();
+      if (key) return key;
+      // 文件存在但内容为空，记录警告并重新生成
+      logger.warn('secret.key 文件存在但内容为空，将重新生成');
+    }
+
+    // 生成新的随机密钥
+    const newKey = crypto.randomBytes(32).toString('hex');
+
+    // 确保目录存在
+    mkdirSync(secretDir, { recursive: true });
+
+    // 写入密钥文件
+    writeFileSync(secretFile, newKey, { encoding: 'utf8', mode: 0o600 });
+
+    // Windows 下尽力而为设置仅当前用户可读写权限
+    // 注意：Node.js 在 Windows 下对 mode 的支持有限，0o600 仅作标记
+
+    return newKey;
+  } catch (error) {
+    // 读写 secret.key 失败，记录警告并回退到旧的派生逻辑（不推荐）
+    logger.warn(
+      { error },
+      '无法读取或写入 ~/.easyagent/secret.key，回退到使用机器标识派生密钥（不推荐，安全性较低）',
+    );
+
+    // 回退逻辑：使用机器标识派生（旧代码保留作为最后的后备方案）
+    const machineId = `${process.env.COMPUTERNAME || ''}${process.env.USER || ''}${process.env.HOME || ''}`;
+    return crypto.createHash('sha256').update(machineId).digest('hex');
+  }
 }
 
 /**

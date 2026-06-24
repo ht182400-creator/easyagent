@@ -5,7 +5,8 @@
  * - Web:  相对路径（Vite 代理），API_BASE=""  WS_BASE="/ws"
  * - Desktop: 直连 127.0.0.1:3456，API_BASE="http://127.0.0.1:3456"  WS_BASE="ws://127.0.0.1:3456/ws"
  */
-import { createContext, useContext, type ReactNode, type FC } from 'react';
+import { createContext, useContext, useEffect, type ReactNode, type FC } from 'react';
+import { setApiBase } from './request';
 
 /** 前端运行时配置 */
 export interface FrontendConfig {
@@ -53,6 +54,12 @@ interface ConfigProviderProps {
  */
 export const ConfigProvider: FC<ConfigProviderProps> = ({ config, children }) => {
   const merged: FrontendConfig = { ...defaultConfig, ...config };
+
+  // 同步 apiBase 到模块级变量，供 Store 内的 apiRequest() 使用
+  useEffect(() => {
+    setApiBase(merged.apiBase);
+  }, [merged.apiBase]);
+
   return (
     <ConfigContext.Provider value={merged}>
       {children}

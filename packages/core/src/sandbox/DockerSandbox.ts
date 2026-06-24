@@ -188,6 +188,9 @@ export class DockerSandbox {
       throw new Error(`沙箱状态异常: ${this.status}`);
     }
 
+    // 验证命令安全性，防止shell元字符注入
+    this.validateCommand(command);
+
     const execTimeout = timeout || this.options.timeout || 30000;
     const startTime = Date.now();
     let timedOut = false;
@@ -301,6 +304,55 @@ export class DockerSandbox {
   }
 
   // ==================== 私有方法 ====================
+
+  /**
+   * 验证命令是否安全，检测shell元字符以防止命令注入
+   * @param command - 待执行的命令字符串
+   * @throws 如果命令包含不安全的shell元字符
+   */
+  private validateCommand(command: string): void {
+    if (this.containsShellMetacharacters(command)) {
+      throw new Error(
+        `命令包含不安全的 shell 元字符，已被拒绝执行。` +
+        `允许的字符: 字母数字、空格、路径字符(/ \\ . : - _)、引号(用于路径)和常见参数标识符。` +
+        `命令: ${command.slice(0, 200)}`
+      );
+    }
+  }
+
+  /**
+   * 检测字符串是否包含危险的shell元字符
+   * @param input - 待检测的字符串
+   * @returns 如果包含危险字符返回true
+   */
+  private containsShellMetacharacters(input: string): boolean {
+    // 检测以下危险字符和模式:
+    // ;  - 命令分隔符
+    // |  - 管道符
+    // &  - 后台执行 / 命令链接
+    // $  - 变量替换
+    // `  - 命令替换（反引号）
+    // ( ) - 子shell
+    // && || - 逻辑链接符
+    // > < - 重定向
+    // \n \r - 换行注入
+    // # - 注释（可用于截断命令）
+    const dangerousPatterns = [
+      /[;&|`$()><#\x00-\x08\x0B\x0C\x0E-\x1F]/,  // 单个危险字符 + 控制字符
+      /&&/,   // 逻辑与
+      /\|\|/, // 逻辑或
+      /\n/,   // 换行符
+      /\r/,   // 回车符
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(input)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   /**
    * 确保镜像存在

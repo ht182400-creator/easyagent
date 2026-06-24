@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** 文档分类 */
 export const KB_CATEGORIES = [
@@ -96,45 +97,31 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
     set({ loading: true });
     const { scope } = get();
     try {
-      const res = await fetch(`/api/knowledge?scope=${scope}`);
-      if (res.ok) {
-        const data = await res.json();
-        // 兼容新旧格式: API返回 { success, documents, stats, tags }
-        const docs: KnowledgeDocument[] = Array.isArray(data.documents) ? data.documents : Array.isArray(data) ? data : [];
-        const serverTags: string[] = Array.isArray(data.tags) ? data.tags : [];
-        const allTags = [...new Set([...serverTags, ...docs.flatMap((d) => d.tags)])].sort();
-        const categories: Record<string, number> = {};
+      const data = await apiRequest<any>(`/api/knowledge?scope=${scope}`);
+      // 兼容新旧格式: API返回 { success, documents, stats, tags }
+      const docs: KnowledgeDocument[] = Array.isArray(data.documents) ? data.documents : Array.isArray(data) ? data : [];
+      const serverTags: string[] = Array.isArray(data.tags) ? data.tags : [];
+      const allTags = [...new Set([...serverTags, ...docs.flatMap((d) => d.tags)])].sort();
+      const categories: Record<string, number> = {};
 
-        if (data.stats && data.stats.categories) {
-          // 使用服务端统计
-          docs.forEach((d) => {
-            categories[d.category] = (categories[d.category] || 0) + 1;
-          });
-          set({
-            documents: docs,
-            allTags,
-            stats: {
-              totalDocs: data.stats.totalDocs || docs.length,
-              totalSize: data.stats.totalSize || docs.reduce((sum, d) => sum + d.size, 0),
-              categories: data.stats.categories || categories,
-            },
-            loading: false,
-          });
-        } else {
-          docs.forEach((d) => {
-            categories[d.category] = (categories[d.category] || 0) + 1;
-          });
-          set({
-            documents: docs,
-            allTags,
-            stats: {
-              totalDocs: docs.length,
-              totalSize: docs.reduce((sum, d) => sum + d.size, 0),
-              categories,
-            },
-            loading: false,
-          });
-        }
+      if (data.stats && data.stats.categories) {
+        docs.forEach((d) => { categories[d.category] = (categories[d.category] || 0) + 1; });
+        set({
+          documents: docs, allTags,
+          stats: {
+            totalDocs: data.stats.totalDocs || docs.length,
+            totalSize: data.stats.totalSize || docs.reduce((sum, d) => sum + d.size, 0),
+            categories: data.stats.categories || categories,
+          },
+          loading: false,
+        });
+      } else {
+        docs.forEach((d) => { categories[d.category] = (categories[d.category] || 0) + 1; });
+        set({
+          documents: docs, allTags,
+          stats: { totalDocs: docs.length, totalSize: docs.reduce((sum, d) => sum + d.size, 0), categories },
+          loading: false,
+        });
       }
     } catch (err) {
       set({ loading: false });
@@ -144,81 +131,58 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
   addDocument: async (doc) => {
     const { scope } = get();
     try {
-      const res = await fetch('/api/knowledge', {
+      const data = await apiRequest<any>('/api/knowledge', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: doc.title,
-          content: doc.content,
+          title: doc.title, content: doc.content,
           filePath: doc.source !== '手动输入' && !doc.source.startsWith('上传:') ? doc.source : undefined,
-          category: doc.category,
-          tags: doc.tags,
-          scope,
+          category: doc.category, tags: doc.tags, scope,
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.document) {
-          const newDoc: KnowledgeDocument = {
-            ...data.document,
-            content: data.content || doc.content,
-            id: data.document.id,
-            addedAt: data.document.addedAt || new Date().toISOString(),
-            updatedAt: data.document.updatedAt || new Date().toISOString(),
-            chunkCount: data.document.chunkCount || Math.ceil((data.document.size || doc.size) / 1000),
-          };
-
-          set((s) => ({
-            documents: [newDoc, ...s.documents],
-            allTags: [...new Set([...s.allTags, ...newDoc.tags])].sort(),
-            stats: {
-              totalDocs: s.stats.totalDocs + 1,
-              totalSize: s.stats.totalSize + newDoc.size,
-              categories: {
-                ...s.stats.categories,
-                [newDoc.category]: (s.stats.categories[newDoc.category] || 0) + 1,
-              },
-            },
-          }));
-
-          useAppStore.getState().addNotification({
-            type: 'success',
-            message: `"${newDoc.title}" 已添加到${scope === 'global' ? '全局' : '项目'}知识库`,
-          });
-          return;
-        }
+      if (data.success && data.document) {
+        const newDoc: KnowledgeDocument = {
+          ...data.document,
+          content: data.content || doc.content,
+          id: data.document.id,
+          addedAt: data.document.addedAt || new Date().toISOString(),
+          updatedAt: data.document.updatedAt || new Date().toISOString(),
+          chunkCount: data.document.chunkCount || Math.ceil((data.document.size || doc.size) / 1000),
+        };
+        set((s) => ({
+          documents: [newDoc, ...s.documents],
+          allTags: [...new Set([...s.allTags, ...newDoc.tags])].sort(),
+          stats: {
+            totalDocs: s.stats.totalDocs + 1,
+            totalSize: s.stats.totalSize + newDoc.size,
+            categories: { ...s.stats.categories, [newDoc.category]: (s.stats.categories[newDoc.category] || 0) + 1 },
+          },
+        }));
+        useAppStore.getState().addNotification({
+          type: 'success',
+          message: `"${newDoc.title}" 已添加到${scope === 'global' ? '全局' : '项目'}知识库`,
+        });
+        return;
       }
-      // 服务端失败时乐观更新
+      throw new Error(data.error || '服务端返回异常');
+    } catch (err) {
+      // 服务端不可用时乐观更新
       const newDoc: KnowledgeDocument = {
-        ...doc,
-        id: `kb_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        addedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        ...doc, id: `kb_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        addedAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         chunkCount: Math.ceil(doc.size / 1000),
       };
-
       set((s) => ({
         documents: [newDoc, ...s.documents],
         allTags: [...new Set([...s.allTags, ...doc.tags])].sort(),
         stats: {
-          totalDocs: s.stats.totalDocs + 1,
-          totalSize: s.stats.totalSize + doc.size,
-          categories: {
-            ...s.stats.categories,
-            [doc.category]: (s.stats.categories[doc.category] || 0) + 1,
-          },
+          totalDocs: s.stats.totalDocs + 1, totalSize: s.stats.totalSize + doc.size,
+          categories: { ...s.stats.categories, [doc.category]: (s.stats.categories[doc.category] || 0) + 1 },
         },
       }));
-
       useAppStore.getState().addNotification({
         type: 'success',
         message: `"${doc.title}" 已添加到知识库 (本地)`,
-      });
-    } catch (err) {
-      useAppStore.getState().addNotification({
-        type: 'error',
-        message: '添加文档失败，请确认后端服务在运行',
       });
     }
   },
@@ -246,7 +210,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
     });
 
     try {
-      await fetch(`/api/knowledge/${id}?scope=${scope}`, { method: 'DELETE' });
+      await apiRequest(`/api/knowledge/${id}?scope=${scope}`, { method: 'DELETE' });
     } catch (err) { /* ignore */ }
   },
 
@@ -260,18 +224,15 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
     // 优先使用服务端搜索
     try {
       const params = new URLSearchParams({ q: query, maxResults: '20', scope });
-      const res = await fetch(`/api/knowledge/search?${params}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && Array.isArray(data.results)) {
+      const data = await apiRequest<any>(`/api/knowledge/search?${params}`);
+      if (data.success && Array.isArray(data.results)) {
           const results: KBSearchResult[] = data.results.map((r: { document: KnowledgeDocument; score: number; snippet: string }) => ({
             document: r.document,
             score: r.score,
             snippet: r.snippet || r.document.content?.slice(0, 150) || '',
           }));
-          set({ searchResults: results });
-          return;
-        }
+        set({ searchResults: results });
+        return;
       }
     } catch (err) { /* 降级到本地搜索 */ }
 
@@ -319,12 +280,9 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
   getDocument: async (id) => {
     const { scope } = get();
     try {
-      const res = await fetch(`/api/knowledge/${encodeURIComponent(id)}?scope=${scope}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.success && data?.document) {
-          return { ...data.document, content: data.content || '' } as KnowledgeDocument;
-        }
+      const data = await apiRequest<any>(`/api/knowledge/${encodeURIComponent(id)}?scope=${scope}`);
+      if (data?.success && data?.document) {
+        return { ...data.document, content: data.content || '' } as KnowledgeDocument;
       }
       return null;
     } catch (err) {
@@ -344,30 +302,20 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
   importFromFile: async (filePath) => {
     const { scope } = get();
     try {
-      const res = await fetch('/api/knowledge/import', {
+      const data = await apiRequest<any>('/api/knowledge/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filePath, scope }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.success) {
-          await get().fetchDocuments();
-          useAppStore.getState().addNotification({
-            type: 'success',
-            message: `文件 "${filePath}" 已导入${scope === 'global' ? '全局' : '项目'}知识库`,
-          });
-        } else {
-          useAppStore.getState().addNotification({
-            type: 'error',
-            message: data?.error || '文件导入失败',
-          });
-        }
+      if (data?.success) {
+        await get().fetchDocuments();
+        useAppStore.getState().addNotification({
+          type: 'success',
+          message: `文件 "${filePath}" 已导入${scope === 'global' ? '全局' : '项目'}知识库`,
+        });
       } else {
-        const errData = await res.json().catch(() => ({}));
         useAppStore.getState().addNotification({
           type: 'error',
-          message: errData?.error || '文件导入失败',
+          message: data?.error || '文件导入失败',
         });
       }
     } catch (err) {
@@ -390,29 +338,20 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
     if (tags && tags.length > 0) formData.append('tags', tags.join(','));
 
     try {
-      const res = await fetch('/api/knowledge/upload', {
+      const data = await apiRequest<any>('/api/knowledge/upload', {
         method: 'POST',
         body: formData,
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.success) {
-          await get().fetchDocuments();
-          useAppStore.getState().addNotification({
-            type: 'success',
-            message: `"${file.name}" 已上传到${scope === 'global' ? '全局' : '项目'}知识库`,
-          });
-        } else {
-          useAppStore.getState().addNotification({
-            type: 'error',
-            message: data?.error || '文件上传失败',
-          });
-        }
+      if (data?.success) {
+        await get().fetchDocuments();
+        useAppStore.getState().addNotification({
+          type: 'success',
+          message: `"${file.name}" 已上传到${scope === 'global' ? '全局' : '项目'}知识库`,
+        });
       } else {
-        const errData = await res.json().catch(() => ({}));
         useAppStore.getState().addNotification({
           type: 'error',
-          message: errData?.error || '文件上传失败',
+          message: data?.error || '文件上传失败',
         });
       }
     } catch (err) {

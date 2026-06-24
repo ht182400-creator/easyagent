@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** Agent配置 */
 export interface AgentSettings {
@@ -84,20 +85,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ saving: true });
     try {
       const { agent, security, preferences } = get();
-      const res = await fetch('/api/config', {
+      await apiRequest('/api/config', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agent, security, preferences }),
       });
-      if (res.ok) {
-        // 持久化到 localStorage 作为备份
-        localStorage.setItem('easyagent-settings', JSON.stringify({ agent, security, preferences }));
-        useAppStore.getState().addNotification({
-          type: 'success',
-          message: '设置已保存',
-          duration: 2000,
-        });
-      }
+      // 持久化到 localStorage 作为备份
+      localStorage.setItem('easyagent-settings', JSON.stringify({ agent, security, preferences }));
+      useAppStore.getState().addNotification({
+        type: 'success',
+        message: '设置已保存',
+        duration: 2000,
+      });
     } catch (err) {
       console.error('保存设置失败:', err);
       // 降级：保存到 localStorage
@@ -115,13 +113,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   loadSettings: async () => {
     try {
-      const res = await fetch('/api/config');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.agent) set((s) => ({ agent: { ...s.agent, ...data.agent } }));
-        if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
-        if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
-      }
+      const data = await apiRequest<{
+        agent?: AgentSettings;
+        security?: SecuritySettings;
+        preferences?: Preferences;
+      }>('/api/config');
+      if (data.agent) set((s) => ({ agent: { ...s.agent, ...data.agent } }));
+      if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
+      if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
     } catch (err) {
       // 从 localStorage 恢复
       const saved = localStorage.getItem('easyagent-settings');

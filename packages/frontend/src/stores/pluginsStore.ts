@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** 插件市场条目 */
 export interface PluginMarketEntry {
@@ -84,20 +85,23 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
   fetchInstalled: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/plugins');
-      if (res.ok) {
-        const data = await res.json();
-        set({ installed: data, loading: false });
-      }
+      const data = await apiRequest<InstalledPlugin[]>('/api/plugins');
+      set({ installed: Array.isArray(data) ? data : [], loading: false });
     } catch (err) {
       set({ loading: false });
     }
   },
 
+  /**
+   * 获取插件市场列表
+   *
+   * 当前为 Mock 数据（插件市场后端尚未实现）。
+   */
   fetchMarketplace: async () => {
     set({ loading: true });
     try {
-      // 模拟插件市场数据
+      // TODO: 待后端插件市场 API 就绪后替换为 apiRequest('/api/plugins/marketplace')
+      // 当前使用 Mock 数据
       const market: PluginMarketEntry[] = [
         {
           name: '@easyagent/skill-code-review',

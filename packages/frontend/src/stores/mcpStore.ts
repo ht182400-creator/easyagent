@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** MCP服务器配置 */
 export interface MCPServer {
@@ -71,11 +72,8 @@ export const useMCPStore = create<MCPState>((set, get) => ({
   fetchServers: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/mcp/servers');
-      if (res.ok) {
-        const data = await res.json();
-        set({ servers: data, loading: false });
-      }
+      const data = await apiRequest<MCPServer[]>('/api/mcp/servers');
+      set({ servers: Array.isArray(data) ? data : [], loading: false });
     } catch (err) {
       // 使用默认配置
     } finally {
@@ -101,9 +99,8 @@ export const useMCPStore = create<MCPState>((set, get) => ({
 
     // 持久化
     try {
-      await fetch('/api/mcp/servers', {
+      await apiRequest('/api/mcp/servers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(server),
       });
     } catch (err) { /* 本地存储 */ }
@@ -122,7 +119,7 @@ export const useMCPStore = create<MCPState>((set, get) => ({
     });
 
     try {
-      await fetch(`/api/mcp/servers/${name}`, { method: 'DELETE' });
+      await apiRequest(`/api/mcp/servers/${name}`, { method: 'DELETE' });
     } catch (err) { /* ignore */ }
   },
 

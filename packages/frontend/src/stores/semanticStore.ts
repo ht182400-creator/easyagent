@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
+import { apiRequest } from '../request';
 
 /** 语义地图统计 */
 interface SemanticStats {
@@ -103,8 +104,7 @@ export const useSemanticStore = create<SemanticState>((set) => ({
       if (maxFiles) params.set('maxFiles', String(maxFiles));
       if (refresh) params.set('refresh', 'true');
 
-      const res = await fetch(`/api/semantic/map?${params}`);
-      const data = await res.json();
+      const data = await apiRequest<any>(`/api/semantic/map?${params}`);
 
       if (data.success) {
         set({
@@ -129,8 +129,7 @@ export const useSemanticStore = create<SemanticState>((set) => ({
       if (caseSensitive) params.set('case', 'true');
       if (kind) params.set('kind', kind);
 
-      const res = await fetch(`/api/semantic/search?${params}`);
-      const data = await res.json();
+      const data = await apiRequest<any>(`/api/semantic/search?${params}`);
 
       if (data.success) {
         set({
@@ -154,8 +153,7 @@ export const useSemanticStore = create<SemanticState>((set) => ({
       const params = new URLSearchParams({ symbol });
       if (path) params.set('path', path);
 
-      const res = await fetch(`/api/semantic/references?${params}`);
-      const data = await res.json();
+      const data = await apiRequest<any>(`/api/semantic/references?${params}`);
 
       if (data.success) {
         set({
@@ -179,8 +177,7 @@ export const useSemanticStore = create<SemanticState>((set) => ({
       const params = new URLSearchParams();
       if (path) params.set('path', path);
 
-      const res = await fetch(`/api/semantic/overview?${params}`);
-      const data = await res.json();
+      const data = await apiRequest<any>(`/api/semantic/overview?${params}`);
 
       if (data.success) {
         set({ overview: { root: data.root, fileTree: data.fileTree, stats: data.stats }, overviewLoading: false });
@@ -196,8 +193,7 @@ export const useSemanticStore = create<SemanticState>((set) => ({
     set({ fileAnalysisLoading: true, fileAnalysis: null });
     try {
       const params = new URLSearchParams({ path: filePath });
-      const res = await fetch(`/api/semantic/file?${params}`);
-      const data = await res.json();
+      const data = await apiRequest<any>(`/api/semantic/file?${params}`);
 
       if (data.success) {
         set({ fileAnalysis: data, fileAnalysisLoading: false });
