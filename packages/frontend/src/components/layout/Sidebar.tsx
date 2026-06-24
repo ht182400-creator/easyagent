@@ -44,7 +44,7 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
       openTab({
         id: `session_${session.id}`,
         type: 'chat',
-        title: session.title,
+        title: session.metadata.title,
         sessionId: session.id,
         closable: true,
       });
@@ -58,7 +58,7 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
   }, [setActiveSession, setActiveView]);
 
   const filteredSessions = searchQuery
-    ? sessions.filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? sessions.filter((s) => s.metadata.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : sessions;
 
   return (
@@ -153,9 +153,9 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
                 >
                   <div className="flex items-center gap-2">
                     <MessageSquare className="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
-                    <span className="truncate flex-1">{session.title}</span>
+                    <span className="truncate flex-1">{session.metadata.title}</span>
                     <span className="text-xs text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                      {session.messageCount}
+                      {session.metadata.messageCount}
                     </span>
                   </div>
                 </button>
