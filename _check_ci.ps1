@@ -5,24 +5,16 @@ $headers = @{
 }
 $runs = Invoke-RestMethod -Uri "https://api.github.com/repos/ht182400-creator/easyagent/actions/runs?per_page=1" -Headers $headers
 $run = $runs.workflow_runs[0]
-Write-Host "Latest run: #$($run.run_number) ID: $($run.id)"
+Write-Host "#$($run.run_number): status=$($run.status) conclusion=$($run.conclusion) sha=$($run.head_sha.Substring(0,7))"
+Write-Host "  URL: $($run.html_url)"
 
-$jobs = Invoke-RestMethod -Uri $run.jobs_url -Headers $headers
-foreach ($j in $jobs.jobs) {
-    if ($j.conclusion -eq "failure") {
-        Write-Host "Getting log for: $($j.name)" -ForegroundColor Yellow
-        $log = Invoke-RestMethod -Uri ($j.url + "/logs") -Headers $headers
-        $lines = $log -split "`r`n"
-        $inErr = $false
-        foreach ($line in $lines) {
-            if ($line -match "gyp ERR|GYP ERR|better-sqlite3.*install.*gyp") { $inErr = $true }
-            if ($inErr) {
-                Write-Host $line
-                if ($line -match "ELIFECYCLE|##\[error\]") { 
-                    Write-Host $line
-                    break 
-                }
-            }
-        }
+try {
+    $jobs = Invoke-RestMethod -Uri $run.jobs_url -Headers $headers
+    Write-Host "  Jobs: $($jobs.jobs.Count)"
+    foreach ($j in $jobs.jobs) {
+        $c = if ($j.conclusion -eq "failure") { "Red" } elseif ($j.conclusion -eq "success") { "Green" } elseif ($j.status -eq "in_progress") { "Yellow" } else { "White" }
+        Write-Host "    $($j.name): status=$($j.status) conclusion=$($j.conclusion)" -ForegroundColor $c
     }
+} catch {
+    Write-Host "  Error getting jobs: $_" -ForegroundColor Red
 }
