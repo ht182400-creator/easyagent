@@ -1,7 +1,10 @@
-name: CI Test
+name: CI
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
@@ -10,19 +13,110 @@ env:
   npm_config_msvs_version: '2022'
 
 jobs:
-  job-a:
-    name: Job A (base)
+  test-core:
+    name: Test Core
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - name: Echo
-        run: echo "Job A OK"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+      - name: Run core tests
+        run: cd packages/core && npx vitest run
 
-  job-b:
-    name: Job B (needs A)
-    needs: job-a
+  test-server:
+    name: Test Server
+    needs: test-core
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - name: Echo
-        run: echo "Job B OK"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+      - name: Build server
+        run: cd packages/server && npx tsup
+      - name: Run server tests
+        run: cd packages/server && npx vitest run
+
+  coverage:
+    name: Coverage Gate
+    needs:
+      - test-core
+      - test-server
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+      - name: Build server
+        run: cd packages/server && npx tsup
+      - name: Core coverage check
+        run: cd packages/core && npx vitest run --coverage
+      - name: Server coverage check
+        run: cd packages/server && npx vitest run --coverage
+
+  test-pipeline:
+    name: Pipeline Tests
+    needs: test-core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Run pipeline tests
+        run: node --test docs/pipeline/__tests__/pipeline-*.test.mjs
+
+  build-check:
+    name: Build Verification
+    needs: test-core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build all packages
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../cli && npx tsup
+          cd ../server && npx tsup
+          cd ../desktop && npx tsup
+          cd ../frontend && npx vite build
+      - name: Verify build
+        run: node packages/desktop/scripts/verify-build.cjs

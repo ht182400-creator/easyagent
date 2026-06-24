@@ -22,14 +22,15 @@ permissions:
 
 env:
   NODE_VERSION: '20'
-  # 强制 node-gyp 使用 VS 2022 (v17)，避免 windows-latest 上的 VS 2026 (v18) 不被识别
+  # windows-latest 已升级为 Server 2025 + VS 2026，node-gyp v10 不支持
+  # 固定 windows-2022 确保 VS 2022 编译环境可用
   npm_config_msvs_version: '2022'
 
 jobs:
   # ===== Job 1: 测试 =====
   test:
     name: Run Tests
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
@@ -60,7 +61,7 @@ jobs:
   build-desktop:
     name: Build Desktop EXE
     needs: test
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
@@ -113,7 +114,7 @@ jobs:
   release:
     name: Create GitHub Release
     needs: build-desktop
-    runs-on: windows-latest
+    runs-on: windows-2022
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v4
