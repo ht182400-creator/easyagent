@@ -3,30 +3,14 @@ $headers = @{
     Authorization = "token $token"
     Accept = "application/vnd.github.v3+json"
 }
-
-# Check if the workflow is enabled
-Write-Host "========== Workflow State ==========" -ForegroundColor Cyan
-$wfs = Invoke-RestMethod -Uri "https://api.github.com/repos/ht182400-creator/easyagent/actions/workflows" -Headers $headers
-foreach ($wf in $wfs.workflows) {
-    Write-Host "$($wf.name): state=$($wf.state) path=$($wf.path)"
+$runs = Invoke-RestMethod -Uri "https://api.github.com/repos/ht182400-creator/easyagent/actions/runs?per_page=2" -Headers $headers
+foreach ($r in $runs.workflow_runs) {
+    $jobs = Invoke-RestMethod -Uri $r.jobs_url -Headers $headers
+    Write-Host "#$($r.run_number): $($r.name) | status=$($r.status) conclusion=$($r.conclusion) sha=$($r.head_sha.Substring(0,7))"
+    Write-Host "  Jobs: $($jobs.jobs.Count)"
+    foreach ($j in $jobs.jobs) {
+        $color = if ($j.conclusion -eq "failure") { "Red" } elseif ($j.conclusion -eq "success") { "Green" } else { "Yellow" }
+        Write-Host "    $($j.name): status=$($j.status) conclusion=$($j.conclusion)" -ForegroundColor $color
+    }
+    Write-Host "  URL: $($r.html_url)"
 }
-
-# Try to trigger workflow dispatch (might need workflow_dispatch event)
-Write-Host ""
-Write-Host "========== Checking if workflow has workflow_dispatch ==========" -ForegroundColor Cyan
-
-# Get the current ci.yml from repo
-$content = Invoke-RestMethod -Uri "https://api.github.com/repos/ht182400-creator/easyagent/contents/.github/workflows/ci.yml" -Headers @{
-    Authorization = "token $token"
-    Accept = "application/vnd.github.v3+json"
-}
-
-Write-Host "ci.yml size: $($content.size) bytes"
-Write-Host "ci.yml encoding: $($content.encoding)"
-
-# Also check if there are any disabled actions for this repo
-Write-Host ""
-Write-Host "========== Repo Actions enabled? ==========" -ForegroundColor Cyan
-$repo = Invoke-RestMethod -Uri "https://api.github.com/repos/ht182400-creator/easyagent" -Headers $headers
-Write-Host "  Repo: $($repo.full_name)"
-Write-Host "  Actions enabled: $($repo.has_actions)"

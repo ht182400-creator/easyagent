@@ -8,8 +8,8 @@ on:
 jobs:
   test:
     name: Quick Test
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: Echo test
-        run: echo "CI is working!"
+        run: echo "CI on Windows is working!"
