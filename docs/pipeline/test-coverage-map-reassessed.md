@@ -146,6 +146,87 @@
 
 ---
 
+---
+
+## 九、管线模块自审计 (Pipeline Self-Audit)
+
+> 新增评估: 2026-06-24，对照测试覆盖地图补充管线模块覆盖分析
+
+### 9.1 管线模块文件结构
+
+```
+docs/pipeline/
+├── lib/                          # 核心库 (339 symbols)
+│   ├── pipeline-config.mjs       # 【唯一配置源】29模块/6阶段/3分支/KPI/评分 (222 symbols)
+│   ├── pipeline-api.mjs          # 6 REST API 路由处理器 (26 symbols)
+│   ├── pipeline-parser.mjs       # MD 文件解析器 (76 symbols)
+│   └── pipeline-cache.mjs        # mtime 文件级缓存 (15 symbols)
+├── __tests__/                    # 管线自测试 (58用例 ✅ 100%)
+│   ├── pipeline-config.test.mjs  # 29 用例 — MODULES/PHASES/KPI/Dashboard
+│   ├── pipeline-cache.test.mjs   # 16 用例 — 读写/快照/有效性/压力
+│   ├── pipeline-parser.test.mjs  # 9 用例 — 标签/关键词/去重/状态
+│   └── pipeline-api.test.mjs     # 14 用例 — 6端点/JSON/CORS/404
+├── scripts/
+│   └── scan-test-cases.mjs       # 测试用例扫描器 → test-case-mapping.json
+├── index.html                    # ~1900 行 — SVG流程图 + 仪表板 + 问题面板 + 时序图
+├── server.mjs                    # 113 行 — HTTP服务器(端口8898) + 路径穿越防护
+├── pipeline-data.json            # ~6880 行 — 管线+仪表板数据快照 (187KB)
+├── memory-format-spec.md         # Memory 记录格式规范 v1.0
+├── ARCHITECTURE.md               # ~500 行 — 架构设计文档 v2.2
+├── README.md                     # 使用说明
+├── issue-data.json               # 问题快照 (89 问题 / 26 模块)
+├── project-progress-data.json    # 旧版进度数据
+├── test-case-mapping.json        # 876 用例→模块映射表
+├── code-review-*.md              # 3 份代码评审报告 (2026-06-24)
+└── _*.mjs / _*.json              # ⚠️ 8+ 临时脚本 (需清理)
+```
+
+### 9.2 管线模块测试覆盖 (已在 test-case-mapping.json 中)
+
+| ID | 管线模块 | test-case-mapping 用例数 | 独立测试用例 | 状态 |
+|----|----------|------------------------|-------------|------|
+| p5a | 管线数据看板 (index.html) | 29 | `pipeline-config.test.mjs` 29 用例 | ✅ 已覆盖 |
+| p5b | 自动数据采集 (cache+parser) | 25 | cache 16 + parser 9 | ✅ 已覆盖 |
+| p5c | 实时问题追踪 (parser+API) | 23 | parser 9(共享) + API 14 | ✅ 已覆盖 |
+| p5d | 管线自测试 | 0 | 4文件58用例，100% 通过 | ✅ 已覆盖 |
+
+> 管线模块不计入主项目 796 用例，其自身 58 用例使用 Node.js 原生 `--test` 运行器。
+
+### 9.3 管线模块健康度评估
+
+| 指标 | 评估 | 详情 |
+|------|------|------|
+| 📐 架构设计 | ✅ 优秀 | 单一配置源、三级加载、纯函数渲染、四级渐进展开 |
+| 🧪 自测试 | ✅ 100% | 4 文件 58 用例全通过，覆盖 config/cache/parser/API |
+| 📊 数据覆盖 | ✅ 完整 | 26 模块问题追踪、876 用例映射、9 张仪表板卡片 |
+| 🔒 安全性 | ✅ 良好 | server.mjs 路径穿越防护、lib/*.mjs 不对外暴露 |
+| 📝 文档 | ✅ 完善 | ARCHITECTURE.md(500行) + README.md + memory-format-spec.md |
+| 🔄 数据同步 | ⚠️ 部分 | Git hook 自动更新存在但 KPI 数据已过时 |
+| 🧹 代码整洁 | ⚠️ 需清理 | 8+ 临时 `_*.mjs` 脚本、3 个 `_vitest-*.json` 快照残留 |
+| 🐛 遗留问题 | 🟡 3项 | 见 9.4 节 |
+
+### 9.4 管线模块发现的问题
+
+| # | 问题 | 严重度 | 详情 |
+|---|------|--------|------|
+| PIPE-01 | **KPI 数据过时** | 🟡 P1 | `pipeline-data.json` meta.totalTests=35(实际796)、modelsSupported=4(实际10)。评分引擎 `calculateScore()` 依赖过时数据 |
+| PIPE-02 | **临时脚本残留** | 🟢 P3 | 8 个 `_*.mjs` 临时脚本 (`_add_level3.mjs`, `_check_data.mjs`, `_debug.mjs`, `_direct_test.mjs`, `_scan_issues.mjs`, `_test_api.mjs`, `_test_api2.mjs`, `_test_final.mjs`) + 4 个 `_*.json` 快照 (`_test_detail.json`, `_vitest-*.json`x3) |
+| PIPE-03 | **pipeline-data.json 过大** | 🟢 P3 | 6880 行/187KB，dashboard 段含重复 L4 测试用例名。可通过引用 test-case-mapping.json 节点 ID 替代内嵌完整数据 |
+| PIPE-04 | **缺少 CI 集成** | 🟡 P1 | 管线自测试 (`node --test`) 未纳入 `.github/workflows/ci.yml`，仅手动运行 |
+| PIPE-05 | **code-review 发现 C1 已修复** | ✅ 已修复 | `calculateScore()` 添加 5s TTL 缓存 (commit `f53cdbd`) |
+| PIPE-06 | **code-review 发现 C2-C3 遗留** | 🟢 P3 | `scoreDimensions` 字段命名不一致；`pipeline-api.mjs` LIVE_CACHE 和 scoreCache TTL 双重重叠 |
+
+### 9.5 管线模块行动建议
+
+| 优先级 | 行动 | 对应问题 |
+|--------|------|---------|
+| 🟡 P1 | 更新 `pipeline-data.json` KPI 为最新值 (796 用例、10 提供商) | PIPE-01 |
+| 🟡 P1 | 将 `node --test docs/pipeline/__tests__/` 加入 CI | PIPE-04 |
+| 🟢 P3 | 清理 8 个临时 `_*.mjs` 脚本 + 4 个 `_*.json` 快照 | PIPE-02 |
+| 🟢 P3 | 优化 `pipeline-data.json` dashboard 段，引用 test-case-mapping.json 节点 | PIPE-03 |
+
+---
+
 ## 重评估结论
 
 ### 状态分布
@@ -160,7 +241,9 @@
 | 安全 (ST) | 6 | 0 | 1 | 7 |
 | UI/UX | 3 | 1 | 0 | 4 |
 | 文档交付 | 5 | 0 | 0 | 5 |
-| **总计** | **35** | **9** | **15** | **59** |
+| **主线合计** | **35** | **9** | **15** | **59** |
+| 管线自测试 (P5) | 0 | 0 | ✅ 4 | 4 |
+| **全项目合计** | **35** | **9** | **19** | **63** |
 
 ### 与原始评估的主要差异
 
@@ -188,7 +271,7 @@
 | 🔴P0 | **IT-03** | 编写 TelegramAdapter 专项集成测试 | 530行适配器仅测抽象基类 |
 | 🔴P0 | **PT-01** | 建立 vitest bench 基准测试框架 | 全项目零性能基准 |
 
-### 🟡 P1 规划项 (4项)
+### 🟡 P1 规划项 (7项)
 
 | 优先级 | ID | 行动 |
 |--------|----|------|
@@ -196,3 +279,13 @@
 | 🟡P1 | **UT-15** | GitAdvancedTools 测试 (21.96KB零覆盖) |
 | 🟡P1 | **IT-09** | ModelRegistry+Server 集成测试 |
 | 🟡P1 | **DV-05** | 覆盖率门禁 (vitest --coverage + CI门禁) |
+| 🟡P1 | **PIPE-01** | 更新 pipeline-data.json KPI (796用例/10提供商) |
+| 🟡P1 | **PIPE-04** | CI 集成管线自测试 (node --test docs/pipeline/__tests__/) |
+
+### 🟢 P3 管线清理项 (3项)
+
+| 优先级 | ID | 行动 |
+|--------|----|------|
+| 🟢P3 | **PIPE-02** | 清理 8 个临时 `_*.mjs` 脚本 + 4 个 `_*.json` 快照 |
+| 🟢P3 | **PIPE-03** | 优化 pipeline-data.json dashboard 引用 test-case-mapping.json |
+| 🟢P3 | **PIPE-06** | 统一 scoreDimensions 字段命名 + 消除 LIVE_CACHE/scoreCache 双重缓存 |
