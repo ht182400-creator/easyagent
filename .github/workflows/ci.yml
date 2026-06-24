@@ -5,15 +5,25 @@ on:
     branches:
       - main
 
+env:
+  NODE_VERSION: '20'
+  npm_config_msvs_version: '2022'
+
 jobs:
   test:
-    name: Test msvc-dev-cmd
+    name: Test with setup-node+cache
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
       - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Echo test
-        run: echo "msvc-dev-cmd succeeded"
+        run: echo "setup-node with cache works"
