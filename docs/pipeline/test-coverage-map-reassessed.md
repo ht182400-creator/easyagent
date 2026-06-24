@@ -263,24 +263,24 @@ docs/pipeline/
 
 ### 🔴 P0 立即行动项 (5项)
 
-| 优先级 | ID | 行动 | 依据 |
-|--------|----|------|------|
-| 🔴P0 | **UT-07** | 编写 ModelRegistry 单元测试 | 368行核心代码零覆盖 |
-| 🔴P0 | **ST-02** | 编写 ExecTools 注入防护测试 | 批次A B5修复后安全性需验证 |
-| 🔴P0 | **ST-03** | 编写 FileTools 路径穿越测试 | 批次A B6修复后安全性需验证 |
-| 🔴P0 | **IT-03** | 编写 TelegramAdapter 专项集成测试 | 530行适配器仅测抽象基类 |
-| 🔴P0 | **PT-01** | 建立 vitest bench 基准测试框架 | 全项目零性能基准 |
+| 优先级 | ID | 行动 | 依据 | 状态 |
+|--------|----|------|------|------|
+| 🔴P0 | **UT-07** | 编写 ModelRegistry 单元测试 | 368行核心代码零覆盖 | ✅ 已完成 (30 tests) |
+| 🔴P0 | **ST-02** | 编写 ExecTools 注入防护测试 | 批次A B5修复后安全性需验证 | ✅ 已完成 (34 tests) |
+| 🔴P0 | **ST-03** | 编写 FileTools 路径穿越测试 | 批次A B6修复后安全性需验证 | ✅ 已完成 (28 tests) |
+| 🔴P0 | **IT-03** | 编写 TelegramAdapter 专项集成测试 | 530行适配器仅测抽象基类 | ✅ 已完成 (30 tests) |
+| 🔴P0 | **PT-01** | 建立 vitest bench 基准测试框架 | 全项目零性能基准 | ✅ 已完成 (4组/8项) |
 
 ### 🟡 P1 规划项 (7项)
 
-| 优先级 | ID | 行动 |
-|--------|----|------|
-| 🟡P1 | **UT-10** | i18n 深度翻译验证测试 (嵌套键/缺键降级) |
-| 🟡P1 | **UT-15** | GitAdvancedTools 测试 (21.96KB零覆盖) |
-| 🟡P1 | **IT-09** | ModelRegistry+Server 集成测试 |
-| 🟡P1 | **DV-05** | 覆盖率门禁 (vitest --coverage + CI门禁) |
-| 🟡P1 | **PIPE-01** | 更新 pipeline-data.json KPI (796用例/10提供商) |
-| 🟡P1 | **PIPE-04** | CI 集成管线自测试 (node --test docs/pipeline/__tests__/) |
+| 优先级 | ID | 行动 | 状态 |
+|--------|----|------|------|
+| 🟡P1 | **UT-10** | i18n 深度翻译验证测试 (嵌套键/缺键降级) | ✅ 已完成 (39 tests) |
+| 🟡P1 | **UT-15** | GitAdvancedTools 测试 (21.96KB零覆盖) | ✅ 已完成 (32 tests) |
+| 🟡P1 | **IT-09** | ModelRegistry+Server 集成测试 | ⏳ 后端 | 
+| 🟡P1 | **DV-05** | 覆盖率门禁 (vitest --coverage + CI门禁) | ⏳ 后端 |
+| 🟡P1 | **PIPE-01** | 更新 pipeline-data.json KPI (796用例/10提供商) | ✅ 已更新 (814/10) |
+| 🟡P1 | **PIPE-04** | CI 集成管线自测试 (node --test docs/pipeline/__tests__/) | ✅ 已集成 |
 
 ### 🟢 P3 管线清理项 (3项)
 

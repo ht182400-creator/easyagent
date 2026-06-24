@@ -75,6 +75,55 @@ jobs:
       - name: Run server tests
         run: cd packages/server && npx vitest run
 
+  # ===== 覆盖率门禁 (DV-05) =====
+  coverage:
+    name: Coverage Gate
+    needs: [test-core, test-server]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+
+      - name: Build server
+        run: cd packages/server && npx tsup
+
+      - name: Core coverage check (thresholds: 35/25/30/35)
+        run: cd packages/core && npx vitest run --coverage
+
+      - name: Server coverage check (thresholds: 30/20/25/30)
+        run: cd packages/server && npx vitest run --coverage
+
+  # ===== 管线自测试 =====
+  test-pipeline:
+    name: Test Pipeline
+    needs: test-core
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run pipeline self-tests
+        run: node --test docs/pipeline/__tests__/pipeline-*.test.mjs
+
   # ===== 编译验证 =====
   build-check:
     name: Build Verification

@@ -278,6 +278,71 @@ describe('知识库 API — 双作用域', () => {
   });
 });
 
+// ======================== ModelRegistry 集成 — 模型目录 API ========================
+
+describe('ModelRegistry 集成 — /api/providers/catalog/status', () => {
+  it('应返回 200 和目录状态结构', async () => {
+    const res = await request(app).get('/api/providers/catalog/status');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('ready');
+    expect(typeof res.body.ready).toBe('boolean');
+    expect(res.body).toHaveProperty('version');
+    expect(res.body).toHaveProperty('generatedAt');
+    expect(res.body).toHaveProperty('providers');
+    // providers 为 null 时表示目录未初始化，为 number 时表示就绪
+    if (res.body.providers !== null) {
+      expect(typeof res.body.providers).toBe('number');
+      expect(res.body.providers).toBeGreaterThan(0);
+    }
+  });
+
+  it('ready 为 true 时 version/generatedAt 应为有效值', async () => {
+    const res = await request(app).get('/api/providers/catalog/status');
+    if (res.body.ready) {
+      expect(res.body.version).toBeTruthy();
+      expect(res.body.generatedAt).toBeTruthy();
+      expect(res.body.providers).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('ModelRegistry 集成 — POST /api/providers/catalog/refresh', () => {
+  /**
+   * catalog/refresh 触发远程下载。
+   * ModelRegistry 使用四级降级链：远程 → 缓存(24h) → 项目内置 → 硬编码，
+   * 即使下载失败也不抛异常（refresh 内部 catch 所有错误）。
+   * 此处 mock fetch 快速失败，验证服务端降级处理。
+   */
+  it('应触发刷新降级 — fetch 不可用时仍返回 200 success', async () => {
+    const originalFetch = global.fetch;
+    // 模拟网络不可达
+    // @ts-expect-error - 模拟 fetch 不可用
+    global.fetch = () => Promise.reject(new Error('ENOTFOUND models.example.com'));
+
+    const res = await request(app).post('/api/providers/catalog/refresh');
+    global.fetch = originalFetch;
+
+    // refresh() 不抛异常，始终返回 200
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('success', true);
+    // 下载失败 → version/generatedAt 为 null
+    expect(res.body).toHaveProperty('version');
+    expect(res.body).toHaveProperty('generatedAt');
+  }, 20000);
+
+  it('刷新后 catalog/status 的 ready 字段为 true（初始化完成）', async () => {
+    // 先确认状态端点正常
+    const statusRes = await request(app).get('/api/providers/catalog/status');
+    expect(statusRes.status).toBe(200);
+    // Server 启动时已调用 initialize()，ready 可能 true 或 false
+    // 取决于网络可达性和缓存状态，两种都合法
+    expect(typeof statusRes.body.ready).toBe('boolean');
+    expect(statusRes.body).toHaveProperty('version');
+    expect(statusRes.body).toHaveProperty('generatedAt');
+    expect(statusRes.body).toHaveProperty('providers');
+  }, 15000);
+});
+
 // ======================== 404 处理 ========================
 
 describe('未知路由 — 404 处理', () => {

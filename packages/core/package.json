@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/core",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "EasyAgent核心引擎 - Agent系统、模型适配器、工具系统",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,6 +27,8 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "bench": "vitest bench --config vitest.bench.config.ts",
     "lint": "eslint src/",
     "clean": "rm -rf dist"
   },
@@ -42,6 +44,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/crypto-js": "^4.2.0",
+    "@vitest/coverage-v8": "^1.6.0",
     "tsup": "^8.0.0",
     "typescript": "^5.4.0",
     "vitest": "^1.6.0"

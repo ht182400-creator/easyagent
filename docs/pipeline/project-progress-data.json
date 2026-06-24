@@ -3,10 +3,10 @@
     "repo": "ht182400-creator/easyagent",
     "version": "0.4.1",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-24T14:15:21.911Z",
+    "lastUpdated": "2026-06-24T15:29:00.000Z",
     "engine": "auto-detected",
-    "totalTests": 35,
-    "modelsSupported": 4
+    "totalTests": 814,
+    "modelsSupported": 10
   },
   "phases": [
     {

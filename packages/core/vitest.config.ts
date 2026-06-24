@@ -10,6 +10,23 @@ export default defineConfig({
     outputFile: {
       json: '../../docs/pipeline/_vitest-core.json',
     },
+    // 覆盖率配置 — DV-05 覆盖率门禁
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/__tests__/**',
+        'src/__mocks__/**',
+        'src/**/*.d.ts',
+        'src/**/*.bench.ts',
+      ],
+      thresholds: {
+        statements: 35,
+        branches: 25,
+        functions: 30,
+        lines: 35,
+      },
+    },
   },
   resolve: {
     alias: {

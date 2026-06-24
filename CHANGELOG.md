@@ -7,6 +7,22 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.5.0] - 2026-06-24
+
+### Added
+- feat: 评分自动计算（五维度加权）— 取代硬编码 scoreTotal (ht182400-creator)
+- feat: P1-2 Web←Desktop 前端合并到 packages/frontend (ht182400-creator)
+
+### Fixed
+- fix(frontend): 修复 Sidebar SessionMeta 字段访问 (title/messageCount → metadata.title/metadata.messageCount) (ht182400-creator)
+- fix(frontend): 修复 ChatView/Sidebar 的 store 导入 (sessionStore → chatStore) (ht182400-creator)
+- fix: 修复评审建议级问题 C2-C8 + S2-S7 (13个建议级) (ht182400-creator)
+- fix: 修复评审建议级问题 C10 + S1 (ht182400-creator)
+- fix: 代码评审批次A+B阻塞及高危问题修复 (27 files, 752+/423-) (ht182400-creator)
+- fix: 评审修复 - calculateScore 添加 5s TTL 缓存 + 评分历史索引防御性重构 (ht182400-creator)
+- fix: CI better-sqlite3 编译失败 - node-gyp 无法识别 VS 2026 (v18) (ht182400-creator)
+- fix: 评分动态生效 + 模块微观视图(点击节点查看详情) (ht182400-creator)
+
 ## [0.4.1] - 2026-06-23
 
 ### Fixed
