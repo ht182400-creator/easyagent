@@ -33,12 +33,12 @@
       "size": 36906
     },
     "2026-06-26.md": {
-      "mtimeMs": 1782415822976.11,
-      "size": 26611
+      "mtimeMs": 1782422169888.7605,
+      "size": 42213
     },
     "MEMORY.md": {
-      "mtimeMs": 1782411498645.1133,
-      "size": 43049
+      "mtimeMs": 1782422157867.268,
+      "size": 44754
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -7410,6 +7410,356 @@
           "f10",
           "f11"
         ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F16] Desktop 版本号与检查更新修复 (03:43-03:50)",
+        "problem": "[F16] Desktop 版本号与检查更新修复 (03:43-03:50)",
+        "solution": "`packages/desktop/` 重新编译: `tsup` (main.ts→dist/main.js 618ms) + `vite build` (renderer)；新编译结果: ✅ `startBackendServer: true`, ✅ `ht182400-creator`, fallback version 0.3.0 (实际从 package.json 读取 0.5.5)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-26",
+        "title": "[F16] Desktop 版本号与检查更新修复 (03:43-03:50)",
+        "problem": "[F16] Desktop 版本号与检查更新修复 (03:43-03:50)",
+        "solution": "`packages/desktop/` 重新编译: `tsup` (main.ts→dist/main.js 618ms) + `vite build` (renderer)；新编译结果: ✅ `startBackendServer: true`, ✅ `ht182400-creator`, fallback version 0.3.0 (实际从 package.json 读取 0.5.5)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-26",
+        "title": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "problem": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "solution": "1. `ContentRouter.tsx` —— `providers` 类型从 PlaceholderView 改为 `<Suspense><ProvidersPage /></Suspense>`（懒加载） 2. `ModelRegistry.ts` —— CATALOG_URL 修正为正确仓库路径 3. 重建链路：`packages/core tsup` → `packages/desktop tsup` (main.js) → `packages/desktop vite build` (renderer) 4. 双版本 sqlite3 已缓存到 `.codebuddy/sqlite3-cache/`（system/electron 各一）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f9",
+          "f14",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "problem": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "solution": "1. `ContentRouter.tsx` —— `providers` 类型从 PlaceholderView 改为 `<Suspense><ProvidersPage /></Suspense>`（懒加载） 2. `ModelRegistry.ts` —— CATALOG_URL 修正为正确仓库路径 3. 重建链路：`packages/core tsup` → `packages/desktop tsup` (main.js) → `packages/desktop vite build` (renderer) 4. 双版本 sqlite3 已缓存到 `.codebuddy/sqlite3-cache/`（system/electron 各一）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f9",
+          "f14",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-26",
+        "title": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "problem": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "solution": "1. `ContentRouter.tsx` —— `providers` 类型从 PlaceholderView 改为 `<Suspense><ProvidersPage /></Suspense>`（懒加载） 2. `ModelRegistry.ts` —— CATALOG_URL 修正为正确仓库路径 3. 重建链路：`packages/core tsup` → `packages/desktop tsup` (main.js) → `packages/desktop vite build` (renderer) 4. 双版本 sqlite3 已缓存到 `.codebuddy/sqlite3-cache/`（system/electron 各一）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f9",
+          "f14",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-26",
+        "title": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "problem": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "solution": "1. `ContentRouter.tsx` —— `providers` 类型从 PlaceholderView 改为 `<Suspense><ProvidersPage /></Suspense>`（懒加载） 2. `ModelRegistry.ts` —— CATALOG_URL 修正为正确仓库路径 3. 重建链路：`packages/core tsup` → `packages/desktop tsup` (main.js) → `packages/desktop vite build` (renderer) 4. 双版本 sqlite3 已缓存到 `.codebuddy/sqlite3-cache/`（system/electron 各一）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f9",
+          "f14",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-26",
+        "title": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "problem": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
+        "solution": "1. `ContentRouter.tsx` —— `providers` 类型从 PlaceholderView 改为 `<Suspense><ProvidersPage /></Suspense>`（懒加载） 2. `ModelRegistry.ts` —— CATALOG_URL 修正为正确仓库路径 3. 重建链路：`packages/core tsup` → `packages/desktop tsup` (main.js) → `packages/desktop vite build` (renderer) 4. 双版本 sqlite3 已缓存到 `.codebuddy/sqlite3-cache/`（system/electron 各一）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f9",
+          "f14",
+          "p5b",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-26",
+        "title": "[F9-纠正2] 文件名不匹配 — better_sqlite3.node ≠ better_sql",
+        "problem": "[F9-纠正2] 文件名不匹配 — better_sqlite3.node ≠ better_sqlite3_system.node (04:18)",
+        "solution": "copy build\\Release\\better_sqlite3.node build\\Release\\better_sqlite3_system.node copy build\\Release\\better_sqlite3.node .codebuddy\\sqlite3-cache\\better_sqlite3_system.node",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-26",
+        "title": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "problem": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "solution": "1. `packages/core` → tsup (ModelRegistry URL 修正) 2. `packages/server` → rmdir dist + tsup --clean (CORS 回调修复) 3. `packages/desktop` → rmdir dist + tsup (内联 server+core, main.js 1.14MB) 4. `packages/desktop` → vite build (renderer, \"即将上线\"已清除) 5. `packages/desktop` → electron-builder --dir (重打包 asar+EXE, 169MB) 6. 验证: asar main.js 含 `process.env.CORS_ORIGIN` ✅, GitHub owner=ht182400-creator ✅, renderer 无\"即将上线\" ✅；EXE 路径: `packages/desktop/release/win-unpacked/EasyAgent.exe`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-26",
+        "title": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "problem": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "solution": "1. `packages/core` → tsup (ModelRegistry URL 修正) 2. `packages/server` → rmdir dist + tsup --clean (CORS 回调修复) 3. `packages/desktop` → rmdir dist + tsup (内联 server+core, main.js 1.14MB) 4. `packages/desktop` → vite build (renderer, \"即将上线\"已清除) 5. `packages/desktop` → electron-builder --dir (重打包 asar+EXE, 169MB) 6. 验证: asar main.js 含 `process.env.CORS_ORIGIN` ✅, GitHub owner=ht182400-creator ✅, renderer 无\"即将上线\" ✅；EXE 路径: `packages/desktop/release/win-unpacked/EasyAgent.exe`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "problem": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "solution": "1. `packages/core` → tsup (ModelRegistry URL 修正) 2. `packages/server` → rmdir dist + tsup --clean (CORS 回调修复) 3. `packages/desktop` → rmdir dist + tsup (内联 server+core, main.js 1.14MB) 4. `packages/desktop` → vite build (renderer, \"即将上线\"已清除) 5. `packages/desktop` → electron-builder --dir (重打包 asar+EXE, 169MB) 6. 验证: asar main.js 含 `process.env.CORS_ORIGIN` ✅, GitHub owner=ht182400-creator ✅, renderer 无\"即将上线\" ✅；EXE 路径: `packages/desktop/release/win-unpacked/EasyAgent.exe`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-26",
+        "title": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "problem": "[F9-纠正3] EXE 未重新打包 → 用户看到的仍是旧版 (04:25-04:27)",
+        "solution": "1. `packages/core` → tsup (ModelRegistry URL 修正) 2. `packages/server` → rmdir dist + tsup --clean (CORS 回调修复) 3. `packages/desktop` → rmdir dist + tsup (内联 server+core, main.js 1.14MB) 4. `packages/desktop` → vite build (renderer, \"即将上线\"已清除) 5. `packages/desktop` → electron-builder --dir (重打包 asar+EXE, 169MB) 6. 验证: asar main.js 含 `process.env.CORS_ORIGIN` ✅, GitHub owner=ht182400-creator ✅, renderer 无\"即将上线\" ✅；EXE 路径: `packages/desktop/release/win-unpacked/EasyAgent.exe`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-26",
+        "title": "[F10] better-sqlite3_electron.node MODULE_VERSION=",
+        "problem": "[F10] better-sqlite3_electron.node MODULE_VERSION=88 → 123 (04:29-04:36)",
+        "solution": "1. 新建 `scripts/rebuild-sqlite3.mjs` — 用 Node.js copyFileSync 替代 CMD copy 2. 策略：编译前先保存到 `temp/sqlite3-build/`（不被 rebuild clean 影响） 3. 编译顺序：先 Electron 30（保存到临时目录）→ 再 System Node 4. 部署：从临时目录复制到 Release + 更新缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F10] better-sqlite3_electron.node MODULE_VERSION=",
+        "problem": "[F10] better-sqlite3_electron.node MODULE_VERSION=88 → 123 (04:29-04:36)",
+        "solution": "1. 新建 `scripts/rebuild-sqlite3.mjs` — 用 Node.js copyFileSync 替代 CMD copy 2. 策略：编译前先保存到 `temp/sqlite3-build/`（不被 rebuild clean 影响） 3. 编译顺序：先 Electron 30（保存到临时目录）→ 再 System Node 4. 部署：从临时目录复制到 Release + 更新缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-26",
+        "title": "[F10] better-sqlite3_electron.node MODULE_VERSION=",
+        "problem": "[F10] better-sqlite3_electron.node MODULE_VERSION=88 → 123 (04:29-04:36)",
+        "solution": "1. 新建 `scripts/rebuild-sqlite3.mjs` — 用 Node.js copyFileSync 替代 CMD copy 2. 策略：编译前先保存到 `temp/sqlite3-build/`（不被 rebuild clean 影响） 3. 编译顺序：先 Electron 30（保存到临时目录）→ 再 System Node 4. 部署：从临时目录复制到 Release + 更新缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-26",
+        "title": "[F10] better-sqlite3_electron.node MODULE_VERSION=",
+        "problem": "[F10] better-sqlite3_electron.node MODULE_VERSION=88 → 123 (04:29-04:36)",
+        "solution": "1. 新建 `scripts/rebuild-sqlite3.mjs` — 用 Node.js copyFileSync 替代 CMD copy 2. 策略：编译前先保存到 `temp/sqlite3-build/`（不被 rebuild clean 影响） 3. 编译顺序：先 Electron 30（保存到临时目录）→ 再 System Node 4. 部署：从临时目录复制到 Release + 更新缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-26",
+        "title": "[F11] 永久消除 MODULE_VERSION 反复变化 (04:37-04:45)",
+        "problem": "[F11] 永久消除 MODULE_VERSION 反复变化 (04:37-04:45)",
+        "solution": "**永久精简方案**（只保留 2 个脚本）： | 操作 | 脚本 | 说明 | |------|------|------| | 🔪 删除 | `build-sqlite3.bat` | CMD copy /Y 静默失败 | | 🔪 删除 | `scripts/build-sqlite3-dual.mjs` | 与 rebuild 重复 | | 🔪 删除 | `scripts/manage-sqlite3.mjs` | 与 rebuild+loader 重复 | | ✅ 保留 | `scripts/rebuild-sqlite3.mjs` | **唯一编译入口** | | ✅ 保留 | `scripts/sqlite3-loader.mjs` | **运行时切换** | | 🔧 改造 | `postinstall.cjs` | **不再触碰 .node 文件** | | 🔧 改造 | `build.bat` Phase 2.5 | **不再 auto-rebuild，改为 copy 已有 electron.node** | | 🆕 新增 | `build.bat` Phase 3.5 | **打包后自动恢复 system 版本** |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F11] 永久消除 MODULE_VERSION 反复变化 (04:37-04:45)",
+        "problem": "[F11] 永久消除 MODULE_VERSION 反复变化 (04:37-04:45)",
+        "solution": "**永久精简方案**（只保留 2 个脚本）： | 操作 | 脚本 | 说明 | |------|------|------| | 🔪 删除 | `build-sqlite3.bat` | CMD copy /Y 静默失败 | | 🔪 删除 | `scripts/build-sqlite3-dual.mjs` | 与 rebuild 重复 | | 🔪 删除 | `scripts/manage-sqlite3.mjs` | 与 rebuild+loader 重复 | | ✅ 保留 | `scripts/rebuild-sqlite3.mjs` | **唯一编译入口** | | ✅ 保留 | `scripts/sqlite3-loader.mjs` | **运行时切换** | | 🔧 改造 | `postinstall.cjs` | **不再触碰 .node 文件** | | 🔧 改造 | `build.bat` Phase 2.5 | **不再 auto-rebuild，改为 copy 已有 electron.node** | | 🆕 新增 | `build.bat` Phase 3.5 | **打包后自动恢复 system 版本** |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-26",
+        "title": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "problem": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "solution": "1. **`.pnpmfile.cjs`**: 删除 better-sqlite3 的 `install` 脚本，阻止 prebuild-install 2. **重写 `rebuild-sqlite3.mjs`**:；移除不可靠的字节扫描；SHA256 比对 Electron≠System 来验证编译正确性；System 版本用 `createRequire` 直接加载验证；新增 `--verify` 模式 3. **验证 Desktop EXE**:；确保 `better_sqlite3_electron.node` SHA256 与 System 版本不同；打包前切换 → 打包 → 恢复；EXE 中 `app.asar.unpacked/.../better_sqlite3.node` SHA256=13751beb7c07167d ✅ 匹配 Electron 30 版本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-26",
+        "title": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "problem": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "solution": "1. **`.pnpmfile.cjs`**: 删除 better-sqlite3 的 `install` 脚本，阻止 prebuild-install 2. **重写 `rebuild-sqlite3.mjs`**:；移除不可靠的字节扫描；SHA256 比对 Electron≠System 来验证编译正确性；System 版本用 `createRequire` 直接加载验证；新增 `--verify` 模式 3. **验证 Desktop EXE**:；确保 `better_sqlite3_electron.node` SHA256 与 System 版本不同；打包前切换 → 打包 → 恢复；EXE 中 `app.asar.unpacked/.../better_sqlite3.node` SHA256=13751beb7c07167d ✅ 匹配 Electron 30 版本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "problem": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "solution": "1. **`.pnpmfile.cjs`**: 删除 better-sqlite3 的 `install` 脚本，阻止 prebuild-install 2. **重写 `rebuild-sqlite3.mjs`**:；移除不可靠的字节扫描；SHA256 比对 Electron≠System 来验证编译正确性；System 版本用 `createRequire` 直接加载验证；新增 `--verify` 模式 3. **验证 Desktop EXE**:；确保 `better_sqlite3_electron.node` SHA256 与 System 版本不同；打包前切换 → 打包 → 恢复；EXE 中 `app.asar.unpacked/.../better_sqlite3.node` SHA256=13751beb7c07167d ✅ 匹配 Electron 30 版本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-26",
+        "title": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "problem": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
+        "solution": "1. **`.pnpmfile.cjs`**: 删除 better-sqlite3 的 `install` 脚本，阻止 prebuild-install 2. **重写 `rebuild-sqlite3.mjs`**:；移除不可靠的字节扫描；SHA256 比对 Electron≠System 来验证编译正确性；System 版本用 `createRequire` 直接加载验证；新增 `--verify` 模式 3. **验证 Desktop EXE**:；确保 `better_sqlite3_electron.node` SHA256 与 System 版本不同；打包前切换 → 打包 → 恢复；EXE 中 `app.asar.unpacked/.../better_sqlite3.node` SHA256=13751beb7c07167d ✅ 匹配 Electron 30 版本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-26",
+        "title": "[F9] Desktop 前端 file:// 协议下裸 fetch 修复 (05:00-05:07",
+        "problem": "[F9] Desktop 前端 file:// 协议下裸 fetch 修复 (05:00-05:07)",
+        "solution": "11 个文件 23 处 fetch 调用全部改为使用 `getApiBase()`： // 修改前（Desktop 生产模式失败） fetch('/api/sessions') // 修改后（Web/Desktop 均正常） const apiBase = getApiBase();  // Desktop: 'http://127.0.0.1:3456', Web: '' fetch(`${apiBase}/api/sessions`)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F9] Desktop 前端 file:// 协议下裸 fetch 修复 (05:00-05:07",
+        "problem": "[F9] Desktop 前端 file:// 协议下裸 fetch 修复 (05:00-05:07)",
+        "solution": "11 个文件 23 处 fetch 调用全部改为使用 `getApiBase()`： // 修改前（Desktop 生产模式失败） fetch('/api/sessions') // 修改后（Web/Desktop 均正常） const apiBase = getApiBase();  // Desktop: 'http://127.0.0.1:3456', Web: '' fetch(`${apiBase}/api/sessions`)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-26",
+        "title": "[F9] build.bat Phase 2.5/3.5 sqlite3 路径错误 (05:07-0",
+        "problem": ": `build.bat --fast` 运行到 Phase 2.5 时报 `node:internal/modules/cjs/loader:1424` [根因] : build.bat 第 108 行 `cd ..\\desktop` 后 CWD 在 `packages/desktop`，但第 141-148 行 `_SQLITE_RELEASE` 使用相对路径 `node_modules\\.pnpm\\better-sqlite3@12.11.1\\...`。pnpm workspace 中 better-sqlite3 的实际位置在项目根目录的 `node_",
+        "solution": "1. Phase 2.5: `_SQLITE_RELEASE` 加 `%~dp0` 前缀 → `%~dp0node_modules\\.pnpm\\...` 2. Phase 2.5: `node scripts\\rebuild-sqlite3.mjs` → `node \"%~dp0scripts\\rebuild-sqlite3.mjs\"` 3. Phase 3.5: 同上述两处加 `%~dp0` 前缀；验证: 重新运行 `build.bat --fast` → `[OK] Switched`（直接跳过编译，文件已存在并从正确路径找到）→ electron-builder 成功 → EXE 168MB；教训: `.bat` 脚本中 `cd` 后对所有非 CWD 子目录的相对路径引用必须用 `%~dp0` 前缀确保基于脚本所在目录",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F9] build.bat Phase 2.5/3.5 sqlite3 路径错误 (05:07-0",
+        "problem": ": `build.bat --fast` 运行到 Phase 2.5 时报 `node:internal/modules/cjs/loader:1424` [根因] : build.bat 第 108 行 `cd ..\\desktop` 后 CWD 在 `packages/desktop`，但第 141-148 行 `_SQLITE_RELEASE` 使用相对路径 `node_modules\\.pnpm\\better-sqlite3@12.11.1\\...`。pnpm workspace 中 better-sqlite3 的实际位置在项目根目录的 `node_",
+        "solution": "1. Phase 2.5: `_SQLITE_RELEASE` 加 `%~dp0` 前缀 → `%~dp0node_modules\\.pnpm\\...` 2. Phase 2.5: `node scripts\\rebuild-sqlite3.mjs` → `node \"%~dp0scripts\\rebuild-sqlite3.mjs\"` 3. Phase 3.5: 同上述两处加 `%~dp0` 前缀；验证: 重新运行 `build.bat --fast` → `[OK] Switched`（直接跳过编译，文件已存在并从正确路径找到）→ electron-builder 成功 → EXE 168MB；教训: `.bat` 脚本中 `cd` 后对所有非 CWD 子目录的相对路径引用必须用 `%~dp0` 前缀确保基于脚本所在目录",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -7427,5 +7777,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-25T19:41:56.450Z"
+  "generatedAt": "2026-06-25T21:29:59.638Z"
 }

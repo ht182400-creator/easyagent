@@ -34,6 +34,9 @@ function getAppVersion(): string {
 }
 const APP_VERSION = getAppVersion();
 
+/** 设置 EASYAGENT_VERSION 环境变量，确保内嵌 Server 的版本号正确 */
+process.env.EASYAGENT_VERSION = APP_VERSION;
+
 // ==================== 内嵌后端服务器 ====================
 
 /** API 服务器端口 */
