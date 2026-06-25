@@ -1,7 +1,8 @@
 {
   "name": "@easyagent/desktop",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "EasyAgent 桌面版 - Electron原生桌面AI编程助手",
+  "author": "EasyAgent Team <team@easyagent.dev>",
   "type": "module",
   "main": "./dist/main.js",
   "scripts": {
@@ -50,29 +51,21 @@
       "!node_modules/**/README*",
       "!node_modules/**/*.md",
       "!node_modules/**/*.markdown",
-      "!node_modules/better-sqlite3/**"
+      "!node_modules/better-sqlite3/src/**",
+      "!node_modules/better-sqlite3/deps/**",
+      "!node_modules/better-sqlite3/build/Release/obj/**"
     ],
     "asar": true,
     "asarUnpack": [
-      "node_modules/electron-updater/**"
+      "node_modules/electron-updater/**",
+      "node_modules/better-sqlite3/**",
+      "node_modules/bindings/**",
+      "node_modules/file-uri-to-path/**"
     ],
     "extraMetadata": {
       "main": "./dist/main.js"
     },
-    "extraResources": [
-      {
-        "from": "node_modules/better-sqlite3",
-        "to": "node_modules/better-sqlite3"
-      },
-      {
-        "from": "node_modules/bindings",
-        "to": "node_modules/bindings"
-      },
-      {
-        "from": "node_modules/file-uri-to-path",
-        "to": "node_modules/file-uri-to-path"
-      }
-    ],
+    "extraResources": [],
     "compression": "maximum",
     "publish": {
       "provider": "github",

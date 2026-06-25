@@ -10,6 +10,9 @@ import {
   Palette, Bug, Send, Paperclip, Mic, Star,
   ArrowRight, TrendingUp, Zap
 } from 'lucide-react';
+import { useAppStore } from '@/stores/appStore';
+import { useConfig } from '@/config';
+import { apiRequest } from '@/request';
 
 interface SystemStatus {
   model: { provider: string; model: string };
@@ -58,12 +61,13 @@ export default function Dashboard() {
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const serverConnected = useAppStore((s) => s.serverConnected);
+  const { apiBase } = useConfig();
   /** 从服务端动态加载的模板列表 */
   const [templates, setTemplates] = useState<TemplateConfig[]>([]);
 
   const fetchStatus = useCallback(() => {
-    fetch('/api/status')
-      .then((r) => r.json())
+    apiRequest<SystemStatus>('/api/status')
       .then((data) => {
         setStatus(data);
         setLoading(false);
@@ -73,8 +77,7 @@ export default function Dashboard() {
 
   // 获取模板
   const fetchTemplates = useCallback(() => {
-    fetch('/api/config/templates')
-      .then((r) => r.json())
+    apiRequest<{ success: boolean; templates?: TemplateConfig[] }>('/api/config/templates')
       .then((data) => {
         if (data.success) setTemplates(data.templates || []);
       })
@@ -130,9 +133,21 @@ export default function Dashboard() {
 
         {/* 状态指示器 */}
         <div className="mt-5 flex items-center justify-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
-            <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_rgba(34,197,94,0.4)] animate-pulse-dot" />
-            <span className="text-xs text-green-400 font-medium">服务运行中</span>
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${
+            serverConnected
+              ? 'bg-green-500/10 border-green-500/20'
+              : 'bg-yellow-500/10 border-yellow-500/20'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              serverConnected
+                ? 'bg-green-400 shadow-[0_0_6px_rgba(34,197,94,0.4)] animate-pulse-dot'
+                : 'bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.4)]'
+            }`} />
+            <span className={`text-xs font-medium ${
+              serverConnected ? 'text-green-400' : 'text-yellow-400'
+            }`}>
+              {serverConnected ? '服务运行中' : '正在连接服务...'}
+            </span>
           </div>
           {status && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">

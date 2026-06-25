@@ -62,14 +62,17 @@ async function startBackendServer(): Promise<void> {
     console.log('[EasyAgent Desktop] [DEBUG] createApp() returned, has server:', !!appContext.server);
     backendServer = appContext.server;
 
-    // 手动启动 HTTP 服务器监听
-    backendServer.listen(API_PORT, '127.0.0.1', () => {
-      console.log(`[EasyAgent Desktop] 内嵌后端已启动: http://localhost:${API_PORT}`);
-      console.log(`[EasyAgent Desktop] WebSocket 端点: ws://localhost:${API_PORT}/ws`);
-    });
-
-    backendServer.on('error', (err: Error) => {
-      console.error('[EasyAgent Desktop] 后端服务运行时错误:', err.message);
+    // 手动启动 HTTP 服务器监听（Promise 化，确保后端就绪后才返回）
+    await new Promise<void>((resolve, reject) => {
+      backendServer.listen(API_PORT, '127.0.0.1', () => {
+        console.log(`[EasyAgent Desktop] 内嵌后端已启动: http://localhost:${API_PORT}`);
+        console.log(`[EasyAgent Desktop] WebSocket 端点: ws://localhost:${API_PORT}/ws`);
+        resolve();
+      });
+      backendServer.on('error', (err: Error) => {
+        console.error('[EasyAgent Desktop] 后端服务运行时错误:', err.message);
+        reject(err);
+      });
     });
   } catch (error: any) {
     const errMsg = `[EasyAgent Desktop] 后端启动失败: ${error.message}`;

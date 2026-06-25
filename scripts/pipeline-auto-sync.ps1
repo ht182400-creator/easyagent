@@ -6,6 +6,10 @@
 # 使用: powershell -File scripts/pipeline-auto-sync.ps1
 # ============================================================
 $ErrorActionPreference = "Continue"
+# 设置控制台输出编码为 UTF-8，防止中文乱码
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 $WORKSPACE = "d:\Work_Area\AI\Claude Code  CN"
 $PIPELINE_DIR = "$WORKSPACE\docs\pipeline"
 $SERVER_PORT = 8899

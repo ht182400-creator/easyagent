@@ -5,7 +5,7 @@
  * - Web:  相对路径（Vite 代理），API_BASE=""  WS_BASE="/ws"
  * - Desktop: 直连 127.0.0.1:3456，API_BASE="http://127.0.0.1:3456"  WS_BASE="ws://127.0.0.1:3456/ws"
  */
-import { createContext, useContext, useEffect, type ReactNode, type FC } from 'react';
+import { createContext, useContext, useLayoutEffect, type ReactNode, type FC } from 'react';
 import { setApiBase, setWsBase, setIsDesktop } from './request';
 
 /** 前端运行时配置 */
@@ -56,7 +56,8 @@ export const ConfigProvider: FC<ConfigProviderProps> = ({ config, children }) =>
   const merged: FrontendConfig = { ...defaultConfig, ...config };
 
   // 同步配置到模块级变量，供 Store 内的 apiRequest() / getWsBase() / getIsDesktop() 使用
-  useEffect(() => {
+  // ⚠️ 使用 useLayoutEffect 而非 useEffect: 必须保证在子组件挂载/effect 之前同步完成，否则 App.tsx 的 loadSettings() 会以空 _apiBase 发起请求导致连接失败
+  useLayoutEffect(() => {
     setApiBase(merged.apiBase);
     setWsBase(merged.wsBase);
     setIsDesktop(merged.isDesktop);

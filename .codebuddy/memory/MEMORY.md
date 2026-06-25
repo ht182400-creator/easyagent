@@ -39,6 +39,7 @@
 - CSS `@import` 必须在所有规则之前
 - 使用 HashRouter（适配 file:// 协议）
 - VS Code 需排除 `**/packages/desktop/release/**` 避免文件锁定
+- **Tailwind content 必须包含 frontend 组件路径**: `'../frontend/src/**/*.{js,ts,jsx,tsx}'`，否则生产构建会丢失布局/间距/flex 等 utility 类，导致侧边栏图标文字堆叠（2026-06-26 回归）
 
 ### Provider 配置
 - `PROVIDER_PRESETS` 定义 11 个预设，`ConfigManager.load()` 只有 `apiKey` 的才启用
@@ -148,7 +149,7 @@ node --test docs/pipeline/__tests__/pipeline-config.test.mjs
 | 10 | 🔀 | `packages/server/src/index.js` 残留 | vitest 加载旧 JS 而非新 TS | 删除旧编译产物 |
 | 11 | 🖥️ | **apiFetch 全项目双重 .json()** | 13 个文件 43+ 处数据消失无报错 | apiFetch 已返回解析对象，所有调用处去掉 `res.json()` + `res.ok` 检查 |
 | 12 | 🔀 | **bat文件 `[!]` + 延迟扩展冲突** | `enabledelayedexpansion` 下 echo `[!]` 被当成变量标记，导致整行解析崩溃 | 改为 `[^^!]`（`^^` 转义） |
-| 13 | 🔀 | **bat文件中文编码乱码** | CMD 无法正确处理 UTF-8 中文（无论有无 BOM），BOM 导致 `@echo off` 失效 | **全英文重写**，零中文零编码依赖；版本号前导空格用 `for /f` 自动 trim |
+| 13 | 🔀 | **bat文件中文编码乱码** | CMD 代码页 936(GBK) 无法正确输出 UTF-8 中文，PowerShell 管道解析中文变乱码 | bat 开头 `chcp 65001` 设置 UTF-8 代码页；ps1 开头设置 `[Console]::OutputEncoding = UTF8`；JSON 数据本身正确，仅显示层编码不匹配 |
 | 14 | 🔀 | **bat文件 `:::` 注释导致 CMD 崩溃** | `::: comment` 被 CMD 解析为非法 label，报 `此时不应有 :。` | **全部改为 `rem` 注释**；不用任何 `:` 开头的注释 |
 | 15 | 🔀 | **execSync 路径含空格被截断** | `execSync('node ' + path)` 中路径有空格，CMD 当作参数分隔符截断| 路径加双引号：`node "${path}"` |
 | 16 | 🔀 | **`.mjs` 文件含 TS 类型注解** | Node.js ESM 不支持 TS 语法，`function foo(x: string)` 报 `SyntaxError` | 移除全部类型注解，用纯 JS |
@@ -157,13 +158,18 @@ node --test docs/pipeline/__tests__/pipeline-config.test.mjs
 | 19 | 🔀 | **pnpm v11 `allowBuilds` 占位文本被当 false** | electron/better-sqlite3/esbuild 构建脚本被跳过，打包失败 | `pnpm-workspace.yaml` 中 `allowBuilds` 必须显式设为 `true`，不能留占位文本 |
 | 20 | 🖥️ | **better-sqlite3 在 asar 内加载原生模块失败** | `bindings` 从 `__dirname`（asar内路径）找不到 `.node`，后端启动失败，Dashboard 全 `--` | `files` 中 `!node_modules/better-sqlite3/**` 排除出asar；`extraResources` 复制到 `resources/node_modules/better-sqlite3/` |
 | 21 | 🖥️ | **mime 缺失导致 Express 500（开发可用/Release 报错）** | 开发模式 pnpm 提升 mime 到 server 包下，send 能间接解析；但 electron-builder 打包后 asar 中 `node_modules/mime` 消失（只在 `@easyagent/server/node_modules/mime`），send `require('mime')` 失败报 `Cannot find module 'mime'` | 在 desktop/package.json 显式添加 `"mime": "^1.6.0"`（不是 mime@2.x！）；verify #11 检查 top-level mime 存在+版本 |
-| 22 | 🖥️ | **开发/Release better-sqlite3 MODULE_VERSION 不一致** | 开发用系统 Node v24 编译 (137)，Electron 需要 v20 (123)，加载失败或 Dashboard `--` | postinstall 脚本自动执行 `electron-rebuild`；verify #10 自动检测 |
+| 22 | 🖥️ | **开发/Release better-sqlite3 MODULE_VERSION 不一致** | 开发用系统 Node v24 编译 (137)，Electron 需要 v20 (123)，加载失败或 Dashboard `--` | 直接 `npx node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release`（不能用 `@electron/rebuild`，bin名歧义且 pnpm 下可能不生效）；verify #10 + build.bat Phase 2.5 自动检测/修复 |
 | 23 | 🖥️ | **electron-updater 传递依赖缺失（dev可用/Release崩溃）** | electron-builder 打包后 asar 中缺少 `lodash.escaperegexp`、`lodash.isequal`、`tiny-typed-emitter`，electron-updater 更新检查时 `require()` 失败 | 在 desktop/package.json 显式添加所有 electron-updater 的传递依赖（8个包）；verify #12 自动检测 |
 | 24 | 🖥️ | **Express 生态版本不兼容（dev可用/Release可能异常）** | desktop deps 中 `iconv-lite@0.6.3`、`media-typer@1.1.0`、`ipaddr.js@2.4.0`、`encodeurl@1.0.2` 与 Express 子包预期版本不匹配 | 保持监控；verify #13 自动 WARN；若出现异常则降级到匹配版本 |
 | 25 | 🖥️ | **apiFetch 双重 .json() 解析导致数据为空** | `apiFetch` 已内置 `res.json()` 返回解析后数据，但直接使用 `apiFetch().then(r => r.json())` 会导致 TypeError（数组/对象没有 .json() 方法），被 catch 静默吞掉 | 使用 `apiFetch<T>` 泛型直接获取数据，不要调用 `.then(r => r.json())`；原生 `fetch()` 才需要手动 `.json()`
 | 26 | 🖥️ | **HashRouter 下 `<a href>` 导致黑屏/页面跳转** | Desktop 使用 HashRouter（路由 `/#/xxx`），但 `<a href="/sessions">` 绕过 React Router 触发全页面导航 | 在所有 tsx 中应使用 `<Link to="/sessions">` 或 `navigate('/sessions')`；仅外部链接（`target="_blank"`）可用 `<a href>`；verify #15 自动检测
 | 27 | 🖥️ | **Desktop asar 内 PROJECT_ROOT 指向只读归档** | `createApp()` 中 `PROJECT_ROOT = resolve(__dirname, '..', '..', '..')` 在 asar 内解析到只读路径，知识库写入失败(400)、读取返回空 | 1) `createApp()` 接受 `options.projectRoot` 参数；2) Desktop main.ts 传入 `homedir()` 作为 projectRoot |
 | 28 | 🔀 | **CI windows-latest 已升级 VS 2026，node-gyp 不兼容** | CI 显示 0 jobs 或 better-sqlite3 编译失败，node-gyp v10.3.1 找不到 VS 2026 | ci.yml + release.yml 全部固定 `windows-2022`，确保 VS 2022 编译环境可用 |
+| 29 | 🖥️ | **Desktop Tailwind content 未扫描 frontend 组件 → 界面布局错乱** | EXE 运行后侧边栏图标和文字堆叠，flex/gap/w-64 等布局类丢失。开发模式正常但 Release 崩溃。根因：`desktop/tailwind.config.js` 的 `content` 只扫 `./src/renderer/**/*`，而实际 UI 组件在 `../frontend/src/` 中（通过 @/ alias），Tailwind JIT 不会生成只在 frontend 中使用的 utility 类。`web/tailwind.config.js` 早已包含此路径，但 desktop 建包时遗漏 | desktop/tailwind.config.js 的 content 添加 `'../frontend/src/**/*.{js,ts,jsx,tsx}'`；三个包各有独立 config，互不影响 |
+| 30 | 🖥️ | **postinstall.cjs 命令名错误 + @electron/rebuild 不生效** | `pnpm exec @electron/rebuild` 找不到二进制（实际注册名是 `electron-rebuild`），即使改用正确名也声称成功但不修改 binary（pnpm symlink 环境问题）。build.bat 自动修复步骤不完善 | postinstall.cjs: 改用 `npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release`；build.bat: 新增 Phase 2.5 自动检测文件大小并 rebuild；verify-build.cjs: 通过文件大小判断而非仅对比系统 Node 版本 |
+| 31 | 🖥️ | **tsup 内联 server 代码导致 asar 双重 CORS** | desktop tsup 打包时将 server 的 `createApp()` 整段内联进 `dist/main.js`，asar 中同时存在两份 CORS 中间件（main.js 1.2MB 含内联 server + node_modules/@easyagent/server/dist/index.js 625KB）。只更新 server 包不更新 main.js → CORS 行为被旧 main.js 覆盖 | 修改 @easyagent/server 源码后必须同时 `tsup --clean` 两个包；asar 修补必须同时替换 `dist/main.js` 和 `node_modules/@easyagent/server/dist/index.js` |
+| 32 | 🖥️ | **pnpm hardlink 下 node-gyp rebuild 假成功** | `node-gyp rebuild` exit 0 但 `better_sqlite3.node` mtime+大小未变、NVM 版本仍为 137 而非 123。原因：pnpm store 硬链接 + rebuild 输出到 store 路径，当前工作副本未更新 | 重建后必须检查文件 mtime+大小+NVM 头值（`Buffer.from([123,0,0,0])` 出现位置）；verify-build.cjs 已有 Phase 2.5 自动检测 |
+| 33 | 🖥️ | **electron-rebuild 在 pnpm 下静默跳过** | `@electron/rebuild --force` 声称成功但文件完全未变。bin 名歧义（`electron-rebuild` vs `@electron/rebuild`）+ pnpm 符链环境下找不到正确路径 | 直接用 `node-gyp rebuild` 显式指定 `--target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers`，不用 electron-rebuild |
 
 
 
@@ -608,7 +614,7 @@ node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 - 发布脚本: `scripts/release.mjs`
 - 一键发布: `release-publish.bat`（交互式，集成版本标记+构建+上传全流程）
 - 更新日志: `CHANGELOG.md`
-- 打包流程: `docs/05_Desktop_EXE打包标准流程.md` (v1.4, 25个问题)
+- 打包流程: `docs/05_Desktop_EXE打包标准流程.md` (v1.7, 27个问题)
 - 发布与CI/CD: `docs/06_版本发布与CI-CD流程指南.md` (v1.0, 发布全流程 + GitHub Actions)
 - 分发方案: `docs/07_自动更新分发方案对比.md` (v1.0, GitHub Releases/R2/COS/自建 5 方案对比)
 - 预检查脚本: `packages/desktop/scripts/verify-build.cjs`

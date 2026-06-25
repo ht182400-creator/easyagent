@@ -1,9 +1,9 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.5.3",
+    "version": "0.5.4",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-25T16:11:16.625Z",
+    "lastUpdated": "2026-06-25T16:40:40.512Z",
     "engine": "auto-detected",
     "totalTests": 1195,
     "modelsSupported": 4

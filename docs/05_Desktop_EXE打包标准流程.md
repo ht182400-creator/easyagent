@@ -1,6 +1,6 @@
 # EasyAgent Desktop EXE 打包标准流程与问题手册
 
-> 版本: v1.5 | 日期: 2026-06-22 | 基于 10+ 次打包实战经验总结 | 25 个问题已解决 | 当前版本: 0.4.0
+> 版本: v1.7 | 日期: 2026-06-26 | 基于 10+ 次打包实战经验总结 | 27 个问题已解决 | 当前版本: 0.5.4
 
 ---
 
@@ -590,6 +590,67 @@ Require stack: ...\app.asar\node_modules\multer\lib\make-middleware.js
 
 ---
 
+### 🔴 问题 26：Tailwind CSS content 扫描路径缺失 → 界面布局错乱
+
+**现象**：Desktop EXE 运行后侧边栏图标和文字堆叠在一起，flex/间距/宽度等布局样式全部丢失，而开发模式（`pnpm dev`）下正常。
+
+**根本原因**：
+- `packages/desktop/tailwind.config.js` 的 `content` 只扫描了 `./src/renderer/**/*.{js,ts,jsx,tsx}`
+- Desktop 的实际 UI 组件（侧边栏、聊天窗口、Dashboard 等）全部在 `packages/frontend/src/` 中，通过 `@/` alias 引用
+- Tailwind JIT 编译器在生产构建时只扫描 content 指定的文件，不会生成只在 frontend 组件中使用的 utility 类（`flex`、`flex-col`、`items-center`、`gap-2`、`w-64`、`px-4` 等）
+- 这些类名不在 `./src/renderer/` 下出现 → Tailwind purge 掉 → CSS 文件不含这些类 → 界面错乱
+
+**修复方法**：`packages/desktop/tailwind.config.js` 的 `content` 数组添加 frontend 组件路径：
+```js
+content: [
+    './index.html',
+    './src/renderer/**/*.{js,ts,jsx,tsx}',
+    // 关键：Desktop 通过 @/ alias 使用 frontend 包的所有 UI 组件，
+    // Tailwind JIT 必须扫描这些文件才能生成对应的 utility 类
+    '../frontend/src/**/*.{js,ts,jsx,tsx}',     // ← 新增
+],
+```
+
+**教训**：
+- 三个包各有独立的 `tailwind.config.js`，修改 desktop 的配置不影响 frontend/web
+- `web/tailwind.config.js` 早已包含 `'../frontend/src/**/*.{js,ts,jsx,tsx}'`（第 6 行），但 desktop 建包时漏了
+- 新增桌面包时，必须同步检查 Tailwind content 是否覆盖了所有被 `@/` alias 引用的组件路径
+- `verify-build.cjs` 可增加此项自动检查
+
+---
+
+### 🔴 问题 27：electron-rebuild 命令名错误 + 实际不生效 → better-sqlite3 仍为系统 Node 编译
+
+**现象**：布局修复后 EXE 仍无法连接后端，`startup-error.log` 显示 `NODE_MODULE_VERSION 137 != 123`。
+
+**根本原因（三重bug）**：
+1. `postinstall.cjs` 中命令为 `pnpm exec @electron/rebuild`，但 `@electron/rebuild` 包的 bin 注册名是 `electron-rebuild`（无 `@`），导致永远找不到命令
+2. 即使改成正确命令 `pnpm exec electron-rebuild`，在 pnpm workspace 环境下它声称"✔ Rebuild Complete"，但实际并未修改 binary 文件（可能是 symlink/junction 导致的路径问题）
+3. Cache 文件 `.module_version_cache` 被错误写入值 `123`，导致后续检查始终跳过 rebuild
+
+**修复方法**：
+- 不再使用 `@electron/rebuild`，改用 `npx node-gyp` 直接编译：
+```bat
+npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release
+```
+- 在 `packages/desktop/node_modules/better-sqlite3` 所在目录执行（pnpm store 实际路径）
+- 验证方式：检查 `better_sqlite3.node` 文件大小 ≠ 1913344（原始 Node v24 版本），或检查修改时间
+
+**相关修改**：
+| 文件 | 修改内容 |
+|------|---------|
+| `postinstall.cjs` | REBUILD_CMD 改为 `npx --yes node-gyp rebuild ...` |
+| `verify-build.cjs` | 通过文件大小 1913344 vs 非 1913344 判断，而非仅对比系统 Node 版本 |
+| `build.bat` | 新增 Phase 2.5：打包前自动检测文件大小并 auto-fix |
+
+**教训**：
+- `@electron/rebuild` 的 CLI bin 名是 `electron-rebuild`，不是 `@electron/rebuild`
+- electron-rebuild 在 pnpm monorepo 中可能不可靠，直接 `npx node-gyp` 更稳定
+- 不应依赖 cache 文件判断 binary 状态，应直接检查 binary 文件特征
+- 原始 Node v24 编译的 binary 大小是 **1913344 bytes**，用于快速判断是否需要 rebuild
+
+---
+
 ## 四、核心配置文件速查
 
 ### 4.1 `package.json` 关键字段
@@ -717,6 +778,8 @@ html, body, #root { margin: 0; padding: 0; height: 100%; background: #09090b; }
       ├── API 请求失败 → 使用 apiFetch 而非 fetch？localhost 改为 127.0.0.1 了吗？
       ├── 数据不显示(无报错) → apiFetch 后是否又调了 .json()？(问题 25)
       ├── Dashboard -- / 模板加载中 → 同上双重 .json() 或 IPv4/IPv6 不一致(问题 24/25)
+      ├── 界面布局错乱（图标文字堆叠） → Tailwind content 含 ../frontend/src/**/*？(问题 26)
+      ├── 后端无法连接 (MODULE_VERSION) → better_sqlite3.node 大小=1913344？用 npx node-gyp rebuild (问题 27)
       ├── 路由不工作 → 使用 HashRouter？
       ├── pnpm symlink → noExternal 包含了 core/server？
       ├── better-sqlite3 找不到 → asarUnpack + 原生模块路径？
@@ -770,3 +833,5 @@ html, body, #root { margin: 0; padding: 0; height: 100%; background: #09090b; }
 16. **apiFetch 已解析 JSON**：调用处直接用 `.then(data => ...)`，禁止再调 `.json()`
 17. **每次修改源码后清理 dist/renderer**：避免 Vite 缓存旧文件 (build.bat 自动执行)
 18. **构建前运行 verify-build.cjs**：自动检查 20+ 项已知问题 (build.bat 自动执行)
+19. **Tailwind content 必须扫描所有 UI 组件路径**：desktop 的 tailwind.config.js 必须同时包含 `./src/renderer/**/*` 和 `../frontend/src/**/*`，否则生产构建会丢失布局/间距/flex 等 utility 类，导致侧边栏图标文字堆叠（问题 26）
+20. **不要依赖 @electron/rebuild 编译原生模块**：用 `npx node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release` 直接编译，更可靠（问题 27）

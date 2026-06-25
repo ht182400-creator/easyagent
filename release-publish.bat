@@ -1,4 +1,6 @@
 @echo off
+rem 设置 UTF-8 代码页，防止中文乱码
+chcp 65001 >nul 2>&1
 setlocal enabledelayedexpansion
 title EasyAgent Release Publisher
 cd /d "%~dp0"
@@ -273,6 +275,16 @@ goto :BUILD_OK
 :BUILD_FAILED
 echo.
 echo   [FAIL] Build failed (errorlevel=%errorlevel%)
+echo.
+echo   --- Recovery options ---
+echo   1. Check if Windows Defender blocked NSIS makensis.exe
+echo      - Add exclusion: packages\desktop\release\ 
+echo      - Or temporarily disable real-time protection
+echo   2. Ensure no EasyAgent.exe/electron.exe processes running
+echo   3. Try standalone build: build.bat --release
+echo   4. Clean electron-builder cache: 
+echo      rmdir /s /q "%%LOCALAPPDATA%%\electron-builder\Cache\nsis"
+echo   -------------------------
 pause
 exit /b 1
 
@@ -545,6 +557,8 @@ echo   Synchronizing test results, issue data, and
 echo   refreshing the pipeline server on port 8899.
 echo   Running: powershell -File scripts/pipeline-auto-sync.ps1
 echo   ----------------------------------------
+rem 设置 UTF-8 编码避免中文乱码
+chcp 65001 >nul 2>&1
 powershell -ExecutionPolicy Bypass -File scripts\pipeline-auto-sync.ps1
 set _SYNC_ERR=%errorlevel%
 if %_SYNC_ERR% neq 0 (

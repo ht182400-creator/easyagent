@@ -36,6 +36,16 @@ export async function apiFetch<T = unknown>(
   apiBase: string,
   options?: RequestInit
 ): Promise<T> {
+  return performFetch<T>(path, apiBase, options, 0);
+}
+
+/** 带重试的内部实现 */
+async function performFetch<T = unknown>(
+  path: string,
+  apiBase: string,
+  options?: RequestInit,
+  retryCount: number = 0
+): Promise<T> {
   const url = path.startsWith('http') ? path : `${apiBase}${path}`;
 
   try {
@@ -63,6 +73,11 @@ export async function apiFetch<T = unknown>(
     return (await res.text()) as unknown as T;
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      // 最多重试 5 次，每次间隔 1 秒
+      if (retryCount < 5) {
+        await new Promise((r) => setTimeout(r, 1000));
+        return performFetch<T>(path, apiBase, options, retryCount + 1);
+      }
       throw new Error('无法连接到后端服务，请确认应用已正确启动');
     }
     throw error;

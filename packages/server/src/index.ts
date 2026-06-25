@@ -422,9 +422,32 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   // Express应用
   const app = express();
-  // CORS 配置：仅允许可信来源跨域访问
+  // CORS 配置：允许 Web 开发服务器 + Electron Desktop (file:// → Origin: null)
+  // 关键：Desktop 版从 file:// 加载前端 → 渲染进程 fetch 的 Origin 为 "null" 字符串
+  // 必须显式让 cors 中间件反射请求 Origin 到 Access-Control-Allow-Origin
   app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://127.0.0.1:3456',
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      const corsEnv = process.env.CORS_ORIGIN;
+      if (corsEnv) {
+        // 显式设置 CORS_ORIGIN 时精确匹配
+        if (origin === corsEnv) {
+          callback(null, true);
+        } else {
+          console.log(`[CORS] 拒绝 origin="${origin}", 要求="${corsEnv}"`);
+          callback(new Error('Not allowed by CORS'));
+        }
+        return;
+      }
+      // 默认：允许 file://、本地开发服务器、桌面版自建
+      if (!origin || origin === 'null') {
+        callback(null, true);  // Electron Desktop (file://) 
+      } else if (origin.startsWith('http://127.0.0.1') || origin.startsWith('http://localhost')) {
+        callback(null, true);  // Vite dev server / 桌面版自建
+      } else {
+        console.log(`[CORS] 拒绝未知 origin="${origin}"`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   }));
@@ -2616,7 +2639,7 @@ if (isMainModule) {
     server.listen(PORT, HOST, () => {
       console.log([
         '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.5.4           ║',
+        '║        EasyAgent Server v0.5.5           ║',
         `║  HTTP:      http://localhost:${PORT}        ║`,
         `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
         '╚══════════════════════════════════════════╝',

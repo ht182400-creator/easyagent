@@ -3,6 +3,9 @@ export default {
   content: [
     './index.html',
     './src/renderer/**/*.{js,ts,jsx,tsx}',
+    // 关键：Desktop 通过 @/ alias 使用 frontend 包的所有 UI 组件，
+    // Tailwind JIT 必须扫描这些文件才能生成对应的 utility 类
+    '../frontend/src/**/*.{js,ts,jsx,tsx}',
   ],
   darkMode: 'class',
   theme: {

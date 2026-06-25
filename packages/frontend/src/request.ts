@@ -81,6 +81,18 @@ export async function apiRequest<T = unknown>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
+  return performRequest<T>(path, options, 0);
+}
+
+/**
+ * 执行带重试的 HTTP 请求
+ * 桌面版后端可能异步启动，前几次请求失败属于正常竞态条件
+ */
+async function performRequest<T = unknown>(
+  path: string,
+  options?: RequestInit,
+  retryCount: number = 0
+): Promise<T> {
   const url = path.startsWith('http') ? path : `${_apiBase}${path}`;
 
   const defaultHeaders: Record<string, string> = {};
@@ -114,9 +126,17 @@ export async function apiRequest<T = unknown>(
     return (await res.text()) as unknown as T;
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      // 桌面版：最多重试 5 次，每次间隔 1 秒（避免后端启动竞态）
+      const maxRetries = _isDesktop ? 5 : 2;
+      if (retryCount < maxRetries) {
+        await new Promise((r) => setTimeout(r, 1000));
+        return performRequest<T>(path, options, retryCount + 1);
+      }
+      // 所有重试都失败后才显示通知（带 8 秒自动消失）
       useAppStore.getState().addNotification({
         type: 'warning',
         message: '无法连接到后端服务，请确认应用已正确启动',
+        duration: 8000,
       });
       throw new Error('无法连接到后端服务，请确认应用已正确启动');
     }
