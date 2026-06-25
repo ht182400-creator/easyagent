@@ -16,6 +16,12 @@ const NODE_FILE = path.join(__dirname, '..', 'node_modules', 'better-sqlite3', '
 const REBUILD_CMD = 'pnpm exec @electron/rebuild -f -w better-sqlite3 -v 30.0.0';
 
 function main() {
+  // 0. CI 环境跳过：CI 的 build 步骤使用 msvc-dev-cmd 单独编译 native 模块
+  if (process.env.CI) {
+    console.log('[postinstall] CI environment detected - skipping better-sqlite3 version check');
+    return;
+  }
+
   console.log('[postinstall] Checking better-sqlite3 module version...');
 
   // 1. 检查 .node 文件是否存在
