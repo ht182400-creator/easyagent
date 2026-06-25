@@ -7,6 +7,11 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.5.7] - 2026-06-25
+
+### Fixed
+- fix: 修复 EXE 内 Server 版本号误报问题，通过 EASYAGENT_VERSION 环境变量传递正确版本 (ht182400-creator)
+
 ## [0.5.6] - 2026-06-25
 
 ### Added
