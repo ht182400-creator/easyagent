@@ -1,10 +1,18 @@
 # ============================================================
-# 管线数据本地同步脚本 (v2.0, 2026-06-26)
-# 用途: Git pull 后本地刷新管线数据 + 重启服务器
-# 触发: CI 已自动运行 vitest + unified-sync 并提交结果
-#       本地只需 pull 后运行此脚本同步服务器状态
+# 管线数据本地同步脚本 (v3.0, 2026-06-26)
+# 用途: 等待 CI 完成 → 回取 vitest 报告 → 本地 unified-sync → 重启服务器
+# 流程:
+#   [1] fetch-ci-data.mjs: 等待 CI 完成 + 下载 vitest artifacts + git pull
+#   [2] unified-sync.mjs: 用 CI 报告再生成本地管线数据
+#   [3] 重启管线服务器
+#   [4] 验证数据一致性
 # 使用: powershell -File scripts/pipeline-auto-sync.ps1
+#       powershell -File scripts/pipeline-auto-sync.ps1 --skip-ci // 跳过 CI 回取
 # ============================================================
+param(
+    [switch]$SkipCI,    # 跳过 CI 数据回取（使用本地已有数据）
+    [int]$Timeout = 600 # CI 等待超时秒数
+)
 $ErrorActionPreference = "Continue"
 # 设置控制台输出编码为 UTF-8，防止中文乱码
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -18,18 +26,26 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "管线本地同步开始: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-# ---- 第 1 步：Pull 最新管线数据（CI 已自动更新） ----
-Write-Host "`n[1/4] 拉取 CI 自动更新的管线数据..." -ForegroundColor Yellow
-Set-Location $WORKSPACE
-try {
-    $result = git pull --no-edit 2>&1
-    Write-Host "    $result" -ForegroundColor Gray
-    Write-Host "    ✅ git pull 完成" -ForegroundColor Green
-} catch {
-    Write-Host "    ⚠️ git pull 异常: $_" -ForegroundColor Yellow
+# ---- 第 1 步：等待 CI + 回取 vitest 报告 + git pull ----
+if ($SkipCI) {
+    Write-Host "`n[1/4] 跳过 CI 数据回取 (--skip-ci)" -ForegroundColor Yellow
+} else {
+    Write-Host "`n[1/4] 等待 CI 完成并回取 vitest 报告..." -ForegroundColor Yellow
+    Set-Location $WORKSPACE
+    try {
+        $ciResult = node scripts/fetch-ci-data.mjs --timeout $Timeout 2>&1
+        $ciResult | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "    ✅ CI 数据回取完成" -ForegroundColor Green
+        } else {
+            Write-Host "    ⚠️ CI 回取退出码: $LASTEXITCODE，继续本地同步..." -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "    ⚠️ CI 数据回取异常: $_，将使用本地 fallback 数据" -ForegroundColor Yellow
+    }
 }
 
-# ---- 第 2 步：本地运行 unified-sync（确保本地 mirror 文件最新） ----
+# ---- 第 2 步：本地运行 unified-sync（用 CI vitest 报告 / 本地 fallback）----
 Write-Host "`n[2/4] 运行 unified-sync.mjs 同步本地数据..." -ForegroundColor Yellow
 try {
     node scripts/unified-sync.mjs 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }

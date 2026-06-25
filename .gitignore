@@ -39,3 +39,5 @@ docs/pipeline/_vitest-*.json
 packages/docs/
 # GitHub Token（仅本地使用，勿提交）
 scripts/.release_token
+# CI 回取的原始日志（仅本地保留）
+docs/pipeline/ci-logs/

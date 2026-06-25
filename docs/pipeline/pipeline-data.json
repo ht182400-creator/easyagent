@@ -403,7 +403,7 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1195用例"
+      "note": "29/29模块+1195用例+6阶段3分支全完成"
     }
   ],
   "dashboard": {
@@ -10759,5 +10759,43 @@
     }
   },
   "lastUpdated": "2026-06-25T19:10:04.482Z",
-  "source": "module-registry.mjs (统一注册表同步)"
+  "source": "module-registry.mjs (统一注册表同步)",
+  "meta": {
+    "version": "0.5.5",
+    "generatedAt": "2026-06-25T19:13:04.026Z"
+  },
+  "version": "0.5.5",
+  "generatedAt": "2026-06-25T19:13:04.026Z",
+  "scoreDimensions": [
+    {
+      "label": "功能完整度",
+      "score": 100,
+      "max": 100,
+      "note": "19/19 模块完成"
+    },
+    {
+      "label": "测试覆盖",
+      "score": 100,
+      "max": 100,
+      "note": "1195通过 (100%)/1195已执行 / 1195 定义 用例通过"
+    },
+    {
+      "label": "分支优化",
+      "score": 100,
+      "max": 100,
+      "note": "10/10 分支完成"
+    },
+    {
+      "label": "CI/CD 成熟度",
+      "score": 100,
+      "max": 100,
+      "note": "4/4 CI 文件就绪"
+    },
+    {
+      "label": "文档完整度",
+      "score": 100,
+      "max": 100,
+      "note": "4/4 文档齐全"
+    }
+  ]
 }

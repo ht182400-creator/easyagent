@@ -553,8 +553,10 @@ echo.
 echo -----------------------------------------------------------
 echo   Step 6: Pipeline Data Auto-Sync
 echo -----------------------------------------------------------
-echo   Synchronizing test results, issue data, and
-echo   refreshing the pipeline server on port 8899.
+echo   Step 6a: Waiting for GitHub CI to complete...
+echo   Step 6b: Downloading CI vitest reports (core/server/desktop)
+echo   Step 6c: Running unified-sync with CI data
+echo   Step 6d: Restarting pipeline server on port 8899
 echo   Running: powershell -File scripts/pipeline-auto-sync.ps1
 echo   ----------------------------------------
 rem 设置 UTF-8 编码避免中文乱码
