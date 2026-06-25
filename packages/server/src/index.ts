@@ -2537,7 +2537,7 @@ if (isMainModule) {
     server.listen(PORT, HOST, () => {
       console.log([
         '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.5.0           ║',
+        '║        EasyAgent Server v0.5.1           ║',
         `║  HTTP:      http://localhost:${PORT}        ║`,
         `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
         '╚══════════════════════════════════════════╝',

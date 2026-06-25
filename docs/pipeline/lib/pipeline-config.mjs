@@ -519,12 +519,12 @@ export function calculateScore() {
  */
 export function getKPI() {
   const mapping = loadTestCaseMapping();
-  const testCases = mapping?._meta?.totalTestCases || 864;
+  const mappedTestCases = mapping?._meta?.totalTestCases || 864;
 
   // 从 vitest JSON 报告读取真实测试结果
   const vtResult = loadVitestResults();
 
-  let totalPassed, totalFailed, totalSkipped, passRate;
+  let totalPassed, totalFailed, totalSkipped, passRate, testCases;
   if (vtResult.totalTests > 0) {
     // 有 vitest 报告 → 使用真实数据
     totalPassed = vtResult.totalPassed;
@@ -532,12 +532,15 @@ export function getKPI() {
     totalSkipped = vtResult.totalSkipped;
     const effectiveTotal = totalPassed + totalFailed + totalSkipped;
     passRate = effectiveTotal > 0 ? Math.round((totalPassed / effectiveTotal) * 100) : 100;
+    // testCases 也使用 vitest 有效总量，确保与通过/失败数据口径一致
+    testCases = effectiveTotal;
   } else {
-    // 无 vitest 报告 → 使用默认值（提示需要运行测试）
-    totalPassed = testCases;
+    // 无 vitest 报告 → 使用 mapping 默认值（提示需要运行测试）
+    totalPassed = mappedTestCases;
     totalFailed = 0;
     totalSkipped = 0;
-    passRate = testCases > 0 ? 100 : 0;
+    passRate = mappedTestCases > 0 ? 100 : 0;
+    testCases = mappedTestCases;
   }
 
   // 自动计算综合评分（五维度加权，无硬编码）

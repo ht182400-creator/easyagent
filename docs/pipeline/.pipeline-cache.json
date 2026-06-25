@@ -1,32 +1,40 @@
 {
   "snapshots": {
     "2026-06-18.md": {
-      "mtimeMs": 1782147306127.24,
-      "size": 29271
+      "mtimeMs": 1782351389278.0105,
+      "size": 39380
     },
     "2026-06-19.md": {
-      "mtimeMs": 1781886468452.5415,
-      "size": 36770
+      "mtimeMs": 1782351389281.3894,
+      "size": 52324
     },
     "2026-06-20.md": {
-      "mtimeMs": 1781969978709.8875,
-      "size": 38657
+      "mtimeMs": 1782351389286.6287,
+      "size": 51846
     },
     "2026-06-21.md": {
-      "mtimeMs": 1781984450426.6348,
-      "size": 21408
+      "mtimeMs": 1782351389286.6287,
+      "size": 28943
     },
     "2026-06-22.md": {
-      "mtimeMs": 1782143907683.6384,
-      "size": 19886
+      "mtimeMs": 1782351696871.4006,
+      "size": 31098
     },
     "2026-06-23.md": {
-      "mtimeMs": 1782229751536.3452,
-      "size": 39344
+      "mtimeMs": 1782351696871.4006,
+      "size": 51404
+    },
+    "2026-06-24.md": {
+      "mtimeMs": 1782350684375.0806,
+      "size": 22061
+    },
+    "2026-06-25.md": {
+      "mtimeMs": 1782351921298.0608,
+      "size": 10043
     },
     "MEMORY.md": {
-      "mtimeMs": 1782218623292.3752,
-      "size": 24711
+      "mtimeMs": 1782350457704.8628,
+      "size": 26366
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -103,6 +111,380 @@
         "_tagModuleIds": [
           "f2",
           "f9"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-18",
+        "title": "server webDistPath路径错误：从非server目录启动时前端资源404 (23:36",
+        "problem": ": process.cwd() 在非 server 目录启动时指向错误路径，导致前端资源文件返回 404 [根因] : 使用了 process.cwd() 而非 __dirname 作为基础路径",
+        "solution": "将 process.cwd() 替换为 __dirname，确保始终基于 server 目录查找资源",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-18",
+        "title": "/api/tools 响应字段缺失导致工具分组计数全为0 (23:36)",
+        "problem": ": /api/tools 端点返回数据缺少 group/requiresConfirm/builtin/enabled 字段 [根因] : ToolRegistry.list() 未返回工具元数据字段",
+        "solution": "增强 /api/tools 端点返回 group/requiresConfirm/builtin/enabled 完整字段",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f5",
+        "date": "2026-06-18",
+        "title": "mcpStore disconnectServer 类型错误：void 与 Promise<void",
+        "problem": ": disconnectServer 函数声明返回 void 但实际返回 Promise，导致 TypeScript 类型检查报错 [根因] : 函数声明为 void 但内部调用异步操作",
+        "solution": "将返回类型改为 async，确保返回 Promise<void>",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f5"
+        ]
+      },
+      {
+        "moduleId": "f5",
+        "date": "2026-06-18",
+        "title": "mcpStore toggleServer 缺少 await 导致竞态条件 (23:36)",
+        "problem": ": toggleServer 中 connectServer/disconnectServer 是异步但调用未加 await [根因] : 异步函数调用缺少 await 导致执行顺序不确定",
+        "solution": "在 connectServer/disconnectServer 前添加 await",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f5"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-18",
+        "title": "sandboxStore.ts 和 Sandbox.tsx 中 .js 后缀导入不规范 (23:36",
+        "problem": ": TypeScript 导入使用了 .js 后缀，不符合 TS 项目规范",
+        "solution": "移除 .js 后缀统一为无后缀导入",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-18",
+        "title": "Dashboard.tsx 未使用的导入产生 lint 警告 (23:36)",
+        "problem": ": addNotification 和 useAppStore 被导入但从未使用",
+        "solution": "移除未使用的 addNotification 和 useAppStore 导入",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-18",
+        "title": "虚拟滚动后 Sessions.tsx 缺少 totalTokens 字段导致编译错误 (16:46)",
+        "problem": ": 新增虚拟滚动时未同步更新 Sessions.tsx 中相关字段 [根因] : 重构时漏掉了字段同步",
+        "solution": "添加缺失的 totalTokens 字段",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-18",
+        "title": "better-sqlite3 测试失败：3 个用例因原生 bindings 无法加载 (16:57)",
+        "problem": ": better-sqlite3 在 Node.js v24.13.0 无预编译二进制，且环境缺少 C++ 编译工具链 [根因] : Node.js v24 太新，better-sqlite3 尚未提供预编译二进制",
+        "solution": "创建 vitest alias mock 用内存 Map 模拟 SQLite CRUD 操作",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-18",
+        "title": "QualityTools.ts DTS 编译错误：catch 块无法访问 try 内声明的变量 (1",
+        "problem": ": catch 块引用的 check 变量在 try 块内声明，TypeScript DTS 生成失败 [根因] : check 变量作用域在 try 块内",
+        "solution": "将 check 声明移到 try 之前",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-18",
+        "title": "Web CSS @import 顺序警告 (18:11)",
+        "problem": ": @import url() 在 @tailwind 指令之后违反了 CSS 规范",
+        "solution": "将 @import url() 移到 @tailwind 指令之前",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-18",
+        "title": "工具测试参数名不匹配实际代码 (18:13)",
+        "problem": ": 测试中使用 target_directory 但实际代码参数名为 targetDirectory（camelCase） [根因] : 测试用例编写时参数名与 API 不一致",
+        "solution": "将测试参数名改为 targetDirectory",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-18",
+        "title": "AdapterFactory.createAll() 返回类型测试错误 (18:13)",
+        "problem": ": 测试期望返回数组但实际返回 Map [根因] : API 重构后返回类型从 Array 变为 Map，测试未同步更新",
+        "solution": "修改测试断言适配 Map 返回类型",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-18",
+        "title": "Mock SQLite 跨实例限制导致测试失败 (18:13)",
+        "problem": ": 内存 Map 实现的 Mock 无法跨实例共享数据 [根因] : Mock 实现设计为内存隔离，不可跨模块共享状态",
+        "solution": "适配测试逻辑接受内存实现限制",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-18",
+        "title": "ConfigManager.load() 与 setApiKey() 调用顺序问题 (18:13)",
+        "problem": ": 测试中调用顺序与实际代码执行逻辑不符 [根因] : 测试编写时未参考实际模块初始化流程",
+        "solution": "调整测试中调用顺序匹配实际代码逻辑",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-18",
+        "title": "测试中 beforeAll 未从 vitest 显式导入 (18:13)",
+        "problem": ": vitest 需要显式导入 beforeAll 等 hook 函数 [根因] : 全局类型声明中未包含 vitest hooks",
+        "solution": "在测试文件中添加 beforeAll 的显式导入",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-18",
+        "title": "encryption 测试中 async 缺失导致测试失败 (18:13)",
+        "problem": ": 加密函数是异步的但测试中缺少 async/await",
+        "solution": "为加密测试添加 async 关键字",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-18",
+        "title": "IM 适配器测试 STATUS_CHANGE 事件名不匹配 (18:37)",
+        "problem": ": 测试期望事件名为 status:change 但实际为 status_change [根因] : 事件命名约定变更后测试未更新",
+        "solution": "修改断言匹配实际事件名 status_change",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-18",
+        "title": "BaseIMAdapter.sendStreamingMessage 中 editMessage 可",
+        "problem": ": catch 块内 editMessage 失败无 try-catch 保护导致未捕获异常 [根因] : catch 块中未处理嵌套失败",
+        "solution": "在 catch 块内为 editMessage 添加内层 try-catch",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f5",
+        "date": "2026-06-18",
+        "title": "Windows MCP 测试：node -e 内联脚本在 cmd.exe 中转义导致 SyntaxE",
+        "problem": ": cmd.exe 对 node -e 内联脚本的引号转义处理与 bash 不同 [根因] : Windows cmd.exe 字符转义机制与 bash 不一致",
+        "solution": "改为使用临时 .js 文件代替 node -e 内联脚本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f5"
+        ]
+      },
+      {
+        "moduleId": "f5",
+        "date": "2026-06-18",
+        "title": "MCP 测试中脚本不响应 shutdown 导致 disconnect 挂起 (18:37)",
+        "problem": ": 测试脚本缺少对 shutdown 请求的响应处理",
+        "solution": "在测试脚本中添加 else 默认响应处理所有请求类型",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f5"
+        ]
+      },
+      {
+        "moduleId": "f5",
+        "date": "2026-06-18",
+        "title": "MCPClient 进程异常退出时 pending requests 未 reject 导致测试挂起",
+        "problem": ": close 事件处理中未清理 pending requests，导致 Promise 永久挂起",
+        "solution": "在 close 事件处理器中为所有 pending requests 调用 reject",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f5"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "Desktop 窗口不显示 (19:16)",
+        "problem": ": show:false 配合 ready-to-show 事件依赖不可靠 [根因] : Electron ready-to-show 事件在某些情况下不触发",
+        "solution": "改为 show:true 并增加错误日志",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-18",
+        "title": "Desktop initAgent 失败：无 API 密钥时 getCurrentProvider(",
+        "problem": ": 未处理 getCurrentProvider() 可能返回 undefined 的情况",
+        "solution": "增加 try-catch 包裹 initAgent 并添加警告日志",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "Desktop 打包后 @easyagent/core 外部依赖缺失 (19:16)",
+        "problem": ": tsup 默认将依赖包设为 external 不 bundle，打包后缺少 @easyagent/core [根因] : tsup 默认 external 所有 node_modules 依赖",
+        "solution": "配置 noExternal 将 @easyagent/core bundle 入 main.js",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "Desktop 打包后 better-sqlite3 原生模块缺失 (19:16)",
+        "problem": ": 打包后 desktop 未直接依赖 better-sqlite3 [根因] : 依赖在 core 包中但 desktop 包未声明",
+        "solution": "将 better-sqlite3 加入 desktop 的 dependencies",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "NSIS 打包失败：release 目录被系统进程锁定 (21:55)",
+        "problem": ": 之前的 win-unpacked\\resources\\app.asar 被进程锁定无法删除 [根因] : 上次运行后进程未完全退出",
+        "solution": "用户手动删除锁定文件后重新打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "NSIS 资源文件下载被墙 (21:55)",
+        "problem": ": nsis-resources-3.4.1.7z 从 GitHub 下载失败 [根因] : 网络环境无法访问 GitHub 下载",
+        "solution": "用户手动下载放入 %LOCALAPPDATA%\\electron-builder\\Cache\\nsis\\",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-18",
+        "title": "Server 无法启动：better-sqlite3 找不到 bindings 文件 (22:08)",
+        "problem": ": Node.js v24 无预编译二进制，VS2019 SDK 未被 node-gyp 检测到 [根因] : Node 版本与 native module 不兼容",
+        "solution": "从 electron-rebuild 编译的 .ignored_better-sqlite3 中复制 .node 文件到正式位置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "关于对话框版本硬编码 v0.1.0 (22:35)",
+        "problem": ": 版本号直接写在代码中未动态读取",
+        "solution": "使用 getAppVersion() 动态读取 package.json 版本号",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "StatusBar 硬编码显示 DeepSeek Chat (22:35)",
+        "problem": ": 模型名称直接硬编码在 UI 组件中",
+        "solution": "改为动态显示实际模型名称和更新状态",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "ChatView 底部版本硬编码 v0.2.0 (22:35)",
+        "problem": ": 版本号直接写在组件中",
+        "solution": "改为动态读取版本号",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-18",
+        "title": "检查更新仅打开 GitHub 链接无实际更新功能 (22:35)",
+        "problem": ": 更新功能仅做了跳转链接未集成真正更新流程",
+        "solution": "集成 electron-updater 实现完整自动更新流程（检查/下载/进度/安装）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-18",
+        "title": "StatusBar 工具数显示 13 与实际 51 不匹配 (22:35)",
+        "problem": ": 工具数在 UI 中硬编码为 13",
+        "solution": "改为显示实际注册工具数 51",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-18",
+        "title": "Server 日志乱码 (22:35)",
+        "problem": ": Windows 终端默认编码非 UTF-8 导致中文日志乱码 [根因] : CMD 控制台默认 GBK 编码",
+        "solution": "在 package.json 启动命令前添加 chcp 65001 设置 UTF-8 编码",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
         ]
       }
     ],
@@ -1210,6 +1592,523 @@
           "f4",
           "f10"
         ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "提供商不存在错误 — ConfigManager.getProvider 仅查找含 apiKey 的",
+        "problem": ": config.providers 数组仅包含有 apiKey 的提供商，Ollama 外其余预设需环境变量或 UI 配置 [根因] : config.providers 在 setApiKey 之前只加载了有密钥的提供商",
+        "solution": "修复 ConfigManager.setApiKey() 使预设提供商从 PROVIDER_PRESETS 查找完整配置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "Kimi URL 错误 — setApiKey() else 分支创建空 baseURL 导致 /v",
+        "problem": ": ConfigManager.setApiKey() 对不在 config.providers 中的预设创建 baseURL: \"\" 条目 [根因] : setApiKey 第 296-310 行 else 分支缺陷，创建了空 baseURL 新条目",
+        "solution": "setApiKey 为预设提供商从 PROVIDER_PRESETS 查找完整 baseURL；自定义提供商使用默认值",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "提供商页面连接测试失败时仅显示 ✗ 失败，用户不知道原因 (19:48)",
+        "problem": ": validateConnection() 未抛出结构化错误",
+        "solution": "validateConnection() 改为抛出含 HTTP 状态分析的结构化错误；前端显示红色错误卡片",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "Vite 报 Failed to parse source for import analysis ",
+        "problem": ": Vite 默认扩展名解析顺序 .js > .tsx，导致 import 解析到含 JSX 的 .js 文件 [根因] : tsc 编译生成 .js 文件含 JSX 语法但 Vite 不将其当 JSX 解析",
+        "solution": "vite.config.ts 添加 resolve.extensions 让 .tsx 优先于 .js",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "模型列表硬编码过时，不能只搜 2025 年的信息 (08:04)",
+        "problem": ": 模型目录完全硬编码在 ProviderPresets.ts 中，无法动态更新",
+        "solution": "新增 ModelRegistry 单例类，启动时从 GitHub/CDN 下载最新 models-catalog.json，缓存 24h，支持 fetchWithTimeout + 备用 URL",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "动态获取的模型与预设模型无合并机制 (07:50)",
+        "problem": ": Server 无合并逻辑，动态和预设模型各自独立",
+        "solution": "Server 新增 mergeModels() 函数，相同 ID 动态优先；每个模型返回 fromDynamic 字段标记来源",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "Chat 页面模型选择下拉显示旧模型（DeepSeek V3/GLM-4等） (07:46)",
+        "problem": ": 前端 Store 默认值过时，默认模型为 deepseek-chat（V3） [根因] : providerStore.ts 默认值未更新",
+        "solution": "providerStore.ts 默认模型从 deepseek-chat → deepseek-v4",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-19",
+        "title": "首次无网络时模型目录无法加载，远程 GitHub 仓库 404 (08:33)",
+        "problem": ": ModelRegistry 只有远程下载+本地缓存两级，无项目内置兜底 [根因] : 远程仓库 easyagent/easyagent 不存在",
+        "solution": "ModelRegistry 新增 readBundledCatalog() 四级降级链：远程下载→本地缓存→项目内置→ProviderPresets 硬编码",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "服务崩溃 TypeError: config.getConfig is not a function",
+        "problem": ": server/index.ts 中 config 是 AppConfig 纯数据对象，不是 ConfigManager 实例 [根因] : configManager.load() 返回数据对象而非实例",
+        "solution": "3 处 config.getConfig() → 直接使用 config 对象本身",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "全场默认模型 deepseek-chat（V3）过时，需统一更新到 deepseek-v4 (08:",
+        "problem": ": ConfigManager.ts/AgentEngine.ts/SessionManager.ts 中多处硬编码旧模型名",
+        "solution": "所有硬编码 deepseek-chat → deepseek-v4，覆盖 ConfigManager/AgentEngine/SessionManager 及测试断言",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-19",
+        "title": "服务日志中所有中文都是乱码 (08:39)",
+        "problem": ": pino v9 transport 使用 worker 线程，Windows 下 worker 线程 stderr 编码不是 UTF-8 [根因] : Windows worker 线程输出编码不匹配",
+        "solution": "Windows 平台不再使用 pino-pretty worker transport，改为主线程同步 Transform stream；启动命令添加 UTF-8 编码设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "Vite 前端启动时出现 [DEP0060] util._extend 弃用警告 (08:44)",
+        "problem": ": Node.js v24 弃用了 util._extend，TailwindCSS v3 内部依赖使用了该 API [根因] : TailwindCSS v3 依赖了已弃用 API",
+        "solution": "packages/web/package.json dev 脚本加 NODE_OPTIONS=--no-deprecation",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "用户本地 Ollama qwen2.5:7b 能对话但 EasyAgent 前端发送消息后无回复 (",
+        "problem": ": providerStore 初始 currentProvider 为 deepseek，hasExplicitSelection 为 true 时不自动切换 [根因] : 有密钥的提供商选择逻辑过于严格",
+        "solution": "providerStore 初始值改为空字符串；无密钥时自动切换到有密钥的提供商",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "前端聊天发送消息后报 ECONNABORTED 错误 (09:44)",
+        "problem": ": 多处直接 ws.send(JSON.stringify(...))，当 WebSocket 未就绪时抛出异常 [根因] : 未检查 WebSocket 连接状态",
+        "solution": "server/index.ts 新增 safeSend() 函数，发送前检查 ws.readyState，try-catch 包裹；替换所有 15+ 处直接 send 调用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-19",
+        "title": "Vite 代理层报 ws proxy socket error: write ECONNABORTE",
+        "problem": ": 前端通过 Vite 代理转发 ws://localhost:5173/ws → 后端 ws://localhost:3456/ws 时数据转发失败 [根因] : Vite 内置 WebSocket 代理在转发流式数据时连接被重置",
+        "solution": "chatStore.ts 开发模式下直连后端 WebSocket ws://localhost:3456/ws，绕过 Vite 代理",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-19",
+        "title": "用户 Windows Home 版无法启用 WSL2 → Docker 不可用，沙箱功能完全无法使用",
+        "problem": ": 仅支持 Docker 容器，无降级方案",
+        "solution": "新增 LocalSandbox.ts，Docker 不可用时自动降级为本地进程执行（child_process.spawn）；SandboxManager 返回 mode 区分三种 UI",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-19",
+        "title": "沙箱页面完全空白，看不到任何功能 (19:11)",
+        "problem": ": renderMainContent 在局部模式分支提前引用但未定义 → TDZ ReferenceError → 组件崩溃白屏 [根因] : const 定义在条件 return 之后，导致 TDZ 错误",
+        "solution": "将 renderMainContent 定义移到所有条件 return 之前，确保任何分支访问时均已定义",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-19",
+        "title": "Vite 报 Failed to parse source for import analysis（",
+        "problem": ": tsc 编译生成的 .js 文件含 JSX 语法，Vite 默认不将 .js 当 JSX 解析",
+        "solution": "vite.config.ts 添加 esbuild.loader + optimizeDeps.esbuildOptions.loader 将 .js 当 JSX 解析",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-19",
+        "title": "Tools.tsx 页面工具卡片仅为静态展示，无点击交互 (19:57)",
+        "problem": ": 前端未实现交互，后端 /api/tools 只返回 name+description，缺少参数信息",
+        "solution": "ToolRegistry.list() 返回值新增 parameters 字段；Tools.tsx 完整重写：点击展开详情、分类筛选、搜索、统计",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "会话列表只有归档和删除按钮，无法查看会话内容 (20:05)",
+        "problem": ": 缺少查看会话功能",
+        "solution": "Chat.tsx 支持 ?sessionId=xxx URL 参数加载历史消息；Sessions.tsx 每行新增查看按钮",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "技能市场页面的激活技能按钮无 onClick 处理，点击无反应 (20:07)",
+        "problem": ": 未实现激活功能",
+        "solution": "后端新增 POST /api/skills/:name/activate；前端 Skills.tsx 新增 handleActivate()，loading 动画+成功/失败反馈",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "点击 refactor 显示 debug 已激活 — feedback 状态全局共享 (20:09)",
+        "problem": ": feedback 状态未在切换技能时清除",
+        "solution": "handleSelectSkill 切换技能时清除 feedback",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "缺少激活状态跟踪 — 无法知道哪些技能已激活 (20:09)",
+        "problem": ": PluginManager 无激活状态管理",
+        "solution": "PluginManager 新增 userActivatedSkills: Set + activateUserSkill/deactivateUserSkill/isSkillActive/getActiveSkillNames",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "缺少停用功能 — 只有激活没有停用 (20:09)",
+        "problem": ": 缺少停用 API 和 UI",
+        "solution": "新增 POST /api/skills/:name/deactivate 端点；Skills.tsx 支持激活/停用双向切换",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "缺少技能库 — 无法添加/删除自定义技能 (20:09)",
+        "problem": ": 无自定义技能存储和 API",
+        "solution": "新增 POST/PUT/DELETE /api/skills/custom 端点；自定义技能存储到 ~/.easyagent/data/custom-skills.json",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "技能市场页面显示暂无可使用技能，所有 6 个内置技能消失 (21:19)",
+        "problem": ": 双重错误：getAllSkillsWithStatus() 引用未初始化的 pluginManager → ReferenceError；PluginManager 编译产物缺失方法 [根因] : 模块顶层引用实例变量",
+        "solution": "getAllSkillsWithStatus() 移入 createApp() 内部；手动同步 core/dist/index.js 中 PluginManager 新增属性方法",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "切换来源标签时右侧详情面板残留上一个选中的技能信息 (21:57)",
+        "problem": ": setSourceFilter 未同时清除 selectedSkill",
+        "solution": "setSourceFilter(src) 同时执行 setActiveSkill(null)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-19",
+        "title": "ProviderPresets.ts 中 11 个提供商共 29 个模型完全硬编码 (07:10)",
+        "problem": ": 未实现动态模型发现",
+        "solution": "Server 新增 fetchModelsFromProvider() 通过 /v1/models API 动态获取；modelCache 5 分钟 TTL；新增 /api/providers/all-models 端点",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-19",
+        "title": "ChatInput.tsx QUICK_MODELS 5 个模型硬编码且与预设不一致 (07:10)",
+        "problem": ": 前端快速模型列表硬编码",
+        "solution": "删除 QUICK_MODELS 硬编码数组，从 /api/providers/all-models 动态获取",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-19",
+        "title": "Dashboard.tsx quickActions(4个)+templates(6个) 硬编码 (",
+        "problem": ": 仪表盘模板硬编码",
+        "solution": "删除硬编码 templates 数组，从 /api/config/templates 加载",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-19",
+        "title": "ConfigManager.ts allowedCommands 仅 10 个命令硬编码 (07:1",
+        "problem": ": 安全配置硬编码",
+        "solution": "parseAllowedCommandsFromEnv() 环境变量；DEFAULT_ALLOWED_COMMANDS 扩展到 40+ 个；新增 /api/config/allowed-commands GET/PUT",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "页面空白 ERR_CONNECTION_REFUSED (07:33)",
+        "problem": ": Vite dev server 崩溃 + 旧 Server 仍占 3456 端口 [根因] : 进程未正确清理",
+        "solution": "重启 Server + Vite",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-19",
+        "title": "图标预览页不可用 (00:12)",
+        "problem": ": 未使用正确的服务地址",
+        "solution": "图标预览页改用项目 Vite dev server，预览地址 http://localhost:5173/icons/preview.html",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-19",
+        "title": "Web 页面功能全空、沙箱状态不对 (00:15)",
+        "problem": ": 后端 Server 未启动，且 server/src/index.ts 缺少 ESM 兼容的 __dirname 定义 [根因] : ESM 模块中 __dirname 不可用",
+        "solution": "修复 server/src/index.ts 添加 ESM __dirname 定义；启动 Server + Vite 代理",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "FeishuAdapter uploadImage() 死逻辑 — imageUrl.startsW",
+        "problem": ": 三目运算符两个分支都返回 undefined，图片上传功能完全无效 [根因] : uploadImage 实现为空",
+        "solution": "改为完整的下载/Base64/本地文件→Blob→FormData multipart 上传",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "FeishuAdapter uploadFile() 同样死逻辑 (22:09)",
+        "problem": ": 文件上传逻辑同样两个分支都返回 undefined [根因] : 与 uploadImage 相同未实现",
+        "solution": "同样修复为完整文件上传流程",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "FeishuAdapter editMessage() 缺少删除旧消息逻辑 (22:09)",
+        "problem": ": 未实现先删后发",
+        "solution": "editMessage() 添加先 DEL 后 POST 的逻辑",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-19",
+        "title": "WeChatAdapter 仅为占位实现，缺少解密/解析/验证功能 (22:09)",
+        "problem": ": 未实现微信消息加解密核心逻辑",
+        "solution": "实现 wxDecrypt(AES-256-CBC)、parseWeChatXML(正则解析)、handleUrlVerify、handleMessageCallback",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "知识库页面 KnowledgeBase.tsx 为纯占位，无实际功能 (22:09)",
+        "problem": ": 前端未实现知识库交互",
+        "solution": "完整重写：连接 knowledgeBaseStore，统计面板、搜索防抖、分类/标签筛选、文档详情弹窗、添加弹窗",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "自动化页面 Automation.tsx 为纯硬编码占位 (22:09)",
+        "problem": ": 前端未实现自动化交互",
+        "solution": "完整重写：连接 automationStore，任务 CRUD、创建弹窗、执行历史面板、预设模板、实时状态",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "知识库页面一直显示加载中...，后端 /api/knowledge 返回 ECONNREFUSED ",
+        "problem": ": Server dist/index.js 是旧版本（44KB），缺少 KnowledgeService/AutomationManager 导入和知识库 API 路由 [根因] : 修改 core/src 后未重新编译 server dist",
+        "solution": "npx tsup 重新编译 Server 包（44KB→52KB），重启后端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-19",
+        "title": "知识库 API 全部返回 404 (23:42)",
+        "problem": ": 双重根因：（1）旧编译产物 packages/server/src/index.js 被 vitest 优先加载；（2）Express 路由顺序错误 [根因] : Node 解析 .js 优先于 .ts + Express 路由注册顺序",
+        "solution": "删除旧 src/index.js artifact；调整路由顺序将 :id 移到 stats/summary 等具体路径之后；重新编译 dist",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "前端编译错误 — knowledgeBaseStore.ts 第 332 行重复导出 KB_CATE",
+        "problem": ": export { KB_CATEGORIES } 与 export const KB_CATEGORIES 重复，esbuild 不允许 [根因] : esbuild 不允许重复导出同一标识符",
+        "solution": "删除重复的 export { KB_CATEGORIES } 行",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-19",
+        "title": "后端端口 3456 被旧进程占用 (22:51)",
+        "problem": ": 上次未正确清理进程",
+        "solution": "kill 旧进程后重启成功",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-19",
+        "title": "远程 GitHub 仓库 easyagent/easyagent 不存在，models-catalo",
+        "problem": ": 仓库名或 URL 配置错误 [根因] : 仓库名不正确",
+        "solution": "内置 models-catalog.json 兜底生效，远程下载失败时自动降级",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-19",
+        "title": "TypeScript 源文件修改后 tsup 编译的 dist/index.js 不会自动更新需手动",
+        "problem": ": tsup 不会自动监听并重编译",
+        "solution": "教训记录：应优先使用 tsup build 而非手动修改 dist 文件",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-19",
+        "title": "NoNewWindow 启动服务导致窗口不可见，用户无法看到运行日志 (21:31)",
+        "problem": ": Start-Process -NoNewWindow 启动方式不当",
+        "solution": "改用独立可见 cmd 窗口启动；写入 MEMORY.md 禁止 NoNewWindow",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
       }
     ],
     "2026-06-20.md": [
@@ -2274,6 +3173,468 @@
         "_tagModuleIds": [
           "f7"
         ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "06-19.md 被误删，575 行压缩为 25 行摘要 (00:25)",
+        "problem": ": 错误地覆盖了当天日志文件，而非按规则创建新日期文件 [根因] : 操作失误覆盖文件",
+        "solution": "用户提供了完整的原始 575 行内容，已完整重写恢复",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "知识库中文文件名/内容显示为乱码 (00:31)",
+        "problem": ": multer/busboy 在 Windows 下将 UTF-8 文件名按 Latin-1 误解码 [根因] : Windows 文件系统编码与 JavaScript 字符串编码不匹配",
+        "solution": "文件名用 Buffer.from(fileName, latin1).toString(utf8) + decodeURIComponent 备选；内容先用 UTF-8 读取，若含乱码用 iconv-lite 降级 GBK",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "知识库文档预览显示（空内容），无法预览文档 (00:37)",
+        "problem": ": GET /api/knowledge 列表接口返回的 DocIndex[] 不含 content 字段 [根因] : 列表 API 未返回文档内容",
+        "solution": "knowledgeBaseStore.ts 新增 getDocument(id) action 调用 GET /api/knowledge/:id；KnowledgeBase.tsx 新增 handleViewDoc()",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "自动化任务执行失败后历史记录只显示失败，没有具体原因 (00:37)",
+        "problem": ": 错误信息未区分展示",
+        "solution": "AutomationTask 类型新增 provider/model 可选字段；executor 优先用任务指定的 provider/model，错误信息区分原因",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "创建自动化任务时没有模型/提供商选择，报未配置模型提供商但不知道去哪配 (00:37)",
+        "problem": ": 任务创建表单缺少模型选择器",
+        "solution": "Automation.tsx 创建表单新增模型选择器（提供商下拉→模型下拉联动；显示未配置警告）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-20",
+        "title": "创建任务时模型选择只显示已配置密钥的提供商，用户看不到所有选项 (00:51)",
+        "problem": ": 使用了已过滤的 providers 列表",
+        "solution": "改用 allProviders 显示所有提供商，未配置的标注（未配置密钥），选中后显示黄色提示条",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-20",
+        "title": "Agent 执行过程中工具调用、错误等仅记录在服务端日志，前端只看执行中状态 (00:51)",
+        "problem": ": 缺少实时执行进度推送机制",
+        "solution": "WebSocket 实时推送执行进度：新增 automationSubscriptions + broadcastAutomationProgress；executor 监听 turn_start/tool_call/tool_result 广播到前端",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "自动化页面三个介绍卡片只是静态展示没有点击功能 (01:09)",
+        "problem": ": 卡片未绑定交互事件",
+        "solution": "FEATURES 数组新增 action 字段；新增 handleFeatureClick；卡片 onClick 分别滚动到对应区域",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "知识库页面三个卡片静态展示无交互 (01:14)",
+        "problem": ": 卡片未绑定交互事件",
+        "solution": "FEATURES 新增 action 字段；新增 handleFeatureClick；卡片 hover 动效交互；点击弹窗/聚焦/滚动",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-20",
+        "title": "知识库页面分类/文档显示数目不准确 (01:14)",
+        "problem": ": 服务端返回与列表显示不一致",
+        "solution": "已索引文档改为 documents.length；分类分布改为 documents.forEach 客户端计算",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-20",
+        "title": "PowerShell 环境下 cmd /c start 传递含空格路径困难，多次尝试失败 (01:2",
+        "problem": ": 路径含空格导致命令行解析失败 [根因] : Windows 命令行空格转义复杂",
+        "solution": "使用 Start-Process + 独立 .bat 文件简化路径处理",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "首页 4 个统计卡片只是数字展示无点击功能 (01:33)",
+        "problem": ": 卡片为静态 div 无交互",
+        "solution": "StatCard 由 div 改为 button，新增 onClick prop；卡片映射到对应页面路由",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "Token 用量点击跳转到自动化页面不合适；缺乏独立 Token 分析 (01:35)",
+        "problem": ": 无独立 Token 分析页面",
+        "solution": "新建 TokenUsage.tsx（~370 行）含自研 SVG DonutChart + BarChart；后端新增 /api/token-usage/analytics 接口含价格表",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "Web 版 13 页面 + 12 Store 需完整移植到 Electron 桌面版 (01:49)",
+        "problem": ": Desktop 和 Web 代码分离维护重复",
+        "solution": "Desktop renderer 完全替换为 Web 版 UI；Electron main.ts 内嵌 Express server；HashRouter 替代 BrowserRouter；创建 api.ts 统一 API 封装",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "Desktop 中 20 个文件 60+ 处 fetch(/api/) 需统一改为 apiFetch",
+        "problem": ": Web 版使用 fetch 直接调用 API，Desktop 需要统一封装",
+        "solution": "migrate-api.mjs 批量替换；自动添加 import",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "@electron/rebuild 因路径空格 Claude Code CN 失败 (02:00)",
+        "problem": ": 路径含空格导致 rebuild 失败 [根因] : electron-rebuild 不支持含空格的路径",
+        "solution": "设置 npmRebuild: false",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "旧 EasyAgent.exe 进程占用 app.asar (02:00)",
+        "problem": ": 进程未退出导致文件锁定",
+        "solution": "taskkill 杀掉旧进程",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "electron-builder 打包报错 Plugin not found + 生成 EXE 仅 ",
+        "problem": ": node_modules 中同时存在 electron-builder@23.6.0 和 @24.0.0 alpha 版 [根因] : pnpm 传递依赖提升导致两版共存，npx 优先使用 v24 alpha",
+        "solution": "package.json 精确锁定 electron-builder@23.6.0；删除所有 24.0.0 包；pnpm install 重新解析",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "NSIS 打包缺少 LICENSE 文件 (14:00)",
+        "problem": ": electron-builder NSIS 许可页面需要 LICENSE 文件",
+        "solution": "创建 packages/desktop/assets/LICENSE",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "Vite 5.2.0 inline CSS bug 导致白屏 (14:00)",
+        "problem": ": Vite 5.2.0 处理 inline CSS 有 bug [根因] : Vite 版本 bug",
+        "solution": "index.html <style> 改为 <link> 外部 CSS；@import 必须在所有规则之前",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "运行 win-unpacked\\EasyAgent.exe 报错 Cannot find modul",
+        "problem": ": body-parser 是 express 的子依赖，被 pnpm 提升，但 electron-builder 打包 asar 时遗漏 [根因] : pnpm 提升的子依赖未被显式声明",
+        "solution": "package.json dependencies 显式添加 body-parser",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "修复 body-parser 后运行报错 Cannot find module depd (14:4",
+        "problem": ": Express 子依赖逐个暴露的连锁反应 [根因] : 未显式声明的子依赖在 asar 中缺失",
+        "solution": "决定一次性将 Express 的 30 个直接依赖全部显式加入 package.json",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "Express 30 个子依赖在 asar 中均不可靠 (14:46)",
+        "problem": ": pnpm + electron-builder 组合下，未被显式声明的提升子依赖可能遗漏 [根因] : pnpm 依赖提升机制与 electron-builder asar 打包不兼容",
+        "solution": "package.json dependencies 新增 20+ 个 Express 子依赖",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "打包报错 remove d3dcompiler_47.dll: Access is denied (",
+        "problem": ": 上次进程未完全退出，Windows 文件句柄锁住 win-unpacked 中的 DLL [根因] : Electron 进程未完全退出",
+        "solution": "taskkill /f /im EasyAgent.exe & taskkill /f /im electron.exe；rmdir /s /q release 删除旧目录后重新打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "build.bat 中文输出乱码 (14:48)",
+        "problem": ": CMD 默认 GBK 编码与 UTF-8 中文不兼容，chcp 65001 也不稳定 [根因] : CMD 编码与文件编码不匹配",
+        "solution": "build.bat 全部改为英文输出，删除 chcp 65001",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "运行报错 ee-first 缺失 (14:55)",
+        "problem": ": on-finished → ee-first 未声明（孙子依赖） [根因] : 依赖链不完整",
+        "solution": "一次性扫描补 28 个孙子依赖 + 18 个 qs/side-channel 链路依赖",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "运行报错 destroy 缺失 (14:56)",
+        "problem": ": body-parser / send → destroy 未声明",
+        "solution": "补充 destroy 依赖",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "运行报错 busboy 缺失 (14:59)",
+        "problem": ": multer → busboy → streamsearch 等依赖链未声明",
+        "solution": "共新增 13 个依赖覆盖 multer 完整依赖链",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "运行报错 split2 缺失 (14:59)",
+        "problem": ": pino-abstract-transport → split2 等未声明",
+        "solution": "补充 split2 + readable-stream 依赖",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "避免逐次试错依赖缺失，建立完整的运行时依赖参考 (14:55)",
+        "problem": ": 缺少系统化依赖清单",
+        "solution": "创建 packages/desktop/express-deps.json 分类清单（90+ 包）；创建 analyze-deps.mjs 扫描脚本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-20",
+        "title": "Desktop Dashboard 统计卡片显示 --、模板显示加载中...，Web 正常 (16:",
+        "problem": ": main.ts 后端绑定 127.0.0.1（纯 IPv4），但多处硬编码 localhost，Windows 上解析为 IPv6 ::1 [根因] : localhost 在 Windows 上可能解析为 IPv6",
+        "solution": "共修改 5 个文件：api.ts、index.html CSP、App.tsx、chatStore.ts、Automation.tsx 中 localhost 全部改为 127.0.0.1",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "修复 IPv4/IPv6 后 Dashboard 仍显示 --、模板加载中... (16:22)",
+        "problem": ": apiFetch 已内部调用 .json() 返回解析后对象，但 3 处代码再次调用 .json() 报错被静默吞掉 [根因] : 双重 .json() 调用导致 TypeError",
+        "solution": "去掉 .then(r => r.json()) 中间步骤；直接使用 apiFetch<Type>(url).then(data => ...)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-20",
+        "title": "Desktop Providers 页面只显示快速开始不显示提供商列表，和 Web 不一样 (16:",
+        "problem": ": apiFetch 全项目 43+ 处双重 .json() 系统性 bug，13 个文件 43+ 处都有同样问题 [根因] : apiFetch 设计：已内置 res.json()，但页面代码仍按原生 fetch 模式调用",
+        "solution": "修复 13 个文件 43+ 处：Pages(11)、Components(2)、Stores(26)；verify-build.cjs 扩展为遍历所有文件",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "6 处代码中存在 4 个不同版本号 (0.1.0/0.2.0/0.5.0/0.8.0) 严重不一致 ",
+        "problem": ": 版本号在所有 UI 组件中硬编码，无单一版本源",
+        "solution": "创建 version.json 单一版本源；创建 scripts/sync-version.mjs 同步脚本；UI 组件统一通过 /api/version 获取动态版本号",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "无 CHANGELOG 文件，用户看不到更新内容 (20:07)",
+        "problem": ": 缺少版本变更记录",
+        "solution": "创建 CHANGELOG.md（Keep a Changelog 格式）；新增 /api/version API 返回版本号 + 更新日志",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-20",
+        "title": "electron-updater 仓库路径指向错误的 easyagent/easyagent (20",
+        "problem": ": 仓库 owner 配置错误",
+        "solution": "修正为 ht182400-creator/easyagent",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-20",
+        "title": "Web 端没有任何版本检查或升级提醒机制 (20:07)",
+        "problem": ": 缺少 Web 端更新检查",
+        "solution": "新增 /api/version/check 端点查询 GitHub API；Settings.tsx 新增检查更新按钮 + 更新通知卡片",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "release-publish.bat 中 [!] 与 enabledelayedexpansion",
+        "problem": ": echo 中 ! 被当作延迟扩展变量标记 [根因] : CMD 延迟扩展模式下 ! 是特殊字符",
+        "solution": "所有 echo 输出中的 [!] 改为 [^^!]（6 处）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "release-publish.bat UTF-8 无 BOM 导致 CMD 中文乱码 (22:45",
+        "problem": ": write_to_file 存的是 UTF-8，CMD 需 GBK，根本性不兼容 [根因] : 文件编码与 CMD 默认编码不匹配",
+        "solution": "全英文重写，零中文字符，彻底消除编码依赖",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "release-publish.bat Step 2 持续报错此时不应有 : (22:50)",
+        "problem": ": ::: 开头的行在 CMD 中被误解析为非法 label [根因] : ::: 在特定上下文被 CMD 误解析",
+        "solution": "全文件重写；所有 ::: 注释改为 rem；合并 uncommitted + untracked 检查；统一用 !VAR! 延迟扩展",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "release.mjs 运行报 SyntaxError: Unexpected token : (2",
+        "problem": ": release.mjs 含 TS 类型注解（: string、as Error 等），Node.js 直接运行 .mjs 不支持 TS 语法",
+        "solution": "移除全部 14+ 处 TS 类型注解（参数/返回/变量类型 + as Error 断言）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-20",
+        "title": "release.mjs 中 execSync(node + path) 因路径空格被截断 (23:2",
+        "problem": ": 路径 D:\\Work_Area\\AI\\Claude Code  CN 含空格，execSync 拼接未加引号 [根因] : 命令行参数未加引号",
+        "solution": "node ${path} 改为 node \"${path}\"（路径加双引号）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
       }
     ],
     "2026-06-21.md": [
@@ -2501,6 +3862,204 @@
           "f4",
           "f10"
         ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-21",
+        "title": "better-sqlite3 在 asar 中加载失败，Dashboard 统计卡片显示 -- (0",
+        "problem": ": electron-builder 打包 better-sqlite3 进 asar，bindings 包从 __dirname（asar 内路径）查找 .node 文件找不到 [根因] : asar 归档不支持原生模块的直接路径查找",
+        "solution": "desktop/package.json：files 排除 better-sqlite3，asarUnpack 移除，extraResources 复制到 resources/node_modules/",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-21",
+        "title": "better-sqlite3 MODULE_VERSION 不匹配：开发用 Node v24 编译 ",
+        "problem": ": 开发环境 Node 版本与 Electron 内嵌 Node 版本不一致，导致原生模块 ABI 不兼容 [根因] : Node 24 ABI (137) ≠ Electron 30 ABI (123)",
+        "solution": "创建 postinstall.cjs 自动检测 MODULE_VERSION，不匹配时自动执行 electron-rebuild；verify-build.cjs 新增检查项",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "mime 版本冲突：v2.6.0 覆盖 send/Express 需要的 v1.6.0 导致 res",
+        "problem": ": desktop/package.json 直接声明 mime@^2.6.0 与 Express 子依赖 send 所需的 mime@1.6.0 冲突 [根因] : 依赖版本解析冲突",
+        "solution": "移除 desktop 对 mime 的直接依赖（v2）；verify-build.cjs 新增 mime 版本冲突检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "Release 版报 Cannot find module mime，开发版正常 (02:14)",
+        "problem": ": desktop 未声明 mime 依赖；send 包需要 mime@1.6.0；开发模式 pnpm hoist 可间接找到，Release 模式打包后找不到 [根因] : electron-builder 扁平化打包后间接依赖路径断裂",
+        "solution": "desktop/package.json 添加 mime@1.6.0；verify-build.cjs 确保 top-level mime 存在",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-21",
+        "title": "electron-updater 传递依赖缺失（lodash.escaperegexp、lodash",
+        "problem": ": 这些依赖仅存在于 core/node_modules，不在 desktop/node_modules，electron-builder 打包时遗漏 [根因] : pnpm 依赖提升位置与打包范围不匹配",
+        "solution": "desktop/package.json 新增 8 个依赖：fs-extra, js-yaml, lazy-val, lodash.escaperegexp 等",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-21",
+        "title": "Express 子依赖版本不匹配：media-typer@1.1.0 vs 0.3.0, ipadd",
+        "problem": ": 依赖版本解析不一致导致子依赖版本与父包期望版本不匹配",
+        "solution": "标记为 WARN 级别监控；verify-build.cjs 新增 Express 生态版本兼容性检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-21",
+        "title": "Sessions 页面显示 0 个会话，Dashboard 显示 45 个活跃会话但会话管理页面为空",
+        "problem": ": desktop Sessions.tsx 对 apiFetch 返回值再调用 .json()；apiFetch 已内置 res.json() 返回数组，数组无 .json() 导致 TypeError 被静默吞掉 [根因] : 双重 .json() 调用",
+        "solution": "移除 .then(r => r.json())，直接使用 apiFetch 返回数据；添加 Array.isArray 安全检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-21",
+        "title": "会话详情页点击返回按钮页面黑屏 (02:38)",
+        "problem": ": Chat.tsx 使用 <a href=\"/sessions\">；Desktop 使用 HashRouter（/#/sessions），裸 href 触发全页面导航脱离 HashRouter [根因] : BrowserRouter vs HashRouter 路由方式不同",
+        "solution": "将 <a href> 替换为 <button onClick={() => navigate(/sessions)}>，使用 useNavigate 进行路由跳转",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-21",
+        "title": "会话详情页消息列表为空，显示开始对话 (02:38)",
+        "problem": ": Chat.tsx 中 apiFetch(/api/sessions/ + urlSessionId) 无 URL 编码；Session ID 可能含特殊字符导致路由解析异常；错误被 catch {} 静默吞掉",
+        "solution": "URL 添加 encodeURIComponent 编码；catch 块新增 console.error + addNotification 错误提示",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-21",
+        "title": "工具系统页面显示加载失败: HTTP undefined (02:47)",
+        "problem": ": Tools.tsx 使用 apiFetch 但当作原生 fetch 处理：检查 .ok 属性（undefined → falsy）→ 抛出 Error(HTTP undefined) [根因] : apiFetch 返回解析后对象无 .ok 属性",
+        "solution": "改为 apiFetch<ToolInfo[]>(...).then(data => ...)，移除 .ok 检查和 .json() 调用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-21",
+        "title": "settingsStore 中 localStorage 持久化和通知永不执行 (02:49)",
+        "problem": ": settingsStore.ts 检查 res.ok 但 apiFetch 返回对象无 .ok 属性，始终 undefined falsy → 永不进入成功分支 [根因] : 双重 .json() / .ok 检查模式系统性 bug",
+        "solution": "移除 res.ok 检查，直接处理 apiFetch 返回数据",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-21",
+        "title": "沙箱销毁总是抛错 (02:49)",
+        "problem": ": sandboxStore.ts 中 !res.ok 检查，apiFetch 返回对象无 .ok 属性，!res.ok 始终 true → 总是抛错 [根因] : apiFetch 返回值模式误解",
+        "solution": "移除 res.ok 检查，直接处理 apiFetch 返回数据",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-21",
+        "title": "IM 配置保存总是抛错 (02:49)",
+        "problem": ": IMSettings.tsx 中 !res.ok 检查同样 bug，apiFetch 返回对象无 .ok 属性 [根因] : 与上述相同模式 bug",
+        "solution": "移除 res.ok 检查，直接处理 apiFetch 返回数据",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-21",
+        "title": "Desktop 版知识库、自动化、技能显示为空，添加文档报 400 错误 (03:02)",
+        "problem": ": server/src/index.ts 中 PROJECT_ROOT 硬编码为项目源码路径；Desktop 版 __dirname 指向 app.asar 内只读归档 [根因] : Desktop 运行环境路径与开发环境不同",
+        "solution": "server 新增 CreateAppOptions 接口支持 projectRoot 参数；desktop main.ts 传入 createApp({ projectRoot: homedir() })",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-21",
+        "title": "build.bat 中 enabledelayedexpansion 与 Vite 输出 ! 字符冲",
+        "problem": ": CMD 延迟展开模式下 Vite 输出中的 ! 字符被解释为变量展开符号 [根因] : CMD enabledelayedexpansion 与程序输出冲突",
+        "solution": "vite 和 electron-builder 命令包裹 setlocal disabledelayedexpansion/endlocal，通过 endlocal & set VAR=%errorlevel% 传递退出码",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-21",
+        "title": "build.bat Phase 5 Packaging 阶段 CMD 解析错误，经历 5 轮迭代 (",
+        "problem": ": CMD 中 if (...) else (...) 括号块内不能安全放入 call 命令；endlocal & set VAR=%VAR% 传值不稳定 [根因] : CMD 批处理语法限制",
+        "solution": "最终方案 v5：使用 goto 标签替代 if/else 括号块，pushd/popd 替代 setlocal 确保目录恢复",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-21",
+        "title": "release-publish.bat 在 build.bat 构建成功后没有进入 Step 5（G",
+        "problem": ": build.bat 末尾有 pause + exit /b 0，被 call 调用时 pause 等待按键后 CMD 不能正确恢复父脚本执行上下文 [根因] : pause 中断了 call 链",
+        "solution": "移除 build.bat 的 pause，仅保留 exit /b 0",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-21",
+        "title": "移除 build.bat pause 后 release-publish.bat 仍提前终止 (03",
+        "problem": ": release-publish.bat 中 if \"!BUILD_EXIT_CODE!\" neq \"0\" 使用延迟展开 !VAR!，CMD 对 ! 解析不稳定导致条件误判 [根因] : CMD 延迟展开在 if 条件中不稳定",
+        "solution": "改用 if errorlevel 1 语法替代延迟展开变量，删除 set BUILD_EXIT_CODE，直接用 CMD 内置 errorlevel 检测",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
       }
     ],
     "2026-06-22.md": [
@@ -2666,6 +4225,7 @@
           "f4",
           "f13",
           "f14",
+          "p5a",
           "p5b"
         ]
       },
@@ -2681,6 +4241,7 @@
           "f4",
           "f13",
           "f14",
+          "p5a",
           "p5b"
         ]
       },
@@ -2696,6 +4257,7 @@
           "f4",
           "f13",
           "f14",
+          "p5a",
           "p5b"
         ]
       },
@@ -2711,6 +4273,23 @@
           "f4",
           "f13",
           "f14",
+          "p5a",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-22",
+        "title": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "problem": "项目进度管线 v2.0 — 独立模块 · 动态流程图",
+        "solution": "` 等模式，支持多行修复方案（- 子项续行）；关键词映射: 26 个模块（f1-f16 主线 + b1a-b3c 分支），通过关键词库进行模块分类匹配；提取效果: 动态解析 39 个问题（相比手工 curation 的 81 个，覆盖率 ~48%），分布在 f1/f2/f3/f4/f7/f8/f9/f10/f11/f13/f16 共 11 个模块 1. 优先 `fetch('/api/issues')` → 实时数据（仪表板显示 🟢 实时 + 时间戳） 2. 失败回退 `fetch('issue-data.json')` → 快照数据（显示 🟡 快照）；7 个彩色卡片代替原底部 KPI 栏：测试用例(806)/通过率(100%)/工具数(51)/模型提供商(10)/综合评分(68.4)/操作模式(4)/问题记录(39·实时)；每张卡片顶部渐变色条 + hover 上浮效果；最后一栏动态显示问题总数和数据来源标识；-06-22 23:55 Memory 记录格式规范化 + 文件级缓存**:",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f4",
+          "f13",
+          "f14",
+          "p5a",
           "p5b"
         ]
       },
@@ -2726,6 +4305,7 @@
           "f4",
           "f13",
           "f14",
+          "p5a",
           "p5b"
         ]
       },
@@ -2738,6 +4318,292 @@
         "status": "resolved",
         "_tagModuleIds": [
           "f3"
+        ]
+      },
+      {
+        "moduleId": "b2a",
+        "date": "2026-06-22",
+        "title": "benchmark-tasks.json 字面换行致 JSON 解析失败 (22:15)",
+        "problem": ": 10 道 SWE-bench 编码题中部分含实际代码块（多行代码），直接写入 JSON 导致字面换行，`JSON.parse()` 失败 [根因] : JSON 规范不允许字面换行，需转义为 `\\n`",
+        "solution": "使用脚本重新生成合法 JSON，代码块中的换行转义为 `\\\\n` 字符串",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "b2a",
+        "date": "2026-06-22",
+        "title": "BenchmarkRunner.ts 6 个 TS 编译错误 (22:20)",
+        "problem": ": `BenchmarkRunner.ts` 调用 `ConfigManager`/`ToolRegistry`/`AgentEngine` 的 API 与当前代码不匹配，6 处类型错误 [根因] : SWE-bench 评测运行器基于早期 API 设计编写，后续模块接口已变更",
+        "solution": "逐项修正：更新 `ConfigManager` 初始化参数、适配 `ToolRegistry` 新方法签名、修正 `AgentEngine.run()` 返回值类型",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "b2a",
+        "date": "2026-06-22",
+        "title": "SWE-bench 评测基准体系搭建 (22:30)",
+        "problem": ": Agent 代码质量无量化评估手段，审查报告明确标注 \"SWE-bench 分数为空白\" 是最致命短板",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "release-publish.bat 版本解析：for/f+findstr 解析JSON不可靠 (",
+        "problem": ": for /f \"tokens=2 delims=:,\" + findstr \"version\" 解析 JSON 不可靠，tag_name 变成 v \"0.3.3\"（带空格引号） [根因] : CMD for/f+findstr 无法可靠解析 JSON 字段，输出含多余字符",
+        "solution": "4 处版本读取改用 node -e \"console.log(require('./version.json').version)\"",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "release-publish.bat 中 echo Drag & drop 的 & 被CMD解析为",
+        "problem": ": echo Drag & drop 中 & 被 CMD 解析为命令分隔符，输出异常 [根因] : CMD 将未转义的 & 解析为命令连接符",
+        "solution": "改为 Drag ^& drop 转义",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-22",
+        "title": "build.bat 末尾 pause 在被 call 调用时阻塞父脚本 (22:00)",
+        "problem": ": build.bat 末尾 pause 在被 call 调用时阻塞父脚本，导致 release-publish.bat 流程中断 [根因] : pause 在子脚本中被 call 调用时会暂停整个父流程",
+        "solution": "移除 build.bat 中的 pause",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "release-publish.bat 延迟展开比较不可靠 (22:00)",
+        "problem": ": 使用延迟展开变量进行错误级别比较在某些条件下失败 [根因] : CMD 延迟展开变量比较在特定场景下不可靠",
+        "solution": "用 if errorlevel 1 goto 模式替代延迟展开比较",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "GitHub Token 被记录到 history_202606210206.md 触发 Push ",
+        "problem": ": 用户在 release-publish.bat 中输入 GitHub Token，被记录到 docs/history_202606210206.md（26 处），GitHub Push Protection 拦截推送 [根因] : 用户在交互式输入中暴露 Token，被日志文件记录且未加入 .gitignore",
+        "solution": "git filter-branch --index-filter 从历史移除该文件 → 删除本地文件 → 更新 .gitignore → 强制推送",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-22",
+        "title": "自动化任务\"项目文档更新\"执行失败：providers.json 为空 (22:12)",
+        "problem": ": 自动化任务执行失败，providers.json 为空 {}，默认模型 deepseek/deepseek-v4 无可用 API Key → getProvider() 返回 undefined [根因] : 未配置任何模型 API Key",
+        "solution": "在设置 → 模型提供商中配置 DeepSeek API Key",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-22",
+        "title": "工具分组映射 nameToGroup 在 server 硬编码维护 43 行映射表 (22:15)",
+        "problem": ": 分组映射表 nameToGroup 在 server 端硬编码维护，修改工具分组需同步更新两处 [根因] : 分组信息未内聚在工具定义中，需在 server 端单独维护",
+        "solution": "ITool 接口新增 group 字段，getAllBuiltinTools() 使用 .map() 自动标注分组（17 行替代 43 行硬编码表）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-22",
+        "title": "工具 enabled toggle 仅在 UI 客户端本地生效，未与后端持久化 (22:17)",
+        "problem": ": enabled 状态硬编码为 true，UI toggle 切换后刷新即丢失 [根因] : 无后端存储和 API 支持 enabled 状态的持久化",
+        "solution": "ToolRegistry 新增 disabledSet + setEnabled/setDisabledNames API；ConfigManager 保存到 tool_settings.json；新增 POST /api/tools/:name toggle 端点；前端 toolsStore.toggleTool() 乐观更新+回滚",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-22",
+        "title": "tsup treeshake 移除外部调用的 ToolRegistry 类方法 (22:18)",
+        "problem": ": 外部调用的类方法（如 ToolRegistry.setEnabled）被 tsup 移除，运行时 undefined [根因] : tsup 默认开启 treeshake，将未在入口直接引用的类方法移除",
+        "solution": "tsup.config.ts 关闭 treeshake",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-22",
+        "title": "src/ 目录下残留 64 个过时 .js/.d.ts 编译产物 (22:19)",
+        "problem": ": 历史编译产物未清理，可能干扰新构建 [根因] : 多次构建后未清理旧的编译输出",
+        "solution": "清理 src/ 下所有过时 .js 和 .d.ts 文件",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-22",
+        "title": "KnowledgeService.ts 预存 TS 类型错误导致 DTS 生成失败 (22:20)",
+        "problem": ": KnowledgeService.ts 存在类型定义与实现不一致，导致 tsup DTS 构建失败，构建时需临时关闭 dts [根因] : KnowledgeService.ts 中类型定义与实现不匹配（预存错误）",
+        "solution": "临时关闭 dts 绕过构建，构建完成后 dts 恢复为 true（根因修复待后续）",
+        "status": "pending",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-22",
+        "title": "WeChatAdapter.ts timestamp 类型错误：parseInt*1000 返回 n",
+        "problem": ": timestamp 用 parseInt * 1000 生成 number 类型，与类型声明 string 不匹配，DTS 构建失败 [根因] : timestamp 实现与其他适配器（TelegramAdapter/FeishuAdapter）的 ISO 8601 字符串不一致",
+        "solution": "改用 new Date(...).toISOString() 统一返回 ISO 8601 字符串，所有适配器一致",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "GitHub Release 上传每次需手动粘贴 Token (22:25)",
+        "problem": ": 每次发布都需手动粘贴 GitHub Token，流程繁琐 [根因] : 无 Token 持久化存储机制",
+        "solution": "创建 scripts/.release_token 文件（.gitignore 排除）→ release-publish.bat option 2 自动读取",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "release-publish.bat Token 自动加载失效：set /p 重定向在 if 括号",
+        "problem": ": 即使 token 文件存在，打印\"Token auto-loaded\"后仍然弹出输入提示 [根因] : cmd.exe 在 if (...) else (...) 括号块内使用 < 重定向导致括号匹配混乱——cmd 解析器误把 ) else ( 的 ) 视为重定向目标文件路径一部分",
+        "solution": "改为 for /f \"usebackq delims=\" 方式读取文件，用 goto :TOKEN_READY 跳过手动输入",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "Release 已存在时 curl POST 返回 422 already_exists 直接跳到手",
+        "problem": ": Release v0.4.0 已存在时 curl POST 返回 422，脚本直接跳到手动上传指引 [根因] : 未处理 Release 已存在的场景",
+        "solution": "检测到 already_exists 后 GET /releases/tags/:tag 获取已有 Release 的 upload_url 自动上传；提取 upload_url 统一到 :EXTRACT_UPLOAD_URL 标签",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-22",
+        "title": "手动上传指引未提及 GitHub 网页 25MB 文件大小限制 (22:30)",
+        "problem": ": EXE ~85MB 无法通过 GitHub 网页上传，但手动指引未警告 25MB 限制 [根因] : 文档遗漏 GitHub Release 文件大小限制说明",
+        "solution": "手动上传指引明确警告 25MB 限制，提供 gh CLI 命令作为替代方案",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-22",
+        "title": "Node.js >=24 版本未拦截，better-sqlite3 在 Node 24 上无预编译二",
+        "problem": ": Node.js >=24 版本未被拦截，better-sqlite3 无预编译二进制且兼容性未知 [根因] : 未设置 Node 版本上限拦截",
+        "solution": "scripts/preinstall.cjs 拦截 >=24.x；package.json engines 改为 >=18.0.0 <24.0.0；允许 EASYAGENT_SKIP_NODE_CHECK=1 跳过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-22",
+        "title": "CI Windows 镜像上 better-sqlite3 需源码编译但 node-gyp 找不到 ",
+        "problem": ": better-sqlite3 在 CI Windows 镜像上需要从源码编译，但 node-gyp 找不到 VS C++ 编译工具 [根因] : GitHub Actions Windows 镜像缺少 MSVC 编译环境配置",
+        "solution": "在两个 workflow 文件的每个 job 中 pnpm install 前添加 uses: ilammy/msvc-dev-cmd@v1，正确设置 MSVC 环境变量。影响范围：ci.yml 3 个 job + release.yml 2 个 job",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-22",
+        "title": "CI 镜像上 VS 18 Enterprise 干扰 node-gyp 的 VS 版本检测 (22:",
+        "problem": ": CI 镜像预装 VS 18 Enterprise（VS 2026 preview），node-gyp find-visualstudio.js 仅识别 VS 2017-2022 (v15-v17)，返回 unknown version [根因] : VS 18 版本号超出 node-gyp 识别范围",
+        "solution": "使用 ilammy/msvc-dev-cmd@v1 兼容 VS 18 环境设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-22",
+        "title": "project-progress.html 中进度数据硬编码在 HTML 中 (22:40)",
+        "problem": ": project-progress.html 中硬编码 phases/tasks/scoreHistory 数据，数据与渲染未分离，无法自动更新 [根因] : 数据与视图耦合，缺少独立数据源设计",
+        "solution": "抽取为 project-progress-data.json 单一数据源；HTML 通过 fetch 动态加载；scripts/update-progress.mjs 自动检测文件/package.json/Git log 更新数据",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-22",
+        "title": "KPI 更新时 getBoundingClientRect 对 null 元素调用导致 JS 错误 ",
+        "problem": ": 管线页面 KPI 更新时 DOM 元素可能未渲染，调用 getBoundingClientRect 报错 [根因] : DOM 元素未渲染时未做 null 检查",
+        "solution": "KPI 更新增加 null 安全检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-22",
+        "title": "server.mjs 解析器关键词匹配不准确，覆盖率仅 48% (23:50)",
+        "problem": ": 解析器仅通过关键词猜测将 entry 分配到模块，匹配不准确，大量问题被错误分类或遗漏 [根因] : 纯关键词猜测无法准确分类所有问题条目，不同模块的关键词重叠严重",
+        "solution": "新增 [模块:ID] 标签机制——Section 标题中可嵌入显式模块 ID，绕过关键词匹配",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-22",
+        "title": "server.mjs 每次请求重新扫描全部 memory 文件无缓存 (23:52)",
+        "problem": ": 每次 /api/issues 请求都全量扫描 6 个 .md 文件重新解析，性能低且无缓存 [根因] : 无文件级缓存机制",
+        "solution": "新增文件级 mtime 缓存——存量文件（非今天 + mtime 未变）直接复用缓存结果，仅今天新文件重新解析；缓存文件 docs/pipeline/.pipeline-cache.json",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
         ]
       }
     ],
@@ -3119,6 +4985,1111 @@
           "p5a",
           "p5b"
         ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-23",
+        "title": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "problem": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "solution": "`ci.yml` + `release.yml` 添加 `npm_config_msvs_version: '2022'`；强制 node-gyp 搜索 VS 2022 Build Tools 而非 VS 2026；兼容 `ilammy/msvc-dev-cmd@v1` 的 MSVC 环境设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f9",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-23",
+        "title": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "problem": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "solution": "`ci.yml` + `release.yml` 添加 `npm_config_msvs_version: '2022'`；强制 node-gyp 搜索 VS 2022 Build Tools 而非 VS 2026；兼容 `ilammy/msvc-dev-cmd@v1` 的 MSVC 环境设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f9",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-23",
+        "title": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "problem": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "solution": "`ci.yml` + `release.yml` 添加 `npm_config_msvs_version: '2022'`；强制 node-gyp 搜索 VS 2022 Build Tools 而非 VS 2026；兼容 `ilammy/msvc-dev-cmd@v1` 的 MSVC 环境设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f9",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-23",
+        "title": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "problem": "P8 CI better-sqlite3 编译失败修复 (23:49)",
+        "solution": "`ci.yml` + `release.yml` 添加 `npm_config_msvs_version: '2022'`；强制 node-gyp 搜索 VS 2022 Build Tools 而非 VS 2026；兼容 `ilammy/msvc-dev-cmd@v1` 的 MSVC 环境设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f9",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b1a",
+        "date": "2026-06-23",
+        "title": "Vite 配置格式优先级导致 Ts 配置不生效 (22:35)",
+        "problem": ": 前端合并后 Web 端 Vite 配置（TypeScript）部分选项不生效 [根因] : Vite 在同时存在 `vite.config.js` 和 `vite.config.ts` 时优先使用 `.js` 文件，导致 `.ts` 中的配置更新被忽略",
+        "solution": "确认并更新 `vite.config.js` 作为主配置，确保 Web↔Desktop 双端配置一致性",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b1a"
+        ]
+      },
+      {
+        "moduleId": "b1a",
+        "date": "2026-06-23",
+        "title": "Web↔Desktop 前端代码合并消除重复 (22:40)",
+        "problem": ": Web 和 Desktop 各维护一套独立前端代码（`web/src` 33 文件 + `desktop/src/renderer` 33+ 文件），高度重复，架构审查标记为 \"最大技术债\"",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b1a"
+        ]
+      },
+      {
+        "moduleId": "b1a",
+        "date": "2026-06-23",
+        "title": "update-progress.mjs 分支 ID 映射仍用旧标识 (23:31)",
+        "problem": ": `update-progress.mjs` 的 `branchDetect` 使用旧 ID `opt-p1a` 无法匹配 `pipeline-data.json` 新 ID `b1a`，导致 b1a 自动检测始终失败 [根因] : 模块 ID 从 `opt-p1a/opt-p2b` 重构为 `b1a/b2b` 后，进度更新脚本未同步修改",
+        "solution": "修复 10 个分支节点 ID 映射（opt-p1a→b1a, opt-p2b→b2b 等），确保自动检测正确匹配",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b1a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "KPI_DEFAULTS.testCases 仍为 806，多处静态文本引用遗漏更新 (09:42)",
+        "problem": ": pipeline-config.mjs KPI_DEFAULTS.testCases 仍为 806（应为 864）；pipeline-data.json kpi.testCases 仍为 806；project-progress-data.json 完全无 P5 管线任务；多处静态文本/HTML 默认值引用 806 [根因] : 管线模块测试用例从 806 扩充到 864 后，6 个文件中的遗留引用未同步更新",
+        "solution": "修复 6 个文件：pipeline-config.mjs KPI_DEFAULTS 806→864；pipeline-data.json testCases/subtitle 更新；project-progress-data.json 新增 P5 管线阶段（4 任务）及 meta 更新；index.html dashTests 默认值更新；测试断言更新；03_测试案例文档统计更新",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "通过率卡片显示\"0 失败 / 0 跳过\"，dash-sub 文本硬编码未动态更新 (20:53)",
+        "problem": ": 仪表板通过率卡片 dash-sub 文本硬编码为静态值，未在 applyDataAndRender 中动态刷新，始终显示 0 [根因] : dash-sub 文本在 HTML 中硬编码，未设置 id 也未在渲染函数中动态更新",
+        "solution": "添加 id=\"dashPassSub\" 并在 applyDataAndRender() 中动态更新为 ${failed} 失败 / ${skipped} 跳过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "测试报告卡片\"43 失败\"点击无反应，openTestReport 调用链断裂 (20:53)",
+        "problem": ": openTestReport() 调用了 openPanel() 无参，但 openPanel(moduleId) 第一行检查 if(!issueData) return，issueData 未加载时直接返回 [根因] : openPanel 强依赖 issueData 非空前提，但测试报告功能与 issueData 无关",
+        "solution": "新增 openSidePanel() 纯面板打开函数（不依赖 issueData），openTestReport() 改调用 openSidePanel",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "通过率四级语义分析最后一级不显示，数据串联断裂 (20:53)",
+        "problem": ": generatePassRateItems 使用 test-case-mapping.json 的子模块名作为 L3，但 TEST_LEVEL3_MAP 的键是测试场景名，attachLevel3() 无法匹配导致 L4 数据无法注入 [根因] : 两个数据源（test-case-mapping.json 子模块名 vs TEST_LEVEL3_MAP 测试场景名）的键体系不一致",
+        "solution": "新增 MODULE_L3_GROUPS 映射表（模块ID → TEST_LEVEL3_MAP 键列表）；重写 generatePassRateItems 使 L3 直接来自 MODULE_L3_GROUPS；重写 attachLevel3 修复 L3→L4 注入逻辑",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "问题记录面板不显示四级详细内容，只显示模块列表 (20:53)",
+        "problem": ": 点击仪表板\"问题记录\"卡片 → 面板只显示模块列表（L1→L2），无法看到具体问题条目和解决方案 [根因] : openCardDetail('issues') 渲染仅到模块层级，缺少问题条目和详情展开逻辑",
+        "solution": "重写 openCardDetail('issues') 渲染逻辑，新增四级展开：L1 阶段(P0-P5) → L2 模块 → L3 问题条目(日期+标题+状态) → L4 问题描述+解决方案+涉及文件",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "通过率面板模块名显示为\"f9\"而非\"Desktop 原生\" (21:03)",
+        "problem": ": 通过率面板点击展开后，模块名显示为技术 ID \"f9\" 而非可读名称 \"Desktop 原生\" [根因] : generatePassRateItems 中 modData?.name（来自 test-case-mapping.json）为 undefined，回退链仅到 nodeId \"f9\"",
+        "solution": "改为 MODULES[nodeId]?.name || modData?.name || nodeId 链式回退，优先使用配置模块名",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "通过率 L5 无法展开，数据有 5 层但渲染只处理 4 层 (21:08)",
+        "problem": ": 通过率数据有 5 层（阶段→模块→场景→子场景→用例），但 openCardDetail('pass') 渲染只处理 4 层，L4 子场景虽有 expandItems 被当成叶子项渲染 [根因] : 渲染深度不够，L4 子场景的 expandItems 未被检测和渲染为可展开行",
+        "solution": "index.html 添加 L5 展开检查 hasL5Expand；第 5 层项渲染为可展开 li.expandable；新增 CSS sub-list-deep3（padding-left:10px, font-size:.78em）和 sub-label-xxs（font-size:.75em）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "测试失败数不一致：卡片显示 39 → 点击测试报告变成 43 (21:10)",
+        "problem": ": 仪表板卡片显示 39 失败，点击测试报告后变成 43 失败，两个数据源计数不一致 [根因] : loadVitestResults() 读取 _vitest-*.json → 39F（最新 vitest 输出）；loadTestDetail() 读取 _test_detail.json → 43F（旧数据）；openTestReport() 点击后把 dashFailCount 覆盖为 _test_detail.json 的 43",
+        "solution": "从最新 vitest 输出重新生成 _test_detail.json；generateTestDetailPanel 使用 loadVitestResults() 作为权威 summary；新增 autoRegenerateTestDetail() 每次请求检测一致性并自动重建",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "时序图元素太小、箭头太细、背景不够明显 (21:28)",
+        "problem": ": 初始时序图元素太小、箭头太细、背景不够明显，看不清楚模块间依赖关系 [根因] : 初始尺寸参数偏保守，所有元素比例偏小",
+        "solution": "所有尺寸参数放大约 35%：参与者宽高(210→290/44→56)、模块宽高(190→260/56→72)、间距(28→50/14→22)、字体(13→15/12→14)、描边(1.5→2)、箭头粗细(1.5→2.5)、背景不透明度(0.3→0.85)+水平网格线、新增箭头标签背景色块",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-23",
+        "title": "时序图两侧内容被截断 + 标题区域与 Header 按钮重叠 (21:33)",
+        "problem": ": ① 6×290 + 5×50 = 1990 > SVG_W=1900，startX=-45 首列超出画布 ② 标题区域与 Header 切换按钮重叠 [根因] : viewBox 宽度 1900 但总布局宽度 1990 超出；标题 y 坐标从 36 开始与 Header 重合",
+        "solution": "SEQ_PART_W 290→268, SEQ_COL_GAP 50→34, SEQ_MOD_W 260→258 使总宽 1778 适配 1900；新增 SEQ_TOP_TITLE=80 整体下移避让 Header；背景高度扩展至 3000；标题从 y=36→80",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-23",
+        "title": "update-progress.mjs syncPipelineData 报 TypeError: ",
+        "problem": ": syncPipelineData 中 pipelineData.meta.version → TypeError: Cannot read properties of undefined [根因] : pipeline-data.json 结构为 pipelineData.version 而非 pipelineData.meta.version，字段路径不匹配；同样 mainLane.phases 应为 pipeline.phases，branchLanes 应为 pipeline.branches",
+        "solution": "修复 3 处字段路径：meta.version → version；mainLane.phases → pipeline.phases；branchLanes → pipeline.branches",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-23",
+        "title": "GitHub Push Protection 两次拦截提交：history_*.md 含 GitHu",
+        "problem": ": 提交被 GitHub Push Protection 两次拦截，history_*.md 含 GitHub Token 被检测到 [根因] : .gitignore 未排除含敏感信息的 history 文件、临时测试脚本和 packages/docs 目录",
+        "solution": ".gitignore 增加规则排除 history_*.md、_*.mjs 临时脚本、packages/docs/；通过 git reset --soft 回溯干净提交绕过拦截",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "评分 scoreTotal 硬编码为 75，每次功能变更需手动更新 (23:38)",
+        "problem": ": scoreTotal 在 pipeline-config.mjs 中为静态常量 75，分支完成（b1a 合并后）需手动改为 75，容易遗忘导致前后端评分不一致 [根因] : scoreTotal 为硬编码值，无自动计算机制，缺乏与模块状态/测试覆盖的关联",
+        "solution": "新增 calculateScore() 五维度加权公式—功能完整度×0.35 + 测试覆盖×0.25 + 分支优化×0.20 + CI/CD成熟度×0.10 + 文档完整度×0.10；getKPI() 动态计算 scoreTotal；update-progress.mjs 自动同步写入 pipeline-data.json 和 project-progress-data.json",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-23",
+        "title": "用户看到评分仍为 73.4（旧的）而非 81，HTTP 服务器运行旧代码 (23:43)",
+        "problem": ": 评分代码已提交 push，但用户刷新页面看到分数还是 73.4（老的），而非动态计算出的 81 [根因] : ① 旧 HTTP 服务器进程 PID 19080 仍在运行旧代码 ② SVG 小结节点硬编码 73.4 未改为动态读取",
+        "solution": "杀掉旧进程 PID 19080 重启；SVG 小结节点改为 pipelineData?.kpi?.scoreTotal ?? 73.4 动态读取；openPanel() 改为 issueData 不可用时仍可查看模块基本信息",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-23",
+        "title": "CI better-sqlite3 编译失败：node-gyp 无法识别 VS 2026 (v18)",
+        "problem": ": CI (GitHub Actions windows-latest) 执行 pnpm install 失败——better-sqlite3 在 Node 20.20.2 + Windows x64 无预编译二进制，回退 node-gyp 源码编译 → VS 18 Enterprise (VS 2026 preview) → node-gyp find-visualstudio.js 仅识别 v [根因] : windows-latest 镜像预装 VS 2026 preview (v18)，node-gyp 版本检测表仅支持到 VS 2022 (v17)",
+        "solution": "ci.yml + release.yml 添加 npm_config_msvs_version: '2022' 强制 node-gyp 搜索 VS 2022 Build Tools 而非 VS 2026",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-23",
+        "title": "BMAD 插件（7 角色 Agent 团队协作）与 EasyAgent 功能重叠不适合个人项目 (0",
+        "problem": ": BMAD 是 CodeBuddy 的 Agile 团队协作插件（7 角色 Agent：po/architect/sm/dev/qa/review/orchestrator），与 EasyAgent 功能重叠且组织错配 [根因] : BMAD 设计面向多角色团队协作，EasyAgent 定位为个人 AI 助手项目，两者场景不匹配",
+        "solution": "移除工作区引用（_add_level3.mjs 中 bmad-review 条目）、移除用户级插件目录、BMAD 说明写入 MEMORY.md 作为参考",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      }
+    ],
+    "2026-06-24.md": [
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-24",
+        "title": "calculateScore() 同一请求内重复文件扫描 (17:45)",
+        "problem": ": `getKPI()` 和 `getScoreHistory()` 各调用一次 `calculateScore()`，导致同一请求内重复扫描文件系统",
+        "solution": "添加 5 秒 TTL 内存缓存",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-24",
+        "title": "评分历史索引使用魔法数字 (17:45)",
+        "problem": ": `update-progress.mjs` 使用 `data.scoreHistory.length - 2` 魔法索引定位实际评分",
+        "solution": "改为 `filter(e => !e.projected && !e.dynamic)` 显式查找",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "加密密钥从可预测机器标识派生 (19:48)",
+        "problem": ": `getMasterPassword()` 使用 COMPUTERNAME+USER+HOME 组合派生密钥，攻击者可轻易重现",
+        "solution": "密钥优先级改为 EASYAGENT_MASTER_KEY 环境变量 > ~/.easyagent/secret.key 文件 > 随机生成(crypto.randomBytes(32))并持久化(0o600)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "CORS 完全开放无任何限制 (19:48)",
+        "problem": ": `app.use(cors())` 无参数，允许任意源跨域访问",
+        "solution": "添加 origin/credentials/methods 限制",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-24",
+        "title": "语义文件 API 路径遍历漏洞 (19:48)",
+        "problem": ": `/api/semantic/file` 未检查 resolvedPath 是否在 PROJECT_ROOT 内，可读取工作区外文件",
+        "solution": "添加 `resolvedPath.startsWith(PROJECT_ROOT)` 检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-24",
+        "title": "插件加载路径可导致 RCE (19:48)",
+        "problem": ": 插件加载路径无安全校验，可加载任意目录代码",
+        "solution": "限定在 `.easyagent/plugins` 目录内加载",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-24",
+        "title": "KnowledgeService 路径遍历漏洞 (19:48)",
+        "problem": ": `addDocument()` 中 `resolve(this.workspace, filePath)` 无越界检查；`importFromAbsolutePath()` 接受任意绝对路径无白名单",
+        "solution": "添加 `fullPath.startsWith(resolve(this.workspace))` 检查；白名单仅允许 workspace、~/.easyagent/uploads、系统临时目录",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-24",
+        "title": "LocalSandbox/DockerSandbox 命令注入风险 (19:48)",
+        "problem": ": `exec()` 方法未验证命令安全性，可执行含 shell 元字符的注入命令",
+        "solution": "新增 `validateCommand()` + `containsShellMetacharacters()` 方法，检测 `;` `|` `&` `$` `\\`` `()` `<>` `#` `&&` `||` `\\n` `\\r` 等元字符，发现则拒绝执行",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "verify-build.cjs 路径 + 死代码 + 版本过期 (19:48)",
+        "problem": ": subPackages 路径 `../../..` 应为 `../..` 导致 catch/UTF-8 检查静默跳过；检查不存在的 `api.ts` 文件导致每次构建失败；CURRENT_VERSION 过期 (0.3.0 vs 0.4.1)；MODULE_VERSION 检查含死代码",
+        "solution": "路径修正 + 删除不存在文件检查 + 版本更新为 0.4.1 + 删除 checkScript 死代码",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-24",
+        "title": "release-publish.bat errorlevel 被 echo 覆盖 (19:48)",
+        "problem": ": `echo %errorlevel%` 执行后 errorlevel 被覆盖为 0，后续 `if errorlevel` 判断失效",
+        "solution": "改为 `set _BUILD_ERR=%errorlevel%` 保存后 `if %_BUILD_ERR% neq 0` 判断",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-24",
+        "title": "WebSocket stop 消息未真正中断 Agent (19:48)",
+        "problem": ": WebSocket stop 消息到达后 Agent 继续运行",
+        "solution": "创建 WeakMap 关联 AbortController，chat case 传入 signal，stop case 调用 abort()，close/error 清理",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-24",
+        "title": "会话管理器初始化顺序导致闭包引用 undefined (19:48)",
+        "problem": ": sessionManager 在 imManager 之后定义，imManager 闭包引用未初始化的 sessionManager",
+        "solution": "sessionManager 移至 imManager 之前定义，删除重复定义",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-24",
+        "title": "/api/chat 忽略请求中的 provider 参数 (19:48)",
+        "problem": ": GET /api/chat 不读取请求中的 provider 参数，始终使用默认 provider",
+        "solution": "已有正确逻辑，添加注释说明",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "ConfigManager 危险命令白名单 (19:48)",
+        "problem": ": EASYAGENT_ALLOWED_COMMANDS 白名单含潜在危险命令",
+        "solution": "收紧白名单，移除高风险命令",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-24",
+        "title": "CI build-check 缺少前端 Vite 构建验证 (19:55)",
+        "problem": ": ci.yml build-check job 未包含前端 Vite build 验证，PR 合并后前端代码变更未触发构建",
+        "solution": "build-check job 新增 `cd ../frontend && npx vite build` 步骤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "chatStore 使用 Vite 专有 import.meta.env.DEV (20:09)",
+        "problem": ": `import.meta.env.DEV` 仅在 Vite 环境可用，破坏跨环境兼容（Desktop/Web）",
+        "solution": "改为 `window.location.hostname` 运行时检测",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "main.tsx useHashRouter 参数死代码 (20:09)",
+        "problem": ": useHashRouter 参数传入但未生效",
+        "solution": "正确导入 BrowserRouter，useHashRouter 参数生效",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "automationStore 轮询替代 WebSocket 事件驱动 (20:09)",
+        "problem": ": runTaskNow 中存在 120 次轮询循环，应用户实时状态需求应改用事件驱动",
+        "solution": "删除轮询循环，handleWSMessage 新增自动化事件转发（emit 到事件总线）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "WebSocket 无自动重连机制 (20:09)",
+        "problem": ": WebSocket 断开后不会自动重连，用户需手动刷新页面",
+        "solution": "添加 WS 自动重连（指数退避 1s-30s，最多 10 次）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "9 个 Store 共 25+ 处 fetch 绕过 apiFetch (20:09)",
+        "problem": ": settingsStore/automationStore/pluginsStore 等 9 个 Store 直接使用原生 fetch()，缺少 apiBase 注入和统一错误处理",
+        "solution": "新增模块级 `src/request.ts` apiRequest() 封装；创建 `src/events.ts` 事件总线；25+ 处 fetch 全部替换为 apiRequest()",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-24",
+        "title": "插件市场数据全量 Mock (20:09)",
+        "problem": ": pluginsStore 插件市场数据全部为硬编码 Mock，无法对接真实市场 API",
+        "solution": "fetchMarketplace 添加 `@TODO` 注释，明确标注 Mock 数据状态",
+        "status": "pending",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "乐观更新缺少错误回滚 (20:09)",
+        "problem": ": automationStore createTask/updateTask/deleteTask/toggleTask 和 sessionStore deleteSession/archiveSession 乐观更新失败后不恢复原状态",
+        "solution": "所有乐观更新操作添加 try-catch 错误回滚逻辑",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "Layout.tsx 硬编码过期版本 v0.3.0 (20:09)",
+        "problem": ": Layout.tsx 中默认版本显示为过期的 v0.3.0",
+        "solution": "更新为 v0.4.1",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-24",
+        "title": "token_usage 处理传空 messageId (20:20)",
+        "problem": ": chatStore.ts 中 `token_usage` 处理传空 messageId，Token 统计永不生效",
+        "solution": "改为查找最后一条 assistant 消息并更新其 tokenUsage",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-24",
+        "title": "知识库合并统计字段赋值错误 (20:20)",
+        "problem": ": server/index.ts 中 `global.totalDocs` 错误赋值为 `globalStats.totalSize`（文件大小），导致文档总数统计错误",
+        "solution": "改为 `globalStats.totalDocs`（文档数量）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-24",
+        "title": "AgentEngine 日志泄露敏感字段 (20:23)",
+        "problem": ": 日志中直接输出 apiKey/token/password/secret 等敏感字段",
+        "solution": "新增 `sanitizeToolInput()` 脱敏函数，过滤敏感字段",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "/api/config 返回字段不安全展开 (20:23)",
+        "problem": ": `/api/config` 使用 `...cfg` 展开全部配置字段，可能泄露敏感信息",
+        "solution": "改用白名单方式显式列出返回字段",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "WebSocket 缺少认证机制 (20:23)",
+        "problem": ": WebSocket 连接无任何认证，任意客户端可连接",
+        "solution": "添加 `EASYAGENT_WS_TOKEN` 认证，支持 query token / x-auth-token header",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "缺少安全 HTTP 响应头 (20:23)",
+        "problem": ": Server 未设置安全 HTTP 头（nosniff/XSS-Protection/Referrer-Policy 等）",
+        "solution": "添加安全头中间件：nosniff/DENY/XSS-Protection/Referrer-Policy/Cache-Control",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "Desktop 依赖声明使用相对路径 (20:23)",
+        "problem": ": desktop/package.json 中依赖声明 `../core` `../server` 不规范",
+        "solution": "改为 `workspace:*` 协议",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "postinstall.cjs 使用 npx 而非 pnpm exec (20:23)",
+        "problem": ": `npx @electron/rebuild` 可能使用全局版本而非本地版本",
+        "solution": "改为 `pnpm exec @electron/rebuild`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "App.tsx 健康检查首次连接闪烁\"未连接\" (20:23)",
+        "problem": ": 后端启动慢时，前端健康检查立即失败显示\"未连接\"",
+        "solution": "健康检查首次延迟 Desktop 3s / Web 0.5s",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-24",
+        "title": "lint 脚本为空占位 (20:23)",
+        "problem": ": package.json 中 lint 脚本仅为 `echo 'lint TODO'`，无实际检查",
+        "solution": "改为 `eslint packages/*/src --ext .ts,.tsx --max-warnings 50`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "MessageList 使用 document.querySelector 跨组件 DOM 耦合 (",
+        "problem": ": 建议按钮通过 `document.querySelector` 直接操作其他组件 DOM",
+        "solution": "改用 `setComposerPrefill(hint)` 消息传递，消除跨组件耦合",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-24",
+        "title": "release.yml 缺少前端独立 TypeScript 类型检查 (20:23)",
+        "problem": ": release.yml 未对 packages/frontend 独立运行 tsc --noEmit，可能发布含类型错误的前端代码",
+        "solution": "release.yml 新增 `npx tsc --noEmit` 对 packages/frontend 独立检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "ChatInput providers 依赖数组引用导致重复请求 (20:23)",
+        "problem": ": providers 依赖从数组引用比较，每次渲染重新创建数组 → 重复请求",
+        "solution": "改为 `providersId` 字符串比较",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "appStore addNotification 缺少文档 (20:23)",
+        "problem": ": `addNotification` 无 JSDoc，最多 10 条通知限制未文档化",
+        "solution": "添加 JSDoc 注释，文档化通知限制行为",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "Desktop 删除 7 个未引用诊断脚本 (20:23)",
+        "problem": ": packages/desktop/ 下 7 个 check-*.cjs/mjs 诊断脚本已无用但未清理",
+        "solution": "删除所有未引用诊断脚本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-24",
+        "title": "knowledge-service 测试因安全白名单顺序失败 (21:56)",
+        "problem": ": B6 安全修复后白名单检查先于文件存在检查，`/nonexistent/path/file.md` 不在白名单中直接返回安全限制错误",
+        "solution": "拆分测试为两个：workspace 内不存在文件→\"文件不存在\"；workspace 外路径→\"安全限制\"(新增)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-24",
+        "title": "sandbox 测试因 Docker 降级模式断言过期 (21:56)",
+        "problem": ": B5 修复后 Docker 不可用自动降级 → `available: true, mode: 'local'`，测试仍期望 `false`",
+        "solution": "更新期望为 `available: true, mode: 'local'`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-24",
+        "title": "session-manager 测试默认模型号过期 (21:56)",
+        "problem": ": 默认模型已从 `deepseek-chat` 更新为 `deepseek-v4`，测试断言仍用旧值",
+        "solution": "更新期望值",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "Desktop 测试因 P1-2 重构 Store API 变更大面积失败 (22:10)",
+        "problem": ": P1-2 合并将 chat 方法从 sessionStore 拆到 chatStore，5 个旧测试文件导入不存在的 API（addMessage/appendToLastMessage 等）、组件路径变更",
+        "solution": "删除 5 个过时测试 + 新增 4 个等价用例（sessionStore 22 + chatStore 30 + StatusBar 10 + TabBar 9 = ~71 tests）；清理 24 个编译残留文件；version.test.ts 改为 semver 检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "ChatView/Sidebar Store 导入未适配 P1-2 重构 (22:13)",
+        "problem": ": ChatView/Sidebar 仍从旧 sessionStore 导入 ChatMessage/ToolCallBlock，字段名未更新（currentSessionId→activeSessionId / setIsRunning→setGenerating 等）",
+        "solution": "导入源切换为 chatStore + session-scoped 访问 + 字段名适配 + ToolCall 渲染适配",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-24",
+        "title": "Sidebar SessionMeta 字段访问路径未更新 (22:18)",
+        "problem": ": P1-2 重构将 title/messageCount 嵌套到 metadata 子对象下，Sidebar.tsx 4 处仍用 `session.title`",
+        "solution": "4 处全部改为 `session.metadata.title` / `session.metadata.messageCount`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-24",
+        "title": "ModelRegistry 测试覆盖 30 个用例 (22:45)",
+        "problem": ": ModelRegistry 模块完全无测试覆盖",
+        "solution": "新增 model-registry.test.ts (~310行)，覆盖单例/初始化/远程下载/并发/强制刷新/下载容错/TTL边界/缓存读写/类型安全",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "ExecTools 注入测试发现真实漏洞 (22:45)",
+        "problem": ": ExecTools 无安全测试覆盖；发现 `GitBranchTool.delete` 在 PowerShell 中 `branchName = \"test | echo bad\"` 时可注入成功执行",
+        "solution": "新增 exec-tools-security.test.ts (34 tests)，覆盖 12 种危险模式 + 5 种注入绕过；GitTool 参数注入标记 `.skip` 待后续修复",
+        "status": "pending",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "FileTools 路径遍历测试覆盖 (22:45)",
+        "problem": ": FileTools 无路径遍历安全测试",
+        "solution": "新增 file-tools-security.test.ts (28 tests)，覆盖 8 种路径遍历 + 4 工具交叉验证 + Edit/Delete/Write/List 功能",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-24",
+        "title": "TelegramAdapter 测试覆盖 30 个用例 (22:49)",
+        "problem": ": TelegramAdapter 模块完全无测试覆盖",
+        "solution": "新增 telegram-adapter.test.ts (~410行)，覆盖构造/发送消息(含截断/Markdown/HTML/键盘)/编辑/媒体/生命周期/Webhook/轮询",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "vitest bench 基准测试框架建立 (22:49)",
+        "problem": ": 项目无性能基准测试，无法量化优化效果",
+        "solution": "新增 vitest.bench.config.ts + core.bench.ts (4组/8项: 加密/日志/JSON/字符串)；package.json 新增 `bench` 脚本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-24",
+        "title": "ModelRegistry 测试含假测试（纯 Date.now 算术） (23:30)",
+        "problem": ": model-registry.test.ts Suite 7 中 4 个测试仅为 Date.now() 算术，非真实 TTL 验证",
+        "solution": "替换为 4 个真实 ModelRegistry TTL 边界测试（通过 mock fs 验证 23h/24h/24h+1ms/25h 缓存行为）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "ExecTools 测试含永真断言 (23:30)",
+        "problem": ": exec-tools-security.test.ts L211 `expect(result.success || !result.success).toBe(true)` 永真断言，无实际验证",
+        "solution": "改为 `.skip` 标记已知 GitBranchTool 注入漏洞",
+        "status": "pending",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "FileTools 测试名不符实 (23:30)",
+        "problem": ": file-tools-security.test.ts Suite 7 名为\"超 10MB 拒绝\"但实际只测试小文件",
+        "solution": "重命名为\"读取功能\"，新增文件不存在错误测试",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "f12",
+        "date": "2026-06-24",
+        "title": "i18n 深度测试覆盖 39 个用例 (23:30)",
+        "problem": ": i18n 模块仅 19 个基础测试，缺少 initI18n/t()嵌套键/参数替换/缺键降级/语言包完整性验证",
+        "solution": "utils.test.ts 从 19→58 tests，新增 5 个套件：initI18n/t()7键翻译/参数替换/缺键降级/7模块完整性",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f12"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-24",
+        "title": "GitAdvancedTools 测试覆盖 32 个用例 (23:30)",
+        "problem": ": 6 个 Git 高级工具（AutoCommit/RepoMap/Stash/Tag/CherryPick/Reflog）无测试",
+        "solution": "新增 git-advanced-tools.test.ts，6工具全覆盖 + 非Git仓库拒绝/dryRun/无效hash/reflog 验证",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-24",
+        "title": "KPI 数据更新: totalTests 35→814 (23:30)",
+        "problem": ": project-progress-data.json 中测试总数和模型数严重过期",
+        "solution": "totalTests 35→814, modelsSupported 4→10",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-24",
+        "title": "CI 新增 test-pipeline 自测试 job (23:43)",
+        "problem": ": 管线模块(pipeline-parser/pipeline-api/pipeline-cache/pipeline-progress)共 75 个测试未在 CI 中运行",
+        "solution": "ci.yml 新增 test-pipeline job，运行 `node --test docs/pipeline/__tests__/pipeline-*.test.mjs`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-24",
+        "title": "覆盖率门禁配置 (23:43)",
+        "problem": ": 先前缺少覆盖率门禁，测试数量增加但覆盖率下降无法发现",
+        "solution": "Core vitest.config.ts 新增 coverage (thresholds 35/25/30/35)；Server 新增 (30/20/25/30)；CI 新增 coverage job；安装 @vitest/coverage-v8",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-24",
+        "title": "ModelRegistry+Server 集成测试 (23:43)",
+        "problem": ": ModelRegistry 与 Server 端点的集成行为无测试",
+        "solution": "api.test.ts 新增 4 tests: catalog/status + catalog/refresh 端点；修复 model-registry TTL 边界时序缺陷 (+1000ms 补偿)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-24",
+        "title": "Web 前端 Tailwind Purge 导致内容区域空白 (23:55)",
+        "problem": ": Web 客户端主内容区域空白。tailwind.config.js 的 content 只扫描 `./src/**/*`，而组件在 `../frontend/src` 通过别名引用，Tailwind 将所有类名 Purge 掉",
+        "solution": "content 数组新增 `'../frontend/src/**/*.{js,ts,jsx,tsx}'`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      }
+    ],
+    "2026-06-25.md": [
+      {
+        "moduleId": "f9",
+        "date": "2026-06-25",
+        "title": "Node 24 因 better-sqlite3 无预编译被拦截 (09:00)",
+        "problem": ": preinstall.cjs 拦截 Node >= 24，build.bat 在 Node 24 环境执行失败",
+        "solution": "build.bat 开头添加 `set EASYAGENT_SKIP_NODE_CHECK=1` 绕过检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-25",
+        "title": "pnpm frozen-lockfile 在 CI 中失败 (09:00)",
+        "problem": ": pnpm-lock.yaml specifiers 与 package.json 不同步，`--frozen-lockfile` 在 CI 中失败",
+        "solution": "删除 lockfile 后重新 `pnpm install` 生成新 lockfile；CI #40 验证通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-25",
+        "title": "CI windows-latest 升级导致 better-sqlite3 编译失败 (09:00)",
+        "problem": ": GitHub Actions `windows-latest` 已升级为 Server 2025 + VS 2026，node-gyp v10.3.1 不支持 VS 2026，CI 显示 0 jobs",
+        "solution": "ci.yml 5个job + release.yml 3个job 全部固定为 `windows-2022`；修复 YAML 流序列格式 `[a, b]` → 块序列；CI #36 5/5 ✅ 全部通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-25",
+        "title": "CI 缺少 Desktop 测试 job (09:00)",
+        "problem": ": CI 缺少 Desktop test job，7文件/118测试未在 CI 中运行",
+        "solution": "ci.yml 新增 test-desktop job（需先 build core+frontend）；release.yml 测试 job 补全 desktop 测试；Coverage Gate 仅覆盖 Core+Server（Desktop 渲染代码在 packages/frontend）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-25",
+        "title": "CI postinstall.cjs 噪音影响日志可读性 (09:00)",
+        "problem": ": postinstall.cjs 在 CI 中每次都输出 better-sqlite3 版本检查噪音",
+        "solution": "添加 `process.env.CI` 检测，CI 环境直接跳过 better-sqlite3 版本检查；CI #40 6/6 ✅ 全部通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-25",
+        "title": "管线 getKPI() testCases 与 testPassed 数据源不一致 (09:20)",
+        "problem": ": `testCases` 来自 test-case-mapping.json(876)，`testPassed` 来自 vitest 报告(977)，导致 977/876 逻辑矛盾",
+        "solution": "当 vitest 报告可用时，testCases 改用 vitest 有效总数 (totalPassed + totalFailed + totalSkipped = 977)，与通过/失败数据口径一致",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-25",
+        "title": "管线 SVG viewBox 计算在空分支时返回 -Infinity (09:20)",
+        "problem": ": `render()` 和 `renderSequenceDiagram()` 中 `Math.max(...pd.branches.map(...))` 在 branches 为空时返回 `-Infinity`，设置给 SVG viewBox 导致浏览器布局引擎故障、报 `getBoundingClientRect on null`",
+        "solution": "空数组安全 fallback + viewBox 下限 1120 + 所有 DOM 访问加 null 检查",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-25",
+        "title": "b1a/b2a 模块缺问题记录 — 自由格式失效问题 (09:27)",
+        "problem": ": 用户反馈管线页面 b1a（Web↔Desktop 前端合并）和 b2a（SWE-bench 评测体系）卡片显示 0 条问题记录，但 06-22/06-23 日志中有大量相关工作（前端合并 124 files、SWE-bench 10题数据集+BenchmarkRunner+CLI） [根因] : 两个模块的工作记录在 06-22/06-23 均为自由格式（`### P0-2:` / `## P1-2` 等），未使用 `[模块:b1a]` / `[模块:b2a]` 标签，解析器跳过，导致卡片空数据",
+        "solution": "从 06-22.md 提取 b2a 3 条标准格式记录（benchmark-tasks.json JSON解析失败、BenchmarkRunner.ts 6个TS编译错误、评测体系搭建）；从 06-23.md 提取 b1a 3 条标准格式记录（Vite配置优先级、前端代码合并消除重复、update-progress ID映射修复）；清除缓存重新解析；结果: b1a 0→3, b2a 0→3",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-06-25",
+        "title": "管线卡片问题徽章竞态导致不显示 (09:20)",
+        "problem": ": `loadIssueData()` 用 `setTimeout(updateAllBadges, 300)` 等待 SVG 渲染，但 `init()` API 响应可能超过 300ms → updateAllBadges() 触发时 SVG 未渲染 → 找不到 badge 元素；随后 render() 用 innerHTML 重建 SVG（badge 初始 display:none），再无人更",
+        "solution": "`render()` 结尾添加 `if (issueData) updateAllBadges()`，确保 SVG 重建后立即同步徽章",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5c"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-25",
+        "title": "6/24+6/25 日志全面规范化 + 管线数据库更新 (09:22)",
+        "problem": ": 6/24 和 6/25 memory 日记使用自由格式（无 `[模块:ID]` 标签 + 表格/`### 🔴` 子标题），parser 无法解析，大量问题记录未在管线页面显示",
+        "solution": "6/24.md 重写为 38 个 `## [模块:ID]` 标准 Section（覆盖 F1-F4/F6/F8-F12/F14/B2b/P5a/P5b）+ 操作流程摘要；6/25.md 重写为 9 个标准 Section + 操作流程；`memory-format-spec.md` 补充 P5a/P5b/P5c 模块定义；MEMORY.md v1.1 强化约束含强制规则+反例+完整模块表；结果: 总问题数 287（+76），覆盖 22 模块；b2b 3→13; f8:30; f9:26; p5a:18; p5b:12; p5c:10",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-25",
+        "title": "06/18-06/21 存量日志全量标准化 — 141 条问题记录追加 (09:32)",
+        "problem": ": 用户要求将 06/22 之前的所有自由格式日志（06-18 ~ 06-21）中的技术问题，转为标准 `## [模块:ID]` 格式追加到文件末尾，不破坏原始内容；按文件: 06-18(+34), 06-19(+47), 06-20(+42), 06-21(+18)；结果: 总问题数 287 → **435**（+148）；23 模块激活；TOP: f9:56, f8:48, f4:32, f2:31, f16:26, f1:25",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-25",
+        "title": "06-22/06-23 遗漏自由格式标准化 — 39 条问题记录追加 (09:38)",
+        "problem": ": 用户要求 review 06-22/06-23 是否还有遗漏的自由格式未转标准格式。结果发现 06-22 仅 3 条 b2a（占比 11%），06-23 虽有 17 条带 `### [模块:ID]` 的标准条目但底部 12 个自由格式 Section 全缺；06-22: 23 条遗漏——f16 发布系统(8)、f3 工具系统(4)、b2b CI/CD(2)、p5a 管线(3)、f1/f2/f4/f9/f11/p5c 各1；06-23: 16 条遗漏——p5c 渲染(5)、p5a 管线配置(4)、p5b 数据采集(2)、b2b CI(1)、f16 发布(1)、f10 插件(1)",
+        "solution": "脚本生成 39 条标准格式记录分别追加到 06-22.md(+23) 和 06-23.md(+16)；清除缓存重启服务器；结果: 总问题数 435 → **475**（+40）；f16 26→35, p5a 18→28, p5c 10→18, b2b 13→16, f3 21→25, p5b 12→13",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-25",
+        "title": "build.bat goto 标签语法错误 (09:00)",
+        "problem": ": build.bat 中误将 `:LABEL` 写成 `::LABEL`，`::` 在 bat 中是注释而非标签，goto 跳转失败导致构建流程中断",
+        "solution": "将 `::LABEL` 修正为 `:LABEL`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-25",
+        "title": "release.mjs 交互确认阻塞自动化发布 (09:00)",
+        "problem": ": release.mjs 发布脚本包含交互式确认提示，在自动化流水线中阻塞等待用户输入",
+        "solution": "使用文件重定向 `< _answers.txt` 将预设答案注入交互确认",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-25",
+        "title": "app.asar 被占用导致 electron-builder 打包失败 (09:00)",
+        "problem": ": electron-builder 打包时 app.asar 被残留的 EasyAgent/Electron 进程占用，文件锁定导致打包失败",
+        "solution": "kill 残留进程后重试打包成功",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-25",
+        "title": "CI #39 日志排查 — 6 类错误均为预期测试行为 (10:00)",
+        "problem": ": CI #39 日志中出现多个错误（Telegram 异常测试、飞书边界测试、企业微信容错、MCP 命令不存在、Docker 不可用降级、模型目录无外网），初看疑似回归 [根因] : 逐一排查后确认所有错误均为测试用例预期行为（如异常场景覆盖、边界条件验证、降级模式测试），Build Verification 的 5 个 WARN 仅警示不阻塞",
+        "solution": "无需修改代码；排查结论作为 CI 日志解读经验沉淀",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-25",
+        "title": "06-24/06-25 Review + 4 条遗漏追加 (09:44)",
+        "problem": ": 用户要求 review 06-24/06-25 格式覆盖情况；06-25: 12 条标准格式覆盖主要问题，但 v0.5.0 发布流程中的 4 个技术问题未标准化；追加: f9 build.bat goto标签(+1) + f16 release.mjs交互阻塞(+1) + f9 app.asar占用(+1) + b2b CI#39排查(+1)；结果: 总问题数 475 → **480**（+5）；f9 56→59, f16 35→36, b2b 16→17",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -3136,5 +6107,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-23T15:49:42.705Z"
+  "generatedAt": "2026-06-25T01:48:30.098Z"
 }

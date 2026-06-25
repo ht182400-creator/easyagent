@@ -559,6 +559,7 @@ function layout(pd) {
 function render(pd) {
   const L = layout(pd);
   const g = document.getElementById('pipeline-content');
+  if (!g) { console.warn('[Pipeline] SVG 容器 #pipeline-content 未找到，跳过渲染'); return; }
   let html = '';
 
   // ---------- 背景网格 ----------
@@ -694,10 +695,15 @@ function render(pd) {
 
   g.innerHTML = html;
 
-  // 动态更新 SVG 高度
-  const maxBranchHeight = Math.max(...pd.branches.map(b => b.nodes.length)) * (NODE_H + L.NODE_GAP);
-  const totalH = branchY + maxBranchHeight + 40;
-  document.getElementById('pipeline-svg').setAttribute('viewBox', `0 0 ${SVG_W} ${totalH}`);
+  // 动态更新 SVG 高度（对空分支安全，避免 -Infinity）
+  const branchNodeCounts = (pd.branches || []).map(b => b.nodes.length);
+  const maxBranchHeight = (branchNodeCounts.length > 0 ? Math.max(...branchNodeCounts) : 0) * (NODE_H + L.NODE_GAP);
+  const totalH = Math.max(branchY + maxBranchHeight + 40, 1120);
+  const svgEl = document.getElementById('pipeline-svg');
+  if (svgEl) svgEl.setAttribute('viewBox', `0 0 ${SVG_W} ${totalH}`);
+
+  // SVG 重建后立即同步问题徽章（防止 loadIssueData 竞态导致徽章丢失）
+  if (issueData) updateAllBadges();
 }
 
 // ============================================================
@@ -921,6 +927,7 @@ function seqLayout(pd) {
 function renderSequenceDiagram(pd) {
   const L = seqLayout(pd);
   const g = document.getElementById('pipeline-content');
+  if (!g) { console.warn('[Pipeline] SVG 容器 #pipeline-content 未找到，跳过序列图渲染'); return; }
   let html = '';
 
   // ---------- 背景（半透明暗底 + 可见网格线，覆盖整个画布） ----------
@@ -1105,8 +1112,9 @@ function renderSequenceDiagram(pd) {
   g.innerHTML = html;
 
   // 动态调整 SVG 高度
-  const totalH = summaryY + 100;
-  document.getElementById('pipeline-svg').setAttribute('viewBox', `0 0 ${SVG_W} ${totalH}`);
+  const totalH = Math.max(summaryY + 100, 1120);
+  const svgEl2 = document.getElementById('pipeline-svg');
+  if (svgEl2) svgEl2.setAttribute('viewBox', `0 0 ${SVG_W} ${totalH}`);
 }
 
 // 启动 —— 并行加载管线数据和问题数据
@@ -1145,16 +1153,21 @@ function openCardDetail(cardId) {
   panelMode = 'card';
   currentModuleId = null;
 
+  // 检查关键 DOM 元素是否存在
+  const pTitle = document.getElementById('panelTitle');
+  const pSub = document.getElementById('panelSub');
+  const body = document.getElementById('panelBody');
+  if (!pTitle || !body) return;
+
   // 更新面板标题
-  document.getElementById('panelTitle').textContent = detail.title;
-  document.getElementById('panelSub').textContent = detail.subtitle;
+  pTitle.textContent = detail.title;
+  if (pSub) pSub.textContent = detail.subtitle;
 
   // 隐藏问题统计
-  document.getElementById('statResolved').parentElement.style.display = 'none';
-  document.getElementById('statUnresolved').parentElement.style.display = 'none';
-  document.getElementById('statTotal').parentElement.style.display = 'none';
-
-  const body = document.getElementById('panelBody');
+  ['statResolved','statUnresolved','statTotal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el?.parentElement) el.parentElement.style.display = 'none';
+  });
   let html = '';
 
   // 通过率特殊样式：三色统计条 + 图表/列表切换
@@ -1555,22 +1568,31 @@ function openPanel(moduleId) {
   const statusMap = { done: '✅ 已完成', 'in-progress': '⏳ 进行中', pending: '⬜ 待启动' };
   const statusLabel = statusMap[node?.status] || '⬜ 未知';
 
+  // 关键 DOM 元素检查
+  const pTitle = document.getElementById('panelTitle');
+  const pSub = document.getElementById('panelSub');
+  const body = document.getElementById('panelBody');
+  if (!pTitle || !body) return;
+
   // 更新面板标题
-  document.getElementById('panelTitle').textContent = (node?.icon || '📦') + ' ' + (node?.label || issueMod?.name || moduleId);
-  document.getElementById('panelSub').textContent = (pipeInfo?.phase || pipeInfo?.branch || '') + ' · ' + statusLabel + ' · ' + total + ' 个问题记录';
+  pTitle.textContent = (node?.icon || '📦') + ' ' + (node?.label || issueMod?.name || moduleId);
+  if (pSub) pSub.textContent = (pipeInfo?.phase || pipeInfo?.branch || '') + ' · ' + statusLabel + ' · ' + total + ' 个问题记录';
 
   // 显示问题统计
-  document.getElementById('statResolved').parentElement.style.display = '';
-  document.getElementById('statUnresolved').parentElement.style.display = '';
-  document.getElementById('statTotal').parentElement.style.display = '';
+  ['statResolved','statUnresolved','statTotal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el?.parentElement) el.parentElement.style.display = '';
+  });
 
   // 更新统计
-  document.getElementById('statResolved').textContent = resolved;
-  document.getElementById('statUnresolved').textContent = unresolved;
-  document.getElementById('statTotal').textContent = total;
+  const sR = document.getElementById('statResolved');
+  const sU = document.getElementById('statUnresolved');
+  const sT = document.getElementById('statTotal');
+  if (sR) sR.textContent = resolved;
+  if (sU) sU.textContent = unresolved;
+  if (sT) sT.textContent = total;
 
-  // 渲染内容
-  const body = document.getElementById('panelBody');
+  // 渲染内容（body 已在上方 null-check 验证）
   let html = '';
 
   // 模块基本信息卡片
@@ -1626,13 +1648,20 @@ let testDetailCache = null;
 async function openTestReport() {
   panelMode = 'test_report';
   currentModuleId = null;
-  document.getElementById('panelTitle').textContent = '🧪 测试详情报告';
-  document.getElementById('panelSub').textContent = '四级树形展开 · 查看每个测试用例的通过/失败状态及原因';
-  document.getElementById('statResolved').parentElement.style.display = 'none';
-  document.getElementById('statUnresolved').parentElement.style.display = 'none';
-  document.getElementById('statTotal').parentElement.style.display = 'none';
-  
+
+  const pTitle = document.getElementById('panelTitle');
   const body = document.getElementById('panelBody');
+  if (!pTitle || !body) return;
+
+  pTitle.textContent = '🧪 测试详情报告';
+  const pSub = document.getElementById('panelSub');
+  if (pSub) pSub.textContent = '四级树形展开 · 查看每个测试用例的通过/失败状态及原因';
+
+  ['statResolved','statUnresolved','statTotal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el?.parentElement) el.parentElement.style.display = 'none';
+  });
+  
   body.innerHTML = '<div class="tr-empty"><div class="tr-empty-icon">⏳</div><div>正在加载测试数据...</div></div>';
   openSidePanel();
   

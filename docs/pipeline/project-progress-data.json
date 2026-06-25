@@ -3,10 +3,10 @@
     "repo": "ht182400-creator/easyagent",
     "version": "0.5.0",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-24T17:14:51.355Z",
+    "lastUpdated": "2026-06-25T00:33:37.420Z",
     "engine": "auto-detected",
-    "totalTests": 40,
-    "modelsSupported": 4
+    "totalTests": 876,
+    "modelsSupported": 10
   },
   "phases": [
     {
@@ -249,6 +249,138 @@
       "label": "全量完成",
       "value": 80,
       "projected": true
+    },
+    {
+      "label": "v0.5.0 自动同步 (2026-06-25)",
+      "value": 82
     }
-  ]
+  ],
+  "metadata": {
+    "kpi": {
+      "testCases": 977,
+      "testPassRate": 100,
+      "testPassed": 977,
+      "testFailed": 0,
+      "testSkipped": 0,
+      "tools": 51,
+      "providers": 10,
+      "scoreTotal": 82,
+      "modes": 4,
+      "_source": "vitest-reports(3 files)",
+      "_totalFiles": 40,
+      "_vitestFiles": [
+        "_vitest-core.json",
+        "_vitest-desktop.json",
+        "_vitest-server.json"
+      ],
+      "_scoreDimensions": [
+        {
+          "label": "功能完整度",
+          "score": 97,
+          "max": 100,
+          "note": "19/19 模块完成"
+        },
+        {
+          "label": "测试覆盖",
+          "score": 100,
+          "max": 100,
+          "note": "977/977 用例通过"
+        },
+        {
+          "label": "分支优化",
+          "score": 30,
+          "max": 100,
+          "note": "3/10 分支完成"
+        },
+        {
+          "label": "CI/CD 成熟度",
+          "score": 100,
+          "max": 100,
+          "note": "4/4 CI 文件就绪"
+        },
+        {
+          "label": "文档完整度",
+          "score": 75,
+          "max": 100,
+          "note": "3/4 文档齐全"
+        }
+      ]
+    },
+    "score": {
+      "total": 82,
+      "dimensions": [
+        {
+          "label": "功能完整度",
+          "score": 97,
+          "max": 100,
+          "note": "19/19 模块完成"
+        },
+        {
+          "label": "测试覆盖",
+          "score": 100,
+          "max": 100,
+          "note": "977/977 用例通过"
+        },
+        {
+          "label": "分支优化",
+          "score": 30,
+          "max": 100,
+          "note": "3/10 分支完成"
+        },
+        {
+          "label": "CI/CD 成熟度",
+          "score": 100,
+          "max": 100,
+          "note": "4/4 CI 文件就绪"
+        },
+        {
+          "label": "文档完整度",
+          "score": 75,
+          "max": 100,
+          "note": "3/4 文档齐全"
+        }
+      ]
+    },
+    "scoreHistory": [
+      {
+        "version": "v0.1.0",
+        "date": "2026-06-18",
+        "score": 30
+      },
+      {
+        "version": "v0.2.0",
+        "date": "2026-06-19",
+        "score": 55
+      },
+      {
+        "version": "v0.3.0",
+        "date": "2026-06-20",
+        "score": 65
+      },
+      {
+        "version": "v0.4.0",
+        "date": "2026-06-22",
+        "score": 68
+      },
+      {
+        "version": "v0.5.0",
+        "date": "2026-06-23",
+        "score": 73.4
+      },
+      {
+        "version": "v0.4.1",
+        "date": "2026-06-23",
+        "score": 75,
+        "note": "前端合并+CI/CD完成"
+      },
+      {
+        "version": "current",
+        "date": "2026-06-25",
+        "score": 82,
+        "note": "动态计算（五维度加权）",
+        "dynamic": true
+      }
+    ],
+    "syncedAt": "2026-06-25T00:56:10.162Z"
+  }
 }

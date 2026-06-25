@@ -7,6 +7,25 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.5.1] - 2026-06-25
+
+### Fixed
+- fix: postinstall.cjs 添加 CI 环境检测，消除 @electron/rebuild 噪音 (ht182400-creator)
+- fix: Desktop coverage 修复 - 添加 @vitest/coverage-v8 并排除 Desktop coverage 步骤 (ht182400-creator)
+- fix: CI 补全 Desktop 测试 + 同步测试文档计数 (ht182400-creator)
+- fix: windows-latest → windows-2022 (node-gyp v10 不支持 VS 2026) (ht182400-creator)
+- debug: 测试 env + needs + multi-job (ht182400-creator)
+- debug: 测试 windows-2022 runner 可用性 (ht182400-creator)
+- fix: CI 使用 windows-2022 runner (node-gyp v10 不支持 VS 2026) (ht182400-creator)
+- debug: 移除 npm_config_msvs_version 测试 better-sqlite3 编译 (ht182400-creator)
+- debug: 测试 setup-node@v4 + cache + pnpm install (ht182400-creator)
+- debug: 测试 ilammy/msvc-dev-cmd@v1 (ht182400-creator)
+- debug: 测试 pnpm/action-setup@v4 (ht182400-creator)
+- debug: 测试 windows-latest runner 可用性 (ht182400-creator)
+- debug: 极简 CI workflow 测试 GitHub Actions 是否正常 (ht182400-creator)
+- fix: 修复 ci.yml YAML 格式 (流序列 → 块序列) (ht182400-creator)
+- fix: 重新生成 pnpm-lock.yaml 修复 CI frozen-lockfile 错误 (ht182400-creator)
+
 ## [0.5.0] - 2026-06-24
 
 ### Added
