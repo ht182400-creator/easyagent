@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Cpu, XCircle, Key, ExternalLink, Zap, RefreshCw } from 'lucide-react';
+import { getApiBase } from '../request';
 
 interface Provider {
   id: string;
@@ -35,7 +36,8 @@ export default function Providers() {
 
   const fetchProviders = async () => {
     try {
-      const res = await fetch('/api/providers');
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/providers`);
       const data = await res.json();
       setProviders(data);
     } catch (err) {
@@ -47,7 +49,8 @@ export default function Providers() {
 
   const handleSetKey = async (providerId: string) => {
     try {
-      await fetch(`/api/providers/${providerId}/key`, {
+      const apiBase = getApiBase();
+      await fetch(`${apiBase}/api/providers/${providerId}/key`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey: apiKeyInput }),
@@ -64,7 +67,8 @@ export default function Providers() {
   const handleRefreshProvider = async (providerId: string) => {
     setRefreshingProvider(providerId);
     try {
-      await fetch(`/api/providers/${providerId}/models/refresh`, { method: 'POST' });
+      const apiBase = getApiBase();
+      await fetch(`${apiBase}/api/providers/${providerId}/models/refresh`, { method: 'POST' });
       // 刷新后重新获取所有提供商数据（含合并后的模型列表）
       await fetchProviders();
     } catch (err) {
@@ -77,7 +81,8 @@ export default function Providers() {
   const handleTest = async (providerId: string) => {
     setTestResults(prev => ({ ...prev, [providerId]: null }));
     try {
-      const res = await fetch(`/api/providers/${providerId}/test`, { method: 'POST' });
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/providers/${providerId}/test`, { method: 'POST' });
       const data = await res.json();
       setTestResults(prev => ({
         ...prev,

@@ -8,6 +8,7 @@ import { Trash2, Wifi, WifiOff, Loader2, ArrowLeft } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useProviderStore } from '../stores/providerStore';
 import { useAppStore } from '../stores/appStore';
+import { getApiBase } from '../request';
 import { MessageList } from '../components/Chat/MessageList';
 import { ChatInput } from '../components/Chat/ChatInput';
 import { StatusBadge } from '../components/Common/StatusBadge';
@@ -52,7 +53,8 @@ export default function ChatPage() {
 
     (async () => {
       try {
-        const res = await fetch(`/api/sessions/${urlSessionId}`);
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/api/sessions/${urlSessionId}`);
         if (!res.ok || cancelled) return;
         const data = await res.json();
         const msgs: SessionMessage[] = data?.messages || [];

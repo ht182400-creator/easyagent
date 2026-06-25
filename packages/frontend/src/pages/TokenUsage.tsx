@@ -9,6 +9,7 @@ import {
   Calendar, Filter, RefreshCw, Download, Database,
   ChevronRight,
 } from 'lucide-react';
+import { getApiBase } from '../request';
 
 // ======================= 类型定义 =======================
 
@@ -239,7 +240,8 @@ export default function TokenUsage() {
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const res = await fetch('/api/token-usage/analytics');
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/token-usage/analytics`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.success) {

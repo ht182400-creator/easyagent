@@ -33,8 +33,8 @@
       "size": 36906
     },
     "2026-06-26.md": {
-      "mtimeMs": 1782414442967.218,
-      "size": 23109
+      "mtimeMs": 1782415822976.11,
+      "size": 26611
     },
     "MEMORY.md": {
       "mtimeMs": 1782411498645.1133,
@@ -7360,6 +7360,56 @@
           "f14",
           "b3b"
         ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-26",
+        "title": "[F13] CI 测试日志回取 + 管线版本同步 (03:09-03:14)",
+        "problem": "[F13] CI 测试日志回取 + 管线版本同步 (03:09-03:14)",
+        "solution": "`pipeline-config.test.mjs` 2 处断言修正；本地 unified-sync 结果: 1195 用例, 100/100 分, 571 问题, 29 模块；提交: f2e133f → push origin/main 触发新 CI #28194374812 (queued)；GitHub API 限制: ~~下载 job logs 需 admin 权限（403），无法直接获取原始日志~~ **已纠正**：带 token 的 API 返回 302 重定向到原始文本日志，完全可以下载（255 KB raw log）。之前 403 是缺少 token 或 token",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
+        "problem": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
+        "solution": "`packages/core/vitest.config.ts`: `testTimeout: 30_000`, `hookTimeout: 15_000`；Server 包已有 15s / Desktop 包已有 10s — 仅 core 缺失超时配置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f10",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-26",
+        "title": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
+        "problem": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
+        "solution": "`packages/core/vitest.config.ts`: `testTimeout: 30_000`, `hookTimeout: 15_000`；Server 包已有 15s / Desktop 包已有 10s — 仅 core 缺失超时配置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f10",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-26",
+        "title": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
+        "problem": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
+        "solution": "`packages/core/vitest.config.ts`: `testTimeout: 30_000`, `hookTimeout: 15_000`；Server 包已有 15s / Desktop 包已有 10s — 仅 core 缺失超时配置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f10",
+          "f11"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -7377,5 +7427,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-25T19:10:04.464Z"
+  "generatedAt": "2026-06-25T19:41:56.450Z"
 }

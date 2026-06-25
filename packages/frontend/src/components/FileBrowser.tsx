@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { X, Folder, FolderOpen, File, FileText, ChevronRight, FolderTree } from 'lucide-react';
+import { getApiBase } from '../request';
 
 /** 文件条目 */
 interface FileEntry {
@@ -76,7 +77,8 @@ export default function FileBrowser({ selectedPath, onSelect, onClose, scope }: 
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/files/browse?path=${encodeURIComponent(path)}`);
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/files/browse?path=${encodeURIComponent(path)}`);
       const data: BrowseResponse = await res.json();
       if (data.success) {
         setCurrentPath(data.currentPath);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { History, Trash2, Archive, Search, Clock, MessageSquare, Eye } from 'lucide-react';
+import { getApiBase } from '../request';
 
 interface Session {
   id: string;
@@ -24,9 +25,11 @@ export default function Sessions() {
     fetchSessions();
   }, []);
 
+  const apiBase = getApiBase();
+
   const fetchSessions = () => {
     setLoading(true);
-    fetch('/api/sessions')
+    fetch(`${apiBase}/api/sessions`)
       .then(r => r.json())
       .then(data => {
         setSessions(Array.isArray(data) ? data : []);
@@ -36,12 +39,12 @@ export default function Sessions() {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
+    await fetch(`${apiBase}/api/sessions/${id}`, { method: 'DELETE' });
     fetchSessions();
   };
 
   const handleArchive = async (id: string) => {
-    await fetch(`/api/sessions/${id}/archive`, { method: 'POST' });
+    await fetch(`${apiBase}/api/sessions/${id}/archive`, { method: 'POST' });
     fetchSessions();
   };
 

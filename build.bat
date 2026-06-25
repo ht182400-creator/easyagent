@@ -130,40 +130,34 @@ if errorlevel 1 (
 
 echo   All modules built.
 
-::::: ============================================================
-::::: Phase 2.5: Ensure better-sqlite3 is compiled for Electron
-::::: ============================================================
+:::::: ============================================================
+:::::: Phase 2.5: Switch better-sqlite3 to Electron version for packaging
+::::::   No node-gyp rebuild — just copy existing electron.node
+::::::   Phase 3.5 will restore system version after packaging
+:::::: ============================================================
 echo.
-echo [4.5/5] Verifying better-sqlite3 binary...
+echo [4.5/5] Switching better-sqlite3 to Electron version...
 
-rem 检查 binary 是否为 Electron 30 (MODULE_VERSION=123) 编译
-pushd "%~dp0packages\desktop"
+rem 使用 %~dp0 前缀以确保路径基于项目根目录（cd 后 CWD 可能在子目录）
+set _SQLITE_RELEASE=%~dp0node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\Release
+set _NODE_FILE=%_SQLITE_RELEASE%\better_sqlite3.node
+set _ELECTRON_FILE=%_SQLITE_RELEASE%\better_sqlite3_electron.node
 
-set _SQLITE_NODE=node_modules\better-sqlite3\build\Release\better_sqlite3.node
-if not exist "%_SQLITE_NODE%" set _SQLITE_NODE=node_modules\@easyagent\core\node_modules\better-sqlite3\build\Release\better_sqlite3.node
-
-rem 检查文件大小是否为系统 Node v24 编译版本 (1913344 bytes)
-if exist "%_SQLITE_NODE%" (
-    for %%A in ("%_SQLITE_NODE%") do set _SQLITE_SIZE=%%~zA
-    if "!_SQLITE_SIZE!"=="1913344" (
-        echo   [WARN] better-sqlite3 was compiled for system Node v24 ^(MODULE 137^)
-        echo   [AUTO-FIX] Rebuilding for Electron 30...
-        cd /d node_modules\better-sqlite3 2>nul
-        if errorlevel 1 cd /d node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3 2>nul
-        npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release
-        if not errorlevel 1 (
-            echo   [OK] Auto-rebuild completed
-        ) else (
-            echo   [FAIL] Auto-rebuild failed - binary may need manual rebuild
-        )
-        cd /d "%~dp0packages\desktop"
-    ) else (
-        echo   [OK] better-sqlite3 binary size is !_SQLITE_SIZE! bytes ^(rebuilt for Electron^)
+if not exist "%_ELECTRON_FILE%" (
+    echo   [WARN] better_sqlite3_electron.node missing, compiling...
+    node "%~dp0scripts\rebuild-sqlite3.mjs"
+    if not exist "%_ELECTRON_FILE%" (
+        echo   [FAIL] Compile failed, cannot package
+        pause
+        exit /b 1
     )
-) else (
-    echo   [WARN] better_sqlite3.node not found - may need pnpm install
 )
-popd
+
+rem Backup system version + switch to Electron for packaging
+echo   [SWITCH] better_sqlite3.node (system) -> electron
+copy /Y "%_NODE_FILE%" "%_NODE_FILE%.backup" >nul
+copy /Y "%_ELECTRON_FILE%" "%_NODE_FILE%" >nul
+echo   [OK] Switched (will restore after packaging)
 
 ::::: ============================================================
 ::::: Phase 3: Package
@@ -250,6 +244,24 @@ rem Return to workspace root for Phase 4/5 relative paths
 cd ..\..
 
 ::::: ============================================================
+
+:::::: ============================================================
+:::::: Phase 3.5: Restore better-sqlite3 system version
+:::::: ============================================================
+echo.
+echo Restoring better-sqlite3 to system version...
+rem 使用 %~dp0 确保路径基于项目根目录
+set _SQLITE_RELEASE=%~dp0node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\Release
+set _NODE_FILE=%_SQLITE_RELEASE%\better_sqlite3.node
+if exist "%_NODE_FILE%.backup" (
+    copy /Y "%_NODE_FILE%.backup" "%_NODE_FILE%" >nul
+    del "%_NODE_FILE%.backup" >nul 2>&1
+    echo   [OK] Restored system version
+) else (
+    echo   [WARN] No backup found, using sqlite3-loader...
+    node "%~dp0scripts\sqlite3-loader.mjs" system
+)
+
 ::::: Phase 4: Verify Output
 ::::: ============================================================
 echo.

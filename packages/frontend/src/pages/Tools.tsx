@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Wrench, FileText, Search, Terminal, GitBranch, Globe, Code, Shield, FolderOpen, Brain, Eye, Image, Database, BookOpen, Bot, Play, X, ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import { getApiBase } from '../request';
 
 /** 参数 Schema 中的属性定义 */
 interface ParamProp {
@@ -79,7 +80,8 @@ export default function Tools() {
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
-    fetch('/api/tools')
+    const apiBase = getApiBase();
+    fetch(`${apiBase}/api/tools`)
       .then(async (r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -102,7 +104,8 @@ export default function Tools() {
       prev.map((t) => (t.name === toolName ? { ...t, enabled } : t))
     );
     try {
-      const res = await fetch(`/api/tools/${encodeURIComponent(toolName)}`, {
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/tools/${encodeURIComponent(toolName)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled }),

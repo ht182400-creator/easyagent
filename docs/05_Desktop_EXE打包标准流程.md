@@ -1,6 +1,6 @@
 # EasyAgent Desktop EXE 打包标准流程与问题手册
 
-> 版本: v1.7 | 日期: 2026-06-26 | 基于 10+ 次打包实战经验总结 | 27 个问题已解决 | 当前版本: 0.5.4
+> 版本: v1.8 | 日期: 2026-06-26 | 基于 10+ 次打包实战经验总结 | 28 个问题已解决 | 当前版本: 0.5.5
 
 ---
 
@@ -651,6 +651,29 @@ npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electro
 
 ---
 
+### 🟡 问题 28：build.bat Phase 2.5/3.5 相对路径错误 → 每次都误触发 node-gyp rebuild
+
+**现象**：运行 `build.bat --fast` 到 Phase 2.5 时报 `node:internal/modules/cjs/loader:1424` 错误，`better_sqlite3_electron.node` 被报告为"missing"（即使文件实际存在且有效）。
+
+**根本原因**：build.bat 第 108 行 `cd ..\desktop` 后 CWD 切换为 `packages/desktop/`，但 Phase 2.5（第 141 行）使用相对路径：
+```batch
+set _SQLITE_RELEASE=node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\Release
+```
+pnpm workspace 中 better-sqlite3 实际位于项目**根目录**的 `node_modules/.pnpm/` 下，`packages/desktop/node_modules/.pnpm/` 中**不存在**该路径 → 文件始终"不存在" → 每次都触发不必要的 node-gyp rebuild。Phase 3.5 恢复路径同理错误。
+
+**修复方法**：
+```batch
+rem 使用 %~dp0 强制基于项目根目录（build.bat 所在目录）
+set _SQLITE_RELEASE=%~dp0node_modules\.pnpm\better-sqlite3@12.11.1\node_modules\better-sqlite3\build\Release
+```
+同时 `node scripts\rebuild-sqlite3.mjs` 也加 `%~dp0` 前缀。
+
+**影响范围**：Phase 2.5 检测逻辑（第 141-153 行）+ Phase 3.5 恢复逻辑（第 252-261 行），共 4 处路径修正。
+
+**教训**：`.bat` 脚本中 `cd` 改变 CWD 后，所有非子目录的相对路径引用必须使用 `%~dp0` 前缀（指向脚本所在目录 = 项目根目录），避免 pnpm workspace 路径解析错误。
+
+---
+
 ## 四、核心配置文件速查
 
 ### 4.1 `package.json` 关键字段
@@ -835,3 +858,4 @@ html, body, #root { margin: 0; padding: 0; height: 100%; background: #09090b; }
 18. **构建前运行 verify-build.cjs**：自动检查 20+ 项已知问题 (build.bat 自动执行)
 19. **Tailwind content 必须扫描所有 UI 组件路径**：desktop 的 tailwind.config.js 必须同时包含 `./src/renderer/**/*` 和 `../frontend/src/**/*`，否则生产构建会丢失布局/间距/flex 等 utility 类，导致侧边栏图标文字堆叠（问题 26）
 20. **不要依赖 @electron/rebuild 编译原生模块**：用 `npx node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release` 直接编译，更可靠（问题 27）
+21. **build.bat 中 cd 后所有根目录路径必须用 `%~dp0` 前缀**：cd 切换 CWD 后相对路径 `node_modules\.pnpm\...` 可能指向不存在的子包路径（pnpm workspace），`%~dp0` 强制基于 build.bat 所在项目根目录（问题 28）

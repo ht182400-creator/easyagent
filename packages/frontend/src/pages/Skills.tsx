@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import { Zap, Tag, Play, Info, Search, Plus, Trash2, RefreshCw, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { getApiBase } from '../request';
 
 /** 技能类型 */
 interface Skill {
@@ -68,7 +69,8 @@ export default function SkillsPage() {
   const fetchSkills = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/skills');
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/skills`);
       const data = await res.json();
       setSkills(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -82,7 +84,8 @@ export default function SkillsPage() {
   const handleActivate = async (skillName: string) => {
     setActivating(skillName);
     try {
-      const res = await fetch(`/api/skills/${encodeURIComponent(skillName)}/activate`, { method: 'POST' });
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/skills/${encodeURIComponent(skillName)}/activate`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || '激活失败');
       // 更新列表中的激活状态
@@ -103,7 +106,8 @@ export default function SkillsPage() {
   const handleDeactivate = async (skillName: string) => {
     setActivating(skillName);
     try {
-      const res = await fetch(`/api/skills/${encodeURIComponent(skillName)}/deactivate`, { method: 'POST' });
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/skills/${encodeURIComponent(skillName)}/deactivate`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || '停用失败');
       setSkills((prev) => prev.map((s) => (s.name === skillName ? { ...s, activated: false } : s)));
@@ -122,7 +126,8 @@ export default function SkillsPage() {
   const handleDeleteCustom = async (skillName: string) => {
     if (!confirm(`确定删除自定义技能 "${skillName}" 吗？此操作不可撤销。`)) return;
     try {
-      const res = await fetch(`/api/skills/custom/${encodeURIComponent(skillName)}`, { method: 'DELETE' });
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/skills/custom/${encodeURIComponent(skillName)}`, { method: 'DELETE' });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || '删除失败');
@@ -144,7 +149,8 @@ export default function SkillsPage() {
     }
     setAdding(true);
     try {
-      const res = await fetch('/api/skills/custom', {
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/skills/custom`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

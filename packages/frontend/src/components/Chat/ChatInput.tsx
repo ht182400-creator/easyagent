@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
 import { useProviderStore } from '../../stores/providerStore';
+import { getApiBase } from '../../request';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAppStore } from '../../stores/appStore';
 
@@ -174,7 +175,8 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
     async function fetchModels() {
       setModelsLoading(true);
       try {
-        const res = await fetch('/api/providers/all-models');
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/api/providers/all-models`);
         const data = await res.json();
         if (!cancelled && data.success) {
           setAvailableModels(data.models || []);
@@ -194,7 +196,8 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
   useEffect(() => {
     const upstreamProviders = useProviderStore.getState().providers;
     if (upstreamProviders.length > 0) {
-      fetch('/api/providers/all-models')
+      const apiBase = getApiBase();
+      fetch(`${apiBase}/api/providers/all-models`)
         .then((r) => r.json())
         .then((data) => { if (data.success) setAvailableModels(data.models || []); })
         .catch(() => {});

@@ -1,75 +1,44 @@
 /**
- * Desktop 包 postinstall 脚本
- * 确保 better-sqlite3 为 Electron 30 (Node v20, MODULE_VERSION=123) 编译
- * 解决开发模式下 pnpm install 用系统 Node.js 编译导致的版本不匹配问题
- *
- * 运行时机: pnpm install 后自动执行
- * 跳过条件: 已为 Electron 编译过且未重新安装
+ * Desktop 包 postinstall 脚本 (精简版)
+ * 
+ * 不再触碰 better_sqlite3.node 文件！
+ * 双版本管理统一由以下两个脚本负责:
+ *   scripts/rebuild-sqlite3.mjs    — 编译系统+Electron 双版本 (仅需运行一次)
+ *   scripts/sqlite3-loader.mjs     — 启动时自动切换正确版本
+ * 
+ * 运行时机: pnpm install 后自动执行 (仅打印信息)
  */
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
-
-const EXPECTED_VERSION = '123'; // Electron 30 = Node.js v20
-const CACHE_FILE = path.join(__dirname, '..', 'node_modules', 'better-sqlite3', '.module_version_cache');
-const NODE_FILE = path.join(__dirname, '..', 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node');
-// 使用 npx node-gyp 直接编译，electron-rebuild 在 pnpm 环境中不稳定
-// 之前 'pnpm exec @electron/rebuild' 有 Bug：二进制名应为 electron-rebuild 且声称成功但不修改文件
-const REBUILD_CMD = 'npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release';
 
 function main() {
-  // 0. CI 环境跳过：CI 的 build 步骤使用 msvc-dev-cmd 单独编译 native 模块
-  if (process.env.CI) {
-    console.log('[postinstall] CI environment detected - skipping better-sqlite3 version check');
-    return;
+  const PROJECT_DIR = path.resolve(__dirname, '..', '..', '..');
+  const SQLITE_DIR = path.join(
+    PROJECT_DIR, 'node_modules', '.pnpm', 'better-sqlite3@12.11.1', 'node_modules', 'better-sqlite3'
+  );
+  const NODE_FILE = path.join(SQLITE_DIR, 'build', 'Release', 'better_sqlite3.node');
+  const SYSTEM_FILE = path.join(SQLITE_DIR, 'build', 'Release', 'better_sqlite3_system.node');
+  const ELECTRON_FILE = path.join(SQLITE_DIR, 'build', 'Release', 'better_sqlite3_electron.node');
+
+  console.log('[postinstall] better-sqlite3 双版本检查:');
+  
+  if (fs.existsSync(NODE_FILE)) {
+    console.log('  better_sqlite3.node     :', fs.statSync(NODE_FILE).size, 'bytes');
+  } else {
+    console.log('  better_sqlite3.node     : 缺失');
+  }
+  if (fs.existsSync(SYSTEM_FILE)) {
+    console.log('  better_sqlite3_system   :', fs.statSync(SYSTEM_FILE).size, 'bytes');
+  }
+  if (fs.existsSync(ELECTRON_FILE)) {
+    console.log('  better_sqlite3_electron :', fs.statSync(ELECTRON_FILE).size, 'bytes');
   }
 
-  console.log('[postinstall] Checking better-sqlite3 module version...');
-
-  // 1. 检查 .node 文件是否存在
-  if (!fs.existsSync(NODE_FILE)) {
-    console.log('[postinstall] better_sqlite3.node not found - may not be installed yet');
-    return;
-  }
-
-  // 2. 检查系统 Node.js 的 MODULE_VERSION
-  const currentVersion = process.versions.modules;
-  console.log(`[postinstall] System Node modules version: ${currentVersion}`);
-
-  // 3. 检查缓存
-  let cachedVersion = '';
-  try {
-    cachedVersion = fs.readFileSync(CACHE_FILE, 'utf8').trim();
-  } catch (e) {/* 无缓存 */}
-
-  // 4. 如果系统 Node 正好是 v20 (MODULE_VERSION=123)，无需 rebuild
-  if (currentVersion === EXPECTED_VERSION) {
-    console.log('[postinstall] System Node matches Electron 30 - no rebuild needed');
-    try { fs.writeFileSync(CACHE_FILE, EXPECTED_VERSION); } catch (e) {/* ignore */}
-    return;
-  }
-
-  // 5. 如果已缓存为 Electron 版本，跳过
-  if (cachedVersion === EXPECTED_VERSION) {
-    console.log('[postinstall] Already built for Electron 30 (cached) - skipping rebuild');
-    return;
-  }
-
-  // 6. 需要 rebuild
-  console.log(`[postinstall] Mismatch: system Node v${currentVersion}, need v${EXPECTED_VERSION} for Electron 30`);
-  console.log('[postinstall] Rebuilding better-sqlite3 for Electron 30...');
-
-  try {
-    execSync(REBUILD_CMD, { 
-      cwd: path.join(__dirname, '..'),
-      stdio: 'inherit' 
-    });
-    fs.writeFileSync(CACHE_FILE, EXPECTED_VERSION);
-    console.log('[postinstall] electron-rebuild completed successfully');
-  } catch (err) {
-    console.warn('[postinstall] node-gyp rebuild failed:', err.message);
-    console.warn('[postinstall] You may need to manually run: cd packages/desktop && npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release --cwd node_modules/better-sqlite3');
-    // 不阻止安装继续
+  // 检查是否需要编译双版本
+  if (!fs.existsSync(SYSTEM_FILE) || !fs.existsSync(ELECTRON_FILE)) {
+    console.log('[postinstall] ⚠ 双版本文件不完整，请运行: node scripts/rebuild-sqlite3.mjs');
+  } else {
+    console.log('[postinstall] ✅ 双版本文件就绪');
   }
 }
 

@@ -11,6 +11,7 @@ import {
   Sparkles, Sun, Moon, X, Box, Map, Send, Activity,
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
+import { getApiBase } from '../request';
 
 /** 导航分组定义 */
 const navGroups = [
@@ -61,7 +62,8 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   /** 从 API 获取当前版本号 */
   useEffect(() => {
-    fetch('/api/version')
+    const apiBase = getApiBase();
+    fetch(`${apiBase}/api/version`)
       .then(r => r.json())
       .then((data: { version: string }) => {
         if (data?.version) setAppVersion(`v${data.version}`);

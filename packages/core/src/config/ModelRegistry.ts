@@ -17,10 +17,10 @@ import type { ProviderConfig, ModelConfig, ProviderId } from '../types/index.js'
 import { logger } from '../utils/logger.js';
 
 /** 模型目录的远端 URL */
-const CATALOG_URL = 'https://raw.githubusercontent.com/easyagent/easyagent/main/models-catalog.json';
+const CATALOG_URL = 'https://raw.githubusercontent.com/ht182400-creator/easyagent/main/models-catalog.json';
 
 /** 备用 URL（CDN） */
-const CATALOG_URL_FALLBACK = 'https://cdn.jsdelivr.net/gh/easyagent/easyagent@main/models-catalog.json';
+const CATALOG_URL_FALLBACK = 'https://cdn.jsdelivr.net/gh/ht182400-creator/easyagent@main/models-catalog.json';
 
 /** 缓存文件路径 */
 const CACHE_DIR = join(homedir(), '.easyagent');

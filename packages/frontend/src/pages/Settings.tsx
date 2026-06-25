@@ -5,6 +5,7 @@
 import { Sliders, Shield, Monitor, Keyboard, Save, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useAppStore } from '../stores/appStore';
+import { getApiBase } from '../request';
 import { useState, useEffect } from 'react';
 
 /** 版本信息接口 */
@@ -45,7 +46,8 @@ export default function SettingsPage() {
   const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   useEffect(() => {
-    fetch('/api/version')
+    const apiBase = getApiBase();
+    fetch(`${apiBase}/api/version`)
       .then(r => r.json())
       .then((data: VersionInfo) => setVersionInfo(data))
       .catch(() => { /* 忽略 */ });
@@ -54,7 +56,8 @@ export default function SettingsPage() {
   const checkForUpdates = async () => {
     setCheckingUpdate(true);
     try {
-      const res = await fetch('/api/version/check');
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/version/check`);
       const result: UpdateCheckResult = await res.json();
       setUpdateInfo(result);
     } catch (err) {

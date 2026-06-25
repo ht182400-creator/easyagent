@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { Send, Play, Square, Trash2, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { getApiBase } from '../request';
 
 /** IM 平台类型 */
 type IMPlatform = 'telegram' | 'feishu' | 'wechat';
@@ -65,9 +66,10 @@ export default function IMSettings() {
 
   const fetchData = useCallback(async () => {
     try {
+      const apiBase = getApiBase();
       const [cfgRes, statusRes] = await Promise.all([
-        fetch('/api/im/config'),
-        fetch('/api/im/status'),
+        fetch(`${apiBase}/api/im/config`),
+        fetch(`${apiBase}/api/im/status`),
       ]);
       const cfgs = await cfgRes.json();
       const sts = await statusRes.json();
@@ -92,7 +94,8 @@ export default function IMSettings() {
   const handleSave = async (platform: IMPlatform) => {
     setSaving(true);
     try {
-      const res = await fetch('/api/im/config', {
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/im/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...editForm, platform, enabled: true }),
@@ -109,7 +112,8 @@ export default function IMSettings() {
 
   const handleToggle = async (platform: IMPlatform, action: 'start' | 'stop') => {
     try {
-      const res = await fetch(`/api/im/${platform}/${action}`, { method: 'POST' });
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/im/${platform}/${action}`, { method: 'POST' });
       if (!res.ok) {
         const body = await res.json();
         throw new Error(body.error || '操作失败');
@@ -123,7 +127,8 @@ export default function IMSettings() {
   const handleDelete = async (platform: IMPlatform) => {
     if (!confirm(`确定删除 ${platformMeta[platform].label} 配置？`)) return;
     try {
-      await fetch(`/api/im/${platform}`, { method: 'DELETE' });
+      const apiBase = getApiBase();
+      await fetch(`${apiBase}/api/im/${platform}`, { method: 'DELETE' });
       await fetchData();
     } catch (err) {
       alert('删除失败: ' + (err as Error).message);
