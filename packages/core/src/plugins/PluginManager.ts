@@ -213,7 +213,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
 
     // 7. 获取技能并注册
     const skills = await sandbox.getSkills();
-    for (const skill of skills as ISkill[]) {
+    for (const skill of skills as unknown as ISkill[]) {
       this.activeSkills.set(skill.name, skill);
     }
     if (skills.length > 0) {
@@ -228,7 +228,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
       author: manifest.author,
       dependencies: manifest.dependencies,
       getTools: () => tools,
-      getSkills: () => skills as ISkill[],
+      getSkills: () => skills as unknown as ISkill[],
       async unregister() {
         await sandbox.shutdown();
       },

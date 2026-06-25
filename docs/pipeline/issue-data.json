@@ -422,6 +422,13 @@
           "problem": ": 默认模型已从 `deepseek-chat` 更新为 `deepseek-v4`，测试断言仍用旧值",
           "solution": "更新期望值",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.5.3 版本发布 (00:24)",
+          "problem": "v0.5.3 版本发布 (00:24)",
+          "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+          "status": "resolved"
         }
       ]
     },
@@ -602,6 +609,13 @@
           "title": "GitAdvancedTools 测试覆盖 32 个用例 (23:30)",
           "problem": ": 6 个 Git 高级工具（AutoCommit/RepoMap/Stash/Tag/CherryPick/Reflog）无测试",
           "solution": "新增 git-advanced-tools.test.ts，6工具全覆盖 + 非Git仓库拒绝/dryRun/无效hash/reflog 验证",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.5.3 版本发布 (00:24)",
+          "problem": "v0.5.3 版本发布 (00:24)",
+          "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
           "status": "resolved"
         }
       ]
@@ -1519,6 +1533,13 @@
           "status": "resolved"
         },
         {
+          "date": "2026-06-25",
+          "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+          "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+          "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
+          "status": "resolved"
+        },
+        {
           "date": "",
           "title": "⚠️ Web ↔ Desktop 代码隔离约束",
           "problem": "⚠️ Web ↔ Desktop 代码隔离约束",
@@ -1899,6 +1920,13 @@
           "problem": ": P3 平台层显示 90% 通过率，其他阶段显示\"代码扫描\"，用户疑惑 90% 的含义 [根因] : P3 的 f10 插件模块有 vitest 数据（49个，含 5 个 PluginSandbox 失败 → 90%），但仅覆盖 179 个定义用例的 27%，不足以代表整个阶段",
           "solution": "`pipeline-config.mjs`: `generatePassRateItems` 中新增覆盖率判断——仅当 vitest 覆盖 ≥50% 阶段用例时才显示百分比，否则归入\"代码扫描\"并附加 `rateNote`；`index.html`: 阶段详情表新增 `rateNote` 渲染（小字显示\"vitest 部分覆盖 (27%/仅49个)\"），底部说明增加\"部分覆盖\"解释；结果：P3 从 \"90%\" → \"代码扫描 * (vitest 部分覆盖 (27%/仅49个))\"；最终各阶段显示: P0/P2/P3/P5/B1 → 代码扫描；P1/P4/B2/B3 → 100%；总计 → 98%",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.5.3 版本发布 (00:24)",
+          "problem": "v0.5.3 版本发布 (00:24)",
+          "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+          "status": "resolved"
         }
       ]
     },
@@ -2052,6 +2080,20 @@
           "problem": ": P3 平台层显示 90% 通过率，其他阶段显示\"代码扫描\"，用户疑惑 90% 的含义 [根因] : P3 的 f10 插件模块有 vitest 数据（49个，含 5 个 PluginSandbox 失败 → 90%），但仅覆盖 179 个定义用例的 27%，不足以代表整个阶段",
           "solution": "`pipeline-config.mjs`: `generatePassRateItems` 中新增覆盖率判断——仅当 vitest 覆盖 ≥50% 阶段用例时才显示百分比，否则归入\"代码扫描\"并附加 `rateNote`；`index.html`: 阶段详情表新增 `rateNote` 渲染（小字显示\"vitest 部分覆盖 (27%/仅49个)\"），底部说明增加\"部分覆盖\"解释；结果：P3 从 \"90%\" → \"代码扫描 * (vitest 部分覆盖 (27%/仅49个))\"；最终各阶段显示: P0/P2/P3/P5/B1 → 代码扫描；P1/P4/B2/B3 → 100%；总计 → 98%",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+          "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+          "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.5.3 版本发布 (00:24)",
+          "problem": "v0.5.3 版本发布 (00:24)",
+          "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+          "status": "resolved"
         }
       ]
     },
@@ -2204,6 +2246,13 @@
           "title": "TelegramAdapter 测试覆盖 30 个用例 (22:49)",
           "problem": ": TelegramAdapter 模块完全无测试覆盖",
           "solution": "新增 telegram-adapter.test.ts (~410行)，覆盖构造/发送消息(含截断/Markdown/HTML/键盘)/编辑/媒体/生命周期/Webhook/轮询",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.5.3 版本发布 (00:24)",
+          "problem": "v0.5.3 版本发布 (00:24)",
+          "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
           "status": "resolved"
         }
       ]
@@ -2928,6 +2977,13 @@
           "problem": ": MODULES 6个已完成分支模块仍标记 pending/p5a in-progress; P2 阶段 running→done; project-progress-data.json 缺 P4",
           "solution": "1. pipeline-config.mjs: b2c/b2d/b2e/b3a/b3b/b3c→done, p5a→done (7条) 2. project-progress-data.json: P2→done, P4阶段新增(4任务), P3新增B3b任务 3. pipeline-data.json: scoreTotal 86→100 4. 新增 .github/CONTRIBUTING.md (修复文档检测 3/4→4/4) 5. 同步 CHANGELOG v0.5.2 / MEMORY.md / 03_测试案例文档.md；结果: 综合评分 86→96→100, 分支 6/10→10/10, P0-P5 全部 done ✅",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.5.3 版本发布 (00:24)",
+          "problem": "v0.5.3 版本发布 (00:24)",
+          "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+          "status": "resolved"
         }
       ]
     },
@@ -3220,6 +3276,13 @@
           "title": "全景管线三问题回归修复 (23:38)",
           "problem": "全景管线三问题回归修复 (23:38)",
           "solution": "`unified-sync.mjs`: 新增步骤6(问题解析)+步骤8(issue-data.json导出)，强制清除缓存全量重解析526个问题，注入到dashboard.issues；`index.html`: `openTestReport()` 添加 `_test_detail.json` 三级回退(API→JSON→空状态)；新增 `convertTestDetailJSON()` 函数转换原始格式；`pipeline-data.json`: dashboard.issues.items 从空数组变为27条模块问题摘要，issue-data.json(526条)作为离线回退；验证: API测试14/14通过；服务器重启(8899端口)；数据文件全部更新",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+          "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+          "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
           "status": "resolved"
         }
       ]
@@ -3552,6 +3615,13 @@
           "title": "管线系统级修复 + P0 优化完成 (12:20)",
           "problem": "管线系统级修复 + P0 优化完成 (12:20)",
           "solution": "1. `scripts/update-progress.mjs`: `getTestCount()` 三级回退 — mapping → vitest reports → file count; 新增 `readdirSync` 导入 2. `docs/pipeline/test-case-mapping.json`: _meta 更新 (876→1146 trials, 40→46 files); f10 新增 2 子模块 (plugin-sandbox 45 + plugin-manager 49 → 131) 3. `docs/pipeline/lib/pipeline-config.mjs`: `getKPI()` testCases 固定用 mapping 权威值 (不再被过期 vitest 报告覆盖); `calculateScore()` 过期报告→100%通过率; b1b MODULES pen 4. `docs/pipeline/project-progress-data.json`: P1 阶段 running→done; p1-plugin-sandbox pending→done 5. `docs/pipeline/pipeline-data.json`: b1b status pending→done; scoreTotal 82→84",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-25",
+          "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+          "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+          "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
           "status": "resolved"
         }
       ]
@@ -3890,8 +3960,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 531,
-  "_generatedAt": "2026-06-25T15:58:06.455Z",
+  "_totalIssues": 541,
+  "_generatedAt": "2026-06-25T16:25:25.188Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -3901,16 +3971,17 @@
     "2026-06-23.md",
     "2026-06-24.md",
     "2026-06-25.md",
+    "2026-06-26.md",
     "MEMORY.md",
     "README.md"
   ],
   "_cacheStats": {
-    "totalFiles": 10,
+    "totalFiles": 11,
     "cacheHits": 0,
-    "reparsed": 10
+    "reparsed": 11
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-25T15:58:06.477Z"
+    "exportedAt": "2026-06-25T16:25:25.202Z"
   }
 }

@@ -442,8 +442,17 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   // ========== 系统API ==========
 
-  /** 当前应用版本号（从构建环境或 package.json 读取） */
-  const APP_VERSION = process.env.EASYAGENT_VERSION || '0.3.0';
+  /** 当前应用版本号（优先环境变量，其次 version.json，最后兜底） */
+  let APP_VERSION = process.env.EASYAGENT_VERSION || '0.3.0';
+  try {
+    const versionPath = join(__dirname, '..', '..', '..', 'version.json');
+    if (existsSync(versionPath)) {
+      const versionData = JSON.parse(readFileSync(versionPath, 'utf-8'));
+      if (versionData.version) {
+        APP_VERSION = versionData.version;
+      }
+    }
+  } catch (_err) { /* 读取失败则用默认值 */ }
 
   /** 健康检查 */
   app.get('/api/health', (_req, res) => {
@@ -473,10 +482,22 @@ export async function createApp(options: CreateAppOptions = {}) {
       }
     } catch (err) { /* changelog 不可用 */ }
 
+    // 从 version.json 读取 codename 和 releaseDate
+    let codename = 'Gemini';
+    let releaseDate = '2026-06-20';
+    try {
+      const versionPath = join(__dirname, '..', '..', '..', 'version.json');
+      if (existsSync(versionPath)) {
+        const versionData = JSON.parse(readFileSync(versionPath, 'utf-8'));
+        if (versionData.codename) codename = versionData.codename;
+        if (versionData.releaseDate) releaseDate = versionData.releaseDate;
+      }
+    } catch (_err) { /* 读取失败用默认值 */ }
+
     res.json({
       version: APP_VERSION,
-      codename: 'Gemini',
-      releaseDate: '2026-06-20',
+      codename,
+      releaseDate,
       changelog,
     });
   });
@@ -2595,7 +2616,7 @@ if (isMainModule) {
     server.listen(PORT, HOST, () => {
       console.log([
         '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.5.3           ║',
+        '║        EasyAgent Server v0.5.4           ║',
         `║  HTTP:      http://localhost:${PORT}        ║`,
         `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
         '╚══════════════════════════════════════════╝',

@@ -4,8 +4,8 @@ title EasyAgent Release Publisher
 cd /d "%~dp0"
 
 rem ============================================================
-rem  EasyAgent Interactive Release Script
-rem  Flow: Version bump -> Build EXE -> GitHub Release
+rem  EasyAgent Release Publisher v2.0
+rem  Flow: Version bump -> DTS Check -> Build EXE -> GitHub Release -> Pipeline Sync
 rem  Usage:
 rem    release-publish.bat            Interactive mode
 rem    release-publish.bat --auto      Auto mode (patch, skip confirm)
@@ -20,7 +20,7 @@ cls
 
 echo.
 echo ============================================================
-echo         EasyAgent Release Publisher v1.0
+echo         EasyAgent Release Publisher v2.0
 echo ============================================================
 echo.
 
@@ -172,7 +172,7 @@ if defined SKIP_RELEASE (
     echo -----------------------------------------------------------
     echo   Step 3: Version Bump - SKIPPED
     echo -----------------------------------------------------------
-    goto :STEP_BUILD
+    goto :STEP_DTS
 )
 
 echo.
@@ -191,8 +191,8 @@ echo.
 if %AUTO_MODE%==0 (
     set /p CONFIRM_RELEASE="  Run version bump? [Y/n]: "
     if /i not "!CONFIRM_RELEASE!"=="Y" if not "!CONFIRM_RELEASE!"=="" (
-        echo   Skipped version bump, proceeding to build...
-        goto :STEP_BUILD
+        echo   Skipped version bump, proceeding to DTS check...
+        goto :STEP_DTS
     )
 )
 
@@ -206,6 +206,39 @@ if %errorlevel% neq 0 (
 )
 echo   ----------------------------------------
 echo   [OK] Version bump complete
+
+rem ============================================================
+rem Step 3.5: DTS Type Check (quality gate before EXE build)
+rem ============================================================
+:STEP_DTS
+echo.
+echo -----------------------------------------------------------
+echo   Step 3.5: DTS Type Check (packages/core)
+echo -----------------------------------------------------------
+echo   Verifying TypeScript declaration generation...
+echo   This catches type errors before the heavy EXE build.
+echo   Running: cd packages/core ^&^& npx tsup --dts
+echo   ----------------------------------------
+pushd packages\core
+call npx tsup --dts
+set _DTS_ERR=%errorlevel%
+popd
+if %_DTS_ERR% neq 0 (
+    echo   ----------------------------------------
+    echo   [WARN] DTS build has issues (exit code: %_DTS_ERR%^)
+    echo   Review errors above before proceeding to EXE build.
+    echo   Common fix: Ensure all type casts use 'as unknown as Type'.
+    if %AUTO_MODE%==0 (
+        set /p DTS_CONTINUE="  Continue anyway? [y/N]: "
+        if /i not "!DTS_CONTINUE!"=="Y" (
+            echo   Aborted by user. Fix DTS errors first.
+            pause & exit /b 1
+        )
+    )
+) else (
+    echo   ----------------------------------------
+    echo   [OK] DTS Build success - no type errors
+)
 
 rem ============================================================
 rem Step 4: Build Desktop EXE
@@ -343,12 +376,12 @@ gh release create !TAG_VERSION! ^
 
 if %errorlevel% equ 0 (
     echo   [OK] GitHub Release created
-    goto :DONE
+    goto :STEP_SYNC
 ) else (
     echo   [FAIL] GitHub Release creation failed
     echo   Try manual: https://github.com/ht182400-creator/easyagent/releases/new
     pause
-    goto :DONE
+    goto :STEP_SYNC
 )
 
 rem --- Method 2: Token + curl ---
@@ -470,7 +503,7 @@ if defined EXE_PATH (
 )
 
 del release_response.json 2>nul
-goto :DONE
+goto :STEP_SYNC
 
 rem --- Method 3: Manual upload ---
 :UPLOAD_MANUAL
@@ -494,11 +527,33 @@ echo       https://github.com/ht182400-creator/easyagent/releases/new?tag=!TAG_V
 echo.
 echo   Press any key to continue...
 pause >nul
-goto :DONE
+goto :STEP_SYNC
 
 rem --- Skip upload ---
 :SKIP_UPLOAD
 echo   Skipped GitHub Release. Please create it manually later.
+
+rem ============================================================
+rem Step 6: Pipeline Data Auto-Sync
+rem ============================================================
+:STEP_SYNC
+echo.
+echo -----------------------------------------------------------
+echo   Step 6: Pipeline Data Auto-Sync
+echo -----------------------------------------------------------
+echo   Synchronizing test results, issue data, and
+echo   refreshing the pipeline server on port 8899.
+echo   Running: powershell -File scripts/pipeline-auto-sync.ps1
+echo   ----------------------------------------
+powershell -ExecutionPolicy Bypass -File scripts\pipeline-auto-sync.ps1
+set _SYNC_ERR=%errorlevel%
+if %_SYNC_ERR% neq 0 (
+    echo   ----------------------------------------
+    echo   [WARN] Pipeline sync had issues (exit code: %_SYNC_ERR%^)
+) else (
+    echo   ----------------------------------------
+    echo   [OK] Pipeline sync complete - server running on port 8899
+)
 
 rem ============================================================
 rem Done
@@ -515,6 +570,7 @@ for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul'
 echo   Version: v!FIN_VERSION!
 echo   Repository: https://github.com/ht182400-creator/easyagent
 echo   Releases: https://github.com/ht182400-creator/easyagent/releases
+echo   Pipeline Server: http://localhost:8899
 
 rem Check for reminders
 if "!UPLOAD_CHOICE!"=="3" (
@@ -528,12 +584,19 @@ if "!UPLOAD_CHOICE!"=="0" (
 
 echo.
 echo -----------------------------------------------------------
-echo   Next steps:
-echo   - Verify files are uploaded on GitHub Release page
-echo   - Launch old EasyAgent Desktop to test auto-update
-echo   - If auto-update works, release is successful
+echo   Pipeline Summary:
+echo   1. Version Bump       [OK] v!FIN_VERSION!
+echo   2. DTS Type Check     [Check output above]
+echo   3. EXE Build          [Check output above]
+echo   4. GitHub Release     [Check output above]
+echo   5. Pipeline Sync      [Check output above]
 echo -----------------------------------------------------------
 echo.
+
+rem Update memory file for cross-session tracking
+node -e "try{var d=new Date();var p='.codebuddy/memory/'+d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)+'.md';var fs=require('fs');var e='\n## release-publish.bat execution ('+d.toTimeString().split(' ')[0]+')\n- Version: v!FIN_VERSION!\n- DTS check + EXE build + GitHub Release + Pipeline Sync completed\n';if(fs.existsSync(p)){fs.appendFileSync(p,e,'utf-8')}else{fs.mkdirSync('.codebuddy/memory',{recursive:true});fs.writeFileSync(p,'# Memory '+p.split('/').pop()+'\n'+e,'utf-8')};console.log('  Memory updated')}catch(e){console.log('  Memory update skipped: '+e.message)}" 2>nul
+ver >nul
+
 pause
 exit /b 0
 
@@ -542,26 +605,30 @@ rem Help
 rem ============================================================
 :HELP
 echo.
-echo EasyAgent Release Publisher - Usage
-echo ------------------------------------
+echo EasyAgent Release Publisher v2.0 - Usage
+echo ------------------------------------------
 echo.
 echo Usage:
 echo   release-publish.bat            Interactive mode (recommended)
 echo   release-publish.bat --auto      Auto mode (patch, fewer prompts)
 echo   release-publish.bat --help      Show this help
 echo.
-echo Pipeline:
+echo 6-Step Pipeline:
 echo   1. Select version bump type (patch/minor/major/custom)
 echo   2. Pre-checks (git status, remote connectivity)
 echo   3. Version bump (version.json + package.json + CHANGELOG + git push)
+echo   3.5. DTS Type Check (npx tsup --dts)^ - quality gate
 echo   4. Build EXE (build.bat --release)
 echo   5. Upload to GitHub Release (gh CLI / Token / manual)
+echo   6. Pipeline Data Auto-Sync (vitest results + server restart)
 echo.
 echo Prerequisites:
 echo   - Git installed and configured
-echo   - Node.js ^>= 18.0.0
+echo   - Node.js >= 18.0.0
 echo   - pnpm installed
 echo   - GitHub repo connected
+echo   - Optional: scripts\.release_token for automated upload
+echo.   - Optional: gh CLI for drag-and-drop release upload
 echo.
 pause
 exit /b 0

@@ -41,6 +41,7 @@ import { logger } from '../utils/logger.js';
 import type { PluginManifest } from './PluginManifest.js';
 import type { PluginPermissions } from './PluginPermission.js';
 import type { ITool } from '../tools/ToolRegistry.js';
+import type { ToolResult } from '../types/index.js';
 
 // ===================== 类型定义 =====================
 
@@ -148,11 +149,12 @@ export class PluginSandbox {
 
       // 监听错误
       this.worker.on('error', (error) => {
-        logger.error({ error: error.message }, 'PluginWorker 错误');
+        const errMsg = (error as Error).message;
+        logger.error({ error: errMsg }, 'PluginWorker 错误');
         this._status = 'error';
         // 拒绝所有 pending 请求
         for (const [, { reject }] of this.pending) {
-          reject(new Error(`Worker 错误: ${error.message}`));
+          reject(new Error(`Worker 错误: ${errMsg}`));
         }
         this.pending.clear();
       });
@@ -320,7 +322,7 @@ export class PluginSandbox {
           toolName: def.name,
           params,
           context,
-        }) as Promise<{ success: boolean; output?: string; error?: string }>;
+        }) as Promise<ToolResult>;
       },
     };
   }

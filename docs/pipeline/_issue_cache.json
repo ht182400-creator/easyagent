@@ -29,12 +29,16 @@
       "size": 22061
     },
     "2026-06-25.md": {
-      "mtimeMs": 1782402791614.9478,
-      "size": 35535
+      "mtimeMs": 1782403350638.9138,
+      "size": 36906
+    },
+    "2026-06-26.md": {
+      "mtimeMs": 1782404636737.0735,
+      "size": 4973
     },
     "MEMORY.md": {
-      "mtimeMs": 1782402800820.9443,
-      "size": 29768
+      "mtimeMs": 1782403691590.536,
+      "size": 40018
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -6778,6 +6782,160 @@
           "p5a",
           "p5b"
         ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-25",
+        "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+        "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+        "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f10",
+          "p5a",
+          "b1b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-25",
+        "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+        "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+        "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f10",
+          "p5a",
+          "b1b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-25",
+        "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+        "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+        "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f10",
+          "p5a",
+          "b1b"
+        ]
+      },
+      {
+        "moduleId": "b1b",
+        "date": "2026-06-25",
+        "title": "CI 877案例缺失修复 —— _vitest-core.json 报告不完整 (23:54)",
+        "problem": ": 测试详情报告只显示 318 个案例，但 CI 实际运行了 1195 个测试（core 926 + server 151 + desktop 118），差额 877 [根因] : `_vitest-core.json` 过期——只包含 1 个文件/49 条断言，core 实际有 33 个测试文件/926 条断言",
+        "solution": "重新运行 `cd packages/core && npx vitest run` 生成完整报告（vitest.config.ts 已配置 JSON 输出）；重新生成 `_test_detail.json`（1195/1195/0）；数据一致性验证通过；遗留: core 的 5 个历史失败（plugin-manager.test.ts）也在报告刷新后变为 0，原因为之前的代码修复已生效但报告未更新；防回归: unified-sync 现已自动从 vitest 报告的 numTotalTests 计算 KPI",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f10",
+          "p5a",
+          "b1b"
+        ]
+      }
+    ],
+    "2026-06-26.md": [
+      {
+        "moduleId": "f2",
+        "date": "2026-06-26",
+        "title": "v0.5.3 版本发布 (00:24)",
+        "problem": "v0.5.3 版本发布 (00:24)",
+        "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f6",
+          "f10",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-26",
+        "title": "v0.5.3 版本发布 (00:24)",
+        "problem": "v0.5.3 版本发布 (00:24)",
+        "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f6",
+          "f10",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-26",
+        "title": "v0.5.3 版本发布 (00:24)",
+        "problem": "v0.5.3 版本发布 (00:24)",
+        "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f6",
+          "f10",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-26",
+        "title": "v0.5.3 版本发布 (00:24)",
+        "problem": "v0.5.3 版本发布 (00:24)",
+        "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f6",
+          "f10",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-26",
+        "title": "v0.5.3 版本发布 (00:24)",
+        "problem": "v0.5.3 版本发布 (00:24)",
+        "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f6",
+          "f10",
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-26",
+        "title": "v0.5.3 版本发布 (00:24)",
+        "problem": "v0.5.3 版本发布 (00:24)",
+        "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f6",
+          "f10",
+          "f11",
+          "f16"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -6795,5 +6953,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-25T15:58:06.451Z"
+  "generatedAt": "2026-06-25T16:25:25.186Z"
 }
