@@ -367,9 +367,9 @@ async function initAutoUpdater(): Promise<void> {
       console.error('[EasyAgent Desktop] 自动更新错误:', err.message);
     });
 
-    // 启动后 10 秒静默检查更新
+    // 启动后 10 秒自动检查更新并下载
     setTimeout(() => {
-      autoUpdater?.checkForUpdates().catch((err) => {
+      autoUpdater?.checkForUpdatesAndNotify().catch((err) => {
         console.log('[EasyAgent Desktop] 检查更新跳过:', err.message);
       });
     }, 10000);
@@ -393,7 +393,7 @@ async function checkForUpdates(): Promise<void> {
     return;
   }
   try {
-    await autoUpdater.checkForUpdates();
+    await autoUpdater.checkForUpdatesAndNotify();
   } catch (err) {
     dialog.showErrorBox('检查更新失败', `无法连接更新服务器:\n${(err as Error).message}`);
   }
