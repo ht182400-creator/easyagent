@@ -66,8 +66,8 @@ describe('MODULES 定义', () => {
     assert.equal(MODULES.p5c.status, 'done', 'p5c 实时问题追踪 应为 done');
   });
 
-  it('p5a 应为 in-progress 状态', () => {
-    assert.equal(MODULES.p5a.status, 'in-progress', 'p5a 管线数据看板 应为 in-progress');
+  it('p5a 应为 done 状态', () => {
+    assert.equal(MODULES.p5a.status, 'done', 'p5a 管线数据看板 应为 done');
   });
 });
 
@@ -308,10 +308,15 @@ describe('getScoreHistory', () => {
     assert.ok(history.length >= SCORE_HISTORY.length, '长度应 >= 静态历史');
   });
 
-  it('末尾条目应为动态计算值', () => {
+  it('末尾条目应为动态计算值（如评分不变则不追加动态条目）', () => {
     const history = getScoreHistory();
     const last = history[history.length - 1];
-    assert.ok(last.dynamic === true, '最后一条应有 dynamic: true 标记');
+    // 如果评分与静态历史末条相同，则不追加（避免重复）
+    if (history.length > SCORE_HISTORY.length) {
+      assert.ok(last.dynamic === true, '追加的条目应有 dynamic: true 标记');
+    } else {
+      assert.ok(last.score !== undefined, '静态条目应包含 score');
+    }
     assert.ok(typeof last.score === 'number', 'score 应为数字');
   });
 });

@@ -33,12 +33,12 @@
       "size": 36906
     },
     "2026-06-26.md": {
-      "mtimeMs": 1782408279629.0227,
-      "size": 10622
+      "mtimeMs": 1782414442967.218,
+      "size": 23109
     },
     "MEMORY.md": {
-      "mtimeMs": 1782408354540.7542,
-      "size": 41646
+      "mtimeMs": 1782411498645.1133,
+      "size": 43049
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -7098,6 +7098,268 @@
           "f9",
           "f15"
         ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-26",
+        "title": "[F9] Windows 终端中文输出乱码修复 (01:30)",
+        "problem": ": release-publish.bat 和 build.bat 输出的管线数据中文全部显示为乱码（如 \"瑙﹀彂闆嗘垚\" 而非 \"触发集成\"） [根因] :",
+        "solution": "1. `release-publish.bat` 开头添加 `chcp 65001 >nul` 设置 UTF-8 代码页；Step 6 调用 PowerShell 前也添加 `chcp 65001` 2. `build.bat` 开头添加 `chcp 65001 >nul` 3. `scripts/pipeline-auto-sync.ps1` 开头添加 `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` + `$OutputEncoding = [System.Text.Encoding]::UTF8`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-26",
+        "title": "[F9] Windows 终端中文输出乱码修复 (01:30)",
+        "problem": ": release-publish.bat 和 build.bat 输出的管线数据中文全部显示为乱码（如 \"瑙﹀彂闆嗘垚\" 而非 \"触发集成\"） [根因] :",
+        "solution": "1. `release-publish.bat` 开头添加 `chcp 65001 >nul` 设置 UTF-8 代码页；Step 6 调用 PowerShell 前也添加 `chcp 65001` 2. `build.bat` 开头添加 `chcp 65001 >nul` 3. `scripts/pipeline-auto-sync.ps1` 开头添加 `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` + `$OutputEncoding = [System.Text.Encoding]::UTF8`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-26",
+        "title": "[F9] Windows 终端中文输出乱码修复 (01:30)",
+        "problem": ": release-publish.bat 和 build.bat 输出的管线数据中文全部显示为乱码（如 \"瑙﹀彂闆嗘垚\" 而非 \"触发集成\"） [根因] :",
+        "solution": "1. `release-publish.bat` 开头添加 `chcp 65001 >nul` 设置 UTF-8 代码页；Step 6 调用 PowerShell 前也添加 `chcp 65001` 2. `build.bat` 开头添加 `chcp 65001 >nul` 3. `scripts/pipeline-auto-sync.ps1` 开头添加 `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` + `$OutputEncoding = [System.Text.Encoding]::UTF8`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-26",
+        "title": "[F10] Desktop \"无法连接到后端服务\" — CORS origin 拒绝 file://",
+        "problem": "[现象] : 后端 API 正常（端口 3456 监听、API 返回 JSON、WebSocket 升级成功），但前端持续显示\"无法连接到后端服务\" [根因] : Electron 通过 `loadFile()` 加载前端 → 渲染进程 origin 为 `file://` → `fetch()` 请求发送 `Origin: null` → 后端 CORS 配置使用三元运算符 `corsOrigin ? corsOrigin : callback`，当 `process.env.CORS_ORIGIN` 被设置为 `http://127.0.0.1:34",
+        "solution": "始终走回调，`CORS_ORIGIN` 用于精确白名单匹配（生产环境），默认宽松（开发 + Desktop）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f9",
+          "b1b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-26",
+        "title": "[F10] Desktop \"无法连接到后端服务\" — CORS origin 拒绝 file://",
+        "problem": "[现象] : 后端 API 正常（端口 3456 监听、API 返回 JSON、WebSocket 升级成功），但前端持续显示\"无法连接到后端服务\" [根因] : Electron 通过 `loadFile()` 加载前端 → 渲染进程 origin 为 `file://` → `fetch()` 请求发送 `Origin: null` → 后端 CORS 配置使用三元运算符 `corsOrigin ? corsOrigin : callback`，当 `process.env.CORS_ORIGIN` 被设置为 `http://127.0.0.1:34",
+        "solution": "始终走回调，`CORS_ORIGIN` 用于精确白名单匹配（生产环境），默认宽松（开发 + Desktop）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f9",
+          "b1b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F10] Desktop \"无法连接到后端服务\" — CORS origin 拒绝 file://",
+        "problem": "[现象] : 后端 API 正常（端口 3456 监听、API 返回 JSON、WebSocket 升级成功），但前端持续显示\"无法连接到后端服务\" [根因] : Electron 通过 `loadFile()` 加载前端 → 渲染进程 origin 为 `file://` → `fetch()` 请求发送 `Origin: null` → 后端 CORS 配置使用三元运算符 `corsOrigin ? corsOrigin : callback`，当 `process.env.CORS_ORIGIN` 被设置为 `http://127.0.0.1:34",
+        "solution": "始终走回调，`CORS_ORIGIN` 用于精确白名单匹配（生产环境），默认宽松（开发 + Desktop）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f9",
+          "b1b"
+        ]
+      },
+      {
+        "moduleId": "b1b",
+        "date": "2026-06-26",
+        "title": "[F10] Desktop \"无法连接到后端服务\" — CORS origin 拒绝 file://",
+        "problem": "[现象] : 后端 API 正常（端口 3456 监听、API 返回 JSON、WebSocket 升级成功），但前端持续显示\"无法连接到后端服务\" [根因] : Electron 通过 `loadFile()` 加载前端 → 渲染进程 origin 为 `file://` → `fetch()` 请求发送 `Origin: null` → 后端 CORS 配置使用三元运算符 `corsOrigin ? corsOrigin : callback`，当 `process.env.CORS_ORIGIN` 被设置为 `http://127.0.0.1:34",
+        "solution": "始终走回调，`CORS_ORIGIN` 用于精确白名单匹配（生产环境），默认宽松（开发 + Desktop）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8",
+          "f9",
+          "b1b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F10-续] CORS 修复真正生效 — 发现 desktop main.ts 内联了旧代码 (0",
+        "problem": "[F10-续] CORS 修复真正生效 — 发现 desktop main.ts 内联了旧代码 (02:01-02:13)",
+        "solution": "desktop tsup 会将 server 源码内联进 main.js，必须同时重编译 desktop；清理: 删除 `_verify_asar/_recheck/_patch-asar.cjs/_test_cors.cjs`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-26",
+        "title": "[F10-续] CORS 修复真正生效 — 发现 desktop main.ts 内联了旧代码 (0",
+        "problem": "[F10-续] CORS 修复真正生效 — 发现 desktop main.ts 内联了旧代码 (02:01-02:13)",
+        "solution": "desktop tsup 会将 server 源码内联进 main.js，必须同时重编译 desktop；清理: 删除 `_verify_asar/_recheck/_patch-asar.cjs/_test_cors.cjs`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-26",
+        "title": "[F11] \"服务运行中\"永久警告 — 后端启动竞态条件 + Dashboard 假阳性 (02:3",
+        "problem": "[现象] : 窗口顶部显示\"无法连接到后端服务，请确认应用已正确启动\"（永不消失），但底部\"服务运行中\"（绿点） [根因] : 四个链式问题：",
+        "solution": "`extraResources` 清空（asarUnpack 已覆盖）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-26",
+        "title": "[F11] \"服务运行中\"永久警告 — 后端启动竞态条件 + Dashboard 假阳性 (02:3",
+        "problem": "[现象] : 窗口顶部显示\"无法连接到后端服务，请确认应用已正确启动\"（永不消失），但底部\"服务运行中\"（绿点） [根因] : 四个链式问题：",
+        "solution": "`extraResources` 清空（asarUnpack 已覆盖）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-26",
+        "title": "[F11-续] 真正根因 — ConfigProvider useEffect 执行顺序导致 _ap",
+        "problem": "[现象] : F11 修复后用户反馈\"还是没有连上服务器的表现\"",
+        "solution": "1. `config.tsx:8,59` — `useEffect` → `useLayoutEffect`（保证在子组件 effect 之前同步执行） 2. `Dashboard.tsx:14-15,66-74,77-84` — 裸 `fetch('/api/status')` 和 `fetch('/api/config/templates')` 改为 `apiRequest('/api/status')` 和 `apiRequest('/api/；验证: 重新编译打包后 `index-BBA_WhUs.js` (MD5: AD057167)，全 API 200 OK，端口监听正常；教训: React `useEffect` 执行顺序在父子组件间不可靠，对外部模块级变量的同步必须用 `useLayoutEffect`；Dashboard 的裸 `fetch` 在 desktop file:// 协议下解析错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-26",
+        "title": "[F11-续] 真正根因 — ConfigProvider useEffect 执行顺序导致 _ap",
+        "problem": "[现象] : F11 修复后用户反馈\"还是没有连上服务器的表现\"",
+        "solution": "1. `config.tsx:8,59` — `useEffect` → `useLayoutEffect`（保证在子组件 effect 之前同步执行） 2. `Dashboard.tsx:14-15,66-74,77-84` — 裸 `fetch('/api/status')` 和 `fetch('/api/config/templates')` 改为 `apiRequest('/api/status')` 和 `apiRequest('/api/；验证: 重新编译打包后 `index-BBA_WhUs.js` (MD5: AD057167)，全 API 200 OK，端口监听正常；教训: React `useEffect` 执行顺序在父子组件间不可靠，对外部模块级变量的同步必须用 `useLayoutEffect`；Dashboard 的裸 `fetch` 在 desktop file:// 协议下解析错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-26",
+        "title": "[F11-续] 真正根因 — ConfigProvider useEffect 执行顺序导致 _ap",
+        "problem": "[现象] : F11 修复后用户反馈\"还是没有连上服务器的表现\"",
+        "solution": "1. `config.tsx:8,59` — `useEffect` → `useLayoutEffect`（保证在子组件 effect 之前同步执行） 2. `Dashboard.tsx:14-15,66-74,77-84` — 裸 `fetch('/api/status')` 和 `fetch('/api/config/templates')` 改为 `apiRequest('/api/status')` 和 `apiRequest('/api/；验证: 重新编译打包后 `index-BBA_WhUs.js` (MD5: AD057167)，全 API 200 OK，端口监听正常；教训: React `useEffect` 执行顺序在父子组件间不可靠，对外部模块级变量的同步必须用 `useLayoutEffect`；Dashboard 的裸 `fetch` 在 desktop file:// 协议下解析错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-06-26",
+        "title": "[F11-续] 真正根因 — ConfigProvider useEffect 执行顺序导致 _ap",
+        "problem": "[现象] : F11 修复后用户反馈\"还是没有连上服务器的表现\"",
+        "solution": "1. `config.tsx:8,59` — `useEffect` → `useLayoutEffect`（保证在子组件 effect 之前同步执行） 2. `Dashboard.tsx:14-15,66-74,77-84` — 裸 `fetch('/api/status')` 和 `fetch('/api/config/templates')` 改为 `apiRequest('/api/status')` 和 `apiRequest('/api/；验证: 重新编译打包后 `index-BBA_WhUs.js` (MD5: AD057167)，全 API 200 OK，端口监听正常；教训: React `useEffect` 执行顺序在父子组件间不可靠，对外部模块级变量的同步必须用 `useLayoutEffect`；Dashboard 的裸 `fetch` 在 desktop file:// 协议下解析错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "[F11-续] 真正根因 — ConfigProvider useEffect 执行顺序导致 _ap",
+        "problem": "[现象] : F11 修复后用户反馈\"还是没有连上服务器的表现\"",
+        "solution": "1. `config.tsx:8,59` — `useEffect` → `useLayoutEffect`（保证在子组件 effect 之前同步执行） 2. `Dashboard.tsx:14-15,66-74,77-84` — 裸 `fetch('/api/status')` 和 `fetch('/api/config/templates')` 改为 `apiRequest('/api/status')` 和 `apiRequest('/api/；验证: 重新编译打包后 `index-BBA_WhUs.js` (MD5: AD057167)，全 API 200 OK，端口监听正常；教训: React `useEffect` 执行顺序在父子组件间不可靠，对外部模块级变量的同步必须用 `useLayoutEffect`；Dashboard 的裸 `fetch` 在 desktop file:// 协议下解析错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-26",
+        "title": "[F11-续] 真正根因 — ConfigProvider useEffect 执行顺序导致 _ap",
+        "problem": "[现象] : F11 修复后用户反馈\"还是没有连上服务器的表现\"",
+        "solution": "1. `config.tsx:8,59` — `useEffect` → `useLayoutEffect`（保证在子组件 effect 之前同步执行） 2. `Dashboard.tsx:14-15,66-74,77-84` — 裸 `fetch('/api/status')` 和 `fetch('/api/config/templates')` 改为 `apiRequest('/api/status')` 和 `apiRequest('/api/；验证: 重新编译打包后 `index-BBA_WhUs.js` (MD5: AD057167)，全 API 200 OK，端口监听正常；教训: React `useEffect` 执行顺序在父子组件间不可靠，对外部模块级变量的同步必须用 `useLayoutEffect`；Dashboard 的裸 `fetch` 在 desktop file:// 协议下解析错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-26",
+        "title": "[F11-续] 真正根因 — ConfigProvider useEffect 执行顺序导致 _ap",
+        "problem": "[现象] : F11 修复后用户反馈\"还是没有连上服务器的表现\"",
+        "solution": "1. `config.tsx:8,59` — `useEffect` → `useLayoutEffect`（保证在子组件 effect 之前同步执行） 2. `Dashboard.tsx:14-15,66-74,77-84` — 裸 `fetch('/api/status')` 和 `fetch('/api/config/templates')` 改为 `apiRequest('/api/status')` 和 `apiRequest('/api/；验证: 重新编译打包后 `index-BBA_WhUs.js` (MD5: AD057167)，全 API 200 OK，端口监听正常；教训: React `useEffect` 执行顺序在父子组件间不可靠，对外部模块级变量的同步必须用 `useLayoutEffect`；Dashboard 的裸 `fetch` 在 desktop file:// 协议下解析错误",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "f14",
+          "b3b"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -7115,5 +7377,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-25T17:28:07.976Z"
+  "generatedAt": "2026-06-25T19:10:04.464Z"
 }
