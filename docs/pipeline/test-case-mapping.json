@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "generatedAt": "2026-06-25T19:10:04.421Z",
+    "generatedAt": "2026-06-25T19:29:16.452Z",
     "totalTestFiles": 48,
     "totalTestCases": 1195,
     "unmappedCases": 0,
-    "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
+    "projectRoot": "/home/runner/work/easyagent/easyagent",
     "source": "module-registry.mjs (统一注册表)"
   },
   "modules": {

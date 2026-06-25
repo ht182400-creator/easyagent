@@ -3473,6 +3473,13 @@
           "problem": ": release-publish.bat 和 build.bat 输出的管线数据中文全部显示为乱码（如 \"瑙﹀彂闆嗘垚\" 而非 \"触发集成\"） [根因] :",
           "solution": "1. `release-publish.bat` 开头添加 `chcp 65001 >nul` 设置 UTF-8 代码页；Step 6 调用 PowerShell 前也添加 `chcp 65001` 2. `build.bat` 开头添加 `chcp 65001 >nul` 3. `scripts/pipeline-auto-sync.ps1` 开头添加 `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` + `$OutputEncoding = [System.Text.Encoding]::UTF8`",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F13] CI 测试日志回取 + 管线版本同步 (03:09-03:14)",
+          "problem": "[F13] CI 测试日志回取 + 管线版本同步 (03:09-03:14)",
+          "solution": "`pipeline-config.test.mjs` 2 处断言修正；本地 unified-sync 结果: 1195 用例, 100/100 分, 571 问题, 29 模块；提交: f2e133f → push origin/main 触发新 CI #28194374812 (queued)；GitHub API 限制: 下载 job logs 需 admin 权限（403），无法直接获取原始日志；只能通过 HTML 页面查看摘要",
+          "status": "resolved"
         }
       ]
     },
@@ -4170,8 +4177,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 571,
-  "_generatedAt": "2026-06-25T19:10:04.467Z",
+  "_totalIssues": 572,
+  "_generatedAt": "2026-06-25T19:29:16.490Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -4192,6 +4199,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-25T19:10:04.486Z"
+    "exportedAt": "2026-06-25T19:29:16.502Z"
   }
 }
