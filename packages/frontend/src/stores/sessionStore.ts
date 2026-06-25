@@ -1,12 +1,22 @@
 /**
  * 会话状态管理
  * 管理: 会话CRUD、搜索过滤、归档
+ *
+ * 类型来源：
+ * - TokenUsage → @easyagent/core/types（唯一数据源）
+ * - SessionMeta → 本地定义（JSON 序列化版本，日期为 ISO string 而非 Date）
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
 import { apiRequest } from '../request';
+import type { TokenUsage } from '@easyagent/core/types';
 
-/** 会话元数据 */
+/**
+ * 会话元数据（JSON API 序列化版本）
+ * @see {@link import('@easyagent/core/types').Session 核心 Session 类型}
+ * @see {@link import('@easyagent/core/types').SessionMetadata 核心 SessionMetadata 类型}
+ * 差异：日期字段为 ISO string（JSON 传输），核心使用 Date 对象
+ */
 export interface SessionMeta {
   id: string;
   workspace: string;
@@ -15,7 +25,7 @@ export interface SessionMeta {
     createdAt: string;
     updatedAt: string;
     status: 'active' | 'archived' | 'completed';
-    tokenUsage: { inputTokens: number; outputTokens: number; totalTokens: number };
+    tokenUsage: TokenUsage;
     messageCount?: number;
   };
 }

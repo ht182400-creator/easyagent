@@ -28,6 +28,7 @@ import {
   getAllBuiltinTools,
   PROVIDER_PRESETS,
   getModelRegistry,
+  getAnalyticsEngine,
   PluginManager,
   getPluginManager,
   BUILTIN_SKILLS,
@@ -773,6 +774,63 @@ export async function createApp(options: CreateAppOptions = {}) {
     }
   });
 
+  // ========== 🆕 北极星指标 Analytics API ==========
+
+  /** 获取北极星指标 (FTSR / 7日留存 / TTFV / DAU/WAU/MAU) */
+  app.get('/api/analytics/north-star', (_req, res) => {
+    try {
+      const engine = getAnalyticsEngine();
+      const report = engine.generateReport();
+      res.json({
+        success: true,
+        northStar: report.northStar,
+        funnel: report.funnel,
+        updatedAt: report.generatedAt,
+      });
+    } catch (error) {
+      logger.error('获取北极星指标失败', error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
+  /** 获取用量趋势数据 */
+  app.get('/api/analytics/trends', (req, res) => {
+    try {
+      const engine = getAnalyticsEngine();
+      const days = parseInt(req.query.days as string) || 30;
+      res.json({
+        success: true,
+        dau: engine.getDAUTrend(days),
+        messages: engine.getMessagesTrend(days),
+      });
+    } catch (error) {
+      logger.error('获取趋势数据失败', error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
+  /** 记录用户事件 */
+  app.post('/api/analytics/track', (req, res) => {
+    try {
+      const engine = getAnalyticsEngine();
+      const { type, data } = req.body;
+      if (!type) {
+        return res.status(400).json({ success: false, error: '缺少 type 字段' });
+      }
+      engine.track({
+        type,
+        timestamp: Date.now(),
+        sessionId: req.body.sessionId || 'unknown',
+        userId: req.body.userId,
+        data: data || {},
+      });
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('记录事件失败', error);
+      res.status(500).json({ success: false, error: (error as Error).message });
+    }
+  });
+
   // ========== 配置API ==========
 
   /** 获取配置 */
@@ -1189,6 +1247,16 @@ export async function createApp(options: CreateAppOptions = {}) {
     res.json(formatted);
   });
 
+  /** 搜索会话（必须在 :id 路由之前注册，防止 search 被 id 参数捕获） */
+  app.get('/api/sessions/search', (req, res) => {
+    const query = req.query.q as string;
+    if (!query) {
+      return res.status(400).json({ error: '缺少q参数' });
+    }
+    const results = sessionManager.search(query);
+    res.json(results);
+  });
+
   app.get('/api/sessions/:id', (req, res) => {
     const session = sessionManager.get(req.params.id);
     if (!session) {
@@ -1555,16 +1623,6 @@ export async function createApp(options: CreateAppOptions = {}) {
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
-  });
-
-  /** 搜索会话 */
-  app.get('/api/sessions/search', (req, res) => {
-    const query = req.query.q as string;
-    if (!query) {
-      return res.status(400).json({ error: '缺少q参数' });
-    }
-    const results = sessionManager.search(query);
-    res.json(results);
   });
 
   // ========== Docker 沙箱 API 🆕 ==========
@@ -2537,7 +2595,7 @@ if (isMainModule) {
     server.listen(PORT, HOST, () => {
       console.log([
         '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.5.1           ║',
+        '║        EasyAgent Server v0.5.3           ║',
         `║  HTTP:      http://localhost:${PORT}        ║`,
         `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
         '╚══════════════════════════════════════════╝',

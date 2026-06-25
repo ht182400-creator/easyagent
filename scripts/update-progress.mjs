@@ -11,7 +11,7 @@
  *   node scripts/update-progress.mjs --ci     # CI 模式（输出到 stdout）
  */
 
-import { readFileSync, writeFileSync, existsSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, statSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
@@ -105,19 +105,50 @@ function getChangedFiles(sinceCommit) {
   }
 }
 
-/** 获取测试数量统计 */
+/**
+ * 获取测试用例数量统计
+ * 优先从 test-case-mapping.json 读取真实用例数，失败时回退到文件计数
+ * @returns {number} 测试用例总数
+ */
 function getTestCount() {
-  let count = 0;
-  // 尝试从 vitest 配置获取
-  const vitestFiles = ['packages/core/vitest.config.ts', 'packages/server/vitest.config.ts'];
-  // 简单统计：搜索 .test.ts 文件
+  // 方式1：从 test-case-mapping.json 读取准确用例数
+  const mappingFile = join(ROOT, 'docs', 'pipeline', 'test-case-mapping.json');
+  try {
+    if (existsSync(mappingFile)) {
+      const mapping = JSON.parse(readFileSync(mappingFile, 'utf8'));
+      const totalCases = mapping?._meta?.totalTestCases;
+      if (typeof totalCases === 'number' && totalCases > 0) {
+        return totalCases;
+      }
+    }
+  } catch (e) {
+    console.warn('⚠ 无法读取 test-case-mapping.json:', e.message);
+  }
+
+  // 方式2：尝试从 vitest 报告汇总 (读取 _vitest-*.json 中的 numTotalTests)
+  const pipelineDir = join(ROOT, 'docs', 'pipeline');
+  try {
+    if (existsSync(pipelineDir)) {
+      const files = readdirSync(pipelineDir).filter(f => f.startsWith('_vitest-') && f.endsWith('.json'));
+      let total = 0;
+      for (const f of files) {
+        try {
+          const report = JSON.parse(readFileSync(join(pipelineDir, f), 'utf8'));
+          total += report.numTotalTests || 0;
+        } catch {}
+      }
+      if (total > 0) return total;
+    }
+  } catch {}
+
+  // 方式3：回退到文件计数（最不精确）
   try {
     const files = execSync('git ls-files "*.test.ts" "*.test.tsx" "*.spec.ts"', {
       cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']
     }).trim().split('\n').filter(Boolean);
-    count = files.length;
+    return files.length > 0 ? files.length : 806;
   } catch {}
-  return count > 0 ? count : 806; // 默认值
+  return 806;
 }
 
 /** 获取模型支持数量 */
@@ -314,9 +345,18 @@ async function main() {
       console.warn('⚠ 无法动态计算评分:', e.message);
     }
 
-    // 同步更新流程图管线数据（含动态评分）
+    // 同步更新流程图管线数据（含动态评分） —— 仅更新 KPI/元数据
     await syncPipelineData(data, { version, codename, testCount, modelCount, now, dynScore });
     console.log(`💾 已写入: ${PIPELINE_DATA_FILE}`);
+
+    // 统一同步：从 module-registry.mjs 重新生成 test-case-mapping.json + pipeline-data.json
+    // 确保所有模块的测试映射和管线数据完全一致
+    try {
+      const { execSync } = await import('child_process');
+      execSync('node scripts/unified-sync.mjs --force', { cwd: resolve(__dirname, '..'), stdio: 'inherit' });
+    } catch (e) {
+      console.warn('⚠ unified-sync 执行失败:', e.message);
+    }
   } else {
     console.log('🔍 [DRY RUN] 未写入文件，仅预览');
   }
@@ -327,7 +367,7 @@ async function main() {
  * @param {Object} progressData - project-progress-data.json 的内容
  * @param {Object} info - 版本/测试/模型/评分信息
  */
-function syncPipelineData(progressData, info) {
+async function syncPipelineData(progressData, info) {
   let pipelineData;
   try {
     pipelineData = JSON.parse(readFileSync(PIPELINE_DATA_FILE, 'utf8'));
@@ -346,14 +386,39 @@ function syncPipelineData(progressData, info) {
   pipelineData.version = info.version;
   pipelineData.generatedAt = info.now;
 
-  // 更新 KPI 数据（含动态评分）
-  pipelineData.kpi.testCases = info.testCount;
-  pipelineData.kpi.providers = info.modelCount;
-  if (info.dynScore) {
-    pipelineData.kpi.scoreTotal = info.dynScore.total;
-    // 同步评分维度到综合评分详情（如果 pipelineData 中有 scoreDimensions 字段）
+  // 更新 KPI 数据（从 pipeline-config 动态获取权威值）
+  try {
+    const { getKPI, getScoreHistory } = await import('../docs/pipeline/lib/pipeline-config.mjs');
+    const kpi = getKPI();
+    // 完整覆盖 KPI 字段（防止部分更新导致数据不一致）
+    pipelineData.kpi = {
+      ...pipelineData.kpi,
+      testCases: kpi.testCases,
+      testPassRate: kpi.testPassRate,
+      testPassed: kpi.testPassed,
+      testFailed: kpi.testFailed,
+      testSkipped: kpi.testSkipped,
+      tools: kpi.tools,
+      providers: kpi.providers,
+      scoreTotal: kpi.scoreTotal,
+      modes: kpi.modes,
+      _totalFiles: kpi._totalFiles,
+    };
+    // 同步评分维度
     if (!pipelineData.scoreDimensions) pipelineData.scoreDimensions = [];
-    pipelineData.scoreDimensions = info.dynScore.dimensions;
+    pipelineData.scoreDimensions = kpi._scoreDimensions || info.dynScore?.dimensions || [];
+    // 同步评分历史（从 pipeline-config 权威源，覆盖旧格式）
+    pipelineData.scoreHistory = getScoreHistory();
+  } catch (e) {
+    // 回退模式：使用 info 中的简单数据
+    pipelineData.kpi.testCases = info.testCount;
+    pipelineData.kpi.providers = info.modelCount;
+    if (info.dynScore) {
+      pipelineData.kpi.scoreTotal = info.dynScore.total;
+      if (!pipelineData.scoreDimensions) pipelineData.scoreDimensions = [];
+      pipelineData.scoreDimensions = info.dynScore.dimensions;
+    }
+    console.warn('⚠ 无法完整同步 KPI (回退模式):', e.message);
   }
 
   // 遍历主线任务，同步检测后的状态
@@ -380,7 +445,7 @@ function syncPipelineData(progressData, info) {
     'b2a': ['packages/core/src/benchmark/BenchmarkRunner.ts'],
     'b2b': ['.github/workflows/ci.yml', '.github/workflows/release.yml'],
     'b1a': ['packages/frontend/package.json'],
-    'b1b': ['packages/core/src/plugin/PluginPermission.ts'],
+    'b1b': ['packages/core/src/plugins/PluginPermission.ts'],
     'b2c': ['packages/core/src/__tests__/integration/'],
     'b2d': ['docs/benchmark-report.md'],
     'b2e': ['packages/core/src/analytics/'],

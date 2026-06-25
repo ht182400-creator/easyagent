@@ -1,20 +1,8 @@
 /**
  * EasyAgent Web - 入口文件
- * 使用统一前端 @easyagent/frontend，通过 ConfigProvider 设为 Web 模式
+ * 通过 mountApp 使用统一前端 @easyagent/frontend，传入 Web 模式配置
+ * 样式由 @easyagent/frontend/src/styles/index.css 统一提供（已删除本地冗余副本）
  */
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
-import { ConfigProvider } from '@/config';
-import App from '@/App';
-import './index.css';
+import { mountApp } from '@/main';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ConfigProvider config={{ apiBase: '', wsBase: '/ws', isDesktop: false }}>
-      <HashRouter>
-        <App />
-      </HashRouter>
-    </ConfigProvider>
-  </React.StrictMode>
-);
+mountApp({ apiBase: '', wsBase: '/ws', isDesktop: false }, true);

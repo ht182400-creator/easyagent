@@ -1,0 +1,84 @@
+{
+  "name": "easyagent-vscode",
+  "displayName": "EasyAgent - AI 编程助手",
+  "version": "0.1.0",
+  "description": "EasyAgent VS Code 集成 — 在 IDE 中直接使用国产大模型进行智能编程",
+  "categories": ["Programming Languages", "Machine Learning", "Other"],
+  "keywords": ["ai", "easyagent", "deepseek", "coding-assistant"],
+  "icon": "icon.png",
+  "publisher": "easyagent",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ht182400-creator/easyagent"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "easyagent.analyzeCode",
+        "title": "EasyAgent: 分析选中代码"
+      },
+      {
+        "command": "easyagent.analyzeFile",
+        "title": "EasyAgent: 分析当前文件"
+      },
+      {
+        "command": "easyagent.explainCode",
+        "title": "EasyAgent: 解释选中代码"
+      },
+      {
+        "command": "easyagent.openDashboard",
+        "title": "EasyAgent: 打开 Web Dashboard"
+      },
+      {
+        "command": "easyagent.checkStatus",
+        "title": "EasyAgent: 检查连接状态"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "easyagent.analyzeCode",
+          "group": "easyagent",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "easyagent.explainCode",
+          "group": "easyagent",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "EasyAgent",
+      "properties": {
+        "easyagent.serverUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:3456",
+          "description": "EasyAgent 后端服务器地址"
+        },
+        "easyagent.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "启动 VS Code 时自动连接 EasyAgent"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}

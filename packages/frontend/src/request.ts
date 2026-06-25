@@ -1,9 +1,9 @@
 /**
  * 统一 HTTP 请求模块（非 Hook 版本）
  *
- * 解决 Store 无法使用 React Hook 获取 apiBase 的问题:
- * - ConfigProvider 挂载时调用 setApiBase() 设置模块级变量
- * - 所有 Store 通过 apiRequest() 发起请求，自动拼接 apiBase
+ * 解决 Store 无法使用 React Hook 获取运行时配置的问题:
+ * - ConfigProvider 挂载时调用 setter 注入模块级变量
+ * - apiRequest() / getWsBase() / getIsDesktop() 可在组件/Store/任意位置使用
  *
  * 对比 api.ts（Hook 版本）:
  * - api.ts: useApiBase() → React Hook，仅限组件内使用
@@ -13,6 +13,12 @@ import { useAppStore } from './stores/appStore';
 
 /** 模块级 API 基准 URL，由 ConfigProvider 注入 */
 let _apiBase = '';
+
+/** 模块级 WebSocket 基准 URL，由 ConfigProvider 注入 */
+let _wsBase = '/ws';
+
+/** 模块级桌面版标志，由 ConfigProvider 注入 */
+let _isDesktop = false;
 
 /**
  * 设置 API 基准 URL（仅 ConfigProvider 调用）
@@ -26,6 +32,36 @@ export function setApiBase(base: string): void {
  */
 export function getApiBase(): string {
   return _apiBase;
+}
+
+/**
+ * 设置 WebSocket 基准 URL（仅 ConfigProvider 调用）
+ */
+export function setWsBase(base: string): void {
+  _wsBase = base;
+}
+
+/**
+ * 获取当前 WebSocket 基准 URL
+ * 替代 chatStore 中的运行时环境检测，实现与 ConfigProvider 的统一配置源
+ */
+export function getWsBase(): string {
+  return _wsBase;
+}
+
+/**
+ * 设置桌面版标志（仅 ConfigProvider 调用）
+ */
+export function setIsDesktop(val: boolean): void {
+  _isDesktop = val;
+}
+
+/**
+ * 获取当前是否为桌面版环境
+ * 替代 chatStore 中的 window.easyAgent / file:// 运行时检测
+ */
+export function getIsDesktop(): boolean {
+  return _isDesktop;
 }
 
 /**

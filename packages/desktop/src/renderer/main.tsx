@@ -1,13 +1,9 @@
 /**
  * Desktop 渲染进程入口
- * 使用统一前端 @easyagent/frontend，通过 ConfigProvider 设为 Desktop 模式
- * 集成 IPC 桥接用于桌面特有功能
+ * 使用统一前端 @easyagent/frontend，通过 mountApp() 注入 Desktop 模式配置
+ * IPC 桥接在挂载前初始化，样式由 @easyagent/frontend 统一提供
  */
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
-import { ConfigProvider } from '@/config';
-import App from '@/App';
+import { mountApp } from '@/main';
 
 // ==================== 初始化 IPC 桥接 ====================
 /** 将 Electron IPC 事件桥接到 Web Store */
@@ -49,14 +45,9 @@ function setupIPCBridge() {
 
 setupIPCBridge();
 
-// ==================== 启动 React 应用 ====================
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ConfigProvider config={{ apiBase: 'http://127.0.0.1:3456', wsBase: 'ws://127.0.0.1:3456/ws', isDesktop: true }}>
-      <HashRouter>
-        <App />
-      </HashRouter>
-    </ConfigProvider>
-  </React.StrictMode>
+// ==================== 挂载 React 应用 ====================
+mountApp(
+  { apiBase: 'http://127.0.0.1:3456', wsBase: 'ws://127.0.0.1:3456/ws', isDesktop: true },
+  true
 );
 

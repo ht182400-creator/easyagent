@@ -2,6 +2,9 @@
  * 工具系统状态管理
  * 管理: 工具列表、工具分组、工具执行状态、工具调用历史
  * 与 core 的 ToolRegistry 保持同步
+ *
+ * 类型来源：
+ * - {@link import('@easyagent/core/types').ToolDefinition 核心 ToolDefinition} — ToolInfo 的权威数据源
  */
 import { create } from 'zustand';
 import { apiRequest } from '../request';
@@ -14,7 +17,10 @@ export interface ToolGroup {
   color: string;
 }
 
-/** 工具描述 */
+/**
+ * 工具描述（UI 展示用，扁平化版本）
+ * @see {@link import('@easyagent/core/types').ToolDefinition 核心 ToolDefinition 类型}
+ */
 export interface ToolInfo {
   name: string;
   description: string;

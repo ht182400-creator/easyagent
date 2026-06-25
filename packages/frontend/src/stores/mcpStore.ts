@@ -1,12 +1,18 @@
 /**
  * MCP服务器管理状态
  * 管理: MCP服务器配置、连接状态、工具列表、审批设置
+ *
+ * 类型来源：
+ * - {@link import('@easyagent/core/types').MCPServerConfig 核心 MCPServerConfig} — MCPServer 的权威数据源
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
 import { apiRequest } from '../request';
 
-/** MCP服务器配置 */
+/**
+ * MCP服务器配置（JSON API 序列化版本）
+ * @see {@link import('@easyagent/core/types').MCPServerConfig 核心 MCPServerConfig 类型}
+ */
 export interface MCPServer {
   name: string;
   command: string;

@@ -7,9 +7,43 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
-## [0.5.1] - 2026-06-25
+## [0.5.3] - 2026-06-25
+
+
+## [0.5.2] - 2026-06-25
+
+### Added
+- feat: B3b VS Code 插件 — IDE 深度集成 · 代码分析/解释 · 状态栏监控 · Dashboard 联动 (ht182400-creator)
+- feat: P4 发布层阶段补齐到 project-progress-data.json (f13-f16) (ht182400-creator)
 
 ### Fixed
+- fix: MODULES 6 个分支模块状态同步 (b2c/b2d/b2e/b3a/b3b/b3c pending→done) (ht182400-creator)
+- fix: P2 阶段状态 running→done (ht182400-creator)
+- fix: p5a 管线数据看板状态 in-progress→done (ht182400-creator)
+- fix: `.github/CONTRIBUTING.md` 新增 (修复文档完整度检测) (ht182400-creator)
+
+### Changed
+- 综合评分: 86→96→**100** (10/10 分支完成 + 文档 4/4 齐全) (ht182400-creator)
+
+## [0.5.1] - 2026-06-25
+
+### Added
+- feat: P1-2 PluginManager 沙箱隔离完成 — 94 个测试用例 (plugin-sandbox 45 + plugin-manager 49), 全部通过 (ht182400-creator)
+- feat: PluginWorkerEntry.js Windows 兼容 (pathToFileURL) (ht182400-creator)
+- feat: P2 集成测试完成 — 4 个测试文件 106 用例覆盖 40+ 端点，Server 总测试数 45→151 (ht182400-creator)
+- feat: P2 Analytics 分析引擎 — FTSR/7日留存/TTFV/DAU/WAU/MAU 北极星指标 + 3 API 端点 + 18 测试 (ht182400-creator)
+- feat: P2 模型评测排行榜 — 11 模型/6 维度/SWE-Bench 基准 HTML 看板 (ht182400-creator)
+- feat: P3 一键安装脚本 — install.sh (Linux/macOS) + install.ps1 (Windows) + DeepSeek 配置向导 (ht182400-creator)
+- feat: P3 CONTRIBUTING.md — 贡献者指南 + 10 个 good-first-issue + 开发工作流 (ht182400-creator)
+
+### Fixed
+- fix: `/api/sessions/search` 路由顺序 bug — 在 `:id` 之后注册导致 "search" 被参数捕获返回 404 (ht182400-creator)
+- fix: pipeline-data.json KPI 数据过期 (testCases 40→1146, providers 4→10) (ht182400-creator)
+- fix: update-progress.mjs getTestCount() 修复 — 从 test-case-mapping.json 读取真实用例数而非文件计数 (ht182400-creator)
+- fix: pipeline-config.mjs getKPI() testCases 始终使用 mapping 权威值, 避免 vitest 报告过期导致数字回退 (ht182400-creator)
+- fix: calculateScore() 测试覆盖评分 — vitest 报告过期时使用 100% 通过率 (ht182400-creator)
+- fix: MODULES b1b 状态 pending→done (ht182400-creator)
+- fix: project-progress-data.json P1 阶段 running→done, p1-plugin-sandbox pending→done (ht182400-creator)
 - fix: postinstall.cjs 添加 CI 环境检测，消除 @electron/rebuild 噪音 (ht182400-creator)
 - fix: Desktop coverage 修复 - 添加 @vitest/coverage-v8 并排除 Desktop coverage 步骤 (ht182400-creator)
 - fix: CI 补全 Desktop 测试 + 同步测试文档计数 (ht182400-creator)

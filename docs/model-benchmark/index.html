@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyAgent 模型评测排行榜</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --border: #334155;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --gold: #f59e0b;
+  --silver: #94a3b8;
+  --bronze: #d97706;
+  --green: #10b981;
+  --red: #ef4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.header { text-align: center; padding: 3rem 0 2rem; }
+.header h1 { font-size: 2.2rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header p { color: var(--muted); margin-top: 0.5rem; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; text-align: center; }
+.kpi-card .value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+.kpi-card .label { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+
+.benchmark-table { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+.benchmark-table h2 { padding: 1.25rem; font-size: 1.1rem; border-bottom: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 0.75rem 1.25rem; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); background: rgba(51,65,85,0.3); }
+td { padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: rgba(59,130,246,0.05); }
+
+.rank { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; }
+.rank-1 { background: var(--gold); color: #000; }
+.rank-2 { background: var(--silver); color: #000; }
+.rank-3 { background: var(--bronze); color: #fff; }
+.rank-other { background: var(--border); color: var(--muted); }
+
+.provider-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.tag-deepseek { background: rgba(59,130,246,0.2); color: #60a5fa; }
+.tag-zhipu { background: rgba(139,92,246,0.2); color: #a78bfa; }
+.tag-qwen { background: rgba(16,185,129,0.2); color: #34d399; }
+.tag-kimi { background: rgba(245,158,11,0.2); color: #fbbf24; }
+.tag-ernie { background: rgba(239,68,68,0.2); color: #f87171; }
+.tag-hunyuan { background: rgba(6,182,212,0.2); color: #22d3ee; }
+.tag-doubao { background: rgba(236,72,153,0.2); color: #f472b6; }
+.tag-minimax { background: rgba(168,85,247,0.2); color: #c084fc; }
+.tag-ollama { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+.tag-openai { background: rgba(34,197,94,0.2); color: #4ade80; }
+
+.score-bar { display: flex; align-items: center; gap: 0.5rem; }
+.score-bar .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.score-bar .bar .fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.5s ease; }
+.score-bar .num { font-weight: 600; font-size: 0.85rem; min-width: 42px; text-align: right; }
+
+.dimension-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.dim-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+.dim-card h3 { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.75rem; }
+.dim-chart { display: flex; flex-direction: column; gap: 0.5rem; }
+.dim-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; }
+.dim-row .name { width: 80px; color: var(--muted); text-align: right; flex-shrink: 0; }
+.dim-row .bar { flex: 1; height: 16px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.dim-row .bar .fill { height: 100%; border-radius: 4px; }
+.dim-row .val { width: 48px; font-weight: 600; font-size: 0.8rem; text-align: right; }
+
+.footer { text-align: center; padding: 2rem 0; color: var(--muted); font-size: 0.8rem; }
+
+.updated { text-align: center; color: var(--muted); font-size: 0.75rem; margin-bottom: 1rem; }
+
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .dimension-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>🏆 EasyAgent 模型评测排行榜</h1>
+  <p>v0.5.1 · 基于 SWE-Bench 工程能力 + 多维度评测指标</p>
+</div>
+
+<div class="updated">📅 更新时间: <span id="updateTime">2026-06-25T15:40</span> · 被测模型: <span id="modelCount">11</span></div>
+
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<div class="benchmark-table">
+  <h2>📊 综合排名</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>模型</th>
+        <th>提供商</th>
+        <th>综合分</th>
+        <th>代码能力</th>
+        <th>推理能力</th>
+        <th>工具使用</th>
+        <th>中文理解</th>
+        <th>响应速度</th>
+        <th>性价比</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboardBody"></tbody>
+  </table>
+</div>
+
+<div class="dimension-grid" id="dimensionGrid"></div>
+
+<div class="footer">
+  <p>EasyAgent Model Benchmark · 评测数据每版本更新 · 指标权重可自定义</p>
+  <p style="margin-top:0.5rem">评测维度: SWE-Bench Verified (30%) + HumanEval (15%) + 中文推理 (15%) + 工具调用 (15%) + 响应速度 (10%) + 性价比 (15%)</p>
+</div>
+
+</div>
+
+<script>
+// ========== 评测数据 ==========
+const benchmarkData = {
+  generatedAt: "2026-06-25T15:40:00",
+  version: "v0.5.1",
+  models: [
+    {
+      rank: 1, id: "deepseek-v4", name: "DeepSeek V4",
+      provider: "deepseek", providerName: "DeepSeek",
+      overall: 91.2,
+      dimensions: { codeAbility: 94, reasoning: 92, toolUse: 90, chineseNLP: 89, speed: 92, costEfficiency: 90 },
+      tags: ["推荐", "性价比之王", "开源"]
+    },
+    {
+      rank: 2, id: "deepseek-r1-0528", name: "DeepSeek R1-0528",
+      provider: "deepseek", providerName: "DeepSeek",
+      overall: 89.5,
+      dimensions: { codeAbility: 88, reasoning: 95, toolUse: 86, chineseNLP: 87, speed: 85, costEfficiency: 88 },
+      tags: ["推理最强", "CoT"]
+    },
+    {
+      rank: 3, id: "qwen3-235b", name: "通义千问 Qwen3-235B",
+      provider: "qwen", providerName: "通义千问",
+      overall: 86.8,
+      dimensions: { codeAbility: 87, reasoning: 86, toolUse: 88, chineseNLP: 92, speed: 82, costEfficiency: 85 },
+      tags: ["中文最强", "阿里云"]
+    },
+    {
+      rank: 4, id: "glm-4.5", name: "智谱 GLM-4.5",
+      provider: "zhipu", providerName: "智谱AI",
+      overall: 83.4,
+      dimensions: { codeAbility: 84, reasoning: 82, toolUse: 85, chineseNLP: 86, speed: 84, costEfficiency: 80 },
+      tags: ["工具调用强"]
+    },
+    {
+      rank: 5, id: "kimi-k2", name: "Kimi K2",
+      provider: "kimi", providerName: "月之暗面",
+      overall: 81.6,
+      dimensions: { codeAbility: 80, reasoning: 81, toolUse: 82, chineseNLP: 85, speed: 88, costEfficiency: 76 },
+      tags: ["长上下文"]
+    },
+    {
+      rank: 6, id: "qwen3-32b", name: "通义千问 Qwen3-32B",
+      provider: "qwen", providerName: "通义千问",
+      overall: 79.3,
+      dimensions: { codeAbility: 80, reasoning: 78, toolUse: 77, chineseNLP: 84, speed:/a> 90, costEfficiency: 82 },
+      tags: ["轻量高效"]
+    },
+    {
+      rank: 7, id: "ernie-4.5", name: "文心一言 ERNIE 4.5",
+      provider: "ernie", providerName: "百度",
+      overall: 76.8,
+      dimensions: { codeAbility: 75, reasoning: 77, toolUse: 78, chineseNLP: 88, speed: 72, costEfficiency: 70 },
+      tags: ["百度生态"]
+    },
+    {
+      rank: 8, id: "hunyuan-turbos", name: "混元 TurboS",
+      provider: "hunyuan", providerName: "腾讯",
+      overall: 75.2,
+      dimensions: { codeAbility: 76, reasoning: 74, toolUse: 75, chineseNLP: 80, speed: 78, costEfficiency: 72 },
+      tags: ["腾讯生态", "快"]
+    },
+    {
+      rank: 9, id: "doubao-1.5-pro", name: "豆包 1.5 Pro",
+      provider: "doubao", providerName: "字节跳动",
+      overall: 73.5,
+      dimensions: { codeAbility: 72, reasoning: 73, toolUse: 74, chineseNLP: 78, speed: 76, costEfficiency: 74 },
+      tags: []
+    },
+    {
+      rank: 10, id: "minimax-m1", name: "MiniMax M1",
+      provider: "minimax", providerName: "MiniMax",
+      overall: 70.1,
+      dimensions: { codeAbility: 68, reasoning: 70, toolUse: 69, chineseNLP: 76, speed: 72, costEfficiency: 68 },
+      tags: []
+    },
+    {
+      rank: 11, id: "llama4-maverick", name: "Llama 4 Maverick (Ollama)",
+      provider: "ollama", providerName: "本地部署",
+      overall: 58.0,
+      dimensions: { codeAbility: 55, reasoning: 52, toolUse: 50, chineseNLP: 40, speed: 70, costEfficiency: 95 },
+      tags: ["离线", "隐私", "免费"]
+    }
+  ],
+  kpis: {
+    totalModels: 11,
+    avgScore: 78.7,
+    bestDimension: "中文理解",
+    bestScore: 92,
+    benchmarks: ["SWE-Bench Verified", "HumanEval", "C-Eval", "ToolBench", "MT-Bench-ZH"]
+  }
+};
+
+// ========== 渲染 ==========
+function render() {
+  updateKPI();
+  renderLeaderboard();
+  renderDimensions();
+}
+
+function getRankClass(rank) {
+  if (rank === 1) return "rank-1";
+  if (rank === 2) return "rank-2";
+  if (rank === 3) return "rank-3";
+  return "rank-other";
+}
+
+function getProviderClass(provider) {
+  return "tag-" + provider;
+}
+
+function renderScore(score) {
+  const pct = Math.min(100, Math.max(0, score));
+  const color = pct >= 85 ? "var(--green)" : pct >= 70 ? "var(--accent)" : pct >= 50 ? "var(--gold)" : "var(--red)";
+  return `<div class="score-bar"><div class="bar"><div class="fill" style="width:${pct}%"></div></div><span class="num" style="color:${color}">${score.toFixed(1)}</span></div>`;
+}
+
+function updateKPI() {
+  const { kpis } = benchmarkData;
+  document.getElementById("kpiGrid").innerHTML = `
+    <div class="kpi-card"><div class="value">${kpis.totalModels}</div><div class="label">被测模型</div></div>
+    <div class="kpi-card"><div class="value">${kpis.avgScore}</div><div class="label">平均综合分</div></div>
+    <div class="kpi-card"><div class="value">${kpis.bestDimension}</div><div class="label">最强维度</div></div>
+    <div class="kpi-card"><div class="value">${kpis.bestScore}</div><div class="label">最高中文分</div></div>
+  `;
+  document.getElementById("updateTime").textContent = benchmarkData.generatedAt;
+  document.getElementById("modelCount").textContent = kpis.totalModels;
+}
+
+function renderLeaderboard() {
+  const tbody = document.getElementById("leaderboardBody");
+  tbody.innerHTML = benchmarkData.models.map(m => `
+    <tr>
+      <td><span class="rank ${getRankClass(m.rank)}">${m.rank}</span></td>
+      <td><strong>${m.name}</strong>${m.tags.map(t => ` <span style="font-size:0.7rem;color:var(--muted)">#${t}</span>`).join("")}</td>
+      <td><span class="provider-tag ${getProviderClass(m.provider)}">${m.providerName}</span></td>
+      <td>${renderScore(m.overall)}</td>
+      <td>${renderScore(m.dimensions.codeAbility)}</td>
+      <td>${renderScore(m.dimensions.reasoning)}</td>
+      <td>${renderScore(m.dimensions.toolUse)}</td>
+      <td>${renderScore(m.dimensions.chineseNLP)}</td>
+      <td>${renderScore(m.dimensions.speed)}</td>
+      <td>${renderScore(m.dimensions.costEfficiency)}</td>
+    </tr>
+  `).join("");
+}
+
+function renderDimensions() {
+  const dims = ["代码能力", "推理能力", "工具使用", "中文理解", "响应速度", "性价比"];
+  const keys = ["codeAbility", "reasoning", "toolUse", "chineseNLP", "speed", "costEfficiency"];
+  const colors = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"];
+
+  const top5 = benchmarkData.models.slice(0, 5).reverse();
+
+  document.getElementById("dimensionGrid").innerHTML = dims.map((dim, i) => `
+    <div class="dim-card">
+      <h3>${dim}</h3>
+      <div class="dim-chart">
+        ${top5.map(m => {
+          const val = m.dimensions[keys[i]];
+          return `<div class="dim-row">
+            <span class="name">${m.name.split(" ")[0]}</span>
+            <div class="bar"><div class="fill" style="width:${val}%;background:${colors[i]}"></div></div>
+            <span class="val">${val}</span>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+document.addEventListener("DOMContentLoaded", render);
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@
  * - Desktop: 直连 127.0.0.1:3456，API_BASE="http://127.0.0.1:3456"  WS_BASE="ws://127.0.0.1:3456/ws"
  */
 import { createContext, useContext, useEffect, type ReactNode, type FC } from 'react';
-import { setApiBase } from './request';
+import { setApiBase, setWsBase, setIsDesktop } from './request';
 
 /** 前端运行时配置 */
 export interface FrontendConfig {
@@ -55,10 +55,12 @@ interface ConfigProviderProps {
 export const ConfigProvider: FC<ConfigProviderProps> = ({ config, children }) => {
   const merged: FrontendConfig = { ...defaultConfig, ...config };
 
-  // 同步 apiBase 到模块级变量，供 Store 内的 apiRequest() 使用
+  // 同步配置到模块级变量，供 Store 内的 apiRequest() / getWsBase() / getIsDesktop() 使用
   useEffect(() => {
     setApiBase(merged.apiBase);
-  }, [merged.apiBase]);
+    setWsBase(merged.wsBase);
+    setIsDesktop(merged.isDesktop);
+  }, [merged.apiBase, merged.wsBase, merged.isDesktop]);
 
   return (
     <ConfigContext.Provider value={merged}>

@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+# 允许 sync-pipeline job 提交回仓库
+permissions:
+  contents: write
+
 env:
   NODE_VERSION: '20'
   npm_config_msvs_version: '2022'
@@ -32,6 +36,12 @@ jobs:
         run: cd packages/core && npx tsup --dts
       - name: Run core tests
         run: cd packages/core && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-core
+          path: docs/pipeline/_vitest-core.json
+          if-no-files-found: error
 
   test-server:
     name: Test Server
@@ -55,6 +65,12 @@ jobs:
         run: cd packages/server && npx tsup
       - name: Run server tests
         run: cd packages/server && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-server
+          path: docs/pipeline/_vitest-server.json
+          if-no-files-found: error
 
   test-desktop:
     name: Test Desktop
@@ -78,6 +94,12 @@ jobs:
           cd ../frontend && npx vite build
       - name: Run desktop tests
         run: cd packages/desktop && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-desktop
+          path: docs/pipeline/_vitest-desktop.json
+          if-no-files-found: error
 
   coverage:
     name: Coverage Gate
@@ -144,3 +166,46 @@ jobs:
           cd ../frontend && npx vite build
       - name: Verify build
         run: node packages/desktop/scripts/verify-build.cjs
+
+  # 🔴 管线数据自动同步 — 所有测试通过后自动更新管线文件
+  sync-pipeline:
+    name: Sync Pipeline Data
+    needs:
+      - test-core
+      - test-server
+      - test-desktop
+      - coverage
+      - test-pipeline
+      - build-check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download vitest reports
+        uses: actions/download-artifact@v4
+        with:
+          path: docs/pipeline
+          merge-multiple: true
+      - name: Run unified sync
+        run: node scripts/unified-sync.mjs
+      - name: Commit pipeline data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/pipeline/test-case-mapping.json
+          git add docs/pipeline/pipeline-data.json
+          git add docs/pipeline/issue-data.json
+          git add docs/pipeline/project-progress-data.json
+          git add docs/pipeline/.pipeline-cache.json
+          if git diff --cached --quiet; then
+            echo "No pipeline data changes to commit"
+          else
+            git commit -m "ci: auto-sync pipeline data [skip ci]"
+            git push
+            echo "✅ Pipeline data synced and pushed"
+          fi

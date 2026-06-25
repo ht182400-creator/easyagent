@@ -1,7 +1,15 @@
 /**
  * 插件管理器
  * 负责插件的生命周期管理：加载、启用、禁用、卸载
- * 与 ToolRegistry 集成，自动注册/注销插件提供的工具
+ *
+ * 支持两种加载模式：
+ * - unsafe: 直接 import() 到主进程（仅用于内置技能，无隔离）
+ * - sandbox: worker_threads 隔离（面向第三方插件，安全第一）
+ *
+ * 加载模式自动选择逻辑：
+ * - 插件目录下存在 manifest.json → sandbox 模式
+ * - 否则 → unsafe 模式（向后兼容内置技能）
+ * - 可通过 loadPluginSafe() 强制使用沙箱
  */
 import { EventEmitter } from 'events';
 import { existsSync, readFileSync, statSync } from 'fs';
@@ -16,9 +24,14 @@ import type {
   PluginManagerConfig,
   HookContext,
   HookEvent,
+  PluginLoadMode,
 } from './types.js';
 import type { ITool } from '../tools/ToolRegistry.js';
 import { ToolRegistry } from '../tools/ToolRegistry.js';
+import { loadManifest } from './PluginManifest.js';
+import type { PluginPermissions } from './PluginPermission.js';
+import { checkPermissions, getDangerousPermissions } from './PluginPermission.js';
+import { PluginSandbox } from './PluginSandbox.js';
 
 /** 插件管理器事件 */
 interface PluginManagerEvents {
@@ -26,6 +39,8 @@ interface PluginManagerEvents {
   pluginUnloaded: [name: string];
   pluginError: [name: string, error: Error];
   hookTriggered: [event: HookEvent, context: HookContext];
+  sandboxReady: [name: string];
+  sandboxError: [name: string, error: Error];
 }
 
 /**
@@ -45,6 +60,10 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
   private toolRegistry: ToolRegistry | null = null;
   /** 配置 */
   private config: PluginManagerConfig;
+  /** 沙箱实例 Map<pluginName, PluginSandbox>（仅 sandbox 模式） */
+  private sandboxes: Map<string, PluginSandbox> = new Map();
+  /** 插件加载模式记录 Map<pluginName, PluginLoadMode> */
+  private loadModeMap: Map<string, PluginLoadMode> = new Map();
 
   constructor(config: PluginManagerConfig = {}) {
     super();
@@ -52,6 +71,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
       hotReload: false,
       disabledPlugins: [],
       extraPluginPaths: [],
+      sandbox: { enabled: true, toolTimeout: 30000 },
       ...config,
     };
   }
@@ -64,127 +84,291 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
   }
 
   /**
-   * 加载单个插件（从文件路径）
+   * 加载单个插件（自动选择 unsafe/sandbox 模式）
+   *
+   * 模式选择逻辑：
+   * - 目录下存在 manifest.json → sandbox 模式（安全隔离）
+   * - 否则 → unsafe 模式（直接 import()，向后兼容）
+   *
    * @param pluginPath 插件目录或 .js 文件路径
+   * @param options.forceMode 强制使用指定加载模式
+   * @returns 插件实例（unsafe 模式返回真实实例，sandbox 模式返回包装对象）
    */
-  async loadPlugin(pluginPath: string): Promise<IPlugin> {
+  async loadPlugin(
+    pluginPath: string,
+    options?: { forceMode?: PluginLoadMode }
+  ): Promise<IPlugin> {
     const resolvedPath = resolve(pluginPath);
     logger.info({ path: resolvedPath }, '加载插件');
 
     try {
-      // 判断是目录还是文件
-      let entryPath: string;
-      if (statSync(resolvedPath).isDirectory()) {
-        // 尝试加载 plugin.js 或 index.js
-        const candidates = [
-          join(resolvedPath, 'plugin.js'),
-          join(resolvedPath, 'plugin.mjs'),
-          join(resolvedPath, 'index.js'),
-          join(resolvedPath, 'index.mjs'),
-        ];
-        entryPath = candidates.find((p) => existsSync(p)) || '';
-        if (!entryPath) {
-          throw new Error(`插件目录缺少入口文件: ${resolvedPath}`);
-        }
+      // 判断目录
+      const isDir = statSync(resolvedPath).isDirectory();
+
+      // 自动检测模式
+      let mode: PluginLoadMode;
+      if (options?.forceMode) {
+        mode = options.forceMode;
+      } else if (isDir && existsSync(join(resolvedPath, 'manifest.json'))) {
+        mode = 'sandbox';
       } else {
-        entryPath = resolvedPath;
+        mode = 'unsafe';
       }
 
-      // 动态导入插件模块
-      const module = await import(`file://${entryPath}`);
-      const plugin: IPlugin = module.default || module.plugin || module;
+      logger.info({ path: resolvedPath, mode }, '插件加载模式');
 
-      if (!plugin || !plugin.name) {
-        throw new Error('插件必须导出 name 属性');
+      if (mode === 'sandbox') {
+        return this.loadPluginWithSandbox(resolvedPath);
       }
-
-      // 检查是否已加载
-      if (this.plugins.has(plugin.name)) {
-        logger.warn({ plugin: plugin.name }, '插件已加载，将先卸载旧版本');
-        await this.unloadPlugin(plugin.name);
-      }
-
-      // 检查依赖
-      if (plugin.dependencies) {
-        for (const dep of plugin.dependencies) {
-          if (!this.plugins.has(dep)) {
-            throw new Error(`插件 ${plugin.name} 依赖 ${dep}，但 ${dep} 未加载`);
-          }
-        }
-      }
-
-      // 创建插件上下文
-      const context = this.createPluginContext(plugin.name);
-
-      // 调用 register
-      if (plugin.register) {
-        await plugin.register(context);
-      }
-
-      // 注册插件提供的工具
-      if (plugin.getTools && this.toolRegistry) {
-        const tools = plugin.getTools();
-        for (const tool of tools) {
-          this.toolRegistry.register(tool);
-        }
-        logger.info(
-          { plugin: plugin.name, count: tools.length },
-          '插件工具已注册'
-        );
-      }
-
-      // 注册插件提供的技能
-      if (plugin.getSkills) {
-        const skills = plugin.getSkills();
-        for (const skill of skills) {
-          this.activeSkills.set(skill.name, skill);
-          // 技能的工具也注册到全局
-          if (skill.tools && this.toolRegistry) {
-            for (const tool of skill.tools) {
-              this.toolRegistry.register(tool);
-            }
-          }
-        }
-        logger.info(
-          { plugin: plugin.name, count: skills.length },
-          '插件技能已注册'
-        );
-      }
-
-      // 注册钩子
-      if (plugin.getHooks) {
-        const pluginHooks = plugin.getHooks();
-        for (const hook of pluginHooks) {
-          this.registerHook(hook);
-        }
-        logger.info(
-          { plugin: plugin.name, count: pluginHooks.length },
-          '插件钩子已注册'
-        );
-      }
-
-      // 记录加载状态
-      const loadedPlugin: LoadedPlugin = {
-        plugin,
-        sourcePath: resolvedPath,
-        enabled: true,
-        loadedAt: Date.now(),
-      };
-      this.plugins.set(plugin.name, loadedPlugin);
-
-      this.emit('pluginLoaded', plugin.name);
-      logger.info(
-        { plugin: plugin.name, version: plugin.version },
-        '插件加载成功'
-      );
-
-      return plugin;
+      return this.loadPluginUnsafe(resolvedPath);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error({ path: resolvedPath, error: err.message }, '插件加载失败');
       this.emit('pluginError', resolvedPath, err);
       throw err;
     }
+  }
+
+  /**
+   * 使用沙箱模式加载插件（安全）
+   * 插件在 worker_threads 中运行，与主进程隔离
+   *
+   * @param pluginDir 插件根目录
+   * @returns 包装后的插件对象
+   */
+  async loadPluginSafe(pluginDir: string): Promise<IPlugin> {
+    const resolvedDir = resolve(pluginDir);
+    if (!statSync(resolvedDir).isDirectory()) {
+      throw new Error(`插件路径必须是目录: ${resolvedDir}`);
+    }
+    return this.loadPluginWithSandbox(resolvedDir);
+  }
+
+  /**
+   * 沙箱模式内部实现
+   */
+  private async loadPluginWithSandbox(pluginDir: string): Promise<IPlugin> {
+    // 1. 验证 manifest
+    const validation = loadManifest(pluginDir);
+    if (!validation.valid) {
+      const errors = validation.errors.join('; ');
+      throw new Error(`插件 Manifest 验证失败: ${errors}`);
+    }
+    const manifest = validation.manifest!;
+
+    // 2. 权限检查
+    let allowedPermissions = manifest.permissions;
+    // 检查危险权限并记录警告
+    if (manifest.permissions) {
+      const dangerous = getDangerousPermissions(manifest.permissions);
+      for (const d of dangerous) {
+        logger.warn(
+          { plugin: manifest.name, permission: d.key },
+          `危险权限: ${d.warning}`
+        );
+      }
+
+      // 如果没有声明权限，默认使用只读
+      allowedPermissions = manifest.permissions;
+    }
+
+    // 3. 检查是否已加载
+    const existingSandbox = this.sandboxes.get(manifest.name);
+    if (existingSandbox) {
+      logger.warn({ plugin: manifest.name }, '插件沙箱已存在，将先关闭旧沙箱');
+      await this.unloadPlugin(manifest.name);
+    }
+
+    // 4. 检查依赖
+    if (manifest.dependencies) {
+      for (const dep of manifest.dependencies) {
+        if (!this.plugins.has(dep)) {
+          throw new Error(`插件 ${manifest.name} 依赖 ${dep}，但 ${dep} 未加载`);
+        }
+      }
+    }
+
+    // 5. 创建沙箱并启动
+    const sandbox = new PluginSandbox({
+      manifest,
+      pluginDir,
+      allowedPermissions,
+      toolTimeout: this.config.sandbox?.toolTimeout || 30000,
+      resourceLimits: this.config.sandbox?.resourceLimits,
+    });
+
+    const initResult = await sandbox.start();
+    this.sandboxes.set(manifest.name, sandbox);
+    this.loadModeMap.set(manifest.name, 'sandbox');
+    this.emit('sandboxReady', manifest.name);
+
+    // 6. 获取工具并注册到 ToolRegistry
+    const tools = await sandbox.getTools();
+    if (tools.length > 0 && this.toolRegistry) {
+      for (const tool of tools) {
+        this.toolRegistry.register(tool);
+      }
+      logger.info({ plugin: manifest.name, count: tools.length }, '沙箱插件工具已注册');
+    }
+
+    // 7. 获取技能并注册
+    const skills = await sandbox.getSkills();
+    for (const skill of skills as ISkill[]) {
+      this.activeSkills.set(skill.name, skill);
+    }
+    if (skills.length > 0) {
+      logger.info({ plugin: manifest.name, count: skills.length }, '沙箱插件技能已注册');
+    }
+
+    // 8. 构造包装插件对象（实现 IPlugin 接口）
+    const pluginWrapper: IPlugin = {
+      name: manifest.name,
+      version: manifest.version,
+      description: manifest.description,
+      author: manifest.author,
+      dependencies: manifest.dependencies,
+      getTools: () => tools,
+      getSkills: () => skills as ISkill[],
+      async unregister() {
+        await sandbox.shutdown();
+      },
+    };
+
+    // 9. 记录加载状态
+    const loadedPlugin: LoadedPlugin = {
+      plugin: pluginWrapper,
+      sourcePath: pluginDir,
+      enabled: true,
+      loadedAt: Date.now(),
+    };
+    this.plugins.set(manifest.name, loadedPlugin);
+
+    this.emit('pluginLoaded', manifest.name);
+    logger.info(
+      { plugin: manifest.name, version: manifest.version, mode: 'sandbox' },
+      '插件(沙箱)加载成功'
+    );
+
+    return pluginWrapper;
+  }
+
+  /**
+   * 不安全模式加载插件（向后兼容）
+   * 直接 import() 到主进程，用于内置技能和可信插件
+   */
+  private async loadPluginUnsafe(resolvedPath: string): Promise<IPlugin> {
+    // 判断是目录还是文件
+    let entryPath: string;
+    if (statSync(resolvedPath).isDirectory()) {
+      const candidates = [
+        join(resolvedPath, 'plugin.js'),
+        join(resolvedPath, 'plugin.mjs'),
+        join(resolvedPath, 'index.js'),
+        join(resolvedPath, 'index.mjs'),
+      ];
+      entryPath = candidates.find((p) => existsSync(p)) || '';
+      if (!entryPath) {
+        throw new Error(`插件目录缺少入口文件: ${resolvedPath}`);
+      }
+    } else {
+      entryPath = resolvedPath;
+    }
+
+    // 动态导入插件模块
+    const module = await import(`file://${entryPath}`);
+    const plugin: IPlugin = module.default || module.plugin || module;
+
+    if (!plugin || !plugin.name) {
+      throw new Error('插件必须导出 name 属性');
+    }
+
+    // 检查是否已加载
+    if (this.plugins.has(plugin.name)) {
+      logger.warn({ plugin: plugin.name }, '插件已加载，将先卸载旧版本');
+      await this.unloadPlugin(plugin.name);
+    }
+
+    // 检查依赖
+    if (plugin.dependencies) {
+      for (const dep of plugin.dependencies) {
+        if (!this.plugins.has(dep)) {
+          throw new Error(`插件 ${plugin.name} 依赖 ${dep}，但 ${dep} 未加载`);
+        }
+      }
+    }
+
+    // 创建插件上下文
+    const context = this.createPluginContext(plugin.name);
+
+    // 调用 register
+    if (plugin.register) {
+      await plugin.register(context);
+    }
+
+    // 注册工具、技能、钩子
+    await this.registerToolsAndSkillsAndHooks(plugin);
+
+    // 记录加载状态
+    const loadedPlugin: LoadedPlugin = {
+      plugin,
+      sourcePath: resolvedPath,
+      enabled: true,
+      loadedAt: Date.now(),
+    };
+    this.plugins.set(plugin.name, loadedPlugin);
+    this.loadModeMap.set(plugin.name, 'unsafe');
+
+    this.emit('pluginLoaded', plugin.name);
+    logger.info(
+      { plugin: plugin.name, version: plugin.version },
+      '插件加载成功'
+    );
+
+    return plugin;
+  }
+
+  /**
+   * 注册插件的工具、技能和钩子（复用逻辑）
+   */
+  private async registerToolsAndSkillsAndHooks(plugin: IPlugin): Promise<void> {
+    // 注册工具
+    if (plugin.getTools && this.toolRegistry) {
+      const tools = plugin.getTools();
+      for (const tool of tools) {
+        this.toolRegistry.register(tool);
+      }
+      logger.info({ plugin: plugin.name, count: tools.length }, '插件工具已注册');
+    }
+
+    // 注册技能
+    if (plugin.getSkills) {
+      const skills = plugin.getSkills();
+      for (const skill of skills) {
+        this.activeSkills.set(skill.name, skill);
+        if (skill.tools && this.toolRegistry) {
+          for (const tool of skill.tools) {
+            this.toolRegistry.register(tool);
+          }
+        }
+      }
+      logger.info({ plugin: plugin.name, count: skills.length }, '插件技能已注册');
+    }
+
+    // 注册钩子
+    if (plugin.getHooks) {
+      const pluginHooks = plugin.getHooks();
+      for (const hook of pluginHooks) {
+        this.registerHook(hook);
+      }
+      logger.info({ plugin: plugin.name, count: pluginHooks.length }, '插件钩子已注册');
+    }
+  }
+
+  /**
+   * 获取插件的加载模式
+   */
+  getLoadMode(name: string): PluginLoadMode | undefined {
+    return this.loadModeMap.get(name);
   }
 
   /**
@@ -258,13 +442,24 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
   }
 
   /**
-   * 卸载插件
+   * 卸载插件（同时关闭对应的沙箱）
    */
   async unloadPlugin(name: string): Promise<void> {
     const loaded = this.plugins.get(name);
     if (!loaded) {
       logger.warn({ plugin: name }, '插件未加载，无法卸载');
       return;
+    }
+
+    // 如果使用沙箱模式，先关闭沙箱
+    const sandbox = this.sandboxes.get(name);
+    if (sandbox) {
+      try {
+        await sandbox.shutdown();
+      } catch (error) {
+        logger.warn({ plugin: name, error }, '沙箱关闭失败');
+      }
+      this.sandboxes.delete(name);
     }
 
     // 调用 unregister
@@ -306,8 +501,16 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
     }
 
     this.plugins.delete(name);
+    this.loadModeMap.delete(name);
     this.emit('pluginUnloaded', name);
     logger.info({ plugin: name }, '插件已卸载');
+  }
+
+  /**
+   * 获取沙箱中的插件
+   */
+  getSandbox(name: string): PluginSandbox | undefined {
+    return this.sandboxes.get(name);
   }
 
   /**
@@ -436,9 +639,21 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
   }
 
   /**
-   * 销毁插件管理器
+   * 销毁插件管理器（清理所有插件和沙箱）
    */
   async destroy(): Promise<void> {
+    // 先关闭所有沙箱
+    for (const [name, sandbox] of this.sandboxes) {
+      try {
+        await sandbox.shutdown();
+      } catch (error) {
+        logger.warn({ plugin: name, error }, '销毁时沙箱关闭失败');
+      }
+    }
+    this.sandboxes.clear();
+    this.loadModeMap.clear();
+
+    // 卸载所有插件
     for (const [name] of this.plugins) {
       await this.unloadPlugin(name);
     }

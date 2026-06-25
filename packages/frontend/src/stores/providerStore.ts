@@ -1,18 +1,30 @@
 /**
  * 模型提供商状态管理
  * 管理: 提供商列表、模型信息、API密钥、连接测试
+ *
+ * 类型来源：
+ * - ProviderId, ModelConfig → @easyagent/core/types（唯一数据源）
+ * - Provider, ModelInfo → 本地定义（含UI专用字段 hasKey/isConnected）
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
 import { apiRequest } from '../request';
+import type { ProviderId } from '@easyagent/core/types';
 
-/** 模型定价 */
+/**
+ * 模型定价
+ * @see {@link import('@easyagent/core/types').ModelConfig.pricing 核心模型定价}
+ */
 export interface ModelPricing {
   input: number;   // 每百万token价格(元)
   output: number;
 }
 
-/** 模型信息 */
+/**
+ * 模型信息（UI 展示用，扁平化版本）
+ * @see {@link import('@easyagent/core/types').ModelConfig 核心 ModelConfig 类型}
+ * 差异：前端不含 provider 字段（包含在父级 Provider 中）
+ */
 export interface ModelInfo {
   id: string;
   name: string;
@@ -23,9 +35,13 @@ export interface ModelInfo {
   pricing?: ModelPricing;
 }
 
-/** 提供商信息 */
+/**
+ * 提供商信息（UI 展示用，含运行时状态）
+ * @see {@link import('@easyagent/core/types').ProviderConfig 核心 ProviderConfig 类型}
+ * 差异：id 使用共享 ProviderId 类型；增加 hasKey/isConnected 运行时状态
+ */
 export interface Provider {
-  id: string;
+  id: ProviderId;
   name: string;
   baseURL: string;
   apiKeyEnv: string;

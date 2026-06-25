@@ -221,3 +221,18 @@ export {
   BenchmarkScanTool,
   resetBenchmarkEngine,
 } from './tools/index.js';
+
+// 用户行为分析 🆕 P2
+export {
+  AnalyticsEngine,
+  getAnalyticsEngine,
+  setAnalyticsEngine,
+} from './analytics/index.js';
+export type {
+  AnalyticsEventType,
+  AnalyticsEvent,
+  NorthStarMetrics,
+  DailyStats,
+  UserFunnel,
+  AnalyticsReport,
+} from './analytics/index.js';

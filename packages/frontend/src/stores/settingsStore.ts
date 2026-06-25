@@ -1,12 +1,18 @@
 /**
  * 设置状态管理
  * 管理: Agent配置、安全设置、偏好
+ *
+ * 类型来源：
+ * - {@link import('@easyagent/core/types').AgentConfig 核心 AgentConfig} — AgentSettings 的权威数据源（subset）
  */
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
 import { apiRequest } from '../request';
 
-/** Agent配置 */
+/**
+ * Agent配置（UI 表单用，AgentConfig 的子集）
+ * @see {@link import('@easyagent/core/types').AgentConfig 核心 AgentConfig 类型}
+ */
 export interface AgentSettings {
   maxTurns: number;
   temperature: number;

@@ -4,9 +4,10 @@
  */
 import { create } from 'zustand';
 import { emit } from '../events';
+import { getWsBase } from '../request';
 
-/** 消息角色 */
-export type MessageRole = 'user' | 'assistant' | 'system' | 'tool';
+/** 从核心类型库导入共享类型，替代本地重复定义 */
+export type { MessageRole } from '@easyagent/core/types';
 
 /** 工具调用块 */
 export interface ToolCallBlock {
@@ -221,17 +222,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       state.ws.close();
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    /** 桌面版 + 开发模式直连后端 WebSocket (127.0.0.1:3456)
-     *  生产 Web 模式或代理模式使用相对路径 */
-    const isDesktop = !!(window as any).easyAgent || window.location.protocol === 'file:';
-    // 使用运行时检测替代 import.meta.env.DEV，兼容非 Vite 构建环境
-    const isDev = window.location.hostname === 'localhost'
-      || window.location.hostname === '127.0.0.1'
-      || window.location.hostname.includes('local');
-    const defaultUrl = (isDev || isDesktop)
-      ? 'ws://127.0.0.1:3456/ws'
-      : `${protocol}//${window.location.host}/ws`;
+    // WebSocket URL 由 ConfigProvider 统一注入（Web: '/ws', Desktop: 'ws://127.0.0.1:3456/ws'）
+    // 替代旧的运行时检测逻辑（window.easyAgent / file:// 协议 / hostname 判断）
+    const defaultUrl = getWsBase();
     const url = wsUrl || defaultUrl;
 
     set((s) => {

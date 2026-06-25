@@ -1,9 +1,10 @@
 /**
  * 插件系统类型定义
- * 支持插件注册工具、技能、生命周期钩子
+ * 支持插件注册工具、技能、生命周期钩子、沙箱隔离
  */
 import type { ITool } from '../tools/ToolRegistry.js';
 import type { ToolResult } from '../types/index.js';
+import type { PluginPermissions } from './PluginPermission.js';
 
 // ===================== 插件接口 =====================
 
@@ -183,6 +184,31 @@ export interface LoadedPlugin {
   error?: string;
 }
 
+// ===================== 沙箱相关类型 =====================
+
+/**
+ * 插件加载模式
+ * - 'unsafe': 直接 import() 到主进程（无隔离，仅用于内置技能）
+ * - 'sandbox': worker_threads 隔离（推荐用于第三方插件）
+ */
+export type PluginLoadMode = 'unsafe' | 'sandbox';
+
+/**
+ * 沙箱配置
+ */
+export interface SandboxSettings {
+  /** 是否启用沙箱模式（默认 true） */
+  enabled: boolean;
+  /** 默认工具执行超时(ms) */
+  toolTimeout?: number;
+  /** Worker 资源限制 */
+  resourceLimits?: {
+    maxOldGenerationSizeMb?: number;
+    maxYoungGenerationSizeMb?: number;
+    stackSizeMb?: number;
+  };
+}
+
 // ===================== 插件配置 =====================
 
 /**
@@ -199,4 +225,6 @@ export interface PluginManagerConfig {
   disabledPlugins?: string[];
   /** 是否启用热重载 */
   hotReload?: boolean;
+  /** 沙箱隔离配置 */
+  sandbox?: SandboxSettings;
 }

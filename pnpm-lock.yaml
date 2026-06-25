@@ -527,6 +527,9 @@ importers:
         specifier: ^4.5.0
         version: 4.5.0(@types/react@18.3.31)(react@18.3.0)
     devDependencies:
+      '@easyagent/core':
+        specifier: workspace:*
+        version: link:../core
       '@types/react':
         specifier: ^18.3.0
         version: 18.3.31
