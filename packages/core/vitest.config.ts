@@ -5,6 +5,9 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
+    // CI Windows runner 上首次动态 import 大型模块可能超 5s 默认值
+    testTimeout: 30_000,
+    hookTimeout: 15_000,
     // 输出 JSON 报告供管线自动采集
     reporters: ['default', 'json'],
     outputFile: {
