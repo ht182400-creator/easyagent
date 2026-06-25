@@ -7,10 +7,16 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
-## [0.5.7] - 2026-06-25
+## [0.5.8] - 2026-06-25
+
+## [0.5.7] - 2026-06-26
 
 ### Fixed
-- fix: 修复 EXE 内 Server 版本号误报问题，通过 EASYAGENT_VERSION 环境变量传递正确版本 (ht182400-creator)
+- fix: 修复 EXE 内 Server 版本号误报问题，Desktop 主进程启动时设置 `EASYAGENT_VERSION` 环境变量传递正确版本号 (ht182400-creator)
+- fix: Server `/api/version` 优先读取 `version.json` 动态版本，解决 EXE (asar) 内回退到硬编码 `0.3.0` 导致"发现新版本"误报 (ht182400-creator)
+- fix: better-sqlite3 NODE_MODULE_VERSION 根治 — 删除 build-sqlite3.bat 等 3 个重复脚本，`rebuild-sqlite3.mjs` 为唯一编译入口，SHA256 验证替代字节扫描 (ht182400-creator)
+- fix: Desktop 前端 11 个文件 23 处裸 `fetch()` 改为使用 `getApiBase()`，修复 `file://` 协议下路径解析错误 (ht182400-creator)
+- fix: `build.bat` Phase 2.5/3.5 sqlite3 路径修复，`%~dp0` 前缀确保基于脚本目录解析 (ht182400-creator)
 
 ## [0.5.6] - 2026-06-25
 
