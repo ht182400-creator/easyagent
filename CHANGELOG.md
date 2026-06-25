@@ -7,6 +7,16 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.5.6] - 2026-06-25
+
+### Added
+- feat(ci): 新增 CI 数据自动回取机制 (fetch-ci-data.mjs) (ht182400-creator)
+
+### Fixed
+- fix: 前端 file:// 协议 fetch 修复 + build.bat sqlite3 路径修复 + 双版本管理工具 (ht182400-creator)
+- fix(ci): core 测试超时：动态导入大型索引模块需更长时间 (ht182400-creator)
+- fix(ci): 修复 Pipeline Tests 2个失败用例 + 本地管线数据同步 (ht182400-creator)
+
 ## [0.5.5] - 2026-06-25
 
 ## [0.5.4] - 2026-06-25
