@@ -1778,6 +1778,13 @@
           "status": "resolved"
         },
         {
+          "date": "2026-06-26",
+          "title": "[F17] electron-updater 只检查不下载修复 (05:54)",
+          "problem": ": 启动后 10 秒检测到新版本但无下载提示，菜单\"检查更新\"同样只检测不下载 [根因] : `checkForUpdates()` 仅触发 `update-available` 事件，不会自动下载；应使用 `checkForUpdatesAndNotify()` 自动下载+弹窗",
+          "solution": "`packages/desktop/src/main.ts` 两处 `checkForUpdates()` → `checkForUpdatesAndNotify()`： 1. `initAutoUpdater()` 中 setTimeout 自动检查 (line 372) 2. `checkForUpdates()` 菜单手动触发 (line 396)；重新编译: `npx tsup` → dist/main.js 1.14MB (620ms)，两处均已更新",
+          "status": "resolved"
+        },
+        {
           "date": "",
           "title": "⚠️ Web ↔ Desktop 代码隔离约束",
           "problem": "⚠️ Web ↔ Desktop 代码隔离约束",
@@ -2548,6 +2555,13 @@
           "problem": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
           "solution": "`packages/core/vitest.config.ts`: `testTimeout: 30_000`, `hookTimeout: 15_000`；Server 包已有 15s / Desktop 包已有 10s — 仅 core 缺失超时配置",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F17] electron-updater 只检查不下载修复 (05:54)",
+          "problem": ": 启动后 10 秒检测到新版本但无下载提示，菜单\"检查更新\"同样只检测不下载 [根因] : `checkForUpdates()` 仅触发 `update-available` 事件，不会自动下载；应使用 `checkForUpdatesAndNotify()` 自动下载+弹窗",
+          "solution": "`packages/desktop/src/main.ts` 两处 `checkForUpdates()` → `checkForUpdatesAndNotify()`： 1. `initAutoUpdater()` 中 setTimeout 自动检查 (line 372) 2. `checkForUpdates()` 菜单手动触发 (line 396)；重新编译: `npx tsup` → dist/main.js 1.14MB (620ms)，两处均已更新",
+          "status": "resolved"
         }
       ]
     },
@@ -2727,6 +2741,13 @@
           "title": "Web 版本号动态读取修复 (00:32)",
           "problem": ": Web 版设置页面显示\"当前版本 v0.3.0\"，而实际 `version.json` 已是 `0.5.3` [根因] : `packages/server/src/index.ts:446` 硬编码 `APP_VERSION = process.env.EASYAGENT_VERSION || '0.3.0'`",
           "solution": "1. `APP_VERSION` 现在优先读取 `version.json`，其次环境变量，最后兜底 `0.3.0` 2. `/api/version` 路由的 `codename` 和 `releaseDate` 也改为动态读取 `version.json` 3. `start-backend.bat` 增加从 `version.json` 提取版本的逻辑；更新版本只需: 编辑 `version.json` → 重启后端即可",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F17] electron-updater 只检查不下载修复 (05:54)",
+          "problem": ": 启动后 10 秒检测到新版本但无下载提示，菜单\"检查更新\"同样只检测不下载 [根因] : `checkForUpdates()` 仅触发 `update-available` 事件，不会自动下载；应使用 `checkForUpdatesAndNotify()` 自动下载+弹窗",
+          "solution": "`packages/desktop/src/main.ts` 两处 `checkForUpdates()` → `checkForUpdatesAndNotify()`： 1. `initAutoUpdater()` 中 setTimeout 自动检查 (line 372) 2. `checkForUpdates()` 菜单手动触发 (line 396)；重新编译: `npx tsup` → dist/main.js 1.14MB (620ms)，两处均已更新",
           "status": "resolved"
         }
       ]
@@ -4380,8 +4401,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 601,
-  "_generatedAt": "2026-06-25T21:53:01.222Z",
+  "_totalIssues": 604,
+  "_generatedAt": "2026-06-25T22:02:45.560Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -4402,6 +4423,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-25T21:53:01.241Z"
+    "exportedAt": "2026-06-25T22:02:45.570Z"
   }
 }
