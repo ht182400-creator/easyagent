@@ -499,6 +499,41 @@
           "problem": ": `build.bat --fast` 运行到 Phase 2.5 时报 `node:internal/modules/cjs/loader:1424` [根因] : build.bat 第 108 行 `cd ..\\desktop` 后 CWD 在 `packages/desktop`，但第 141-148 行 `_SQLITE_RELEASE` 使用相对路径 `node_modules\\.pnpm\\better-sqlite3@12.11.1\\...`。pnpm workspace 中 better-sqlite3 的实际位置在项目根目录的 `node_",
           "solution": "1. Phase 2.5: `_SQLITE_RELEASE` 加 `%~dp0` 前缀 → `%~dp0node_modules\\.pnpm\\...` 2. Phase 2.5: `node scripts\\rebuild-sqlite3.mjs` → `node \"%~dp0scripts\\rebuild-sqlite3.mjs\"` 3. Phase 3.5: 同上述两处加 `%~dp0` 前缀；验证: 重新运行 `build.bat --fast` → `[OK] Switched`（直接跳过编译，文件已存在并从正确路径找到）→ electron-builder 成功 → EXE 168MB；教训: `.bat` 脚本中 `cd` 后对所有非 CWD 子目录的相对路径引用必须用 `%~dp0` 前缀确保基于脚本所在目录",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F19] electron-updater 不自动下载修复 (06:24)",
+          "problem": ": Settings 页面显示\"发现新版本 v0.5.10\"但无下载动作",
+          "solution": "1. `main.ts`: 显式设置 `autoUpdater.autoDownload = true` + `autoInstallOnAppQuit = true`，添加详细日志到所有更新事件 2. `main.ts`: `check-update` IPC handler 返回 result 对象（success/version/error） 3. `Settings.tsx`: 新增逻辑 — Server API 检测到新版本后，额外调用 `window.easyAgent.checkUpdate()` 触发 electron-updater 自动下载；编译: desktop tsup ✅ (761ms)，frontend vite ✅ (index-D7Bo7VVn.js 171KB)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F27] v0.5.18: 修复(Gemini)显示和发布日期 (12:57)",
+          "problem": ": Settings页版本号后显示\"(Gemini)\"，发布日期显示\"2026-06-20\"",
+          "solution": "1. `version.json`: codename=\"\" (空), releaseDate=\"2026-06-26\" 2. `server/src/index.ts`: fallback 改为读 `process.env.EASYAGENT_CODENAME/RELEASE_DATE` 3. `desktop/src/main.ts`: 新增 `setupVersionEnv()` 函数,启动时从 version.json 读取并设置环境变量；升级 0.5.17→0.5.18 → `build.bat --release` ✅ → tag push → GitHub Release (id=345127835) ✅；清理旧 EXE: 删除 v0.5.17/16/15/0.5.3/0.4.0/0.3.3 共 6 个 EXE,释放约 630MB",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F35] v0.5.25→0.5.26 autoDownload=false 根本重构 (15:1",
+          "problem": ": 用户反馈 v0.5.24 \"发现新版本 v0.5.25\"但下载永不开始。F34 的 scene3 `downloadUpdate()` 修复无效",
+          "solution": "1. **`autoDownload = false`** — 关闭自动下载，所有下载由代码显式调用 `downloadUpdate()` 2. **auto-check**: `checkForUpdatesAndNotify()` → `checkForUpdates()` + 显式 `downloadUpdate()` 3. **IPC check-update handler**: 简化为清晰的 4 场景状态机（downloaded → 返回 / checking → 跳过 / downloading → 返回进度 / idle-available-error → checkForUpdates + downlo 4. **返回真实状态**: IPC 返回当前 `lastUpdateStatus`（事件驱动），不再硬编码；版本: 0.5.25（修复版重建+覆盖上传） + 0.5.26（新 Release 供测试）；发布: v0.5.25 覆盖 Release #345170197 / v0.5.26 创建 Release #345177228 1. 本地装 `EasyAgent-0.5.25-win-x64.exe`（含修复代码） 2. 打开 → 设置 → 检查更新 → 应发现 v0.5.26 并自动进入下载进度 3. 等待 10 秒后自动检查也应触发下载；关键教训: electron-updater 的 autoDownload 行为不可靠，必须设为 false 并显式管理",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F36] v0.5.27 preload ESM→CJS 修复 (18:14-18:19)",
+          "problem": ": 用户安装 v0.5.26 后 DevTools Console 显示 `require() of ES Module ... preload.js not supported` [根因] : `tsup.config.ts` `format: ['esm']` 将 preload.ts 编译为 ESM，但 Electron 的 preload 加载器使用 `require()`，只支持 CommonJS",
+          "solution": "1. `tsup.preload.config.ts` (新建): 单独编译 preload.ts 为 CJS，输出 `dist/preload.cjs`，通过 `outExtension` 强制 `.cjs` 扩展名 2. `tsup.config.ts`: entry 移除 preload，仅编译 main.ts 为 ESM 3. `main.ts`: preload 路径 `preload.js` → `preload.cjs` 4. `build.bat` + `package.json`: 构建流程添加 `tsup --config tsup.preload.config.ts` 步骤；输出: `main.js` 1.15MB (ESM) + `preload.cjs` 3.81KB (CJS, `require('electron')`)；打包: `EasyAgent-0.5.27-win-x64.exe` (108MB, NSIS installer)；关键教训: Electron preload 必须 CJS；tsup 不支持 per-entry format，需分离配置文件",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
+          "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
+          "solution": "verify-build.cjs 中 CSS 检查路径从 `src/renderer/index.css` 更新为 `../frontend/src/styles/index.css`（因 Desktop 独立 CSS 已删除）；产物: `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)",
+          "status": "resolved"
         }
       ]
     },
@@ -687,6 +722,13 @@
           "problem": "v0.5.3 版本发布 (00:24)",
           "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F36] v0.5.27 preload ESM→CJS 修复 (18:14-18:19)",
+          "problem": ": 用户安装 v0.5.26 后 DevTools Console 显示 `require() of ES Module ... preload.js not supported` [根因] : `tsup.config.ts` `format: ['esm']` 将 preload.ts 编译为 ESM，但 Electron 的 preload 加载器使用 `require()`，只支持 CommonJS",
+          "solution": "1. `tsup.preload.config.ts` (新建): 单独编译 preload.ts 为 CJS，输出 `dist/preload.cjs`，通过 `outExtension` 强制 `.cjs` 扩展名 2. `tsup.config.ts`: entry 移除 preload，仅编译 main.ts 为 ESM 3. `main.ts`: preload 路径 `preload.js` → `preload.cjs` 4. `build.bat` + `package.json`: 构建流程添加 `tsup --config tsup.preload.config.ts` 步骤；输出: `main.js` 1.15MB (ESM) + `preload.cjs` 3.81KB (CJS, `require('electron')`)；打包: `EasyAgent-0.5.27-win-x64.exe` (108MB, NSIS installer)；关键教训: Electron preload 必须 CJS；tsup 不支持 per-entry format，需分离配置文件",
+          "status": "resolved"
         }
       ]
     },
@@ -874,6 +916,34 @@
           "title": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
           "problem": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
           "solution": "1. **`.pnpmfile.cjs`**: 删除 better-sqlite3 的 `install` 脚本，阻止 prebuild-install 2. **重写 `rebuild-sqlite3.mjs`**:；移除不可靠的字节扫描；SHA256 比对 Electron≠System 来验证编译正确性；System 版本用 `createRequire` 直接加载验证；新增 `--verify` 模式 3. **验证 Desktop EXE**:；确保 `better_sqlite3_electron.node` SHA256 与 System 版本不同；打包前切换 → 打包 → 恢复；EXE 中 `app.asar.unpacked/.../better_sqlite3.node` SHA256=13751beb7c07167d ✅ 匹配 Electron 30 版本",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F18] GitHub Release Assets 上传失败诊断 & 修复 (06:08–06:",
+          "problem": ": v0.5.4~v0.5.9 所有 Release assets 为空（0 个文件），导致 electron-updater 找不到 latest.yml → 永远显示\"当前已是最新版本\" [根因] : `release-publish.bat` 选择 [1] gh CLI 上传，但 `gh auth status` 显示\"not logged in\" → 上传静默失败",
+          "solution": "编写 `_upload_assets.mjs` 使用 Token + curl 手动上传 v0.5.10 assets (EXE 105MB + blockmap + latest.yml) → HTTP 201 全部成功；Release 状态: v0.5.10 标记为 GitHub Latest Release，assets 完整；清理: 删除 `_upload_assets.mjs` 及相关临时文件；遗留: `release-publish.bat` 需修复 gh auth 检测（登录失败时自动回退到 Token 方式）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F36] v0.5.27 preload ESM→CJS 修复 (18:14-18:19)",
+          "problem": ": 用户安装 v0.5.26 后 DevTools Console 显示 `require() of ES Module ... preload.js not supported` [根因] : `tsup.config.ts` `format: ['esm']` 将 preload.ts 编译为 ESM，但 Electron 的 preload 加载器使用 `require()`，只支持 CommonJS",
+          "solution": "1. `tsup.preload.config.ts` (新建): 单独编译 preload.ts 为 CJS，输出 `dist/preload.cjs`，通过 `outExtension` 强制 `.cjs` 扩展名 2. `tsup.config.ts`: entry 移除 preload，仅编译 main.ts 为 ESM 3. `main.ts`: preload 路径 `preload.js` → `preload.cjs` 4. `build.bat` + `package.json`: 构建流程添加 `tsup --config tsup.preload.config.ts` 步骤；输出: `main.js` 1.15MB (ESM) + `preload.cjs` 3.81KB (CJS, `require('electron')`)；打包: `EasyAgent-0.5.27-win-x64.exe` (108MB, NSIS installer)；关键教训: Electron preload 必须 CJS；tsup 不支持 per-entry format，需分离配置文件",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F37] v0.5.28 发布 — 解决 v0.5.27 旧 renderer 缓存问题 (19:",
+          "problem": ": v0.5.27 的 Settings.tsx 显示 `⚠️ ea.checkUpdate 不可用`，不仅因为 preload ESM/CJS 问题，还可疑是 Vite renderer 缓存复用旧代码 [根因] : 构建时未清 `dist/renderer`，Vite 可能复用旧产物 → 新 Settings.tsx 代码未进入最终 EXE",
+          "solution": "详见原文",
+          "status": "pending"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
+          "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
+          "solution": "在 `endlocal` 之前用 `if errorlevel 1 ( endlocal && goto :BUILD_FAIL )`，在 setlocal 内部就判断 errorlevel 并跳转；问题4: Desktop 构建阶段的 `if %errorlevel% neq 0 ( ... )` 多行块 → 改用 `goto :BUILD_FAIL` 模式；关于 ESM: main.ts 使用 ESM 是有意为之 — `type:\"module\"` + Electron 30/Node 20 支持 ESM 主进程。preload 必须 CJS（Electron 沙箱限制），已通过 `tsup.preload.config.ts`",
           "status": "resolved"
         }
       ]
@@ -1785,6 +1855,69 @@
           "status": "resolved"
         },
         {
+          "date": "2026-06-26",
+          "title": "[F18] GitHub Release Assets 上传失败诊断 & 修复 (06:08–06:",
+          "problem": ": v0.5.4~v0.5.9 所有 Release assets 为空（0 个文件），导致 electron-updater 找不到 latest.yml → 永远显示\"当前已是最新版本\" [根因] : `release-publish.bat` 选择 [1] gh CLI 上传，但 `gh auth status` 显示\"not logged in\" → 上传静默失败",
+          "solution": "编写 `_upload_assets.mjs` 使用 Token + curl 手动上传 v0.5.10 assets (EXE 105MB + blockmap + latest.yml) → HTTP 201 全部成功；Release 状态: v0.5.10 标记为 GitHub Latest Release，assets 完整；清理: 删除 `_upload_assets.mjs` 及相关临时文件；遗留: `release-publish.bat` 需修复 gh auth 检测（登录失败时自动回退到 Token 方式）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F19] electron-updater 不自动下载修复 (06:24)",
+          "problem": ": Settings 页面显示\"发现新版本 v0.5.10\"但无下载动作",
+          "solution": "1. `main.ts`: 显式设置 `autoUpdater.autoDownload = true` + `autoInstallOnAppQuit = true`，添加详细日志到所有更新事件 2. `main.ts`: `check-update` IPC handler 返回 result 对象（success/version/error） 3. `Settings.tsx`: 新增逻辑 — Server API 检测到新版本后，额外调用 `window.easyAgent.checkUpdate()` 触发 electron-updater 自动下载；编译: desktop tsup ✅ (761ms)，frontend vite ✅ (index-D7Bo7VVn.js 171KB)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F28] v0.5.19: 修复手动检查更新无安装界面 (13:05)",
+          "problem": ": v0.5.17 中点击\"检查更新\"检测到 v0.5.18，但没有下载进度/安装界面 [根因] : `check-update` IPC handler 调用 `autoUpdater.checkForUpdatesAndNotify()`，但启动 10 秒后的 auto-check 已先调用过该方法，`electron-updater` 内部防重复机制跳过了手动调用",
+          "solution": "`check-update` handler 改用 `checkForUpdates()`（仅检查）+ 显式 `downloadUpdate()`（触发下载），不再依赖有防重复的 `checkForUpdatesAndNotify()`；版本 0.5.18→0.5.19 → `build.bat --release` ✅ → tag push → GitHub Release (id=345129614) ✅；删除 v0.5.18 EXE 释放空间",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F27] v0.5.18: 修复(Gemini)显示和发布日期 (12:57)",
+          "problem": ": Settings页版本号后显示\"(Gemini)\"，发布日期显示\"2026-06-20\"",
+          "solution": "1. `version.json`: codename=\"\" (空), releaseDate=\"2026-06-26\" 2. `server/src/index.ts`: fallback 改为读 `process.env.EASYAGENT_CODENAME/RELEASE_DATE` 3. `desktop/src/main.ts`: 新增 `setupVersionEnv()` 函数,启动时从 version.json 读取并设置环境变量；升级 0.5.17→0.5.18 → `build.bat --release` ✅ → tag push → GitHub Release (id=345127835) ✅；清理旧 EXE: 删除 v0.5.17/16/15/0.5.3/0.4.0/0.3.3 共 6 个 EXE,释放约 630MB",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F28] v0.5.19: 修复手动检查更新无安装界面 (13:05)",
+          "problem": ": v0.5.17 点击\"检查更新\"检测到新版本但没有下载/安装界面 [根因] : check-update 和 auto-check 都调用 checkForUpdatesAndNotify(), electron-updater 内部防重复跳过",
+          "solution": "check-update 改用 checkForUpdates() + 显式 downloadUpdate()；版本 0.5.18→0.5.19 → tag push → GitHub Release (id=345129614)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F30] v0.5.20 测试通过 + 文档更新 (13:42)",
+          "problem": "[F30] v0.5.20 测试通过 + 文档更新 (13:42)",
+          "solution": "useEffect 初始化增加 checking/error/installing 状态处理（原来只处理 downloaded/downloading/available）；辅助函数导出: getStatusCardStyle/getStatusIcon/getStatusTitle/getStatusDescription/getStatusAction 导出为纯函数便于测试；架构文档: `docs/13_自动更新架构设计文档.md` 新增第 11.3 节测试结果；测试文档: `docs/03_测试案例文档.md` 新增 10.8 节测试执行结果；测试技巧: desktop 组件测试必须从 `packages/desktop` 目录运行（cd Set-Location）；`vi.resetModules()` 在 afterEach 确保动态导入隔离",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F35] v0.5.25→0.5.26 autoDownload=false 根本重构 (15:1",
+          "problem": ": 用户反馈 v0.5.24 \"发现新版本 v0.5.25\"但下载永不开始。F34 的 scene3 `downloadUpdate()` 修复无效",
+          "solution": "1. **`autoDownload = false`** — 关闭自动下载，所有下载由代码显式调用 `downloadUpdate()` 2. **auto-check**: `checkForUpdatesAndNotify()` → `checkForUpdates()` + 显式 `downloadUpdate()` 3. **IPC check-update handler**: 简化为清晰的 4 场景状态机（downloaded → 返回 / checking → 跳过 / downloading → 返回进度 / idle-available-error → checkForUpdates + downlo 4. **返回真实状态**: IPC 返回当前 `lastUpdateStatus`（事件驱动），不再硬编码；版本: 0.5.25（修复版重建+覆盖上传） + 0.5.26（新 Release 供测试）；发布: v0.5.25 覆盖 Release #345170197 / v0.5.26 创建 Release #345177228 1. 本地装 `EasyAgent-0.5.25-win-x64.exe`（含修复代码） 2. 打开 → 设置 → 检查更新 → 应发现 v0.5.26 并自动进入下载进度 3. 等待 10 秒后自动检查也应触发下载；关键教训: electron-updater 的 autoDownload 行为不可靠，必须设为 false 并显式管理",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F36] v0.5.27 preload ESM→CJS 修复 (18:14-18:19)",
+          "problem": ": 用户安装 v0.5.26 后 DevTools Console 显示 `require() of ES Module ... preload.js not supported` [根因] : `tsup.config.ts` `format: ['esm']` 将 preload.ts 编译为 ESM，但 Electron 的 preload 加载器使用 `require()`，只支持 CommonJS",
+          "solution": "1. `tsup.preload.config.ts` (新建): 单独编译 preload.ts 为 CJS，输出 `dist/preload.cjs`，通过 `outExtension` 强制 `.cjs` 扩展名 2. `tsup.config.ts`: entry 移除 preload，仅编译 main.ts 为 ESM 3. `main.ts`: preload 路径 `preload.js` → `preload.cjs` 4. `build.bat` + `package.json`: 构建流程添加 `tsup --config tsup.preload.config.ts` 步骤；输出: `main.js` 1.15MB (ESM) + `preload.cjs` 3.81KB (CJS, `require('electron')`)；打包: `EasyAgent-0.5.27-win-x64.exe` (108MB, NSIS installer)；关键教训: Electron preload 必须 CJS；tsup 不支持 per-entry format，需分离配置文件",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
+          "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
+          "solution": "verify-build.cjs 中 CSS 检查路径从 `src/renderer/index.css` 更新为 `../frontend/src/styles/index.css`（因 Desktop 独立 CSS 已删除）；产物: `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)",
+          "status": "resolved"
+        },
+        {
           "date": "",
           "title": "⚠️ Web ↔ Desktop 代码隔离约束",
           "problem": "⚠️ Web ↔ Desktop 代码隔离约束",
@@ -2090,6 +2223,13 @@
           "problem": "[F12] 字节扫描假阳性 + Desktop EXE 修复 (04:46-05:10)",
           "solution": "1. **`.pnpmfile.cjs`**: 删除 better-sqlite3 的 `install` 脚本，阻止 prebuild-install 2. **重写 `rebuild-sqlite3.mjs`**:；移除不可靠的字节扫描；SHA256 比对 Electron≠System 来验证编译正确性；System 版本用 `createRequire` 直接加载验证；新增 `--verify` 模式 3. **验证 Desktop EXE**:；确保 `better_sqlite3_electron.node` SHA256 与 System 版本不同；打包前切换 → 打包 → 恢复；EXE 中 `app.asar.unpacked/.../better_sqlite3.node` SHA256=13751beb7c07167d ✅ 匹配 Electron 30 版本",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F30] v0.5.20 测试通过 + 文档更新 (13:42)",
+          "problem": "[F30] v0.5.20 测试通过 + 文档更新 (13:42)",
+          "solution": "useEffect 初始化增加 checking/error/installing 状态处理（原来只处理 downloaded/downloading/available）；辅助函数导出: getStatusCardStyle/getStatusIcon/getStatusTitle/getStatusDescription/getStatusAction 导出为纯函数便于测试；架构文档: `docs/13_自动更新架构设计文档.md` 新增第 11.3 节测试结果；测试文档: `docs/03_测试案例文档.md` 新增 10.8 节测试执行结果；测试技巧: desktop 组件测试必须从 `packages/desktop` 目录运行（cd Set-Location）；`vi.resetModules()` 在 afterEach 确保动态导入隔离",
+          "status": "resolved"
         }
       ]
     },
@@ -2213,6 +2353,13 @@
           "title": "v0.5.3 版本发布 (00:24)",
           "problem": "v0.5.3 版本发布 (00:24)",
           "solution": "12-00:16):；`PluginManager.ts:216/231`: `as ISkill[]` → `as unknown as ISkill[]` (RPC 序列化丢失方法)；`PluginSandbox.ts:151/155`: `error.message` → `(error as Error).message`；`PluginSandbox.ts:317`: executeTool 返回值 cast 改为 `Promise<ToolResult>` + import；创建 Release v0.5.3 (id=344844832)；上传 `EasyAgent-0.5.3-win-x64.exe` (95.8MB) 成功；下载地址: https://github.com/ht182400-creator/easyagent/releases/download/v0.5.3/EasyAgent-0.5.3-win-x64.exe",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
+          "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
+          "solution": "在 `endlocal` 之前用 `if errorlevel 1 ( endlocal && goto :BUILD_FAIL )`，在 setlocal 内部就判断 errorlevel 并跳转；问题4: Desktop 构建阶段的 `if %errorlevel% neq 0 ( ... )` 多行块 → 改用 `goto :BUILD_FAIL` 模式；关于 ESM: main.ts 使用 ESM 是有意为之 — `type:\"module\"` + Electron 30/Node 20 支持 ESM 主进程。preload 必须 CJS（Electron 沙箱限制），已通过 `tsup.preload.config.ts`",
           "status": "resolved"
         }
       ]
@@ -2562,6 +2709,13 @@
           "problem": ": 启动后 10 秒检测到新版本但无下载提示，菜单\"检查更新\"同样只检测不下载 [根因] : `checkForUpdates()` 仅触发 `update-available` 事件，不会自动下载；应使用 `checkForUpdatesAndNotify()` 自动下载+弹窗",
           "solution": "`packages/desktop/src/main.ts` 两处 `checkForUpdates()` → `checkForUpdatesAndNotify()`： 1. `initAutoUpdater()` 中 setTimeout 自动检查 (line 372) 2. `checkForUpdates()` 菜单手动触发 (line 396)；重新编译: `npx tsup` → dist/main.js 1.14MB (620ms)，两处均已更新",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F31] v0.5.21 发布 (13:54)",
+          "problem": "[F31] v0.5.21 发布 (13:54)",
+          "solution": "`_upload_release.mjs` 中 `make_latest: true` 应为 `\"true\"` 字符串（GitHub API 要求）；Settings.tsx 变更: 删除 `simulateUpdateTest` 函数 + 3 个模拟按钮的 JSX 代码块",
+          "status": "resolved"
         }
       ]
     },
@@ -2748,6 +2902,69 @@
           "title": "[F17] electron-updater 只检查不下载修复 (05:54)",
           "problem": ": 启动后 10 秒检测到新版本但无下载提示，菜单\"检查更新\"同样只检测不下载 [根因] : `checkForUpdates()` 仅触发 `update-available` 事件，不会自动下载；应使用 `checkForUpdatesAndNotify()` 自动下载+弹窗",
           "solution": "`packages/desktop/src/main.ts` 两处 `checkForUpdates()` → `checkForUpdatesAndNotify()`： 1. `initAutoUpdater()` 中 setTimeout 自动检查 (line 372) 2. `checkForUpdates()` 菜单手动触发 (line 396)；重新编译: `npx tsup` → dist/main.js 1.14MB (620ms)，两处均已更新",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F18] GitHub Release Assets 上传失败诊断 & 修复 (06:08–06:",
+          "problem": ": v0.5.4~v0.5.9 所有 Release assets 为空（0 个文件），导致 electron-updater 找不到 latest.yml → 永远显示\"当前已是最新版本\" [根因] : `release-publish.bat` 选择 [1] gh CLI 上传，但 `gh auth status` 显示\"not logged in\" → 上传静默失败",
+          "solution": "编写 `_upload_assets.mjs` 使用 Token + curl 手动上传 v0.5.10 assets (EXE 105MB + blockmap + latest.yml) → HTTP 201 全部成功；Release 状态: v0.5.10 标记为 GitHub Latest Release，assets 完整；清理: 删除 `_upload_assets.mjs` 及相关临时文件；遗留: `release-publish.bat` 需修复 gh auth 检测（登录失败时自动回退到 Token 方式）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F19] electron-updater 不自动下载修复 (06:24)",
+          "problem": ": Settings 页面显示\"发现新版本 v0.5.10\"但无下载动作",
+          "solution": "1. `main.ts`: 显式设置 `autoUpdater.autoDownload = true` + `autoInstallOnAppQuit = true`，添加详细日志到所有更新事件 2. `main.ts`: `check-update` IPC handler 返回 result 对象（success/version/error） 3. `Settings.tsx`: 新增逻辑 — Server API 检测到新版本后，额外调用 `window.easyAgent.checkUpdate()` 触发 electron-updater 自动下载；编译: desktop tsup ✅ (761ms)，frontend vite ✅ (index-D7Bo7VVn.js 171KB)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F22-修复] v0.5.13: Settings页显示更新下载进度 (06:54-06:57)",
+          "problem": ": v0.5.11中\"检查更新\"发现0.5.12但无下载进度显示；preload已暴露`onUpdateStatus`但Settings.tsx未使用",
+          "solution": "Settings.tsx 新增`UpdateStatus`接口 + `useState<UpdateStatus>` + `useEffect`监听`ea.onUpdateStatus`，UI显示下载进度条/状态文字/下载完成提示；升级 0.5.12→0.5.13 → `build.bat --release` ✅ → tag push → GitHub Release (id=345028659) ✅",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F24] v0.5.15: 根本修复更新进度不显示问题 (09:57)",
+          "problem": "[F24] v0.5.15: 根本修复更新进度不显示问题 (09:57)",
+          "solution": "1. `main.ts`: 新增`lastUpdateStatus`/`lastUpdateInfo`变量追踪状态，所有autoUpdater事件更新之 2. `main.ts` `get-update-status`: 返回完整状态(`lastUpdateStatus`+`lastUpdateInfo`) 3. `main.ts` `check-update`: 已下载完成时跳过重复下载，返回status字段 4. `Settings.tsx`: 挂载时调用`ea.getUpdateStatus()`查询初始状态 5. `Settings.tsx`: UI分离为progress组件+更新通知+独立状态banner，支持无updateInfo时显示；清理 GitHub: 删除v0.5.09-v0.5.14共10个EXE+blockmap assets（保留latest.yml）；`build.bat --release` ✅ → tag push v0.5.15 → GitHub Release (id=345084466) ✅",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F28] v0.5.19: 修复手动检查更新无安装界面 (13:05)",
+          "problem": ": v0.5.17 中点击\"检查更新\"检测到 v0.5.18，但没有下载进度/安装界面 [根因] : `check-update` IPC handler 调用 `autoUpdater.checkForUpdatesAndNotify()`，但启动 10 秒后的 auto-check 已先调用过该方法，`electron-updater` 内部防重复机制跳过了手动调用",
+          "solution": "`check-update` handler 改用 `checkForUpdates()`（仅检查）+ 显式 `downloadUpdate()`（触发下载），不再依赖有防重复的 `checkForUpdatesAndNotify()`；版本 0.5.18→0.5.19 → `build.bat --release` ✅ → tag push → GitHub Release (id=345129614) ✅；删除 v0.5.18 EXE 释放空间",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F28] v0.5.19: 修复手动检查更新无安装界面 (13:05)",
+          "problem": ": v0.5.17 点击\"检查更新\"检测到新版本但没有下载/安装界面 [根因] : check-update 和 auto-check 都调用 checkForUpdatesAndNotify(), electron-updater 内部防重复跳过",
+          "solution": "check-update 改用 checkForUpdates() + 显式 downloadUpdate()；版本 0.5.18→0.5.19 → tag push → GitHub Release (id=345129614)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F34] v0.5.23/0.5.24 竞态条件第二轮修复 — 下载不自动开始 (15:03)",
+          "problem": ": v0.5.23 \"检查更新\"后 UI 显示\"发现新版本 v0.5.24\"但永不进入下载状态。日志显示 `lastUpdateStatus` 已是 `available`（自动检查已发现），手动检查进入场景3时直接返回 available 而非触发下载 [根因] : main.ts 场景3（`lastUpdateStatus === 'available'`）仅返回 `{ status: 'available' }`，未显式调用 `downloadUpdate()`。`autoDownload=true` 在 `checkForUpdatesAndNotify()` 中可能未触发实际下载",
+          "solution": "1. 场景3: `available` 状态下显式调用 `await autoUpdater.downloadUpdate()` 确保下载开始 2. 自动检查回调: 增加详细日志（autoDownload 值、result.cancelled、lastUpdateStatus 等）；版本: 0.5.23→0.5.24（6个package.json + version.json）；构建+发布: `build.bat --release` → `_release.mjs 0.5.24 --create` → Release #345164536；测试: 用户装 v0.5.23 本地EXE → 设置页检查更新 → 应看到 v0.5.24 下载进度",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F35] v0.5.25→0.5.26 autoDownload=false 根本重构 (15:1",
+          "problem": ": 用户反馈 v0.5.24 \"发现新版本 v0.5.25\"但下载永不开始。F34 的 scene3 `downloadUpdate()` 修复无效",
+          "solution": "1. **`autoDownload = false`** — 关闭自动下载，所有下载由代码显式调用 `downloadUpdate()` 2. **auto-check**: `checkForUpdatesAndNotify()` → `checkForUpdates()` + 显式 `downloadUpdate()` 3. **IPC check-update handler**: 简化为清晰的 4 场景状态机（downloaded → 返回 / checking → 跳过 / downloading → 返回进度 / idle-available-error → checkForUpdates + downlo 4. **返回真实状态**: IPC 返回当前 `lastUpdateStatus`（事件驱动），不再硬编码；版本: 0.5.25（修复版重建+覆盖上传） + 0.5.26（新 Release 供测试）；发布: v0.5.25 覆盖 Release #345170197 / v0.5.26 创建 Release #345177228 1. 本地装 `EasyAgent-0.5.25-win-x64.exe`（含修复代码） 2. 打开 → 设置 → 检查更新 → 应发现 v0.5.26 并自动进入下载进度 3. 等待 10 秒后自动检查也应触发下载；关键教训: electron-updater 的 autoDownload 行为不可靠，必须设为 false 并显式管理",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
+          "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
+          "solution": "verify-build.cjs 中 CSS 检查路径从 `src/renderer/index.css` 更新为 `../frontend/src/styles/index.css`（因 Desktop 独立 CSS 已删除）；产物: `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)",
           "status": "resolved"
         }
       ]
@@ -2937,6 +3154,13 @@
           "problem": "[F10] better-sqlite3_electron.node MODULE_VERSION=88 → 123 (04:29-04:36)",
           "solution": "1. 新建 `scripts/rebuild-sqlite3.mjs` — 用 Node.js copyFileSync 替代 CMD copy 2. 策略：编译前先保存到 `temp/sqlite3-build/`（不被 rebuild clean 影响） 3. 编译顺序：先 Electron 30（保存到临时目录）→ 再 System Node 4. 部署：从临时目录复制到 Release + 更新缓存",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F37] v0.5.28 发布 — 解决 v0.5.27 旧 renderer 缓存问题 (19:",
+          "problem": ": v0.5.27 的 Settings.tsx 显示 `⚠️ ea.checkUpdate 不可用`，不仅因为 preload ESM/CJS 问题，还可疑是 Vite renderer 缓存复用旧代码 [根因] : 构建时未清 `dist/renderer`，Vite 可能复用旧产物 → 新 Settings.tsx 代码未进入最终 EXE",
+          "solution": "详见原文",
+          "status": "pending"
         }
       ]
     },
@@ -3054,6 +3278,13 @@
           "title": "Desktop 后端无法连接 — better-sqlite3 MODULE_VERSION 不一致",
           "problem": "[现象] : Tailwind 修复后布局正常，但顶部黄色提示\"无法连接到后端服务\"，智能模板区域\"模板加载中...\" [根因] : `better_sqlite3.node` 被系统 Node.js v24 (MODULE 137) 编译，但 Electron 30 内嵌 Node v20 (MODULE 123)，加载时报错导致 `@easyagent/server` 的 `createApp()` 失败",
           "solution": "1. `npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release` — 直接使用 node-gyp 编译，下载 Electron 30 heade 2. 修复 `postinstall.cjs`: REBUILD_CMD 改为 `npx --yes node-gyp rebuild ...` 3. 修复 `verify-build.cjs`: 通过文件大小 1913344 vs 非1913344 判断是否已 rebuild（而非仅对比系统 Node 版本） 4. `build.bat` 新增 Phase 2.5：打包前自动检测并修复 MODULE_VERSION 不匹配；`@electron/rebuild` 的 bin 名是 `electron-rebuild`，不是 `@electron/rebuild`；electron-rebuild 在 pnpm workspace 中可能不可靠，直接 `npx node-gyp` 更稳定；不应依赖 cache 文件判断 binary 状态，应直接检查 binary 文件特征",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F35] v0.5.25→0.5.26 autoDownload=false 根本重构 (15:1",
+          "problem": ": 用户反馈 v0.5.24 \"发现新版本 v0.5.25\"但下载永不开始。F34 的 scene3 `downloadUpdate()` 修复无效",
+          "solution": "1. **`autoDownload = false`** — 关闭自动下载，所有下载由代码显式调用 `downloadUpdate()` 2. **auto-check**: `checkForUpdatesAndNotify()` → `checkForUpdates()` + 显式 `downloadUpdate()` 3. **IPC check-update handler**: 简化为清晰的 4 场景状态机（downloaded → 返回 / checking → 跳过 / downloading → 返回进度 / idle-available-error → checkForUpdates + downlo 4. **返回真实状态**: IPC 返回当前 `lastUpdateStatus`（事件驱动），不再硬编码；版本: 0.5.25（修复版重建+覆盖上传） + 0.5.26（新 Release 供测试）；发布: v0.5.25 覆盖 Release #345170197 / v0.5.26 创建 Release #345177228 1. 本地装 `EasyAgent-0.5.25-win-x64.exe`（含修复代码） 2. 打开 → 设置 → 检查更新 → 应发现 v0.5.26 并自动进入下载进度 3. 等待 10 秒后自动检查也应触发下载；关键教训: electron-updater 的 autoDownload 行为不可靠，必须设为 false 并显式管理",
           "status": "resolved"
         }
       ]
@@ -3369,6 +3600,90 @@
           "problem": "[F16] Desktop 版本号与检查更新修复 (03:43-03:50)",
           "solution": "`packages/desktop/` 重新编译: `tsup` (main.ts→dist/main.js 618ms) + `vite build` (renderer)；新编译结果: ✅ `startBackendServer: true`, ✅ `ht182400-creator`, fallback version 0.3.0 (实际从 package.json 读取 0.5.5)",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F18] GitHub Release Assets 上传失败诊断 & 修复 (06:08–06:",
+          "problem": ": v0.5.4~v0.5.9 所有 Release assets 为空（0 个文件），导致 electron-updater 找不到 latest.yml → 永远显示\"当前已是最新版本\" [根因] : `release-publish.bat` 选择 [1] gh CLI 上传，但 `gh auth status` 显示\"not logged in\" → 上传静默失败",
+          "solution": "编写 `_upload_assets.mjs` 使用 Token + curl 手动上传 v0.5.10 assets (EXE 105MB + blockmap + latest.yml) → HTTP 201 全部成功；Release 状态: v0.5.10 标记为 GitHub Latest Release，assets 完整；清理: 删除 `_upload_assets.mjs` 及相关临时文件；遗留: `release-publish.bat` 需修复 gh auth 检测（登录失败时自动回退到 Token 方式）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F22-修复] v0.5.13: Settings页显示更新下载进度 (06:54-06:57)",
+          "problem": ": v0.5.11中\"检查更新\"发现0.5.12但无下载进度显示；preload已暴露`onUpdateStatus`但Settings.tsx未使用",
+          "solution": "Settings.tsx 新增`UpdateStatus`接口 + `useState<UpdateStatus>` + `useEffect`监听`ea.onUpdateStatus`，UI显示下载进度条/状态文字/下载完成提示；升级 0.5.12→0.5.13 → `build.bat --release` ✅ → tag push → GitHub Release (id=345028659) ✅",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F24] v0.5.15: 根本修复更新进度不显示问题 (09:57)",
+          "problem": "[F24] v0.5.15: 根本修复更新进度不显示问题 (09:57)",
+          "solution": "1. `main.ts`: 新增`lastUpdateStatus`/`lastUpdateInfo`变量追踪状态，所有autoUpdater事件更新之 2. `main.ts` `get-update-status`: 返回完整状态(`lastUpdateStatus`+`lastUpdateInfo`) 3. `main.ts` `check-update`: 已下载完成时跳过重复下载，返回status字段 4. `Settings.tsx`: 挂载时调用`ea.getUpdateStatus()`查询初始状态 5. `Settings.tsx`: UI分离为progress组件+更新通知+独立状态banner，支持无updateInfo时显示；清理 GitHub: 删除v0.5.09-v0.5.14共10个EXE+blockmap assets（保留latest.yml）；`build.bat --release` ✅ → tag push v0.5.15 → GitHub Release (id=345084466) ✅",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F28] v0.5.19: 修复手动检查更新无安装界面 (13:05)",
+          "problem": ": v0.5.17 中点击\"检查更新\"检测到 v0.5.18，但没有下载进度/安装界面 [根因] : `check-update` IPC handler 调用 `autoUpdater.checkForUpdatesAndNotify()`，但启动 10 秒后的 auto-check 已先调用过该方法，`electron-updater` 内部防重复机制跳过了手动调用",
+          "solution": "`check-update` handler 改用 `checkForUpdates()`（仅检查）+ 显式 `downloadUpdate()`（触发下载），不再依赖有防重复的 `checkForUpdatesAndNotify()`；版本 0.5.18→0.5.19 → `build.bat --release` ✅ → tag push → GitHub Release (id=345129614) ✅；删除 v0.5.18 EXE 释放空间",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F27] v0.5.18: 修复(Gemini)显示和发布日期 (12:57)",
+          "problem": ": Settings页版本号后显示\"(Gemini)\"，发布日期显示\"2026-06-20\"",
+          "solution": "1. `version.json`: codename=\"\" (空), releaseDate=\"2026-06-26\" 2. `server/src/index.ts`: fallback 改为读 `process.env.EASYAGENT_CODENAME/RELEASE_DATE` 3. `desktop/src/main.ts`: 新增 `setupVersionEnv()` 函数,启动时从 version.json 读取并设置环境变量；升级 0.5.17→0.5.18 → `build.bat --release` ✅ → tag push → GitHub Release (id=345127835) ✅；清理旧 EXE: 删除 v0.5.17/16/15/0.5.3/0.4.0/0.3.3 共 6 个 EXE,释放约 630MB",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F28] v0.5.19: 修复手动检查更新无安装界面 (13:05)",
+          "problem": ": v0.5.17 点击\"检查更新\"检测到新版本但没有下载/安装界面 [根因] : check-update 和 auto-check 都调用 checkForUpdatesAndNotify(), electron-updater 内部防重复跳过",
+          "solution": "check-update 改用 checkForUpdates() + 显式 downloadUpdate()；版本 0.5.18→0.5.19 → tag push → GitHub Release (id=345129614)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F31] v0.5.21 发布 (13:54)",
+          "problem": "[F31] v0.5.21 发布 (13:54)",
+          "solution": "`_upload_release.mjs` 中 `make_latest: true` 应为 `\"true\"` 字符串（GitHub API 要求）；Settings.tsx 变更: 删除 `simulateUpdateTest` 函数 + 3 个模拟按钮的 JSX 代码块",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F33] v0.5.22 竞态条件修复 + 重新发布 (14:08)",
+          "problem": ": 用户点击\"检查更新\"后 UI 卡在\"发现新版本\"，不进入下载中状态 [根因] : `autoDownload=true` 时 `checkForUpdates()` 自动触发下载，事件监听器发送 `available→downloading` 事件。但 `ea.checkUpdate()` IPC 返回 `{ status: 'available' }`，Settings.tsx 第 197 行用 available 覆盖了 downloading 状态（竞态条件）",
+          "solution": "移除冗余的 `downloadUpdate()` 调用和手动 `available` 发送（`autoDownload=true` 时事件已自动处理），返回 `downloading` 而非 `available`；重新构建+发布: Release #345144336，旧 asset 删除后重新上传",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F34] v0.5.23/0.5.24 竞态条件第二轮修复 — 下载不自动开始 (15:03)",
+          "problem": ": v0.5.23 \"检查更新\"后 UI 显示\"发现新版本 v0.5.24\"但永不进入下载状态。日志显示 `lastUpdateStatus` 已是 `available`（自动检查已发现），手动检查进入场景3时直接返回 available 而非触发下载 [根因] : main.ts 场景3（`lastUpdateStatus === 'available'`）仅返回 `{ status: 'available' }`，未显式调用 `downloadUpdate()`。`autoDownload=true` 在 `checkForUpdatesAndNotify()` 中可能未触发实际下载",
+          "solution": "1. 场景3: `available` 状态下显式调用 `await autoUpdater.downloadUpdate()` 确保下载开始 2. 自动检查回调: 增加详细日志（autoDownload 值、result.cancelled、lastUpdateStatus 等）；版本: 0.5.23→0.5.24（6个package.json + version.json）；构建+发布: `build.bat --release` → `_release.mjs 0.5.24 --create` → Release #345164536；测试: 用户装 v0.5.23 本地EXE → 设置页检查更新 → 应看到 v0.5.24 下载进度",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F35] v0.5.25→0.5.26 autoDownload=false 根本重构 (15:1",
+          "problem": ": 用户反馈 v0.5.24 \"发现新版本 v0.5.25\"但下载永不开始。F34 的 scene3 `downloadUpdate()` 修复无效",
+          "solution": "1. **`autoDownload = false`** — 关闭自动下载，所有下载由代码显式调用 `downloadUpdate()` 2. **auto-check**: `checkForUpdatesAndNotify()` → `checkForUpdates()` + 显式 `downloadUpdate()` 3. **IPC check-update handler**: 简化为清晰的 4 场景状态机（downloaded → 返回 / checking → 跳过 / downloading → 返回进度 / idle-available-error → checkForUpdates + downlo 4. **返回真实状态**: IPC 返回当前 `lastUpdateStatus`（事件驱动），不再硬编码；版本: 0.5.25（修复版重建+覆盖上传） + 0.5.26（新 Release 供测试）；发布: v0.5.25 覆盖 Release #345170197 / v0.5.26 创建 Release #345177228 1. 本地装 `EasyAgent-0.5.25-win-x64.exe`（含修复代码） 2. 打开 → 设置 → 检查更新 → 应发现 v0.5.26 并自动进入下载进度 3. 等待 10 秒后自动检查也应触发下载；关键教训: electron-updater 的 autoDownload 行为不可靠，必须设为 false 并显式管理",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F36] v0.5.27 preload ESM→CJS 修复 (18:14-18:19)",
+          "problem": ": 用户安装 v0.5.26 后 DevTools Console 显示 `require() of ES Module ... preload.js not supported` [根因] : `tsup.config.ts` `format: ['esm']` 将 preload.ts 编译为 ESM，但 Electron 的 preload 加载器使用 `require()`，只支持 CommonJS",
+          "solution": "1. `tsup.preload.config.ts` (新建): 单独编译 preload.ts 为 CJS，输出 `dist/preload.cjs`，通过 `outExtension` 强制 `.cjs` 扩展名 2. `tsup.config.ts`: entry 移除 preload，仅编译 main.ts 为 ESM 3. `main.ts`: preload 路径 `preload.js` → `preload.cjs` 4. `build.bat` + `package.json`: 构建流程添加 `tsup --config tsup.preload.config.ts` 步骤；输出: `main.js` 1.15MB (ESM) + `preload.cjs` 3.81KB (CJS, `require('electron')`)；打包: `EasyAgent-0.5.27-win-x64.exe` (108MB, NSIS installer)；关键教训: Electron preload 必须 CJS；tsup 不支持 per-entry format，需分离配置文件",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F37] v0.5.28 发布 — 解决 v0.5.27 旧 renderer 缓存问题 (19:",
+          "problem": ": v0.5.27 的 Settings.tsx 显示 `⚠️ ea.checkUpdate 不可用`，不仅因为 preload ESM/CJS 问题，还可疑是 Vite renderer 缓存复用旧代码 [根因] : 构建时未清 `dist/renderer`，Vite 可能复用旧产物 → 新 Settings.tsx 代码未进入最终 EXE",
+          "solution": "详见原文",
+          "status": "pending"
         }
       ]
     },
@@ -3836,6 +4151,13 @@
           "problem": "[F10] better-sqlite3_electron.node MODULE_VERSION=88 → 123 (04:29-04:36)",
           "solution": "1. 新建 `scripts/rebuild-sqlite3.mjs` — 用 Node.js copyFileSync 替代 CMD copy 2. 策略：编译前先保存到 `temp/sqlite3-build/`（不被 rebuild clean 影响） 3. 编译顺序：先 Electron 30（保存到临时目录）→ 再 System Node 4. 部署：从临时目录复制到 Release + 更新缓存",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F37] v0.5.28 发布 — 解决 v0.5.27 旧 renderer 缓存问题 (19:",
+          "problem": ": v0.5.27 的 Settings.tsx 显示 `⚠️ ea.checkUpdate 不可用`，不仅因为 preload ESM/CJS 问题，还可疑是 Vite renderer 缓存复用旧代码 [根因] : 构建时未清 `dist/renderer`，Vite 可能复用旧产物 → 新 Settings.tsx 代码未进入最终 EXE",
+          "solution": "详见原文",
+          "status": "pending"
         }
       ]
     },
@@ -4022,6 +4344,20 @@
           "title": "Desktop EXE 样式错乱 — Tailwind content 路径缺失 (01:05)",
           "problem": "[现象] : EXE 执行后侧边栏图标和文字堆叠在一起，布局样式丢失 [根因] : `packages/desktop/tailwind.config.js` 的 `content` 只扫描 `./src/renderer/**/*`，但 Desktop 实际 UI 组件全部在 `../frontend/src/` 中（通过 `@/` alias 引用）。Tailwind JIT 在生产构建时不会生成只在 frontend 组件中使用的 utility 类（flex/flex",
           "solution": "`packages/desktop/tailwind.config.js` content 数组添加 `'../frontend/src/**/*.{js,ts,jsx,tsx}'`；额外发现: `desktop/src/renderer/index.css` 和 `frontend/src/styles/index.css` 内容几乎完全相同（都含 @tailwind 指令 + 完整设计系统 v3.0），存在 CSS 重复但非功能性 bug，可后续优",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F19] electron-updater 不自动下载修复 (06:24)",
+          "problem": ": Settings 页面显示\"发现新版本 v0.5.10\"但无下载动作",
+          "solution": "1. `main.ts`: 显式设置 `autoUpdater.autoDownload = true` + `autoInstallOnAppQuit = true`，添加详细日志到所有更新事件 2. `main.ts`: `check-update` IPC handler 返回 result 对象（success/version/error） 3. `Settings.tsx`: 新增逻辑 — Server API 检测到新版本后，额外调用 `window.easyAgent.checkUpdate()` 触发 electron-updater 自动下载；编译: desktop tsup ✅ (761ms)，frontend vite ✅ (index-D7Bo7VVn.js 171KB)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
+          "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
+          "solution": "verify-build.cjs 中 CSS 检查路径从 `src/renderer/index.css` 更新为 `../frontend/src/styles/index.css`（因 Desktop 独立 CSS 已删除）；产物: `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)",
           "status": "resolved"
         }
       ]
@@ -4267,6 +4603,13 @@
           "problem": "[现象] : 用户本地 Ollama qwen2.5:7b 能正常对话(直接 curl 测试通过)，但 EasyAgent 前端发送消息后无回复 [根因] : 前端 `providerStore` 初始 `currentProvider: 'deepseek'`，虽然 `fetchProviders` 有智能选择逻辑(`withKey = find(p.hasKey)`)，但 `hasExplicitSelection` 为 true 时不自动切换，导致始终发送 `provider: 'deepseek'` 给后端",
           "solution": "1. `providerStore.ts`: 初始值改为 `''` 空字符串，让首次加载时自动选择 2. `providerStore.ts`: `hasExplicitSelection` → `hasValidSelection`，检查当前选中提供商是否有密钥；无密钥时自动切换到 `hasKey` 的提供商 3. `ProviderPresets.ts`: Ollama `defaultModel` 从 `qwen3.5:9b` → `qwen2.5:7b`（用户主要使用的模型）；修改文件: `packages/web/src/stores/providerStore.ts`, `packages/core/src/config/ProviderPresets.ts`；验证: Ollama `/v1/chat/completions` API 返回 200 正常；后端/前端重建并重启",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F18] GitHub Release Assets 上传失败诊断 & 修复 (06:08–06:",
+          "problem": ": v0.5.4~v0.5.9 所有 Release assets 为空（0 个文件），导致 electron-updater 找不到 latest.yml → 永远显示\"当前已是最新版本\" [根因] : `release-publish.bat` 选择 [1] gh CLI 上传，但 `gh auth status` 显示\"not logged in\" → 上传静默失败",
+          "solution": "编写 `_upload_assets.mjs` 使用 Token + curl 手动上传 v0.5.10 assets (EXE 105MB + blockmap + latest.yml) → HTTP 201 全部成功；Release 状态: v0.5.10 标记为 GitHub Latest Release，assets 完整；清理: 删除 `_upload_assets.mjs` 及相关临时文件；遗留: `release-publish.bat` 需修复 gh auth 检测（登录失败时自动回退到 Token 方式）",
+          "status": "resolved"
         }
       ]
     },
@@ -4401,8 +4744,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 604,
-  "_generatedAt": "2026-06-25T22:02:45.560Z",
+  "_totalIssues": 653,
+  "_generatedAt": "2026-06-26T13:22:43.645Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -4423,6 +4766,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-25T22:02:45.570Z"
+    "exportedAt": "2026-06-26T13:22:43.659Z"
   }
 }

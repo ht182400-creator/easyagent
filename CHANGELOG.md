@@ -7,6 +7,19 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.0] - 2026-06-26
+
+## [0.5.32] - 2026-06-26
+
+### Changed
+- chore: 版本号更新至 0.5.32，清理旧 Release 大文件 (ht182400-creator)
+
+## [0.5.31] - 2026-06-26
+
+### Fixed
+- fix: hasUpdate=false 时错误状态未清除导致 UI 误显"更新失败" — `Settings.tsx` checkForUpdates() 中 hasUpdate=false 分支增加 `setUpdaterStatus(null)` (ht182400-creator)
+- fix: 修复 GitHub Release v0.5.30 缺少 latest.yml 导致 electron-updater 检查 404 的问题，补传 latest.yml 到 Release (ht182400-creator)
+
 ## [0.5.30] - 2026-06-26
 
 ## [0.5.10] - 2026-06-25

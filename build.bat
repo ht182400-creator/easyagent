@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 rem 设置 UTF-8 代码页，防止中文乱码
 rem 使用 call 包裹避免 PowerShell 拦截 I/O 重定向
 call :silent chcp 65001
@@ -168,8 +168,64 @@ copy /Y "%_ELECTRON_FILE%" "%_NODE_FILE%" >nul
 echo   [OK] Switched (will restore after packaging)
 
 :::::: ============================================================
-:::::: Phase 3: Package
-:::::: ============================================================
+::::::: Phase 2.8: Ensure pnpm-hoisted deps for electron-builder
+:::::::   pnpm hoists transitive deps out of desktop/node_modules
+:::::::   Copy jsonfile + universalify back before packaging
+:::::::   Fixes: Cannot find module jsonfile/utils in auto-updater
+echo.
+echo [4.8/5] Ensuring electron-builder dependencies...
+
+set _DESKTOP_MODULES=%~dp0packages\desktop\node_modules
+set _PNPM_STORE=%~dp0node_modules\.pnpm
+
+rem Locate jsonfile in pnpm store (fs-extra needs it for electron-updater)
+for /d %%D in ("%_PNPM_STORE%\jsonfile@6.*") do (
+    set _JSONFILE_SRC=%%D\node_modules\jsonfile
+)
+if not defined _JSONFILE_SRC (
+    for /d %%D in ("%_PNPM_STORE%\jsonfile@*") do (
+        set _JSONFILE_SRC=%%D\node_modules\jsonfile
+    )
+)
+
+if defined _JSONFILE_SRC (
+    if exist "!_JSONFILE_SRC!" (
+        if not exist "%_DESKTOP_MODULES%\jsonfile" (
+            echo   Copying jsonfile to desktop node_modules...
+            xcopy /E /I /Q /Y "!_JSONFILE_SRC!" "%_DESKTOP_MODULES%\jsonfile" >nul 2>&1
+        ) else (
+            echo   jsonfile already present, skipping
+        )
+    )
+) else (
+    echo   [WARN] jsonfile not found in pnpm store, auto-update may fail
+)
+
+rem Locate universalify in pnpm store (jsonfile needs ^>=2.0.1)
+for /d %%D in ("%_PNPM_STORE%\universalify@2.*") do (
+    set _UNIV_SRC=%%D\node_modules\universalify
+)
+if not defined _UNIV_SRC (
+    for /d %%D in ("%_PNPM_STORE%\universalify@*") do (
+        set _UNIV_SRC=%%D\node_modules\universalify
+    )
+)
+
+if defined _UNIV_SRC (
+    if exist "!_UNIV_SRC!" (
+        if not exist "%_DESKTOP_MODULES%\universalify" (
+            echo   Copying universalify to desktop node_modules...
+            xcopy /E /I /Q /Y "!_UNIV_SRC!" "%_DESKTOP_MODULES%\universalify" >nul 2>&1
+        ) else (
+            echo   universalify already present, skipping
+        )
+    )
+) else (
+    echo   [WARN] universalify not found in pnpm store, jsonfile may fail
+)
+
+echo   Dependency check complete.
+
 echo.
 echo [5/5] Packaging...
 

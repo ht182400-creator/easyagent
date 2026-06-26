@@ -57,6 +57,105 @@ const APP_VERSION = getAppVersion();
 process.env.EASYAGENT_VERSION = APP_VERSION;
 setupVersionEnv();
 
+// ==================== 调试日志系统 ====================
+
+/** 是否启用日志文件记录（默认关闭，通过菜单开关控制） */
+let DEBUG_LOG_ENABLED = false;
+/** 当前日志文件路径（启用后初始化） */
+let DEBUG_LOG_PATH = '';
+/** debug 配置路径（持久化到 userData 目录） */
+let DEBUG_CONFIG_PATH = '';
+/** 日志文件目录 */
+let LOGS_DIR = '';
+
+/**
+ * 从持久化配置加载调试开关
+ * 需在 app.whenReady() 后调用（依赖 app.getPath）
+ */
+function loadDebugConfig(): void {
+  try {
+    DEBUG_CONFIG_PATH = path.join(app.getPath('userData'), 'debug-config.json');
+    LOGS_DIR = path.join(app.getPath('userData'), 'logs');
+    if (fs.existsSync(DEBUG_CONFIG_PATH)) {
+      const config = JSON.parse(fs.readFileSync(DEBUG_CONFIG_PATH, 'utf-8'));
+      DEBUG_LOG_ENABLED = config.enableLogFile === true;
+    }
+    if (DEBUG_LOG_ENABLED) {
+      initDebugLogFile();
+    }
+  } catch (err) {
+    console.error('[Debug] 加载调试配置失败:', (err as Error).message);
+    DEBUG_LOG_ENABLED = false;
+  }
+}
+
+/**
+ * 保存调试配置到磁盘
+ */
+function saveDebugConfig(): void {
+  try {
+    const dir = path.dirname(DEBUG_CONFIG_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(DEBUG_CONFIG_PATH, JSON.stringify({ enableLogFile: DEBUG_LOG_ENABLED }, null, 2));
+  } catch (err) {
+    console.error('[Debug] 保存调试配置失败:', (err as Error).message);
+  }
+}
+
+/**
+ * 初始化日志文件（创建日志目录 + 写入启动标记）
+ */
+function initDebugLogFile(): void {
+  try {
+    if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
+    const date = new Date().toISOString().slice(0, 10);
+    DEBUG_LOG_PATH = path.join(LOGS_DIR, `easyagent-${date}.log`);
+    const startMarker = `\n${'='.repeat(60)}\nEasyAgent v${APP_VERSION} 启动 ${new Date().toISOString()}\n${'='.repeat(60)}\n`;
+    fs.appendFileSync(DEBUG_LOG_PATH, startMarker, 'utf-8');
+    console.log(`[Debug] 日志文件已启用: ${DEBUG_LOG_PATH}`);
+  } catch (err) {
+    console.error('[Debug] 日志文件初始化失败:', (err as Error).message);
+    DEBUG_LOG_ENABLED = false;
+    DEBUG_LOG_PATH = '';
+  }
+}
+
+/**
+ * 写入一条日志到文件（仅在启用日志文件时生效）
+ * @param level 日志级别: LOG / ERR / WRN
+ * @param tag 模块标签（如 'Upd', 'Backend', 'Main'）
+ * @param message 日志内容
+ */
+function logToFile(level: string, tag: string, message: string): void {
+  if (!DEBUG_LOG_ENABLED || !DEBUG_LOG_PATH) return;
+  try {
+    const ts = new Date().toISOString().slice(11, 23); // HH:mm:ss.SSS
+    fs.appendFileSync(DEBUG_LOG_PATH, `[${ts} ${level}] [${tag}] ${message}\n`, 'utf-8');
+  } catch (_) {
+    // 写入失败静默忽略，避免日志系统自身崩溃
+  }
+}
+
+/**
+ * 切换日志文件开关
+ * @param enable 可选，不传则取反
+ */
+function toggleDebugLog(enable?: boolean): void {
+  DEBUG_LOG_ENABLED = enable ?? !DEBUG_LOG_ENABLED;
+  saveDebugConfig();
+  if (DEBUG_LOG_ENABLED) {
+    initDebugLogFile();
+    logToFile('LOG', 'Debug', '用户通过菜单启用日志文件');
+  } else {
+    logToFile('LOG', 'Debug', '用户通过菜单关闭日志文件');
+    DEBUG_LOG_PATH = '';
+  }
+  // 通知渲染进程菜单状态变化
+  mainWindow?.webContents.send('debug-config-changed', { enableLogFile: DEBUG_LOG_ENABLED });
+  // 重建菜单以更新勾选状态
+  createMenu();
+}
+
 // ==================== 内嵌后端服务器 ====================
 
 /** API 服务器端口 */
@@ -262,6 +361,29 @@ function createMenu(): void {
         { label: '文档', click: () => shell.openExternal('https://easyagent.dev/docs') },
       ],
     },
+    {
+      label: '调试',
+      submenu: [
+        {
+          label: '启用日志文件',
+          type: 'checkbox',
+          checked: DEBUG_LOG_ENABLED,
+          click: (menuItem) => toggleDebugLog(menuItem.checked),
+        },
+        { type: 'separator' },
+        {
+          label: '打开日志目录',
+          enabled: DEBUG_LOG_ENABLED,
+          click: () => {
+            if (LOGS_DIR && fs.existsSync(LOGS_DIR)) {
+              shell.openPath(LOGS_DIR);
+            } else {
+              dialog.showMessageBox(mainWindow!, { type: 'info', title: '日志目录', message: '日志尚未生成，请先启用日志文件并触发一些操作。' });
+            }
+          },
+        },
+      ],
+    },
   ];
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -379,7 +501,9 @@ async function initAutoUpdater(): Promise<void> {
      */
     const updLog = (...args: unknown[]) => {
       const ts = new Date().toISOString().slice(11, 23); // HH:mm:ss.SSS
+      const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
       console.log(`[Upd ${ts}]`, ...args);
+      logToFile('LOG', 'Upd', `[${ts}] ${msg}`);
     };
 
     updLog('init: autoDownload=', autoUpdater.autoDownload, ' autoInstallOnAppQuit=', autoUpdater.autoInstallOnAppQuit);
@@ -520,7 +644,12 @@ async function initAutoUpdater(): Promise<void> {
     console.log('[EasyAgent Desktop] 自动更新系统已启用');
   } catch (err) {
     const errMsg = (err as Error)?.message || String(err);
+    const errStack = (err as Error)?.stack || '无堆栈信息';
     console.error(`[EasyAgent Desktop] 自动更新初始化失败: ${errMsg}`);
+    console.error(`[EasyAgent Desktop] 堆栈: ${errStack}`);
+    // 写入日志文件以便诊断
+    logToFile('ERR', 'Upd', `initAutoUpdater 失败: ${errMsg}`);
+    logToFile('ERR', 'Upd', `堆栈: ${errStack}`);
     isUpdateSupported = false;
   }
 }
@@ -598,6 +727,20 @@ ipcMain.handle('abort-agent', async () => {
   return { success: true };
 });
 
+// ==================== 调试日志 IPC ====================
+
+/** 获取调试配置（供渲染进程查询菜单状态） */
+ipcMain.handle('get-debug-config', async () => ({
+  enableLogFile: DEBUG_LOG_ENABLED,
+  logPath: DEBUG_LOG_PATH,
+}));
+
+/** 切换日志文件开关（供渲染进程调用） */
+ipcMain.handle('toggle-debug-log', async (_event, enable?: boolean) => {
+  toggleDebugLog(enable);
+  return { enableLogFile: DEBUG_LOG_ENABLED, logPath: DEBUG_LOG_PATH };
+});
+
 ipcMain.handle('get-app-version', async () => APP_VERSION);
 
 /**
@@ -618,7 +761,9 @@ ipcMain.handle('get-app-version', async () => APP_VERSION);
 ipcMain.handle('check-update', async () => {
   const updLog = (...args: unknown[]) => {
     const ts = new Date().toISOString().slice(11, 23);
+    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
     console.log(`[Upd ${ts}] [IPC]`, ...args);
+    logToFile('LOG', 'Upd', `[${ts}] [IPC] ${msg}`);
   };
 
   updLog('========== IPC check-update 被调用 ==========');
@@ -901,6 +1046,9 @@ ipcMain.handle('open-external', async (_event, url: string) => {
 // ==================== 应用生命周期 ====================
 
 app.whenReady().then(async () => {
+  // 0. 加载调试配置（必须在最早，以便记录后续所有日志）
+  loadDebugConfig();
+
   console.log('[EasyAgent Desktop] ========================================');
   console.log(`[EasyAgent Desktop]  EasyAgent v${APP_VERSION} 启动中...`);
   console.log('[EasyAgent Desktop] ========================================');

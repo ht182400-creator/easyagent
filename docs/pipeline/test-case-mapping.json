@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-06-25T22:02:45.521Z",
+    "generatedAt": "2026-06-26T13:22:43.595Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1195,
-    "unmappedCases": 0,
+    "totalTestCases": 1274,
+    "unmappedCases": 79,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -471,8 +471,23 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 0,
-      "subModules": {}
+      "totalCases": 79,
+      "subModules": {
+        "通用工具": {
+          "name": "通用工具（未分类）",
+          "cases": 79,
+          "files": [
+            {
+              "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",
+              "cases": 42
+            },
+            {
+              "path": "packages/desktop/src/__tests__/main/auto-updater-state.test.ts",
+              "cases": 37
+            }
+          ]
+        }
+      }
     }
   }
 }

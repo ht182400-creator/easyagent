@@ -234,6 +234,8 @@ export default function SettingsPage() {
         }
       } else {
         console.log('[Settings] Server API 返回 hasUpdate=false, 跳过 IPC 检查');
+        // 清除之前的错误状态（如 latest.yml 404），显示"已是最新版本"
+        setUpdaterStatus(null);
       }
     } catch (err) {
       console.error('[Settings] 检查更新异常:', err);

@@ -307,20 +307,20 @@
     ]
   },
   "kpi": {
-    "testCases": 1195,
+    "testCases": 1274,
     "testPassRate": 100,
     "testPassed": 1195,
     "testFailed": 0,
     "testSkipped": 0,
     "_vitestTotal": 1195,
-    "_uncovered": 0,
-    "_coveragePct": 100,
-    "_stale": false,
+    "_uncovered": 79,
+    "_coveragePct": 94,
+    "_stale": true,
     "tools": 51,
     "providers": 10,
     "scoreTotal": 100,
     "modes": 4,
-    "_source": "vitest-reports(3 files)",
+    "_source": "vitest-reports(3 files) [coverage 94%]",
     "_totalFiles": 48,
     "_vitestFiles": [
       "_vitest-core.json",
@@ -338,7 +338,7 @@
         "label": "测试覆盖",
         "score": 100,
         "max": 100,
-        "note": "1195通过 (100%)/1195已执行 / 1195 定义 用例通过"
+        "note": "1195通过 (100%)/1195已执行 / 1274 定义 用例通过"
       },
       {
         "label": "分支优化",
@@ -403,13 +403,13 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1195用例+6阶段3分支全完成"
+      "note": "29/29模块+1274用例"
     }
   ],
   "dashboard": {
     "tests": {
       "title": "测试用例详情",
-      "subtitle": "1195 个测试用例 · Vitest 测试框架 · 数据自动采集",
+      "subtitle": "1274 个测试用例 · Vitest 测试框架 · 数据自动采集",
       "items": [
         {
           "label": "多模型适配器",
@@ -4566,11 +4566,11 @@
           ]
         }
       ],
-      "summary": "所有核心模块均已覆盖测试，总用例数 1195，覆盖单元测试、集成测试、端到端测试 + 管线运维自测试"
+      "summary": "所有核心模块均已覆盖测试，总用例数 1274，覆盖单元测试、集成测试、端到端测试 + 管线运维自测试"
     },
     "pass": {
       "title": "测试通过率详情",
-      "subtitle": "✅ GitHub CI v0.5.2 全部通过 (6/6 jobs) · Vitest 已执行 1195 个 (100%) · ",
+      "subtitle": "✅ GitHub CI v0.5.2 全部通过 (6/6 jobs) · Vitest 已执行 1195 个 (100%) · 代码扫描 79 用例（模块注册表计数，非 vitest 离散单元）",
       "stats": [
         {
           "label": "✅ 通过 (vitest)",
@@ -4589,7 +4589,7 @@
         },
         {
           "label": "📋 代码扫描用例",
-          "val": "0",
+          "val": "79",
           "color": "#58a6ff",
           "note": "模块注册表通过代码扫描统计的测试定义数。这些用例已随 CI 全部执行，但 vitest 报告格式不产生 1:1 的离散计数。GitHub CI 验证通过。"
         }
@@ -9251,7 +9251,7 @@
           ]
         }
       ],
-      "summary": "✅ GitHub CI 全部通过 (6/6 jobs) · 所有已执行测试通过。"
+      "summary": "✅ GitHub CI 全部通过 (6/6 jobs) · 所有已执行测试通过。 另外 79 个「代码扫描用例」是通过代码静态分析统计的测试定义数量（共 1195），与 vitest 报告的 1195 个离散测试单元之间存在计数口径差异，并非\"未执行\"。GitHub CI 已完整运行所有测试。"
     },
     "tools": {
       "title": "内置工具详情",
@@ -10107,7 +10107,7 @@
           "label": "测试覆盖",
           "score": 100,
           "max": 100,
-          "note": "1195通过 (100%)/1195已执行 / 1195 定义 用例通过"
+          "note": "1195通过 (100%)/1195已执行 / 1274 定义 用例通过"
         },
         {
           "label": "分支优化",
@@ -10616,13 +10616,18 @@
       "summary": "🎉 全部 29 个模块已完成！主线 19 个 + 分支 10 个，项目交付就绪。"
     },
     "issues": {
-      "title": "问题记录详情 (604)",
-      "subtitle": "实时追踪 · 604 个问题",
+      "title": "问题记录详情 (653)",
+      "subtitle": "实时追踪 · 653 个问题",
       "items": [
         {
           "label": "Desktop 原生应用",
-          "val": "75 个",
+          "val": "84 个",
           "note": "全部已解决"
+        },
+        {
+          "label": "版本控制系统",
+          "val": "56 个",
+          "note": "1 个待解决"
         },
         {
           "label": "Web Dashboard v4",
@@ -10630,8 +10635,8 @@
           "note": "全部已解决"
         },
         {
-          "label": "版本控制系统",
-          "val": "44 个",
+          "label": "Agent 系统",
+          "val": "45 个",
           "note": "全部已解决"
         },
         {
@@ -10641,12 +10646,12 @@
         },
         {
           "label": "知识库 RAG",
-          "val": "42 个",
+          "val": "43 个",
           "note": "1 个待解决"
         },
         {
-          "label": "Agent 系统",
-          "val": "40 个",
+          "label": "Desktop 自动升级",
+          "val": "33 个",
           "note": "全部已解决"
         },
         {
@@ -10655,18 +10660,23 @@
           "note": "全部已解决"
         },
         {
+          "label": "Ink CLI",
+          "val": "30 个",
+          "note": "1 个待解决"
+        },
+        {
           "label": "工具系统 51 tools",
-          "val": "26 个",
+          "val": "27 个",
           "note": "2 个待解决"
         },
         {
-          "label": "Ink CLI",
-          "val": "26 个",
-          "note": "全部已解决"
+          "label": "模型目录动态更新",
+          "val": "27 个",
+          "note": "1 个待解决"
         },
         {
-          "label": "模型目录动态更新",
-          "val": "26 个",
+          "label": "IM 适配器",
+          "val": "25 个",
           "note": "全部已解决"
         },
         {
@@ -10675,24 +10685,19 @@
           "note": "1 个待解决"
         },
         {
-          "label": "IM 适配器",
-          "val": "24 个",
-          "note": "全部已解决"
-        },
-        {
-          "label": "Desktop 自动升级",
-          "val": "24 个",
-          "note": "全部已解决"
-        },
-        {
           "label": "自动数据采集",
-          "val": "21 个",
-          "note": "全部已解决"
+          "val": "22 个",
+          "note": "1 个待解决"
         },
         {
           "label": "实时问题追踪",
           "val": "19 个",
           "note": "1 个待解决"
+        },
+        {
+          "label": "全面去硬编码",
+          "val": "17 个",
+          "note": "全部已解决"
         },
         {
           "label": "GitHub Actions CI/CD",
@@ -10705,22 +10710,17 @@
           "note": "全部已解决"
         },
         {
-          "label": "全面去硬编码",
-          "val": "16 个",
-          "note": "全部已解决"
-        },
-        {
           "label": "沙箱执行环境",
-          "val": "10 个",
-          "note": "全部已解决"
-        },
-        {
-          "label": "MCP 协议",
-          "val": "6 个",
+          "val": "11 个",
           "note": "全部已解决"
         },
         {
           "label": "Web↔Desktop 前端合并",
+          "val": "8 个",
+          "note": "全部已解决"
+        },
+        {
+          "label": "MCP 协议",
           "val": "6 个",
           "note": "全部已解决"
         },
@@ -10745,57 +10745,19 @@
           "note": "全部已解决"
         },
         {
-          "label": "i18n 国际化",
-          "val": "1 个",
+          "label": "一键安装脚本",
+          "val": "2 个",
           "note": "全部已解决"
         },
         {
-          "label": "一键安装脚本",
+          "label": "i18n 国际化",
           "val": "1 个",
           "note": "全部已解决"
         }
       ],
-      "summary": "共 604 个问题记录，覆盖 27 个模块。点击流程图中任意模块节点或「问题记录」卡片查看详情。"
+      "summary": "共 653 个问题记录，覆盖 27 个模块。点击流程图中任意模块节点或「问题记录」卡片查看详情。"
     }
   },
-  "lastUpdated": "2026-06-25T22:02:45.568Z",
-  "source": "module-registry.mjs (统一注册表同步)",
-  "meta": {
-    "version": "0.5.10",
-    "generatedAt": "2026-06-25T22:04:38.598Z"
-  },
-  "version": "0.5.10",
-  "generatedAt": "2026-06-25T22:04:38.598Z",
-  "scoreDimensions": [
-    {
-      "label": "功能完整度",
-      "score": 100,
-      "max": 100,
-      "note": "19/19 模块完成"
-    },
-    {
-      "label": "测试覆盖",
-      "score": 100,
-      "max": 100,
-      "note": "1195通过 (100%)/1195已执行 / 1195 定义 用例通过"
-    },
-    {
-      "label": "分支优化",
-      "score": 100,
-      "max": 100,
-      "note": "10/10 分支完成"
-    },
-    {
-      "label": "CI/CD 成熟度",
-      "score": 100,
-      "max": 100,
-      "note": "4/4 CI 文件就绪"
-    },
-    {
-      "label": "文档完整度",
-      "score": 100,
-      "max": 100,
-      "note": "4/4 文档齐全"
-    }
-  ]
+  "lastUpdated": "2026-06-26T13:22:43.656Z",
+  "source": "module-registry.mjs (统一注册表同步)"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/desktop",
-  "version": "0.5.30",
+  "version": "0.6.0",
   "description": "EasyAgent 桌面版 - Electron原生桌面AI编程助手",
   "author": "EasyAgent Team <team@easyagent.dev>",
   "type": "module",
@@ -165,6 +165,7 @@
     "electron-store": "^8.1.0",
     "electron-updater": "^6.1.0",
     "fs-extra": "^10.1.0",
+    "jsonfile": "^6.1.0",
     "js-yaml": "^4.1.0",
     "lazy-val": "^1.0.5",
     "encodeurl": "^1.0.2",
