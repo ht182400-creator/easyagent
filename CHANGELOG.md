@@ -7,6 +7,8 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.1] - 2026-06-26
+
 ## [0.6.0] - 2026-06-26
 
 ## [0.5.32] - 2026-06-26

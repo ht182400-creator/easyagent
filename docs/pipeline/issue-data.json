@@ -534,6 +534,27 @@
           "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
           "solution": "verify-build.cjs 中 CSS 检查路径从 `src/renderer/index.css` 更新为 `../frontend/src/styles/index.css`（因 Desktop 独立 CSS 已删除）；产物: `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F39] 调试日志文件系统 (21:36)",
+          "problem": "[F39] 调试日志文件系统 (21:36)",
+          "solution": "1. 新增调试日志基础设施：`logToFile(level, tag, msg)` 函数 + `loadDebugConfig()`/`saveDebugConfig()` 持久化 → 日志存储在 `%APPDATA%/easyagent/logs/easyagent-YYYY-MM-DD.log 2. `initAutoUpdater` 的 `updLog` 增强：同时写入文件 + 控制台，catch 块输出完整堆栈到文件 3. 菜单新增\"调试\"子菜单：`checkbox \"启用日志文件\"` + `\"打开日志目录\"` — 勾选后立即生效并重建菜单 4. IPC: `get-debug-config` / `toggle-debug-log` 供渲染进程查询和切换；调用时机: `loadDebugConfig()` 在 `app.whenReady()` 最开始执行，确保尽可能早覆盖后续日志",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F41] v0.5.30 GitHub Release 缺少 latest.yml 修复 (22:",
+          "problem": ": 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)` [根因] : `release-publish.bat` 执行后，`latest.yml` 本地存在但未上传到 GitHub Release。Release #345329965 检查发现 **0 个 asset**（EXE 也没上传）",
+          "solution": "写 PS1 临时脚本，通过 GitHub API 单独上传 `latest.yml` (0.3 KB) → `Invoke-RestMethod POST` → 成功；结果: `https://github.com/ht182400-creator/easyagent/releases/download/v0.5.30/latest.yml` 可访问；遗留: Release 仍缺 EXE 和 blockmap（110MB），旧版本用户无法通过 `electron-updater` 下载 v0.5.30 EXE；教训: `release-publish.bat` 上传环节可能静默失败，需增加 post-upload 验证（检查 Release assets 数量/文件名）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F42] hasUpdate=false 时 error 状态未清除导致 UI 误显\"更新失败\" ",
+          "problem": ": 版本号相同(=0.5.30)，Server API 返回 `hasUpdate=false`，但 UI 显示\"更新失败，请检查网络连接\" [根因] : 页面挂载时 `getUpdateStatus()` 返回 `lastUpdateStatus: 'error'`（来自之前 latest.yml 404），`checkForUpdates()` 中 `hasUpdate=false` 分支(l.236)跳过了 IPC 检查，但**未清除 updaterStatus**，error 卡片仍然显示。同时\"✅ 已是最新版本\"的渲染条件 `!upda",
+          "solution": "`Settings.tsx` 第236行 `else` 分支增加 `setUpdaterStatus(null)`，清除旧 error 状态；构建: 快速模式 build.bat → 成功 (EasyAgent.exe: 168 MB)",
+          "status": "resolved"
         }
       ]
     },
@@ -944,6 +965,13 @@
           "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
           "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
           "solution": "在 `endlocal` 之前用 `if errorlevel 1 ( endlocal && goto :BUILD_FAIL )`，在 setlocal 内部就判断 errorlevel 并跳转；问题4: Desktop 构建阶段的 `if %errorlevel% neq 0 ( ... )` 多行块 → 改用 `goto :BUILD_FAIL` 模式；关于 ESM: main.ts 使用 ESM 是有意为之 — `type:\"module\"` + Electron 30/Node 20 支持 ESM 主进程。preload 必须 CJS（Electron 沙箱限制），已通过 `tsup.preload.config.ts`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F40] electron-updater 自动更新未启用根因修复 (21:48)",
+          "problem": ": `ea.checkUpdate()` 返回 \"自动更新未启用\" → 日志系统显示 `Cannot find module 'jsonfile/utils'` [根因] : `electron-updater → fs-extra@10.1.0 → jsonfile@6.2.1`。pnpm 将 jsonfile 提升到 workspace 根 `.pnpm` 存储，但 electron-builder 只复制 `packages/desktop/node_modules/**/*` 到 ASAR → jsonfile 缺失",
+          "solution": "1. `packages/desktop/package.json`: 新增 `\"jsonfile\": \"^6.1.0\"` 直接依赖 2. `build.bat`: Phase 2.8 新增 — 打包前从 `.pnpm` store 复制 `jsonfile` + `universalify` 到 `packages/desktop/node_modules/`；关键教训: pnpm workspace + electron-builder 组合下，所有 transitive deps 必须显式声明或通过构建脚本补全",
           "status": "resolved"
         }
       ]
@@ -1918,6 +1946,27 @@
           "status": "resolved"
         },
         {
+          "date": "2026-06-26",
+          "title": "[F40] electron-updater 自动更新未启用根因修复 (21:48)",
+          "problem": ": `ea.checkUpdate()` 返回 \"自动更新未启用\" → 日志系统显示 `Cannot find module 'jsonfile/utils'` [根因] : `electron-updater → fs-extra@10.1.0 → jsonfile@6.2.1`。pnpm 将 jsonfile 提升到 workspace 根 `.pnpm` 存储，但 electron-builder 只复制 `packages/desktop/node_modules/**/*` 到 ASAR → jsonfile 缺失",
+          "solution": "1. `packages/desktop/package.json`: 新增 `\"jsonfile\": \"^6.1.0\"` 直接依赖 2. `build.bat`: Phase 2.8 新增 — 打包前从 `.pnpm` store 复制 `jsonfile` + `universalify` 到 `packages/desktop/node_modules/`；关键教训: pnpm workspace + electron-builder 组合下，所有 transitive deps 必须显式声明或通过构建脚本补全",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F41] v0.5.30 GitHub Release 缺少 latest.yml 修复 (22:",
+          "problem": ": 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)` [根因] : `release-publish.bat` 执行后，`latest.yml` 本地存在但未上传到 GitHub Release。Release #345329965 检查发现 **0 个 asset**（EXE 也没上传）",
+          "solution": "写 PS1 临时脚本，通过 GitHub API 单独上传 `latest.yml` (0.3 KB) → `Invoke-RestMethod POST` → 成功；结果: `https://github.com/ht182400-creator/easyagent/releases/download/v0.5.30/latest.yml` 可访问；遗留: Release 仍缺 EXE 和 blockmap（110MB），旧版本用户无法通过 `electron-updater` 下载 v0.5.30 EXE；教训: `release-publish.bat` 上传环节可能静默失败，需增加 post-upload 验证（检查 Release assets 数量/文件名）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.6.0 Release 上传修复 + release-publish.bat v2.1 (22",
+          "problem": ": release-publish.bat Method 2 使用内联 curl 上传，脆弱的 CMD JSON 解析 + `curl -s` 静默失败，导致 GitHub Release 上 0 个 assets",
+          "solution": "用 `_release.mjs` (PowerShell Invoke-RestMethod) 替代内联 curl，已验证可靠上传 EXE + blockmap + latest.yml；v0.6.0 补传: `node _release.mjs 0.6.0` → 删除旧 assets → 重新上传 3 个文件全部成功 (合 105.4 MB)；release-publish.bat: v2.0 → v2.1，Method 2 从 85 行内联 curl 简化为调用 `_release.mjs`，auto 模式默认选 Method 2",
+          "status": "resolved"
+        },
+        {
           "date": "",
           "title": "⚠️ Web ↔ Desktop 代码隔离约束",
           "problem": "⚠️ Web ↔ Desktop 代码隔离约束",
@@ -2229,6 +2278,20 @@
           "title": "[F30] v0.5.20 测试通过 + 文档更新 (13:42)",
           "problem": "[F30] v0.5.20 测试通过 + 文档更新 (13:42)",
           "solution": "useEffect 初始化增加 checking/error/installing 状态处理（原来只处理 downloaded/downloading/available）；辅助函数导出: getStatusCardStyle/getStatusIcon/getStatusTitle/getStatusDescription/getStatusAction 导出为纯函数便于测试；架构文档: `docs/13_自动更新架构设计文档.md` 新增第 11.3 节测试结果；测试文档: `docs/03_测试案例文档.md` 新增 10.8 节测试执行结果；测试技巧: desktop 组件测试必须从 `packages/desktop` 目录运行（cd Set-Location）；`vi.resetModules()` 在 afterEach 确保动态导入隔离",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F40] electron-updater 自动更新未启用根因修复 (21:48)",
+          "problem": ": `ea.checkUpdate()` 返回 \"自动更新未启用\" → 日志系统显示 `Cannot find module 'jsonfile/utils'` [根因] : `electron-updater → fs-extra@10.1.0 → jsonfile@6.2.1`。pnpm 将 jsonfile 提升到 workspace 根 `.pnpm` 存储，但 electron-builder 只复制 `packages/desktop/node_modules/**/*` 到 ASAR → jsonfile 缺失",
+          "solution": "1. `packages/desktop/package.json`: 新增 `\"jsonfile\": \"^6.1.0\"` 直接依赖 2. `build.bat`: Phase 2.8 新增 — 打包前从 `.pnpm` store 复制 `jsonfile` + `universalify` 到 `packages/desktop/node_modules/`；关键教训: pnpm workspace + electron-builder 组合下，所有 transitive deps 必须显式声明或通过构建脚本补全",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F41] v0.5.30 GitHub Release 缺少 latest.yml 修复 (22:",
+          "problem": ": 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)` [根因] : `release-publish.bat` 执行后，`latest.yml` 本地存在但未上传到 GitHub Release。Release #345329965 检查发现 **0 个 asset**（EXE 也没上传）",
+          "solution": "写 PS1 临时脚本，通过 GitHub API 单独上传 `latest.yml` (0.3 KB) → `Invoke-RestMethod POST` → 成功；结果: `https://github.com/ht182400-creator/easyagent/releases/download/v0.5.30/latest.yml` 可访问；遗留: Release 仍缺 EXE 和 blockmap（110MB），旧版本用户无法通过 `electron-updater` 下载 v0.5.30 EXE；教训: `release-publish.bat` 上传环节可能静默失败，需增加 post-upload 验证（检查 Release assets 数量/文件名）",
           "status": "resolved"
         }
       ]
@@ -2966,6 +3029,20 @@
           "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
           "solution": "verify-build.cjs 中 CSS 检查路径从 `src/renderer/index.css` 更新为 `../frontend/src/styles/index.css`（因 Desktop 独立 CSS 已删除）；产物: `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F40] electron-updater 自动更新未启用根因修复 (21:48)",
+          "problem": ": `ea.checkUpdate()` 返回 \"自动更新未启用\" → 日志系统显示 `Cannot find module 'jsonfile/utils'` [根因] : `electron-updater → fs-extra@10.1.0 → jsonfile@6.2.1`。pnpm 将 jsonfile 提升到 workspace 根 `.pnpm` 存储，但 electron-builder 只复制 `packages/desktop/node_modules/**/*` 到 ASAR → jsonfile 缺失",
+          "solution": "1. `packages/desktop/package.json`: 新增 `\"jsonfile\": \"^6.1.0\"` 直接依赖 2. `build.bat`: Phase 2.8 新增 — 打包前从 `.pnpm` store 复制 `jsonfile` + `universalify` 到 `packages/desktop/node_modules/`；关键教训: pnpm workspace + electron-builder 组合下，所有 transitive deps 必须显式声明或通过构建脚本补全",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F41] v0.5.30 GitHub Release 缺少 latest.yml 修复 (22:",
+          "problem": ": 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)` [根因] : `release-publish.bat` 执行后，`latest.yml` 本地存在但未上传到 GitHub Release。Release #345329965 检查发现 **0 个 asset**（EXE 也没上传）",
+          "solution": "写 PS1 临时脚本，通过 GitHub API 单独上传 `latest.yml` (0.3 KB) → `Invoke-RestMethod POST` → 成功；结果: `https://github.com/ht182400-creator/easyagent/releases/download/v0.5.30/latest.yml` 可访问；遗留: Release 仍缺 EXE 和 blockmap（110MB），旧版本用户无法通过 `electron-updater` 下载 v0.5.30 EXE；教训: `release-publish.bat` 上传环节可能静默失败，需增加 post-upload 验证（检查 Release assets 数量/文件名）",
+          "status": "resolved"
         }
       ]
     },
@@ -3684,6 +3761,34 @@
           "problem": ": v0.5.27 的 Settings.tsx 显示 `⚠️ ea.checkUpdate 不可用`，不仅因为 preload ESM/CJS 问题，还可疑是 Vite renderer 缓存复用旧代码 [根因] : 构建时未清 `dist/renderer`，Vite 可能复用旧产物 → 新 Settings.tsx 代码未进入最终 EXE",
           "solution": "详见原文",
           "status": "pending"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F39] 调试日志文件系统 (21:36)",
+          "problem": "[F39] 调试日志文件系统 (21:36)",
+          "solution": "1. 新增调试日志基础设施：`logToFile(level, tag, msg)` 函数 + `loadDebugConfig()`/`saveDebugConfig()` 持久化 → 日志存储在 `%APPDATA%/easyagent/logs/easyagent-YYYY-MM-DD.log 2. `initAutoUpdater` 的 `updLog` 增强：同时写入文件 + 控制台，catch 块输出完整堆栈到文件 3. 菜单新增\"调试\"子菜单：`checkbox \"启用日志文件\"` + `\"打开日志目录\"` — 勾选后立即生效并重建菜单 4. IPC: `get-debug-config` / `toggle-debug-log` 供渲染进程查询和切换；调用时机: `loadDebugConfig()` 在 `app.whenReady()` 最开始执行，确保尽可能早覆盖后续日志",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F40] electron-updater 自动更新未启用根因修复 (21:48)",
+          "problem": ": `ea.checkUpdate()` 返回 \"自动更新未启用\" → 日志系统显示 `Cannot find module 'jsonfile/utils'` [根因] : `electron-updater → fs-extra@10.1.0 → jsonfile@6.2.1`。pnpm 将 jsonfile 提升到 workspace 根 `.pnpm` 存储，但 electron-builder 只复制 `packages/desktop/node_modules/**/*` 到 ASAR → jsonfile 缺失",
+          "solution": "1. `packages/desktop/package.json`: 新增 `\"jsonfile\": \"^6.1.0\"` 直接依赖 2. `build.bat`: Phase 2.8 新增 — 打包前从 `.pnpm` store 复制 `jsonfile` + `universalify` 到 `packages/desktop/node_modules/`；关键教训: pnpm workspace + electron-builder 组合下，所有 transitive deps 必须显式声明或通过构建脚本补全",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "[F41] v0.5.30 GitHub Release 缺少 latest.yml 修复 (22:",
+          "problem": ": 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)` [根因] : `release-publish.bat` 执行后，`latest.yml` 本地存在但未上传到 GitHub Release。Release #345329965 检查发现 **0 个 asset**（EXE 也没上传）",
+          "solution": "写 PS1 临时脚本，通过 GitHub API 单独上传 `latest.yml` (0.3 KB) → `Invoke-RestMethod POST` → 成功；结果: `https://github.com/ht182400-creator/easyagent/releases/download/v0.5.30/latest.yml` 可访问；遗留: Release 仍缺 EXE 和 blockmap（110MB），旧版本用户无法通过 `electron-updater` 下载 v0.5.30 EXE；教训: `release-publish.bat` 上传环节可能静默失败，需增加 post-upload 验证（检查 Release assets 数量/文件名）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.6.0 Release 上传修复 + release-publish.bat v2.1 (22",
+          "problem": ": release-publish.bat Method 2 使用内联 curl 上传，脆弱的 CMD JSON 解析 + `curl -s` 静默失败，导致 GitHub Release 上 0 个 assets",
+          "solution": "用 `_release.mjs` (PowerShell Invoke-RestMethod) 替代内联 curl，已验证可靠上传 EXE + blockmap + latest.yml；v0.6.0 补传: `node _release.mjs 0.6.0` → 删除旧 assets → 重新上传 3 个文件全部成功 (合 105.4 MB)；release-publish.bat: v2.0 → v2.1，Method 2 从 85 行内联 curl 简化为调用 `_release.mjs`，auto 模式默认选 Method 2",
+          "status": "resolved"
         }
       ]
     },
@@ -4610,6 +4715,13 @@
           "problem": ": v0.5.4~v0.5.9 所有 Release assets 为空（0 个文件），导致 electron-updater 找不到 latest.yml → 永远显示\"当前已是最新版本\" [根因] : `release-publish.bat` 选择 [1] gh CLI 上传，但 `gh auth status` 显示\"not logged in\" → 上传静默失败",
           "solution": "编写 `_upload_assets.mjs` 使用 Token + curl 手动上传 v0.5.10 assets (EXE 105MB + blockmap + latest.yml) → HTTP 201 全部成功；Release 状态: v0.5.10 标记为 GitHub Latest Release，assets 完整；清理: 删除 `_upload_assets.mjs` 及相关临时文件；遗留: `release-publish.bat` 需修复 gh auth 检测（登录失败时自动回退到 Token 方式）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-26",
+          "title": "v0.6.0 Release 上传修复 + release-publish.bat v2.1 (22",
+          "problem": ": release-publish.bat Method 2 使用内联 curl 上传，脆弱的 CMD JSON 解析 + `curl -s` 静默失败，导致 GitHub Release 上 0 个 assets",
+          "solution": "用 `_release.mjs` (PowerShell Invoke-RestMethod) 替代内联 curl，已验证可靠上传 EXE + blockmap + latest.yml；v0.6.0 补传: `node _release.mjs 0.6.0` → 删除旧 assets → 重新上传 3 个文件全部成功 (合 105.4 MB)；release-publish.bat: v2.0 → v2.1，Method 2 从 85 行内联 curl 简化为调用 `_release.mjs`，auto 模式默认选 Method 2",
+          "status": "resolved"
         }
       ]
     },
@@ -4744,8 +4856,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 653,
-  "_generatedAt": "2026-06-26T13:22:43.645Z",
+  "_totalIssues": 669,
+  "_generatedAt": "2026-06-26T14:58:20.512Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -4766,6 +4878,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-26T13:22:43.659Z"
+    "exportedAt": "2026-06-26T14:58:20.534Z"
   }
 }

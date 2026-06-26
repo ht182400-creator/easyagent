@@ -151,6 +151,7 @@ node --test docs/pipeline/__tests__/pipeline-config.test.mjs
 | 12 | 🔀 | **bat文件 `[!]` + 延迟扩展冲突** | `enabledelayedexpansion` 下 echo `[!]` 被当成变量标记，导致整行解析崩溃 | 改为 `[^^!]`（`^^` 转义） |
 | 13 | 🔀 | **bat文件中文编码乱码** | CMD 代码页 936(GBK) 无法正确输出 UTF-8 中文，PowerShell 管道解析中文变乱码 | bat 开头 `chcp 65001` 设置 UTF-8 代码页；ps1 开头设置 `[Console]::OutputEncoding = UTF8`；JSON 数据本身正确，仅显示层编码不匹配 |
 | 14 | 🔀 | **bat文件 `:::` 注释导致 CMD 崩溃** | `::: comment` 被 CMD 解析为非法 label，报 `此时不应有 :。` | **全部改为 `rem` 注释**；不用任何 `:` 开头的注释 |
+| 14a | 🔀 | **CMD `if (...)` 块内 echo 含 `)` 导致块提前关闭** | echo 中的 `)` 被 CMD 当作 if/for 块的结束符，导致块内剩余代码被跳过或 `else` 被误解析。`^)` 转义不可靠（CMD 预解析器处理不一致） | **用 `goto` 标签模式替代 `if (...) 多行块`**：正确判断后直接 `goto :CONTINUE` 跳过错误处理区；对 if 块内 echo 中不可避免地出现 `)` 的场景，改换措辞去掉括号或用变量替代 |
 | 15 | 🔀 | **execSync 路径含空格被截断** | `execSync('node ' + path)` 中路径有空格，CMD 当作参数分隔符截断| 路径加双引号：`node "${path}"` |
 | 16 | 🔀 | **`.mjs` 文件含 TS 类型注解** | Node.js ESM 不支持 TS 语法，`function foo(x: string)` 报 `SyntaxError` | 移除全部类型注解，用纯 JS |
 | 17 | 🔀 | **esbuild 0.20.1 对 catch 语法极脆弱** | `Expected "finally" but found "}"`：原代码 try 块中 if/else 结束后多了孤儿 `}`，导致 catch 的 `}` 无 try 可关闭 | 1) 统一写 `catch (err)` 2) verify #9 拦截 `catch {}` 和 `catch (_e)` 3) 确保 try 块 brace 配对正确 |

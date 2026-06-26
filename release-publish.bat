@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 rem 设置 UTF-8 代码页，防止中文乱码
 chcp 65001 >nul 2>&1
 setlocal enabledelayedexpansion
@@ -6,7 +6,7 @@ title EasyAgent Release Publisher
 cd /d "%~dp0"
 
 rem ============================================================
-rem  EasyAgent Release Publisher v2.0
+rem  EasyAgent Release Publisher v2.1
 rem  Flow: Version bump -> DTS Check -> Build EXE -> GitHub Release -> Pipeline Sync
 rem  Usage:
 rem    release-publish.bat            Interactive mode
@@ -22,7 +22,7 @@ cls
 
 echo.
 echo ============================================================
-echo         EasyAgent Release Publisher v2.0
+echo         EasyAgent Release Publisher v2.1
 echo ============================================================
 echo.
 
@@ -151,7 +151,7 @@ if "!HAS_CHANGES!"=="1" (
     type "%STATUS_FILE%"
     echo.
     if "!AUTO_MODE!"=="1" (
-        echo   [Auto] Will proceed (release script handles this)
+        echo   [Auto] Will proceed - release script handles this
     ) else (
         set /p CONTINUE_CHECK="  Continue? (changes will be handled by release script) [Y/n]: "
         if /i not "!CONTINUE_CHECK!"=="Y" if not "!CONTINUE_CHECK!"=="" (
@@ -225,22 +225,24 @@ pushd packages\core
 call npx tsup --dts
 set _DTS_ERR=%errorlevel%
 popd
-if %_DTS_ERR% neq 0 (
-    echo   ----------------------------------------
-    echo   [WARN] DTS build has issues (exit code: %_DTS_ERR%^)
-    echo   Review errors above before proceeding to EXE build.
-    echo   Common fix: Ensure all type casts use 'as unknown as Type'.
-    if %AUTO_MODE%==0 (
-        set /p DTS_CONTINUE="  Continue anyway? [y/N]: "
-        if /i not "!DTS_CONTINUE!"=="Y" (
-            echo   Aborted by user. Fix DTS errors first.
-            pause & exit /b 1
-        )
+rem 使用 goto 模式避免 CMD if 块内 () 冲突
+if %_DTS_ERR% equ 0 goto :DTS_OK
+echo   ----------------------------------------
+echo   [WARN] DTS build has issues (exit code: %_DTS_ERR%)
+echo   Review errors above before proceeding to EXE build.
+echo   Common fix: Ensure all type casts use 'as unknown as Type'.
+if %AUTO_MODE%==0 (
+    set /p DTS_CONTINUE="  Continue anyway? [y/N]: "
+    if /i not "!DTS_CONTINUE!"=="Y" (
+        echo   Aborted by user. Fix DTS errors first.
+        pause & exit /b 1
     )
-) else (
-    echo   ----------------------------------------
-    echo   [OK] DTS Build success - no type errors
 )
+goto :STEP_BUILD
+
+:DTS_OK
+echo   ----------------------------------------
+echo   [OK] DTS Build success - no type errors
 
 rem ============================================================
 rem Step 4: Build Desktop EXE
@@ -299,7 +301,8 @@ if exist "packages\desktop\release\*.exe" (
     for %%F in ("packages\desktop\release\EasyAgent-*.exe") do (
         for %%A in ("%%F") do (
             set /a FILE_MB=%%~zA / 1048576
-            echo   [OK] %%~nxF  (!FILE_MB! MB)
+            rem 去掉括号避免嵌套 for/if 块内 CMD 解析冲突
+            echo   [OK] %%~nxF  - Size: !FILE_MB! MB
         )
     )
 )
@@ -320,20 +323,20 @@ echo   Step 5: Create GitHub Release
 echo -----------------------------------------------------------
 echo   Upload methods:
 echo   [1] gh CLI (recommended, requires install)
-echo   [2] GitHub Token + curl (semi-auto)
+echo   [2] Token + _release.mjs (auto, recommended)
 echo   [3] Manual upload (open browser)
 echo   [0] Skip, handle later
 echo -----------------------------------------------------------
 echo.
 
 if %AUTO_MODE%==1 (
-    set UPLOAD_CHOICE=3
+    set UPLOAD_CHOICE=2
     goto :SKIP_UPLOAD_CHOICE
 )
 
 :ASK_UPLOAD
 set /p UPLOAD_CHOICE="  Choose [1/2/3/0]: "
-if "!UPLOAD_CHOICE!"=="" set UPLOAD_CHOICE=3
+if "!UPLOAD_CHOICE!"=="" set UPLOAD_CHOICE=2
 
 if "!UPLOAD_CHOICE!"=="1" goto :UPLOAD_GH_CLI
 if "!UPLOAD_CHOICE!"=="2" goto :UPLOAD_TOKEN
@@ -355,9 +358,9 @@ if %errorlevel% neq 0 (
     echo   Install: winget install GitHub.cli
     echo   Or visit: https://cli.github.com
     echo.
-    set /p GH_FALLBACK="  Fallback to manual upload? [Y/n]: "
+    set /p GH_FALLBACK="  Fallback to _release.mjs? [Y/n]: "
     if /i not "!GH_FALLBACK!"=="Y" if not "!GH_FALLBACK!"=="" goto :ASK_UPLOAD
-    goto :UPLOAD_MANUAL
+    goto :UPLOAD_TOKEN
 )
 
 rem Get version for tag (use node for reliable JSON parsing)
@@ -371,7 +374,7 @@ if %errorlevel% equ 0 (
     echo   [WARN] Tag !TAG_VERSION! does not exist
     if %AUTO_MODE%==0 (
         set /p TAG_CONT="  Create and push tag? [Y/n]: "
-        if /i not "!TAG_CONT!"=="Y" if not "!TAG_CONT!"=="" goto :UPLOAD_MANUAL
+        if /i not "!TAG_CONT!"=="Y" if not "!TAG_CONT!"=="" goto :UPLOAD_TOKEN
     )
     git tag -a !TAG_VERSION! -m "EasyAgent !TAG_VERSION!"
     git push origin !TAG_VERSION!
@@ -390,131 +393,54 @@ if %errorlevel% equ 0 (
     echo   [OK] GitHub Release created
     goto :STEP_SYNC
 ) else (
-    echo   [FAIL] GitHub Release creation failed
-    echo   Try manual: https://github.com/ht182400-creator/easyagent/releases/new
-    pause
-    goto :STEP_SYNC
+    echo   [FAIL] GitHub Release creation failed, falling back to _release.mjs...
+    goto :UPLOAD_TOKEN
 )
 
-rem --- Method 2: Token + curl ---
+rem --- Method 2: _release.mjs (PowerShell-based, reliable) ---
 :UPLOAD_TOKEN
+rem 确保工作目录在项目根目录（防止 build.bat 等改变了 CWD）
+cd /d "%~dp0"
 echo.
-echo   --- Token-based Release ---
+echo   --- Token-based Release (via _release.mjs) ---
 echo.
-rem Auto-read token from local file (use for /f to avoid cmd parser issues with < inside if block)
-set "GITHUB_TOKEN="
-if exist "scripts\.release_token" (
-    for /f "usebackq delims=" %%t in ("scripts\.release_token") do set "GITHUB_TOKEN=%%t"
-    if not "!GITHUB_TOKEN!"=="" (
-        echo   [OK] Token auto-loaded from scripts/.release_token
-        goto :TOKEN_READY
-    )
-)
-rem Token file not found or empty - prompt user
-echo   Requires GitHub Personal Access Token (classic)
+
+rem Check token exists (required by _release.mjs)
+rem 反向判断 + goto 模式：避免 CMD if 块内 () 解析冲突
+if exist "scripts\.release_token" goto :UPLOAD_TOKEN_GO
+echo   [ERROR] scripts/.release_token not found!
 echo   Create at: https://github.com/settings/tokens
-echo   Scope needed: repo (full)
+echo   Scope: repo (full)
 echo.
-set /p GITHUB_TOKEN="  Enter GitHub Token (hidden input): "
+echo   Save token to scripts/.release_token
+pause
+goto :UPLOAD_MANUAL
 
-:TOKEN_READY
-if "!GITHUB_TOKEN!"=="" (
-    echo   Token cannot be empty. Falling back to manual...
-    goto :UPLOAD_MANUAL
-)
+:UPLOAD_TOKEN_GO
+rem Get numeric version (strip v prefix) for _release.mjs
+for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set NUM_VERSION=%%a
+echo   Target version: v!NUM_VERSION!
 
-rem Get version (use node for reliable JSON parsing)
-for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set TAG_VERSION=v%%a
-echo   Target version: !TAG_VERSION!
+rem _release.mjs handles: find/create Release, delete old assets, upload EXE+blockmap+yml
+rem   Uses PowerShell Invoke-RestMethod — proven reliable for large file uploads
+echo   Running: node _release.mjs !NUM_VERSION!
+echo   ----------------------------------------
+node _release.mjs !NUM_VERSION!
+set _REL_ERR=%errorlevel%
 
-rem Step 1: Create Release (or get existing if 422)
-echo   (1) Creating Release ...
+rem 上传结果判断用 goto 模式，避免括号冲突
+if %_REL_ERR% equ 0 goto :UPLOAD_TOKEN_OK
+echo   Release not found, creating new one...
+node _release.mjs !NUM_VERSION! --create
+set _REL_ERR=%errorlevel%
 
-curl -s -X POST ^
-    -H "Authorization: token !GITHUB_TOKEN!" ^
-    -H "Content-Type: application/json" ^
-    -d "{\"tag_name\":\"!TAG_VERSION!\",\"name\":\"EasyAgent !TAG_VERSION!\",\"body\":\"See CHANGELOG.md\",\"draft\":false,\"prerelease\":false}" ^
-    "https://api.github.com/repos/ht182400-creator/easyagent/releases" > release_response.json
+if %_REL_ERR% equ 0 goto :UPLOAD_TOKEN_OK
+echo   [FAIL] _release.mjs failed (exit code: %_REL_ERR%)
+echo   Falling back to manual upload...
+goto :UPLOAD_MANUAL
 
-rem Check if Release already exists (422)
-findstr /c:"already_exists" release_response.json >nul 2>&1
-if %errorlevel% equ 0 (
-    echo   [INFO] Release already exists, fetching upload URL...
-    del release_response.json 2>nul
-    curl -s ^
-        -H "Authorization: token !GITHUB_TOKEN!" ^
-        -H "Accept: application/vnd.github.v3+json" ^
-        "https://api.github.com/repos/ht182400-creator/easyagent/releases/tags/!TAG_VERSION!" > release_response.json
-    goto :EXTRACT_UPLOAD_URL
-)
-
-rem Check if upload_url present (normal success)
-type release_response.json | findstr "upload_url" >nul
-if %errorlevel% neq 0 (
-    echo   [FAIL] Release creation failed. Response:
-    type release_response.json
-    del release_response.json 2>nul
-    goto :UPLOAD_MANUAL
-)
-echo   [OK] Release created
-
-:EXTRACT_UPLOAD_URL
-rem Extract upload_url from response JSON
-findstr "upload_url" release_response.json > "%TEMP%\_rel_upload_url.tmp" 2>nul
-for /f tokens^=2^ delims^=^" %%a in ('type "%TEMP%\_rel_upload_url.tmp"') do (
-    for /f "tokens=1 delims={" %%u in ("%%a") do set UPLOAD_URL=%%u
-)
-del "%TEMP%\_rel_upload_url.tmp" 2>nul
-
-if "!UPLOAD_URL!"=="" (
-    echo   [FAIL] Could not extract upload URL. Response:
-    type release_response.json
-    del release_response.json 2>nul
-    goto :UPLOAD_MANUAL
-)
-echo   [OK] Release ready, uploading files...
-
-rem Step 2: Upload files
-echo   (2) Uploading artifacts ...
-
-rem Find EXE and blockmap files
-for %%F in ("packages\desktop\release\EasyAgent-*.exe") do set EXE_PATH=%%F
-for %%F in ("packages\desktop\release\EasyAgent-*.exe.blockmap") do set BLOCKMAP_PATH=%%F
-
-if defined EXE_PATH (
-    echo      Uploading: !EXE_PATH!
-    
-    rem Upload EXE (upload_url already extracted above)
-    for %%F in ("!EXE_PATH!") do (
-        curl -s -X POST ^
-            -H "Authorization: token !GITHUB_TOKEN!" ^
-            -H "Content-Type: application/octet-stream" ^
-            --data-binary @"%%F" ^
-            "!UPLOAD_URL!?name=%%~nxF"
-    )
-    
-    rem Upload blockmap
-    for %%F in ("!BLOCKMAP_PATH!") do (
-        curl -s -X POST ^
-            -H "Authorization: token !GITHUB_TOKEN!" ^
-            -H "Content-Type: application/octet-stream" ^
-            --data-binary @"%%F" ^
-            "!UPLOAD_URL!?name=%%~nxF"
-    )
-    
-    rem Upload latest.yml
-    curl -s -X POST ^
-        -H "Authorization: token !GITHUB_TOKEN!" ^
-        -H "Content-Type: application/octet-stream" ^
-        --data-binary @"packages\desktop\release\latest.yml" ^
-        "!UPLOAD_URL!?name=latest.yml"
-    
-    echo   [OK] Files uploaded
-) else (
-    echo   [WARN] Build artifacts not found. Build first.
-)
-
-del release_response.json 2>nul
+:UPLOAD_TOKEN_OK
+echo   [OK] Upload complete (EXE + blockmap + latest.yml)
 goto :STEP_SYNC
 
 rem --- Method 3: Manual upload ---
@@ -523,16 +449,13 @@ echo.
 echo   --- Manual Upload Guide ---
 echo.
 echo   [WARN] GitHub web upload limit: 25MB per file!
-echo   [WARN] EXE file (~85MB) exceeds this limit - browser upload WILL fail.
+echo   [WARN] EXE file (~105MB) exceeds this limit - browser upload WILL fail.
 echo.
 rem Get version (use node for reliable JSON parsing)
 for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set TAG_VERSION=v%%a
-echo   Recommended alternatives:
-echo   [A] Run this script again, choose option [2] (Token + curl, auto)
-echo   [B] Use gh CLI:
-echo       gh release upload !TAG_VERSION! packages\desktop\release\EasyAgent-*-win-x64.exe
-echo       gh release upload !TAG_VERSION! packages\desktop\release\EasyAgent-*-win-x64.exe.blockmap
-echo       gh release upload !TAG_VERSION! packages\desktop\release\latest.yml
+echo   Recommended: Run this script again, choose option [2] (auto)
+echo   Or use command line:
+echo       node _release.mjs !TAG_VERSION:v=!
 echo.
 echo   Release page (if not yet created):
 echo       https://github.com/ht182400-creator/easyagent/releases/new?tag=!TAG_VERSION!
@@ -563,13 +486,15 @@ rem 设置 UTF-8 编码避免中文乱码
 chcp 65001 >nul 2>&1
 powershell -ExecutionPolicy Bypass -File scripts\pipeline-auto-sync.ps1
 set _SYNC_ERR=%errorlevel%
-if %_SYNC_ERR% neq 0 (
-    echo   ----------------------------------------
-    echo   [WARN] Pipeline sync had issues (exit code: %_SYNC_ERR%^)
-) else (
-    echo   ----------------------------------------
-    echo   [OK] Pipeline sync complete - server running on port 8899
-)
+rem 使用 goto 模式避免 CMD if 块内 () 冲突
+if %_SYNC_ERR% equ 0 goto :SYNC_OK
+echo   ----------------------------------------
+echo   [WARN] Pipeline sync had issues (exit code: %_SYNC_ERR%)
+goto :DONE
+
+:SYNC_OK
+echo   ----------------------------------------
+echo   [OK] Pipeline sync complete - server running on port 8899
 
 rem ============================================================
 rem Done
@@ -621,7 +546,7 @@ rem Help
 rem ============================================================
 :HELP
 echo.
-echo EasyAgent Release Publisher v2.0 - Usage
+echo EasyAgent Release Publisher v2.1 - Usage
 echo ------------------------------------------
 echo.
 echo Usage:
@@ -635,7 +560,7 @@ echo   2. Pre-checks (git status, remote connectivity)
 echo   3. Version bump (version.json + package.json + CHANGELOG + git push)
 echo   3.5. DTS Type Check (npx tsup --dts)^ - quality gate
 echo   4. Build EXE (build.bat --release)
-echo   5. Upload to GitHub Release (gh CLI / Token / manual)
+echo   5. Upload to GitHub Release (gh CLI / _release.mjs / manual)
 echo   6. Pipeline Data Auto-Sync (vitest results + server restart)
 echo.
 echo Prerequisites:
@@ -643,8 +568,8 @@ echo   - Git installed and configured
 echo   - Node.js >= 18.0.0
 echo   - pnpm installed
 echo   - GitHub repo connected
-echo   - Optional: scripts\.release_token for automated upload
-echo.   - Optional: gh CLI for drag-and-drop release upload
+echo   - Required: scripts\.release_token for auto-upload (method 2)
+echo.   - Optional: gh CLI for drag-and-drop release upload (method 1)
 echo.
 pause
 exit /b 0

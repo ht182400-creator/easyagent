@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/cli",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "EasyAgent CLI - 命令行AI编程助手",
   "type": "module",
   "main": "./dist/main.js",
