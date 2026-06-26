@@ -1,6 +1,6 @@
 {
   "name": "easyagent",
-  "version": "0.5.10",
+  "version": "0.5.30",
   "description": "AI编程助手 - 集成中国主流大模型的全功能AI Agent",
   "private": true,
   "scripts": {

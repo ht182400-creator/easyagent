@@ -1,6 +1,7 @@
 @echo off
 rem 设置 UTF-8 代码页，防止中文乱码
-chcp 65001 >nul 2>&1
+rem 使用 call 包裹避免 PowerShell 拦截 I/O 重定向
+call :silent chcp 65001
 setlocal enabledelayedexpansion
 title EasyAgent Desktop Build
 cd /d "%~dp0"
@@ -8,13 +9,13 @@ cd /d "%~dp0"
 rem 允许 Node 24+ 构建（better-sqlite3 已在本地编译兼容）
 set EASYAGENT_SKIP_NODE_CHECK=1
 
-::::: ============================================================
-:::::  EasyAgent Desktop EXE - Standard Build Pipeline
-:::::  Usage:
-:::::    build.bat            Fast test mode (--dir, ~60s)
-:::::    build.bat --release  Full NSIS installer (~3 min)
-:::::    build.bat --verify   Pre-flight check only (no build)
-::::: ============================================================
+:::::: ============================================================
+::::::  EasyAgent Desktop EXE - Standard Build Pipeline
+::::::  Usage:
+::::::    build.bat            Fast test mode (--dir, ~60s)
+::::::    build.bat --release  Full NSIS installer (~3 min)
+::::::    build.bat --verify   Pre-flight check only (no build)
+:::::: ============================================================
 
 set MODE=fast
 if /i "%~1"=="--release" set MODE=release
@@ -28,18 +29,18 @@ echo   Mode: %MODE%
 echo   Time: %date% %time%
 echo ============================================
 
-::::: ============================================================
-::::: Phase 0: Cleanup
-::::: ============================================================
+:::::: ============================================================
+:::::: Phase 0: Cleanup
+:::::: ============================================================
 echo.
 echo [0/5] Cleanup...
 
-::::: Kill running processes
+:::::: Kill running processes
 taskkill /f /im EasyAgent.exe >nul 2>&1
 taskkill /f /im electron.exe  >nul 2>&1
-timeout /t 1 /nobreak >nul
+call :silent timeout /t 1 /nobreak
 
-::::: Clean old release directory (keep directory, just clear contents to avoid NSIS "Can't open output file")
+:::::: Clean old release directory (keep directory, just clear contents to avoid NSIS "Can't open output file")
 if exist "packages\desktop\release" (
     echo   Cleaning old release artifacts...
     del /s /q "packages\desktop\release\*" >nul 2>&1
@@ -48,7 +49,7 @@ if exist "packages\desktop\release" (
     mkdir "packages\desktop\release" >nul 2>&1
 )
 
-::::: Clean dist/renderer for fresh Vite build
+:::::: Clean dist/renderer for fresh Vite build
 if exist "packages\desktop\dist\renderer" (
     echo   Cleaning dist/renderer for fresh build...
     rmdir /s /q "packages\desktop\dist\renderer" >nul 2>&1
@@ -56,9 +57,9 @@ if exist "packages\desktop\dist\renderer" (
 
 echo   Cleanup done.
 
-::::: ============================================================
-::::: Phase 1: Pre-flight Verification
-::::: ============================================================
+:::::: ============================================================
+:::::: Phase 1: Pre-flight Verification
+:::::: ============================================================
 echo.
 echo [1/5] Pre-flight verification...
 
@@ -79,9 +80,9 @@ if /i "%MODE%"=="verify" (
     exit /b 0
 )
 
-::::: ============================================================
-::::: Phase 2: Build All Modules
-::::: ============================================================
+:::::: ============================================================
+:::::: Phase 2: Build All Modules
+:::::: ============================================================
 echo.
 echo [2/5] Building core...
 
@@ -107,28 +108,35 @@ if %errorlevel% neq 0 (
 echo [4/5] Building desktop...
 cd ..\desktop
 
-echo   - tsup (main + preload)...
+echo   - tsup (main)...
 call pnpm exec tsup
-if %errorlevel% neq 0 (
-    echo [FAIL] desktop tsup build failed
-    cd ..\..
-    pause
-    exit /b 1
-)
+if %errorlevel% neq 0 goto :BUILD_FAIL
+
+echo   - tsup (preload - CJS)...
+call pnpm exec tsup --config tsup.preload.config.ts
+if %errorlevel% neq 0 goto :BUILD_FAIL
 
 echo   - vite (renderer)...
-rem Temporarily disable delayed expansion to avoid ! chars in Vite output
+rem 暂时关闭延迟扩展避免 Vite 输出中的 ! 符号被 CMD 解析
 setlocal disabledelayedexpansion
 call pnpm exec vite build
-endlocal
+rem 在 setlocal 内部判断 errorlevel，避免 endlocal 将其重置为 0
 if errorlevel 1 (
-    echo [FAIL] vite build failed
-    cd ..\..
-    pause
-    exit /b 1
+    endlocal
+    goto :BUILD_FAIL
 )
+endlocal
 
 echo   All modules built.
+goto :BUILD_DONE
+
+:BUILD_FAIL
+echo [FAIL] desktop build failed
+cd ..\..
+pause
+exit /b 1
+
+:BUILD_DONE
 
 :::::: ============================================================
 :::::: Phase 2.5: Switch better-sqlite3 to Electron version for packaging
@@ -159,16 +167,16 @@ copy /Y "%_NODE_FILE%" "%_NODE_FILE%.backup" >nul
 copy /Y "%_ELECTRON_FILE%" "%_NODE_FILE%" >nul
 echo   [OK] Switched (will restore after packaging)
 
-::::: ============================================================
-::::: Phase 3: Package
-::::: ============================================================
+:::::: ============================================================
+:::::: Phase 3: Package
+:::::: ============================================================
 echo.
 echo [5/5] Packaging...
 
-rem goto avoids if/else bracket parsing bugs in CMD
-rem pushd/popd ensures directory safety (no setlocal needed here)
-if /i "%MODE%"=="release" goto PKG_RELEASE
-goto PKG_FAST
+rem 用 goto 替代 if/else 块，避免 CMD 括号解析 bug
+rem pushd/popd 确保目录安全
+if /i "%MODE%"=="release" goto :PKG_RELEASE
+goto :PKG_FAST
 
 :PKG_RELEASE
 echo   Building full NSIS installer...
@@ -177,7 +185,7 @@ pushd "%~dp0packages\desktop"
 call pnpm exec electron-builder --win --x64
 set _PKG_ERR=%errorlevel%
 popd
-goto PKG_DONE
+goto :PKG_DONE
 
 :PKG_FAST
 echo   Building fast test package (--dir)...
@@ -186,13 +194,12 @@ pushd "%~dp0packages\desktop"
 call pnpm exec electron-builder --dir --win
 set _PKG_ERR=%errorlevel%
 popd
-goto PKG_DONE
+goto :PKG_DONE
 
 :PKG_DONE
 echo [DEBUG] Packaging exit code: %_PKG_ERR%
-rem Use goto to avoid CMD nested-if bracket parsing bugs
-if %_PKG_ERR% neq 0 goto PKG_RETRY
-goto PKG_VERIFY
+if %_PKG_ERR% neq 0 goto :PKG_RETRY
+goto :PKG_VERIFY
 
 :PKG_RETRY
 echo [FAIL] electron-builder packaging failed (attempt 1)
@@ -201,26 +208,26 @@ echo   (If this fails: Add Defender exclusion for packages\desktop\release\)
 timeout /t 5 /nobreak >nul
 pushd "%~dp0packages\desktop"
 if not exist "release" mkdir "release" >nul 2>&1
-if /i "%MODE%"=="release" goto PKG_RETRY_RELEASE
-goto PKG_RETRY_FAST
+if /i "%MODE%"=="release" goto :PKG_RETRY_RELEASE
+goto :PKG_RETRY_FAST
 
 :PKG_RETRY_RELEASE
 call pnpm exec electron-builder --win --x64
 set _PKG_ERR=%errorlevel%
-goto PKG_RETRY_DONE
+goto :PKG_RETRY_DONE
 
 :PKG_RETRY_FAST
 call pnpm exec electron-builder --dir --win
 set _PKG_ERR=%errorlevel%
-goto PKG_RETRY_DONE
+goto :PKG_RETRY_DONE
 
 :PKG_RETRY_DONE
 popd
 echo [DEBUG] Packaging retry exit code: %_PKG_ERR%
-if %_PKG_ERR% neq 0 goto PKG_RETRY_FAIL
+if %_PKG_ERR% neq 0 goto :PKG_RETRY_FAIL
 echo [OK] Packaging succeeded on retry
 cd /d "%~dp0"
-goto PKG_VERIFY
+goto :PKG_VERIFY
 
 :PKG_RETRY_FAIL
 echo.
@@ -243,8 +250,6 @@ echo [DEBUG] Packaging successful
 rem Return to workspace root for Phase 4/5 relative paths
 cd ..\..
 
-::::: ============================================================
-
 :::::: ============================================================
 :::::: Phase 3.5: Restore better-sqlite3 system version
 :::::: ============================================================
@@ -262,8 +267,8 @@ if exist "%_NODE_FILE%.backup" (
     node "%~dp0scripts\sqlite3-loader.mjs" system
 )
 
-::::: Phase 4: Verify Output
-::::: ============================================================
+:::::: Phase 4: Verify Output
+:::::: ============================================================
 echo.
 echo ============================================
 echo   VERIFYING OUTPUT
@@ -299,9 +304,9 @@ if /i "%MODE%"=="release" (
     )
 )
 
-::::: ============================================================
-::::: Phase 5: Quick asar content verification
-::::: ============================================================
+:::::: ============================================================
+:::::: Phase 5: Quick asar content verification
+:::::: ============================================================
 if exist "%ASAR_PATH%" (
     echo.
     echo   Verifying asar content...
@@ -310,7 +315,7 @@ if exist "%ASAR_PATH%" (
     ver >nul
 )
 
-::::: ============================================================
+:::::: ============================================================
 echo.
 echo ============================================
 echo   BUILD SUCCESS
@@ -323,3 +328,12 @@ echo.
 echo [DEBUG] Build script finished successfully
 endlocal
 exit /b 0
+
+rem ============================================================
+rem  Helper: 静默执行命令（兼容 PowerShell 启动的 cmd）
+rem  PowerShell 会拦截 batch 内部的 >nul 2>&1 导致 "Input
+rem  redirection is not supported"，用 call + 独立 >nul 规避
+rem ============================================================
+:silent
+%* >nul 2>&1
+goto :eof

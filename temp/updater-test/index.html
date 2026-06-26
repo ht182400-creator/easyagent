@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自动更新进度 UI 测试</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #09090b; color: #e2e8f0;
+    font-family: system-ui, -apple-system, sans-serif;
+    padding: 24px; min-height: 100vh;
+  }
+  h2 { font-size: 18px; margin-bottom: 8px; }
+  .sub { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: rgba(59,130,246,0.02);
+    border: 1px solid rgba(59,130,246,0.1);
+    border-radius: 12px; padding: 20px; margin-bottom: 16px;
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .btn {
+    padding: 6px 14px; border-radius: 8px; cursor: pointer;
+    font-size: 13px; display: flex; align-items: center; gap: 6px;
+    background: transparent; border: 1px solid #334155; color: #94a3b8;
+    transition: all 0.2s;
+  }
+  .btn:hover { border-color: #60a5fa; color: #93c5fd; }
+  .btn.amber {
+    border-color: rgba(245,158,11,0.2); color: #fbbf24;
+  }
+  .btn.amber:hover { border-color: #f59e0b; color: #fcd34d; }
+  .text-xs { font-size: 12px; }
+  .text-sm { font-size: 14px; }
+  .text-gray { color: #94a3b8; }
+  .text-blue { color: #60a5fa; }
+  .text-green { color: #4ade80; }
+  .text-amber { color: #fbbf24; }
+  .font-bold { font-weight: 600; }
+  .mt-1 { margin-top: 4px; }
+  .mt-2 { margin-top: 8px; }
+  .mb-3 { margin-bottom: 12px; }
+  .space-y-1 > * + * { margin-top: 4px; }
+
+  /* 更新通知 banner */
+  .banner {
+    padding: 12px; border-radius: 8px; margin-bottom: 12px;
+  }
+  .banner-green {
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+  }
+  .banner-blue {
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+  }
+
+  /* 进度条 */
+  .progress-bar {
+    width: 100%; height: 6px; background: #1e293b;
+    border-radius: 3px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    border-radius: 3px; transition: width 0.2s ease;
+  }
+  .flex { display: flex; }
+  .gap-2 { gap: 8px; }
+  .items-center { align-items: center; }
+
+  /* 日志区 */
+  .log {
+    margin-top: 16px; padding: 12px; border-radius: 8px;
+    background: rgba(0,0,0,0.3); max-height: 200px; overflow-y: auto;
+    font-family: 'Courier New', monospace; font-size: 11px;
+    color: #94a3b8; line-height: 1.6;
+  }
+  .log .good { color: #4ade80; }
+  .log .warn { color: #fbbf24; }
+  .log .info { color: #60a5fa; }
+</style>
+</head>
+<body>
+  <h2>🔧 自动更新进度 UI 测试</h2>
+  <p class="sub">模拟 electron-updater 完整流程，验证 Settings.tsx 的 UI 状态机</p>
+
+  <div class="card">
+    <div class="row">
+      <span class="text-sm font-bold">EasyAgent 版本更新</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="checkUpdate()">🔄 检查更新 (真实)</button>
+        <button class="btn amber" onclick="simulateUpdate()">🧪 模拟更新测试</button>
+      </div>
+    </div>
+
+    <div class="text-xs text-gray space-y-1 mb-3">
+      <p>当前版本: <span class="text-blue font-bold">v0.5.15</span></p>
+    </div>
+
+    <!-- 模拟版本信息 (类似 Server API 返回) -->
+    <div id="serverBanner" class="banner banner-green" style="display:none">
+      <p class="text-sm font-bold" style="color:#4ade80">🎉 发现新版本 v9.9.9</p>
+      <p class="text-xs text-gray mt-1">发布时间: 2026-06-26</p>
+    </div>
+
+    <!-- electron-updater 进度 UI -->
+    <div id="progressUI" style="display:none">
+      <!-- downloading -->
+      <div id="downloadingUI" style="display:none" class="mt-2">
+        <div class="flex items-center gap-2 text-xs text-blue">📥 下载更新中... <span id="pct">0</span>%</div>
+        <div class="progress-bar mt-2">
+          <div id="fillBar" class="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <!-- downloaded -->
+      <div id="downloadedUI" style="display:none" class="mt-2">
+        <div class="flex items-center gap-2 text-xs text-green">✅ 下载完成！退出应用时将自动安装 v<span id="dlVer"></span></div>
+      </div>
+      <!-- available -->
+      <div id="availableUI" style="display:none" class="mt-2">
+        <div class="flex items-center gap-2 text-xs text-blue">⏳ 准备下载... v<span id="avVer"></span></div>
+      </div>
+      <!-- error -->
+      <div id="errorUI" style="display:none" class="mt-2">
+        <div class="text-xs text-amber">⚠️ 下载失败: <span id="errMsg"></span></div>
+      </div>
+    </div>
+
+    <!-- 链接降级 -->
+    <div id="fallbackLink" style="display:none" class="mt-2">
+      <a href="#" class="text-xs" style="color:#60a5fa">🔗 查看发布页面</a>
+    </div>
+  </div>
+
+  <!-- 自动下载进度（mount前完成的场景） -->
+  <div id="autoProgress" class="card banner-blue" style="display:none">
+    <p class="text-sm font-bold text-blue" id="autoMsg"></p>
+  </div>
+
+  <!-- 日志 -->
+  <div class="log" id="log">
+    <div>✅ 页面已加载。等待 5 秒后自动触发模拟更新...</div>
+    <div class="info">💡 场景: 模拟用户打开 Settings 页面时更新已在后台完成</div>
+  </div>
+
+  <script>
+    const ea = window.easyAgent;
+    let updateInfo = null;      // 对应 Server API 的 updateInfo
+    let updaterStatus = null;  // 对应 electron-updater 状态
+    let currentTest = null;
+
+    function log(msg, type = '') {
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+      document.getElementById('log').appendChild(div);
+      document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+    }
+
+    // ==================== 1. 挂载时查询状态 ====================
+    async function mountQuery() {
+      if (!ea?.getUpdateStatus) {
+        log('easyAgent 不可用 (非桌面环境)', 'warn');
+        return;
+      }
+      try {
+        const s = await ea.getUpdateStatus();
+        log('初始更新状态: ' + JSON.stringify(s));
+        if (s?.lastUpdateStatus === 'downloaded' && s.lastUpdateInfo?.version) {
+          log('→ 后台已下载完成，设置 downloaded 状态', 'good');
+          setUpdaterStatus({ status: 'downloaded', version: s.lastUpdateInfo.version });
+        } else if (s?.lastUpdateStatus === 'downloading') {
+          log('→ 后台正在下载，设置 downloading 状态', 'info');
+          setUpdaterStatus({ status: 'downloading', percent: s.lastUpdateInfo?.percent ?? 0 });
+        } else if (s?.lastUpdateStatus === 'available') {
+          log('→ 发现新版本可用', 'info');
+          setUpdaterStatus({ status: 'available', version: s.lastUpdateInfo.version });
+        }
+      } catch (err) {
+        log('查询更新状态失败: ' + err, 'warn');
+      }
+    }
+
+    // ==================== 2. 注册事件监听 ====================
+    function registerListener() {
+      if (!ea?.onUpdateStatus) return;
+      const cleanup = ea.onUpdateStatus((status) => {
+        log('收到更新事件: ' + status.status + (status.percent != null ? ' ' + status.percent.toFixed(1) + '%' : ''));
+        setUpdaterStatus(status);
+      });
+      window.addEventListener('beforeunload', cleanup);
+    }
+
+    function setUpdaterStatus(status) {
+      updaterStatus = status;
+      render();
+    }
+
+    function setUpdateInfo(info) {
+      updateInfo = info;
+      render();
+    }
+
+    // ==================== UI 渲染（对应 Settings.tsx JSX） ====================
+    function render() {
+      const u = updaterStatus;
+      const i = updateInfo;
+
+      // 进度组件（对应 405-428 行）
+      const progressUI = document.getElementById('progressUI');
+      if (u) {
+        progressUI.style.display = 'block';
+        document.getElementById('downloadingUI').style.display = u.status === 'downloading' ? 'block' : 'none';
+        document.getElementById('downloadedUI').style.display = u.status === 'downloaded' ? 'block' : 'none';
+        document.getElementById('availableUI').style.display = u.status === 'available' ? 'block' : 'none';
+        document.getElementById('errorUI').style.display = u.status === 'error' ? 'block' : 'none';
+
+        if (u.status === 'downloading') {
+          document.getElementById('pct').textContent = u.percent?.toFixed(1) ?? '0';
+          document.getElementById('fillBar').style.width = (u.percent ?? 0) + '%';
+        }
+        if (u.status === 'downloaded') {
+          document.getElementById('dlVer').textContent = u.version ?? '';
+        }
+        if (u.status === 'available') {
+          document.getElementById('avVer').textContent = u.version ?? '';
+        }
+        if (u.status === 'error') {
+          document.getElementById('errMsg').textContent = u.message ?? '未知';
+        }
+      } else {
+        progressUI.style.display = 'none';
+      }
+
+      // Server API banner（对应 430-449 行）
+      const serverBanner = document.getElementById('serverBanner');
+      if (i?.hasUpdate) {
+        serverBanner.style.display = 'block';
+        serverBanner.querySelector('.font-bold').textContent = '🎉 发现新版本 v' + i.latestVersion;
+      } else {
+        serverBanner.style.display = 'none';
+      }
+
+      // 降级链接（无 updater 事件时）
+      document.getElementById('fallbackLink').style.display =
+        (i?.hasUpdate && !u) ? 'block' : 'none';
+
+      // 自动更新进度（mount 查询得到，server API 还没返回）
+      const autoP = document.getElementById('autoProgress');
+      if (!i?.hasUpdate && u) {
+        autoP.style.display = 'block';
+        let msg = '';
+        if (u.status === 'downloaded') msg = '✅ 新版本已下载';
+        else if (u.status === 'downloading') msg = '📥 正在下载更新';
+        else if (u.status === 'available') msg = '🔔 新版本可用';
+        else msg = '🔄 更新状态';
+        document.getElementById('autoMsg').textContent = msg;
+      } else {
+        autoP.style.display = 'none';
+      }
+    }
+
+    // ==================== 用户操作 ====================
+    async function checkUpdate() {
+      log('用户点击检查更新...');
+      // 模拟 Server API
+      setUpdateInfo({
+        hasUpdate: true,
+        latestVersion: '9.9.9',
+        publishedAt: '2026-06-26',
+        releaseUrl: '#',
+      });
+      log('Server API 返回: hasUpdate=true, latestVersion=9.9.9', 'good');
+
+      // 触发 electron-updater
+      if (ea?.checkUpdate) {
+        const result = await ea.checkUpdate();
+        log('electron-updater 返回: ' + JSON.stringify(result));
+        if (result?.status === 'downloaded') {
+          setUpdaterStatus({ status: 'downloaded', version: '9.9.9' });
+        }
+      } else {
+        log('checkUpdate 不可用', 'warn');
+      }
+    }
+
+    async function simulateUpdate() {
+      log('触发模拟更新...');
+      setUpdaterStatus(null);
+      if (ea?.simulateUpdate) {
+        await ea.simulateUpdate();
+      }
+    }
+
+    // 初始化
+    mountQuery();
+    registerListener();
+    render();
+  </script>
+</body>
+</html>

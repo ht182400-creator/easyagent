@@ -7,7 +7,11 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
+import { createRequire } from 'node:module';
 import { AgentEngine, ToolRegistry, SessionManager, ConfigManager, AdapterFactory, getAllBuiltinTools, getModelRegistry } from '@easyagent/core';
+
+/** CJS require 桥接 — 用于加载 electron-updater 等 CJS 模块（ESM 动态 import 在 ASAR 内可能失败） */
+const _require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -18,7 +22,6 @@ let agent: AgentEngine | null = null;
 let configManager: ConfigManager;
 let toolRegistry: ToolRegistry;
 let sessionManager: SessionManager;
-let updateDownloaded = false;
 let backendServer: any = null;
 
 /** 获取应用版本号（构建时由 scripts/sync-version.mjs 同步） */
@@ -32,10 +35,27 @@ function getAppVersion(): string {
   } catch (err) { /* ignore */ }
   return '0.3.0';
 }
+
+/** 设置版本相关信息到环境变量（供内嵌 Server 使用，避免 ASAR 内读不到文件） */
+function setupVersionEnv(): void {
+  try {
+    // 尝试从 asar 外的 version.json 读取
+    const versionPath = path.join(__dirname, '..', '..', 'version.json');
+    if (fs.existsSync(versionPath)) {
+      const v = JSON.parse(fs.readFileSync(versionPath, 'utf-8'));
+      if (v.codename) process.env.EASYAGENT_CODENAME = v.codename;
+      if (v.releaseDate) process.env.EASYAGENT_RELEASE_DATE = v.releaseDate;
+    }
+  } catch (err) { /* 读不到就用空值 */ }
+  // 确保有默认值
+  if (!process.env.EASYAGENT_CODENAME) process.env.EASYAGENT_CODENAME = '';
+  if (!process.env.EASYAGENT_RELEASE_DATE) process.env.EASYAGENT_RELEASE_DATE = new Date().toISOString().slice(0, 10);
+}
 const APP_VERSION = getAppVersion();
 
-/** 设置 EASYAGENT_VERSION 环境变量，确保内嵌 Server 的版本号正确 */
+/** 设置版本相关环境变量，确保内嵌 Server 读取正确 */
 process.env.EASYAGENT_VERSION = APP_VERSION;
+setupVersionEnv();
 
 // ==================== 内嵌后端服务器 ====================
 
@@ -127,7 +147,7 @@ function createWindow(): void {
     show: true,
     backgroundColor: '#09090b',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
@@ -322,11 +342,47 @@ function showAboutDialog(): void {
 let autoUpdater: typeof import('electron-updater').autoUpdater | null = null;
 let isUpdateSupported = false;
 
+/**
+ * 更新状态机 — 全场景状态定义
+ *
+ * idle        → 无更新活动 / 无可用更新
+ * checking    → 正在检查更新（防重复检查）
+ * available   → 发现新版本，即将/正在准备下载
+ * downloading → 正在下载（progress 可供读取）
+ * downloaded  → 下载完成，等待用户确认安装
+ * error       → 检查或下载失败（含错误信息）
+ * installing  → 正在执行 quitAndInstall（即刻退出，前端无须处理）
+ */
+type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'error' | 'installing';
+
+/** 当前更新状态（供 Settings 页面查询 — 解决页面挂载滞后错过事件的问题） */
+let lastUpdateStatus: UpdateStatus = 'idle';
+let lastUpdateInfo: { version?: string; releaseDate?: string; error?: string; percent?: number } = {};
+
 async function initAutoUpdater(): Promise<void> {
   try {
-    const updater = await import('electron-updater');
+    // [v0.5.28 修复] 使用 createRequire 加载 CJS 的 electron-updater
+    // ESM 的 await import() 在 ASAR 内可能无法正确解析 CJS 模块
+    const updater = _require('electron-updater');
     autoUpdater = updater.autoUpdater;
     isUpdateSupported = true;
+
+    // [v0.5.26 彻底修复] 3 大改动:
+    // 1) autoDownload=false — 全显式管理，不依赖 electron-updater 自动行为
+    // 2) 代码路径直接设 lastUpdateStatus — 不再依赖事件回调，（事件可能延迟触发导致竞态）
+    // 3) 密集日志 + 时间戳 — 每个决策点可追踪
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+
+    /**
+     * 带时间戳的更新日志
+     */
+    const updLog = (...args: unknown[]) => {
+      const ts = new Date().toISOString().slice(11, 23); // HH:mm:ss.SSS
+      console.log(`[Upd ${ts}]`, ...args);
+    };
+
+    updLog('init: autoDownload=', autoUpdater.autoDownload, ' autoInstallOnAppQuit=', autoUpdater.autoInstallOnAppQuit);
 
     autoUpdater.setFeedURL({
       provider: 'github',
@@ -334,7 +390,13 @@ async function initAutoUpdater(): Promise<void> {
       repo: 'easyagent',
     });
 
+    // ── 事件监听 (仅负责推送前端 + 辅助日志，不驱动主状态机) ──
+
     autoUpdater.on('update-available', (info) => {
+      updLog('[EVENT] update-available version=', info.version, ' 当前 lastUpdateStatus=', lastUpdateStatus);
+      // 事件回调中设置状态（可能在代码路径之后异步到达）
+      lastUpdateStatus = 'available';
+      lastUpdateInfo = { version: info.version, releaseDate: info.releaseDate };
       mainWindow?.webContents.send('update-status', {
         status: 'available',
         version: info.version,
@@ -343,44 +405,130 @@ async function initAutoUpdater(): Promise<void> {
     });
 
     autoUpdater.on('download-progress', (progress) => {
+      updLog(`[EVENT] download-progress ${progress.percent.toFixed(1)}% speed=${((progress.bytesPerSecond || 0) / 1024 / 1024).toFixed(2)}MB/s transferred=${((progress.transferred || 0) / 1024 / 1024).toFixed(1)}MB total=${((progress.total || 0) / 1024 / 1024).toFixed(1)}MB`);
+      if (lastUpdateStatus !== 'downloading') {
+        updLog(`  → 状态切换: ${lastUpdateStatus} → downloading`);
+      }
+      lastUpdateStatus = 'downloading';
+      if (lastUpdateInfo) lastUpdateInfo.percent = progress.percent;
       mainWindow?.webContents.send('update-status', {
         status: 'downloading',
         percent: progress.percent,
       });
     });
 
-    autoUpdater.on('update-downloaded', () => {
-      updateDownloaded = true;
-      mainWindow?.webContents.send('update-status', { status: 'downloaded' });
+    autoUpdater.on('update-downloaded', (info) => {
+      updLog('[EVENT] update-downloaded version=', info.version, ' files=', JSON.stringify(info.downloadedFile));
+      lastUpdateStatus = 'downloaded';
+      lastUpdateInfo = { version: info.version };
+      mainWindow?.webContents.send('update-status', { status: 'downloaded', version: info.version });
       dialog.showMessageBox(mainWindow!, {
         type: 'info',
         title: '更新已下载',
-        message: '新版本已下载完成，是否立即重启安装？',
-        buttons: ['稍后', '重启'],
+        message: `新版本 v${info.version} 已下载完成，是否立即重启安装？`,
+        buttons: ['稍后提醒', '立即重启'],
         defaultId: 1,
       }).then(({ response }) => {
-        if (response === 1) autoUpdater?.quitAndInstall();
+        if (response === 1) {
+          updLog('用户选择立即重启，quitAndInstall()...');
+          lastUpdateStatus = 'installing';
+          autoUpdater?.quitAndInstall();
+        } else {
+          updLog('用户选择稍后，状态保持 downloaded');
+        }
       });
     });
 
     autoUpdater.on('error', (err) => {
-      console.error('[EasyAgent Desktop] 自动更新错误:', err.message);
+      updLog('[EVENT] error message=', err.message, ' stack=', (err as any).stack?.slice(0, 200));
+      lastUpdateStatus = 'error';
+      lastUpdateInfo = { ...lastUpdateInfo, error: err.message };
+      mainWindow?.webContents.send('update-status', {
+        status: 'error',
+        message: err.message,
+      });
+    });
+
+    // [v0.5.26 关键修复] 下载过程中可能抛的其他事件
+    autoUpdater.on('checking-for-update', () => {
+      updLog('[EVENT] checking-for-update');
+    });
+    autoUpdater.on('update-not-available', (info) => {
+      updLog('[EVENT] update-not-available version=', info?.version);
     });
 
     // 启动后 10 秒自动检查更新并下载
-    setTimeout(() => {
-      autoUpdater?.checkForUpdatesAndNotify().catch((err) => {
-        console.log('[EasyAgent Desktop] 检查更新跳过:', err.message);
-      });
+    setTimeout(async () => {
+      updLog('[AUTO] ===== 自动检查开始 ===== autoDownload=', autoUpdater?.autoDownload);
+      lastUpdateStatus = 'checking';
+      try {
+        const result = await autoUpdater!.checkForUpdates();
+        updLog('[AUTO] checkForUpdates 返回: hasUpdate=', !!result?.updateInfo,
+          ' version=', result?.updateInfo?.version || 'N/A',
+          ' lastUpdateStatus=', lastUpdateStatus,
+          ' cancellationToken=', !!result?.cancellationToken);
+
+        // [v0.5.26 关键修复] 不依赖事件回调的 lastUpdateStatus
+        // checkForUpdates 后直接设状态为 available，再调用 downloadUpdate
+        if (result?.updateInfo) {
+          updLog('[AUTO] 发现更新 → 强制设状态为 available (防御竞态)');
+          lastUpdateStatus = 'available';
+          lastUpdateInfo = { version: result.updateInfo.version, releaseDate: result.updateInfo.releaseDate };
+
+          updLog('[AUTO] 调用 downloadUpdate()...');
+          try {
+            await autoUpdater!.downloadUpdate();
+            updLog('[AUTO] downloadUpdate() resolve lastUpdateStatus=', lastUpdateStatus);
+            // downloadUpdate 完成后可能事件还未到达，强制设下载完成
+            if (lastUpdateStatus !== 'downloaded') {
+              updLog('[AUTO] ⚠️ downloadUpdate 完成但 lastUpdateStatus!=downloaded, 强制设为 downloaded');
+              lastUpdateStatus = 'downloaded';
+              mainWindow?.webContents.send('update-status', {
+                status: 'downloaded',
+                version: result.updateInfo.version,
+              });
+            }
+          } catch (downloadErr) {
+            const dErrMsg = (downloadErr as Error).message;
+            updLog('[AUTO] downloadUpdate() REJECTED:', dErrMsg);
+            if (dErrMsg.includes('already')) {
+              updLog('[AUTO] 下载已在其他路径进行中，忽略');
+            } else {
+              lastUpdateStatus = 'error';
+              lastUpdateInfo = { ...lastUpdateInfo, error: dErrMsg };
+              mainWindow?.webContents.send('update-status', { status: 'error', message: dErrMsg });
+            }
+          }
+        } else {
+          updLog('[AUTO] 无可用更新 → idle');
+          lastUpdateStatus = 'idle';
+        }
+      } catch (err) {
+        const errMsg = (err as Error).message;
+        updLog('[AUTO] checkForUpdates REJECTED:', errMsg);
+        if (errMsg.includes('up to date') || errMsg.includes('no update available')) {
+          lastUpdateStatus = 'idle';
+        } else {
+          lastUpdateStatus = 'error';
+          lastUpdateInfo = { ...lastUpdateInfo, error: errMsg };
+          mainWindow?.webContents.send('update-status', { status: 'error', message: errMsg });
+        }
+      }
+      updLog('[AUTO] ===== 自动检查结束 lastUpdateStatus=', lastUpdateStatus, ' =====');
     }, 10000);
 
     console.log('[EasyAgent Desktop] 自动更新系统已启用');
   } catch (err) {
-    console.log('[EasyAgent Desktop] 自动更新未启用 (electron-updater 未安装)');
+    const errMsg = (err as Error)?.message || String(err);
+    console.error(`[EasyAgent Desktop] 自动更新初始化失败: ${errMsg}`);
     isUpdateSupported = false;
   }
 }
 
+/**
+ * 菜单"检查更新"点击 — 直接跳转到设置页面的更新区域
+ * （实际更新逻辑由 Settings 页面通过 IPC 驱动）
+ */
 async function checkForUpdates(): Promise<void> {
   if (!isUpdateSupported || !autoUpdater) {
     dialog.showMessageBox(mainWindow!, {
@@ -392,11 +540,8 @@ async function checkForUpdates(): Promise<void> {
     shell.openExternal('https://github.com/ht182400-creator/easyagent/releases');
     return;
   }
-  try {
-    await autoUpdater.checkForUpdatesAndNotify();
-  } catch (err) {
-    dialog.showErrorBox('检查更新失败', `无法连接更新服务器:\n${(err as Error).message}`);
-  }
+  // 导航到设置页面（触发页面上的更新检查逻辑）
+  mainWindow?.webContents.send('navigate', '/settings');
 }
 
 // ==================== IPC 通信 ====================
@@ -455,15 +600,272 @@ ipcMain.handle('abort-agent', async () => {
 
 ipcMain.handle('get-app-version', async () => APP_VERSION);
 
+/**
+ * 手动检查更新 (v0.5.26 彻底修复)
+ *
+ * 核心改动:
+ *   1. 每个 await 后直接设 lastUpdateStatus，不依赖事件回调
+ *   2. 密集日志 + 毫秒时间戳
+ *   3. 竞态防御: 每次决策前重新读取 lastUpdateStatus
+ *
+ * 状态机:
+ *   downloaded  → 返回已下载
+ *   checking    → 返回正在检查（防重复点击）
+ *   downloading → 返回进度
+ *   available   → 调用 downloadUpdate()
+ *   idle/error  → checkForUpdates + downloadUpdate
+ */
 ipcMain.handle('check-update', async () => {
-  await checkForUpdates();
+  const updLog = (...args: unknown[]) => {
+    const ts = new Date().toISOString().slice(11, 23);
+    console.log(`[Upd ${ts}] [IPC]`, ...args);
+  };
+
+  updLog('========== IPC check-update 被调用 ==========');
+  updLog('入口 lastUpdateStatus=', lastUpdateStatus, ' lastUpdateInfo=', JSON.stringify(lastUpdateInfo));
+
+  if (!isUpdateSupported || !autoUpdater) {
+    updLog('自动更新未启用');
+    return { success: false, error: '自动更新未启用' };
+  }
+
+  // ── 已下载完成 ──
+  if (lastUpdateStatus === 'downloaded') {
+    updLog('已下载完成，直接返回');
+    mainWindow?.webContents.send('update-status', {
+      status: 'downloaded',
+      version: lastUpdateInfo?.version,
+    });
+    return { success: true, status: 'downloaded', version: lastUpdateInfo?.version, lastUpdateInfo };
+  }
+
+  // ── 正在检查中 ──
+  if (lastUpdateStatus === 'checking') {
+    updLog('正在检查中，防重复点击');
+    return { success: true, status: 'checking', message: '正在检查更新，请稍候...' };
+  }
+
+  // ── 正在下载中 ──
+  if (lastUpdateStatus === 'downloading') {
+    updLog('正在下载中 (进度:', lastUpdateInfo?.percent ?? 'N/A', '%)');
+    mainWindow?.webContents.send('update-status', {
+      status: 'downloading',
+      percent: lastUpdateInfo?.percent ?? 0,
+    });
+    return { success: true, status: 'downloading', version: lastUpdateInfo?.version, lastUpdateInfo };
+  }
+
+  // ── 发现更新但未下载 → 显式触发下载 ──
+  if (lastUpdateStatus === 'available') {
+    updLog('已发现更新但未下载 → 调用 downloadUpdate()');
+    try {
+      await autoUpdater.downloadUpdate();
+      updLog('downloadUpdate() resolve lastUpdateStatus=', lastUpdateStatus);
+      // 防御：如果事件未设 downloaded，强制设
+      if (lastUpdateStatus !== 'downloaded') {
+        updLog('⚠️ downloadUpdate 完成但 lastUpdateStatus!=downloaded, 强制设为 downloaded');
+        lastUpdateStatus = 'downloaded';
+        mainWindow?.webContents.send('update-status', {
+          status: 'downloaded',
+          version: lastUpdateInfo?.version,
+        });
+      }
+    } catch (e) {
+      updLog('downloadUpdate() REJECTED:', (e as Error).message);
+      return { success: false, error: `下载失败: ${(e as Error).message}` };
+    }
+    return {
+      success: true,
+      status: lastUpdateStatus,
+      version: lastUpdateInfo?.version,
+      lastUpdateInfo,
+    };
+  }
+
+  // ── idle / error / installing → 完整检查+下载 ──
+  updLog('开始完整检查流程 currentStatus=', lastUpdateStatus);
+
+  try {
+    lastUpdateStatus = 'checking';
+    mainWindow?.webContents.send('update-status', { status: 'checking' });
+
+    updLog('调用 checkForUpdates()...');
+    const checkResult = await autoUpdater.checkForUpdates();
+    updLog('checkForUpdates() resolve hasUpdate=', !!checkResult?.updateInfo,
+      ' version=', checkResult?.updateInfo?.version || 'N/A',
+      ' lastUpdateStatus=', lastUpdateStatus);
+
+    if (!checkResult || !checkResult.updateInfo) {
+      updLog('无可用更新 → idle');
+      lastUpdateStatus = 'idle';
+      mainWindow?.webContents.send('update-status', { status: 'idle' });
+      return { success: true, status: 'idle' };
+    }
+
+    const newVersion = checkResult.updateInfo.version;
+    updLog('发现新版本:', newVersion, ' lastUpdateStatus=', lastUpdateStatus);
+
+    // [v0.5.26 关键修复] 强制设为 available（不依赖事件回调）
+    updLog('强制设 lastUpdateStatus=available（防御竞态）');
+    lastUpdateStatus = 'available';
+    lastUpdateInfo = { version: newVersion, releaseDate: checkResult.updateInfo.releaseDate };
+    mainWindow?.webContents.send('update-status', {
+      status: 'available',
+      version: newVersion,
+    });
+
+    // 显式下载
+    updLog('调用 downloadUpdate()...');
+    try {
+      await autoUpdater.downloadUpdate();
+      updLog('downloadUpdate() resolve lastUpdateStatus=', lastUpdateStatus);
+      // 防御
+      if (lastUpdateStatus !== 'downloaded') {
+        updLog('⚠️ downloadUpdate 完成但状态!==downloaded, 强制设 downloaded');
+        lastUpdateStatus = 'downloaded';
+        mainWindow?.webContents.send('update-status', {
+          status: 'downloaded',
+          version: newVersion,
+        });
+      }
+    } catch (downloadErr) {
+      const dErrMsg = (downloadErr as Error).message;
+      updLog('downloadUpdate() REJECTED:', dErrMsg);
+      if (dErrMsg.includes('already')) {
+        updLog('下载已在其他路径进行中');
+      } else {
+        lastUpdateStatus = 'error';
+        lastUpdateInfo = { ...lastUpdateInfo, error: dErrMsg };
+        mainWindow?.webContents.send('update-status', { status: 'error', message: dErrMsg });
+        return { success: false, error: dErrMsg };
+      }
+    }
+
+    updLog('IPC check-update 返回: status=', lastUpdateStatus);
+    return {
+      success: true,
+      status: lastUpdateStatus,
+      version: newVersion,
+      lastUpdateInfo,
+    };
+  } catch (err) {
+    const errMsg = (err as Error).message;
+    updLog('checkForUpdates REJECTED:', errMsg);
+
+    if (errMsg.includes('up to date') || errMsg.includes('no update available')) {
+      lastUpdateStatus = 'idle';
+      mainWindow?.webContents.send('update-status', { status: 'idle' });
+      return { success: true, status: 'idle', lastUpdateInfo };
+    }
+
+    lastUpdateStatus = 'error';
+    lastUpdateInfo = { ...lastUpdateInfo, error: errMsg };
+    mainWindow?.webContents.send('update-status', { status: 'error', message: errMsg });
+    return { success: false, error: errMsg };
+  }
+});
+
+/**
+ * 用户确认安装更新
+ * 仅在 downloaded 状态下可用，其他状态返回错误
+ */
+ipcMain.handle('install-update', async () => {
+  if (!isUpdateSupported || !autoUpdater) {
+    return { success: false, error: '自动更新未启用' };
+  }
+  if (lastUpdateStatus !== 'downloaded') {
+    return { success: false, error: '没有可安装的更新' };
+  }
+  console.log('[EasyAgent Desktop] 用户确认安装更新 v' + lastUpdateInfo?.version);
+  lastUpdateStatus = 'installing';
+  autoUpdater.quitAndInstall();
+  // quitAndInstall 会立即退出应用，以下代码大概率不会执行
+  return { success: true, status: 'installing' };
 });
 
 ipcMain.handle('get-update-status', async () => ({
   isUpdateSupported,
   currentVersion: APP_VERSION,
-  updateDownloaded,
+  lastUpdateStatus,
+  lastUpdateInfo,
 }));
+
+/**
+ * 模拟更新进度（开发测试用，发送假事件验证 UI 逻辑）
+ * 支持参数: { scenario?: 'success' | 'error' | 'check-only', version?: string }
+ */
+let simulateTimer: NodeJS.Timeout | null = null;
+ipcMain.handle('simulate-update', async (_event, params?: { scenario?: string; version?: string }) => {
+  let percent = 0;
+  const version = params?.version || '9.9.9-test';
+  const scenario = params?.scenario || 'success';
+
+  // 清除之前的模拟
+  if (simulateTimer) clearInterval(simulateTimer);
+
+  // 重置状态便于测试
+  lastUpdateStatus = 'checking';
+  lastUpdateInfo = {};
+
+  console.log('[Simulate] 开始模拟更新流程... scenario:', scenario);
+
+  // 1. 发现新版本
+  mainWindow?.webContents.send('update-status', { status: 'available', version });
+  lastUpdateStatus = 'available';
+  lastUpdateInfo = { version };
+  console.log('[Simulate] -> available', version);
+
+  await new Promise(r => setTimeout(r, 1500));
+
+  if (scenario === 'check-only') {
+    // 仅检查场景：直接结束
+    lastUpdateStatus = 'downloaded';
+    lastUpdateInfo = { version };
+    mainWindow?.webContents.send('update-status', { status: 'downloaded', version });
+    return { success: true, message: '模拟检查完成 (仅检查)' };
+  }
+
+  // 2. 模拟下载进度
+  const totalSize = 50 * 1024 * 1024;
+  simulateTimer = setInterval(() => {
+    percent = Math.min(100, percent + (Math.random() * 15 + 5));
+    lastUpdateStatus = 'downloading';
+    lastUpdateInfo = { ...lastUpdateInfo, percent: Math.round(percent * 10) / 10 };
+    mainWindow?.webContents.send('update-status', {
+      status: 'downloading',
+      percent: Math.round(percent * 10) / 10,
+      transferred: Math.round((percent / 100) * totalSize),
+      total: totalSize,
+    });
+    console.log(`[Simulate] downloading ${percent.toFixed(1)}%`);
+
+    if (percent >= 100) {
+      clearInterval(simulateTimer!);
+      simulateTimer = null;
+
+      if (scenario === 'error') {
+        // 模拟下载失败
+        setTimeout(() => {
+          const errMsg = '模拟网络错误: 下载中断 (ETIMEDOUT)';
+          lastUpdateStatus = 'error';
+          lastUpdateInfo = { ...lastUpdateInfo, error: errMsg };
+          mainWindow?.webContents.send('update-status', { status: 'error', message: errMsg });
+          console.log('[Simulate] -> error', errMsg);
+        }, 500);
+      } else {
+        // 模拟成功
+        setTimeout(() => {
+          lastUpdateStatus = 'downloaded';
+          lastUpdateInfo = { version };
+          mainWindow?.webContents.send('update-status', { status: 'downloaded', version });
+          console.log('[Simulate] -> downloaded', version);
+        }, 500);
+      }
+    }
+  }, 300);
+
+  return { success: true, message: `模拟更新已开始 (scenario: ${scenario})` };
+});
 
 /** 获取后端 API 端口 (供渲染进程查询) */
 ipcMain.handle('get-api-port', async () => API_PORT);

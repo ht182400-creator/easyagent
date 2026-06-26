@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: {
     main: 'src/main.ts',
-    preload: 'src/preload.ts',
+    // preload 已拆分到 tsup.preload.config.ts（CJS），因为 Electron 的 preload 不支持 ESM
   },
   format: ['esm'],
   dts: false,

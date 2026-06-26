@@ -5,12 +5,12 @@
  */
 
 /* ========================================
-   0. 自托管字体 (@import必须在所有规则之前)
+   0. 字体定义
+   桌面应用使用系统原生字体，避免 CSP 阻止外部 CSS
    ======================================== */
-/* Inter - UI字体 (Google Fonts CDN + 本地回退) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-/* JetBrains Mono - 等宽代码字体 */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+/* Inter - UI字体 (系统回退) */
+/* JetBrains Mono - 等宽代码字体 (系统回退) */
+/* 注: 原 Google Fonts CDN 导入已移除，CSP 不允许外部样式表 */
 
 @tailwind base;
 @tailwind components;

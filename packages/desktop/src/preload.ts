@@ -47,6 +47,13 @@ contextBridge.exposeInMainWorld('easyAgent', {
   /** 获取更新状态 */
   getUpdateStatus: () => ipcRenderer.invoke('get-update-status'),
 
+  /** 用户确认安装已下载的更新（quitAndInstall） */
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+
+  /** 模拟更新进度（开发测试用，支持 scenario 参数） */
+  simulateUpdate: (params?: { scenario?: string; version?: string }) =>
+    ipcRenderer.invoke('simulate-update', params),
+
   // ==================== 文件操作（桌面特有） ====================
 
   /** 打开文件选择对话框 */

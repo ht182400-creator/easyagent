@@ -26,7 +26,8 @@ const requiredFiles = [
   ['assets/icon.ico', 'NSIS installer icon'],
   ['installer.nsh', 'Custom NSIS script'],
   ['index.html', 'Electron entry HTML'],
-  ['src/renderer/index.css', 'Global CSS'],
+  // CSS 已统一由 @easyagent/frontend 加载，不再需要独立的 src/renderer/index.css
+  ['../frontend/src/styles/index.css', 'Global CSS (unified frontend)'],
 ];
 
 for (const [f, desc] of requiredFiles) {
@@ -547,7 +548,92 @@ if (!foundEncodingCorruption) {
 }
 
 // ============================================================
-// 15. HashRouter <a href> 兼容性检查
+// 15. preload 脚本格式检查 (CJS, 不是 ESM)
+// ============================================================
+console.log('\n--- Checking preload format (must be CJS) ---');
+try {
+  const preloadPath = path.join(ROOT, 'dist', 'preload.cjs');
+  const tsupPreloadConfig = path.join(ROOT, 'tsup.preload.config.ts');
+
+  if (!fs.existsSync(tsupPreloadConfig)) {
+    fail('tsup.preload.config.ts MISSING - preload must be compiled as CJS, not ESM. ' +
+         'See F36 (v0.5.27 preload ESM crash).');
+  } else {
+    const preloadCfg = fs.readFileSync(tsupPreloadConfig, 'utf8');
+    const hasCjsFormat = preloadCfg.includes("'cjs'") || preloadCfg.includes('"cjs"');
+    if (hasCjsFormat) {
+      ok('tsup.preload.config.ts exists and targets CJS format');
+    } else {
+      fail('tsup.preload.config.ts does NOT target CJS format - Electron preload requires CJS!');
+    }
+  }
+
+  if (fs.existsSync(preloadPath)) {
+    const preloadContent = fs.readFileSync(preloadPath, 'utf8');
+    // CJS 特征: module.exports 或 require()
+    // ESM 特征: import/export 关键字
+    const hasEsmSyntax = /\bimport\b.*\bfrom\b/.test(preloadContent) || /\bexport\b/.test(preloadContent);
+    const hasCjsSyntax = /require\s*\(/.test(preloadContent) || /module\.exports/.test(preloadContent);
+
+    if (hasEsmSyntax && !hasCjsSyntax) {
+      fail('dist/preload.cjs contains ESM syntax (import/export) - must be CJS!');
+    } else if (hasCjsSyntax) {
+      ok('dist/preload.cjs is valid CJS format');
+    } else {
+      warn('dist/preload.cjs format unclear - verify manually');
+    }
+  } else {
+    warn('dist/preload.cjs not built yet - will be built by build.bat Phase 2');
+  }
+} catch (e) {
+  warn(`Could not check preload format: ${e.message}`);
+}
+
+// ============================================================
+// 16. 构建产物缓存检查 (dist 目录时效性)
+// ============================================================
+console.log('\n--- Checking dist cache freshness ---');
+try {
+  const distFiles = [
+    { path: path.join(ROOT, 'dist', 'main.js'), desc: 'desktop main.js' },
+    { path: path.join(ROOT, 'dist', 'preload.cjs'), desc: 'desktop preload.cjs' },
+    { path: path.join(ROOT, '..', 'core', 'dist', 'index.js'), desc: 'core dist' },
+    { path: path.join(ROOT, '..', 'server', 'dist', 'index.js'), desc: 'server dist' },
+  ];
+
+  const now = Date.now();
+  let staleCount = 0;
+  for (const { path: dp, desc } of distFiles) {
+    if (!fs.existsSync(dp)) {
+      warn(`${desc}: not built yet (will be compiled during build)`);
+      continue;
+    }
+    const mtime = fs.statSync(dp).mtimeMs;
+    const ageMin = Math.round((now - mtime) / 60000);
+    if (ageMin > 60) {
+      warn(`${desc}: last built ${ageMin} min ago - may need rebuild if source changed`);
+      staleCount++;
+    } else {
+      ok(`${desc}: built ${ageMin} min ago (fresh)`);
+    }
+  }
+
+  // Check if dist/renderer has been cleaned (important for Vite cache)
+  const rendererDir = path.join(ROOT, 'dist', 'renderer');
+  if (fs.existsSync(rendererDir)) {
+    const rendererFiles = fs.readdirSync(rendererDir);
+    if (rendererFiles.length > 0) {
+      ok(`dist/renderer/ exists with ${rendererFiles.length} entries`);
+    }
+  } else {
+    ok('dist/renderer/ does not exist (will be freshly built by vite)');
+  }
+} catch (e) {
+  warn(`Could not check dist freshness: ${e.message}`);
+}
+
+// ============================================================
+// 17. HashRouter <a href> 兼容性检查
 // Desktop 使用 HashRouter，页面内导航必须使用 <Link> 或 navigate()
 // <a href="/xxx"> 会触发全页面导航导致黑屏
 // ============================================================

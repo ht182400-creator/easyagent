@@ -173,6 +173,7 @@ node --test docs/pipeline/__tests__/pipeline-config.test.mjs
 | 34 | 🖥️ | **5个脚本争抢 better_sqlite3.node → MODULE_VERSION 反复变** | postinstall.cjs(pnpm install时切electron)、sqlite3-loader.mjs(启动时切system)、build.bat Phase2.5(打包时rebuild)、rebuild-sqlite3.mjs(手动)、build-sqlite3.bat(手动) 互相覆盖。prebuild-install下载缓存的老旧二进制(MODULE=88)也可能被复制。 | 精简为2个脚本：`rebuild-sqlite3.mjs`(唯一编译入口) + `sqlite3-loader.mjs`(运行时切换)。postinstall.cjs 不再触碰.node。build.bat 改为 copy 已有 electron.node 而非 rebuild。删除 build-sqlite3.bat / build-sqlite3-dual.mjs / manage-sqlite3.mjs |
 | 35 | 🖥️ | **字节扫描 MODULE_VERSION 始终返回116 (假阳性)** | better-sqlite3 静态链接 sqlite3 c源码(~13万行), 字节扫描碰巧读到sqlite3常量116, 非真实NODE_MODULE_VERSION。导致每次排查都以为版本错误, 浪费数小时重复编译。 | (1) SHA256 比对 electron vs system 版本 → 不同=各自编译成功 (2) System 版本直接 `require('better-sqlite3')` → 加载成功=版本正确 (3) `node scripts/rebuild-sqlite3.mjs --verify` 一键验证 |
 | 36 | 🖥️ | **build.bat sqlite3 路径基于 CWD 而非项目根目录** | build.bat 在 `cd ..\desktop` 后使用相对路径 `node_modules\.pnpm\better-sqlite3@...` → pnpm workspace 中 `packages/desktop/` 下无此路径 → `better_sqlite3_electron.node` 始终"不存在" → 每次打包都触发不必要的 node-gyp rebuild → 可能失败。Phase 3.5 恢复路径同理错误。 | `_SQLITE_RELEASE` 路径加 `%~dp0` 前缀（强制基于 build.bat 所在目录=项目根目录）；`node scripts\rebuild-sqlite3.mjs` 也加 `%~dp0` 前缀 |
+| 37 | 🖥️ | **Desktop 有独立 renderer CSS，与 frontend CSS 是两个文件** | 修改 `packages/frontend/src/styles/index.css` 的 CSP 字体修复对 Desktop 不生效，因为 Desktop 的 `index.html` 引用 `/src/renderer/index.css`（指向 `packages/desktop/src/renderer/index.css`），而非 frontend 的 CSS。两个文件内容高度相似但独立维护。**前端合并(B1a)后 JS/组件已统一，CSS 也应统一**。 | ✅ 已删除 `packages/desktop/src/renderer/index.css`，移除 `index.html` 中的 `<link>` 标签。CSS 统一由 `frontend/main.tsx` → `import './styles/index.css'` 加载 |
 
 
 
@@ -617,11 +618,12 @@ node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 - 发布脚本: `scripts/release.mjs`
 - 一键发布: `release-publish.bat`（交互式，集成版本标记+构建+上传全流程）
 - 更新日志: `CHANGELOG.md`
-- 打包流程: `docs/05_Desktop_EXE打包标准流程.md` (v1.7, 27个问题)
+- 打包流程: `docs/05_Desktop_EXE打包标准流程.md` (v1.8, 28个问题详解)
+- **构建必检清单**: `docs/14_构建前必检清单.md` ← ⭐ 每次构建前30秒过一遍
 - 发布与CI/CD: `docs/06_版本发布与CI-CD流程指南.md` (v1.0, 发布全流程 + GitHub Actions)
 - 分发方案: `docs/07_自动更新分发方案对比.md` (v1.0, GitHub Releases/R2/COS/自建 5 方案对比)
-- 预检查脚本: `packages/desktop/scripts/verify-build.cjs`
-- 一键打包: `build.bat`
+- 预检查脚本: `packages/desktop/scripts/verify-build.cjs` (17类, 30+项自动检查)
+- 一键打包: `build.bat --release` ← **唯一入口，禁止手动一步步跑**
 - 依赖清单: `packages/desktop/express-deps.json` (90+ 包)
 - 架构设计: `docs/02_架构设计文档_ADD.md` (v5.4)
 - 需求文档: `docs/01_需求规格说明书_PRD.md` (v5.3)
