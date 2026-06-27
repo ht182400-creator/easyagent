@@ -552,6 +552,68 @@ rem Update memory file for cross-session tracking
 node -e "try{var d=new Date();var p='.codebuddy/memory/'+d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)+'.md';var fs=require('fs');var e='\n## release-publish.bat execution ('+d.toTimeString().split(' ')[0]+')\n- Version: v!FIN_VERSION!\n- DTS check + EXE build + GitHub Release + Pipeline Sync completed\n';if(fs.existsSync(p)){fs.appendFileSync(p,e,'utf-8')}else{fs.mkdirSync('.codebuddy/memory',{recursive:true});fs.writeFileSync(p,'# Memory '+p.split('/').pop()+'\n'+e,'utf-8')};console.log('  Memory updated')}catch(e){console.log('  Memory update skipped: '+e.message)}" 2>nul
 ver >nul
 
+rem ============================================================
+rem Step 7: Final Commit (捕获 pipeline 执行过程中产生的文件变更)
+rem   问题: Step 3 commit 之后，build.bat/pipeline-sync/memory
+rem         继续修改文件但未提交，导致工作区始终有脏文件
+rem ============================================================
+echo.
+echo -----------------------------------------------------------
+echo   Step 7: Final Commit (pipeline artifacts)
+echo -----------------------------------------------------------
+
+rem 读取当前版本号
+for /f %%a in ('node -e "console.log(require('./version.json').version)" 2^>nul') do set FINAL_VERSION=v%%a
+
+set "STATUS_FILE=%TEMP%\_rel_status2.tmp"
+git status --porcelain > "%STATUS_FILE%" 2>nul
+set HAS_POST_CHANGES=0
+if exist "%STATUS_FILE%" for %%F in ("%STATUS_FILE%") do if %%~zF gtr 0 set HAS_POST_CHANGES=1
+
+if "!HAS_POST_CHANGES!"=="0" (
+    echo   [OK] Working tree clean - nothing to commit
+    del "%STATUS_FILE%" 2>nul
+    goto :FINAL_DONE
+)
+
+echo   Uncommitted files detected (pipeline artifacts):
+type "%STATUS_FILE%"
+echo.
+
+rem 恢复 pnpm-lock.yaml 到 committed 版本（build.bat 中的 pnpm exec 可能静默回退 checksum）
+git checkout HEAD -- pnpm-lock.yaml 2>nul
+if %errorlevel% equ 0 echo   [OK] Restored pnpm-lock.yaml to committed version
+
+rem 再次检查 status（pnpm-lock.yaml 恢复后可能还有变更）
+git status --porcelain > "%STATUS_FILE%" 2>nul
+set HAS_POST_CHANGES=0
+if exist "%STATUS_FILE%" for %%F in ("%STATUS_FILE%") do if %%~zF gtr 0 set HAS_POST_CHANGES=1
+
+if "!HAS_POST_CHANGES!"=="0" (
+    echo   [OK] All changes resolved - nothing to commit
+    del "%STATUS_FILE%" 2>nul
+    goto :FINAL_DONE
+)
+
+echo   Committing pipeline artifacts...
+git add .
+git commit -m "chore: release artifacts for !FINAL_VERSION!"
+if %errorlevel% equ 0 (
+    echo   [OK] Commit created
+    git push origin main
+    if %errorlevel% equ 0 (
+        echo   [OK] Pushed to origin
+    ) else (
+        echo   [WARN] Push failed - please push manually
+    )
+) else (
+    echo   [WARN] Nothing to commit or commit failed
+)
+del "%STATUS_FILE%" 2>nul
+
+:FINAL_DONE
+echo -----------------------------------------------------------
+
 pause
 exit /b 0
 
