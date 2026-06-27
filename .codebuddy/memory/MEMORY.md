@@ -92,6 +92,64 @@ node --test docs/pipeline/__tests__/pipeline-config.test.mjs
 - MEMORY.md 可就地更新保持精简
 - 反例：2026-06-19 事故，使用 `write_to_file` 覆盖 575 行日志为 25 行摘要
 
+### 🔴 日志优先排查原则（v1.0, 2026-06-26）
+
+**问题**：AI 遇到代码问题时，倾向凭当前知识直接修，忽略项目自身的历史教训日志。导致重复踩坑——同样的陷阱在日志里已记录过解决方案，但因没查日志而走了弯路（如 06-26 `^)` 转义事件：06-21/06-22 日志早已证明不可靠 + 记录了正确方案，但 AI 第一反应还是用 `^)` 创可贴）。
+
+**强制规则**：修改**曾被动过的文件/模块**（构建脚本、发布流程、原生编译、bat/sh、打包配置等高频陷阱区）时，**必须先查历史日志再动手**：
+
+| 步骤 | 操作 | 工具 |
+|------|------|------|
+| 1 | 读最近 3-7 天每日日志 | `read_file .codebuddy/memory/YYYY-MM-DD.md` |
+| 2 | 关键字搜索历史 | `search_content` in `.codebuddy/memory/` |
+| 3 | 读 MEMORY.md 陷阱清单 | `read_file MEMORY.md` |
+| 4 | 确认有无同类问题记录 | — |
+| 5 | 参考历史方案制定修复策略 | — |
+
+**典型案例**：
+- `release-publish.bat` CMD if 块内 echo 含 `)` → AI 第一反应 `^)` 转义 → 查阅日志后发现 06-21(build.bat v5: goto 模式)、06-22(CMD 括号+重定向冲突)、06-26(v0.5.29: goto 替代多行 if) 已反复验证 `^)` 不可靠 → 改用 goto 模式，一次通过。若不查日志，至少浪费 1 小时无效调试。
+- `build.bat` sqlite3 MODULE_VERSION → 已记录 35+ 个相关陷阱(#9/#20/#22/#30-#36)，不看日志直接修 ≈ 必定踩坑
+
+**反例**：❌ 看到错误 → 直接 `replace_in_file` 凭经验修 → 引入新问题 → 再修 → 循环。这是 bat 文件历史上反复出现的问题模式。
+
+### 🔴 调试日志强制规范（v1.0, 2026-06-26）
+
+**问题**：项目代码缺乏统一的调试日志规范——.mjs 脚本全用裸 `console.log`、.bat 脚本的 `[DEBUG]` 行无开关控制、TS 代码中 `logger.debug` 使用率低。导致出问题时"盲飞"——没有调试日志可用，只能反复加临时 `echo` 排查，效率极低。
+
+**强制规则**（详见 `docs/36_调试日志规范体系.md`）：
+
+| 规则 | 内容 |
+|------|------|
+| **开关控制** | 所有 DEBUG/TRACE 日志统一由 `EASYAGENT_DEBUG=1` 或 `LOG_LEVEL=debug` 环境变量控制 |
+| **TS 代码** | 使用 `createLogger('ModuleName')` → `logger.debug()`，**禁止裸 `console.log`** |
+| **.mjs 脚本** | 使用 `scripts/lib/logger.mjs` → `log.debug()`，**禁止裸 `console.log`** |
+| **.bat 脚本** | 所有 `[DEBUG]` 行前加 `if %_DBG%==1` 开关检查，**禁止裸 echo [DEBUG]** |
+| **错误日志** | `catch` 块必须 `log.error(msg, { error, context })` 携带上下文，**禁止仅传字符串** |
+| **关键调用** | 外部命令/HTTP/文件I/O 前后必须有 `log.debug` 记录输入参数和输出结果 |
+
+**环境变量优先级**：`LOG_LEVEL` > `EASYAGENT_DEBUG` > 默认 INFO
+
+**快速开启**：
+```bash
+# Windows CMD
+set EASYAGENT_DEBUG=1 && build.bat
+
+# PowerShell
+$env:EASYAGENT_DEBUG = "1"; .\build.bat
+
+# Linux/macOS
+EASYAGENT_DEBUG=1 ./build.sh
+```
+
+**反例**：❌ 出问题时加临时 `console.log` / `echo [DEBUG]` 排查 → 修完删除 → 下次同样问题又要重新加。这是"飞纸片"式调试，项目历史上 bat 文件修订 200+ 次的主因之一。
+
+**检查清单**：提交代码前确认 —
+- [ ] 新增 try-catch 的 catch 块有 `log.error` 带上下文
+- [ ] 关键外部调用有 `log.debug` 记录参数
+- [ ] .mjs 脚本用 `logger.mjs` 而非 `console.log`
+- [ ] .bat 的 DEBUG 行受开关控制
+- [ ] 无敏感信息泄露
+
 ### Memory 记录格式约定（v1.1, 2026-06-25 强化）
 
 为使管线页面解析器能**准确**提取模块-问题-解决方案数据，**所有问题记录必须**遵循统一格式。详见 `docs/pipeline/memory-format-spec.md`。
@@ -150,6 +208,7 @@ node --test docs/pipeline/__tests__/pipeline-config.test.mjs
 | 11 | 🖥️ | **apiFetch 全项目双重 .json()** | 13 个文件 43+ 处数据消失无报错 | apiFetch 已返回解析对象，所有调用处去掉 `res.json()` + `res.ok` 检查 |
 | 12 | 🔀 | **bat文件 `[!]` + 延迟扩展冲突** | `enabledelayedexpansion` 下 echo `[!]` 被当成变量标记，导致整行解析崩溃 | 改为 `[^^!]`（`^^` 转义） |
 | 13 | 🔀 | **bat文件中文编码乱码** | CMD 代码页 936(GBK) 无法正确输出 UTF-8 中文，PowerShell 管道解析中文变乱码 | bat 开头 `chcp 65001` 设置 UTF-8 代码页；ps1 开头设置 `[Console]::OutputEncoding = UTF8`；JSON 数据本身正确，仅显示层编码不匹配 |
+| 13a | 🔀 | **git status 中文文件名显示为 octal 转义** | `docs/36_双通道发布指南.md` 显示为 `"docs/36_\345\217\214\351\200\232..."`，无法阅读 | `git config --global core.quotepath false`（全局+本地双保险）；原因：Git 默认对非 ASCII 文件名用 `\oct` 转义输出 |
 | 14 | 🔀 | **bat文件 `:::` 注释导致 CMD 崩溃** | `::: comment` 被 CMD 解析为非法 label，报 `此时不应有 :。` | **全部改为 `rem` 注释**；不用任何 `:` 开头的注释 |
 | 14a | 🔀 | **CMD `if (...)` 块内 echo 含 `)` 导致块提前关闭** | echo 中的 `)` 被 CMD 当作 if/for 块的结束符，导致块内剩余代码被跳过或 `else` 被误解析。`^)` 转义不可靠（CMD 预解析器处理不一致） | **用 `goto` 标签模式替代 `if (...) 多行块`**：正确判断后直接 `goto :CONTINUE` 跳过错误处理区；对 if 块内 echo 中不可避免地出现 `)` 的场景，改换措辞去掉括号或用变量替代 |
 | 15 | 🔀 | **execSync 路径含空格被截断** | `execSync('node ' + path)` 中路径有空格，CMD 当作参数分隔符截断| 路径加双引号：`node "${path}"` |

@@ -33,12 +33,12 @@
       "size": 36906
     },
     "2026-06-26.md": {
-      "mtimeMs": 1782485429755.847,
-      "size": 70418
+      "mtimeMs": 1782487858975.1382,
+      "size": 72856
     },
     "MEMORY.md": {
-      "mtimeMs": 1782476420394.5378,
-      "size": 45571
+      "mtimeMs": 1782487850635.2336,
+      "size": 47733
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -8720,6 +8720,62 @@
           "f16",
           "b3a"
         ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-26",
+        "title": "release-publish.bat CMD if 块内 echo 括号冲突根治 (23:06)",
+        "problem": ": `:UPLOAD_TOKEN` 中 `if not exist \"scripts\\.release_token\" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL` [根因] : CMD 预解析器在构建 if/for 块时天真地数括号，不区分 echo/rem 等命令内容。`^)` 转义在预解析阶段不总是生效",
+        "solution": "`:UPLOAD_TOKEN` token 存在检查 (line 406-417): 反向 `if exist ... goto :UPLOAD_TOKEN_GO`；`:UPLOAD_TOKEN` 上传结果判断 (line 431-440): `goto :UPLOAD_TOKEN_OK` 模式；`:STEP_DTS` DTS 错误报告 (line 228-243): `if equ 0 goto :DTS_OK`；`:BUILD_OK` 产物大小显示 (line 300-305): 去掉 echo 中括号；`:STEP_SYNC` 管线同步结果 (line 489-497): `if equ 0 goto :SYNC_OK`；MEMORY.md: 新增陷阱 #14a (CMD if 块内 echo 含括号)；DTS check + EXE build + GitHub Release + Pipeline Sync completed",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-26",
+        "title": "release-publish.bat CMD if 块内 echo 括号冲突根治 (23:06)",
+        "problem": ": `:UPLOAD_TOKEN` 中 `if not exist \"scripts\\.release_token\" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL` [根因] : CMD 预解析器在构建 if/for 块时天真地数括号，不区分 echo/rem 等命令内容。`^)` 转义在预解析阶段不总是生效",
+        "solution": "`:UPLOAD_TOKEN` token 存在检查 (line 406-417): 反向 `if exist ... goto :UPLOAD_TOKEN_GO`；`:UPLOAD_TOKEN` 上传结果判断 (line 431-440): `goto :UPLOAD_TOKEN_OK` 模式；`:STEP_DTS` DTS 错误报告 (line 228-243): `if equ 0 goto :DTS_OK`；`:BUILD_OK` 产物大小显示 (line 300-305): 去掉 echo 中括号；`:STEP_SYNC` 管线同步结果 (line 489-497): `if equ 0 goto :SYNC_OK`；MEMORY.md: 新增陷阱 #14a (CMD if 块内 echo 含括号)；DTS check + EXE build + GitHub Release + Pipeline Sync completed",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-26",
+        "title": "release-publish.bat CMD if 块内 echo 括号冲突根治 (23:06)",
+        "problem": ": `:UPLOAD_TOKEN` 中 `if not exist \"scripts\\.release_token\" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL` [根因] : CMD 预解析器在构建 if/for 块时天真地数括号，不区分 echo/rem 等命令内容。`^)` 转义在预解析阶段不总是生效",
+        "solution": "`:UPLOAD_TOKEN` token 存在检查 (line 406-417): 反向 `if exist ... goto :UPLOAD_TOKEN_GO`；`:UPLOAD_TOKEN` 上传结果判断 (line 431-440): `goto :UPLOAD_TOKEN_OK` 模式；`:STEP_DTS` DTS 错误报告 (line 228-243): `if equ 0 goto :DTS_OK`；`:BUILD_OK` 产物大小显示 (line 300-305): 去掉 echo 中括号；`:STEP_SYNC` 管线同步结果 (line 489-497): `if equ 0 goto :SYNC_OK`；MEMORY.md: 新增陷阱 #14a (CMD if 块内 echo 含括号)；DTS check + EXE build + GitHub Release + Pipeline Sync completed",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-26",
+        "title": "release-publish.bat CMD if 块内 echo 括号冲突根治 (23:06)",
+        "problem": ": `:UPLOAD_TOKEN` 中 `if not exist \"scripts\\.release_token\" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL` [根因] : CMD 预解析器在构建 if/for 块时天真地数括号，不区分 echo/rem 等命令内容。`^)` 转义在预解析阶段不总是生效",
+        "solution": "`:UPLOAD_TOKEN` token 存在检查 (line 406-417): 反向 `if exist ... goto :UPLOAD_TOKEN_GO`；`:UPLOAD_TOKEN` 上传结果判断 (line 431-440): `goto :UPLOAD_TOKEN_OK` 模式；`:STEP_DTS` DTS 错误报告 (line 228-243): `if equ 0 goto :DTS_OK`；`:BUILD_OK` 产物大小显示 (line 300-305): 去掉 echo 中括号；`:STEP_SYNC` 管线同步结果 (line 489-497): `if equ 0 goto :SYNC_OK`；MEMORY.md: 新增陷阱 #14a (CMD if 块内 echo 含括号)；DTS check + EXE build + GitHub Release + Pipeline Sync completed",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f16",
+          "p5a"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -8737,5 +8793,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-26T14:58:20.505Z"
+  "generatedAt": "2026-06-26T15:31:55.201Z"
 }

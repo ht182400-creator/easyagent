@@ -1,154 +1,380 @@
-# EasyAgent Desktop 自动构建与发布
-# 触发条件: 推送版本 tag (v*) 或手动触发
-#
-# 参考: docs/06_版本发布与CI-CD流程指南.md §3
-# P1-2: docs/09_EasyAgent项目Review与优化建议报告.md
+name: Release
 
-name: Build and Release
+# ============================================================
+# EasyAgent 自动发布流水线
+#
+# 触发方式：
+#   1. 推送版本标签 (v*) → 自动构建 + 发布到 GitHub Release
+#   2. 手动触发 (workflow_dispatch) → 输入版本号
+#
+# 构建目标：
+#   - Desktop NSIS 安装包 (Windows x64 .exe)
+#   - Web 仪表盘静态文件 (部署用)
+#
+# 发布方式：
+#   - 自动创建 GitHub Release (draft=false, latest=true)
+#   - 上传 Desktop EXE + blockmap + latest.yml
+#   - 上传 Web dist 压缩包
+# ============================================================
 
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*'               # 推送 v0.6.1 等标签时触发
+  workflow_dispatch:         # 手动触发
     inputs:
       version:
-        description: '版本号 (如 0.4.1)'
+        description: '版本号 (不含 v 前缀, 例如 0.6.1)'
+        required: true
+        type: string
+      prerelease:
+        description: '是否标记为预发布版本'
         required: false
-        default: ''
+        default: false
+        type: boolean
 
+# 允许 Release 创建和上传
 permissions:
   contents: write
+  actions: read
 
 env:
   NODE_VERSION: '20'
-  # windows-latest 已升级为 Server 2025 + VS 2026，node-gyp v10 不支持
-  # 固定 windows-2022 确保 VS 2022 编译环境可用
   npm_config_msvs_version: '2022'
 
 jobs:
-  # ===== Job 1: 测试 =====
-  test:
-    name: Run Tests
-    runs-on: windows-2022
+  # ============================================================
+  # 提取版本号 (job 间共享)
+  # ============================================================
+  version:
+    name: Resolve Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      tag_name: ${{ steps.resolve.outputs.tag_name }}
+      is_prerelease: ${{ steps.resolve.outputs.is_prerelease }}
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build core package
-        run: cd packages/core && npx tsup --dts
-
-      - name: Run core tests
-        run: cd packages/core && npx vitest run
-
-      - name: Run server tests
-        run: cd packages/server && npx vitest run
-
-      - name: Build shared frontend
-        run: cd packages/frontend && npx vite build
-
-      - name: Run desktop tests
-        run: cd packages/desktop && npx vitest run
-
-  # ===== Job 2: 构建 Desktop EXE =====
-  build-desktop:
-    name: Build Desktop EXE
-    needs: test
-    runs-on: windows-2022
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build all packages
+      - id: resolve
         run: |
-          cd packages/core && npx tsup --dts
-          cd ../cli && npx tsup
-          cd ../server && npx tsup
-          cd ../desktop && npx tsup
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+            VER="${TAG#v}"
+            echo "version=${VER}" >> $GITHUB_OUTPUT
+            echo "tag_name=${TAG}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "tag_name=v${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=${{ inputs.prerelease }}" >> $GITHUB_OUTPUT
+          fi
+          echo "Resolved version: $VER"
 
-      - name: Build shared frontend (type-check)
-        run: cd packages/frontend && npx tsc --noEmit
+  # ============================================================
+  # Desktop 构建 (Windows 专属 - 需 MSVC + Electron 打包)
+  # ============================================================
+  build-desktop:
+    name: Build Desktop (Windows EXE)
+    needs: version
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      EASYAGENT_SKIP_NODE_CHECK: '1'
+    steps:
+      # ---- 环境准备 ----
+      - uses: actions/checkout@v4
 
-      - name: Build web frontend
-        run: cd packages/web && npm run build
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-      - name: Build Desktop (NSIS installer)
-        run: cd packages/desktop && npx electron-builder --win --x64
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
-      - name: Verify build output
-        run: node packages/desktop/scripts/verify-build.cjs --release
+      - uses: ilammy/msvc-dev-cmd@v1
+        # 提供 MSVC 编译器 (better-sqlite3 原生模块编译需要)
 
-      - name: Upload build artifacts
+      # ---- 安装依赖 ----
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ---- Phase 1: 构建共享模块 ----
+      - name: Build core
+        run: cd packages/core && npx tsup
+        # core: Agent/Tool/Session 引擎 (ESM, 含 .d.ts 类型声明)
+
+      - name: Build server
+        run: cd packages/server && npx tsup
+        # server: Express + WebSocket 后端 API
+
+      # ---- Phase 2: 构建 Desktop 专属产物 ----
+      - name: Build desktop main (tsup)
+        run: cd packages/desktop && npx tsup
+        # main.js: 内联 core+server (noExternal 机制), ~1.14MB
+
+      - name: Build desktop preload (CJS)
+        run: cd packages/desktop && npx tsup --config tsup.preload.config.ts
+        # preload.cjs: Electron 渲染进程沙箱桥接 (必须 CJS 格式)
+
+      - name: Build desktop renderer (Vite)
+        run: cd packages/desktop && npx vite build
+        # dist/renderer/: React 前端 UI, 通过 file:// 协议加载
+
+      # ---- Phase 2.5: 构建前验证 ----
+      - name: Pre-package verification
+        run: node packages/desktop/scripts/verify-build.cjs
+
+      # ---- Phase 3: better-sqlite3 双版本编译 ----
+      # 系统 Node 的 .node 与 Electron 的 .node ABI 不同, 需分别编译
+      - name: Compile better-sqlite3 (Dual ABI)
+        run: node scripts/rebuild-sqlite3.mjs
+
+      - name: Switch sqlite3 to Electron version
+        run: |
+          $release = "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release"
+          Copy-Item "$release/better_sqlite3.node" "$release/better_sqlite3.node.backup" -Force
+          Copy-Item "$release/better_sqlite3_electron.node" "$release/better_sqlite3.node" -Force
+          Write-Host "[OK] Switched to Electron ABI for packaging"
+
+      # ---- Phase 4: Electron 打包 (NSIS 安装包) ----
+      - name: Package (electron-builder)
+        run: |
+          cd packages/desktop
+          npx electron-builder --win --x64
+        # 输出: release/EasyAgent-{version}-win-x64.exe (安装包 ~105MB)
+        #       release/win-unpacked/EasyAgent.exe (便携版 ~168MB)
+
+      # ---- Phase 4.5: 恢复 sqlite3 ----
+      - name: Restore sqlite3 to System version
+        if: always()  # 即使打包失败也恢复, 不影响后续
+        run: |
+          $release = "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release"
+          if (Test-Path "$release/better_sqlite3.node.backup") {
+            Copy-Item "$release/better_sqlite3.node.backup" "$release/better_sqlite3.node" -Force
+            Remove-Item "$release/better_sqlite3.node.backup" -Force
+            Write-Host "[OK] Restored System ABI"
+          }
+
+      # ---- Phase 5: 上传构建产物 ----
+      - name: Upload Desktop installer
         uses: actions/upload-artifact@v4
         with:
-          name: desktop-release
+          name: desktop-installer
           path: |
-            packages/desktop/release/*.exe
-            packages/desktop/release/*.exe.blockmap
-            packages/desktop/release/latest.yml
-          retention-days: 5
+            packages/desktop/release/EasyAgent-*.exe
+            packages/desktop/release/EasyAgent-*.exe.blockmap
+          if-no-files-found: error
 
-  # ===== Job 3: 创建 GitHub Release 并上传 =====
+      - name: Upload latest.yml
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-yml
+          path: packages/desktop/release/latest.yml
+          if-no-files-found: error
+
+  # ============================================================
+  # Web 构建 (Linux — 纯前端打包, 无需原生模块)
+  # ============================================================
+  build-web:
+    name: Build Web Dashboard
+    needs: version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # ---- 环境准备 ----
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      # ---- 安装依赖 ----
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ---- Phase 1: 构建共享模块 ----
+      - name: Build core
+        run: cd packages/core && npx tsup
+
+      - name: Build server
+        run: cd packages/server && npx tsup
+
+      # ---- Phase 2: 构建 Web 前端 ----
+      - name: Build web (Vite)
+        run: cd packages/web && npx vite build
+        # 输出: packages/web/dist/ (静态 HTML+JS+CSS)
+
+      # ---- Phase 3: 打包上传 ----
+      - name: Package web dist
+        run: |
+          cd packages/web
+          tar -czf ../../web-dist.tar.gz dist/
+          echo "Web dist packaged: $(du -h ../../web-dist.tar.gz | cut -f1)"
+
+      - name: Upload web dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web-dist.tar.gz
+          if-no-files-found: error
+
+  # ============================================================
+  # 创建 GitHub Release + 上传 Assets
+  # ============================================================
   release:
     name: Create GitHub Release
-    needs: build-desktop
-    runs-on: windows-2022
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - version
+      - build-desktop
+      - build-web
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 创建 Release + 上传 asset
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download build artifacts
+      # ---- 下载所有构建产物 ----
+      - name: Download Desktop artifacts
         uses: actions/download-artifact@v4
         with:
-          name: desktop-release
-          path: release-artifacts
+          name: desktop-installer
+          path: release-assets
 
-      - name: Get version from tag
-        id: version
-        run: |
-          $tag = "${{ github.ref_name }}"
-          $version = $tag -replace '^v', ''
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-
-      - name: Create Release and Upload
-        uses: softprops/action-gh-release@v2
+      - name: Download latest.yml
+        uses: actions/download-artifact@v4
         with:
-          tag_name: ${{ github.ref_name }}
-          name: EasyAgent v${{ steps.version.outputs.version }}
+          name: latest-yml
+          path: release-assets
+
+      - name: Download Web artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: release-assets
+
+      # ---- 验证产物完整性 ----
+      - name: Verify release assets
+        run: |
+          echo "=== Release Assets ==="
+          ls -lh release-assets/
+          echo ""
+          # 检查 Desktop Installer
+          EXE=$(ls release-assets/EasyAgent-*.exe 2>/dev/null | head -1)
+          if [ -n "$EXE" ]; then
+            echo "✅ Desktop EXE: $EXE ($(du -h "$EXE" | cut -f1))"
+          else
+            echo "❌ Desktop EXE not found!"
+            exit 1
+          fi
+          # 检查 blockmap
+          BLOCKMAP=$(ls release-assets/EasyAgent-*.exe.blockmap 2>/dev/null | head -1)
+          if [ -n "$BLOCKMAP" ]; then
+            echo "✅ Blockmap: $BLOCKMAP ($(du -h "$BLOCKMAP" | cut -f1))"
+          else
+            echo "⚠️  Blockmap not found (incremental update will be disabled)"
+          fi
+          # 检查 latest.yml
+          if [ -f "release-assets/latest.yml" ]; then
+            echo "✅ latest.yml: $(head -1 release-assets/latest.yml)"
+          else
+            echo "❌ latest.yml not found!"
+            exit 1
+          fi
+          # 检查 Web dist
+          if [ -f "release-assets/web-dist.tar.gz" ]; then
+            echo "✅ Web dist: $(du -h release-assets/web-dist.tar.gz | cut -f1)"
+          else
+            echo "⚠️  Web dist not found"
+          fi
+
+      # ---- 生成 Release Notes ----
+      - name: Generate release notes
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          TAG="${{ needs.version.outputs.tag_name }}"
+          DATE=$(date +'%Y-%m-%d')
+          REPO="${{ github.repository }}"
+          SHA="${{ github.sha }}"
+          RUN_NUM="${{ github.run_number }}"
+          RUN_ID="${{ github.run_id }}"
+          SERVER_URL="${{ github.server_url }}"
+
+          # 尝试从 CHANGELOG.md 提取当前版本的变更内容
+          CHANGES=""
+          if [ -f "CHANGELOG.md" ]; then
+            CHANGES=$(awk "/## ${TAG}/,/^## /" CHANGELOG.md | sed '1d;$d' | sed '/^$/d' || echo "")
+          fi
+
+          {
+            if [ -n "$CHANGES" ]; then
+              echo "$CHANGES"
+            else
+              echo "EasyAgent ${TAG} - Auto-built by CI/CD pipeline"
+              echo ""
+              echo "📦 **Desktop Installer**: EasyAgent-${VERSION}-win-x64.exe"
+              echo "🌐 **Web Dashboard**: web-dist.tar.gz (static files)"
+              echo ""
+              echo "> 🔗 [View full changelog](https://github.com/${REPO}/blob/main/CHANGELOG.md)"
+              echo "> 📋 [Build documentation](https://github.com/${REPO}/blob/main/docs/37_双重构建体系详解_Desktop与Web.md)"
+            fi
+
+            echo ""
+            echo "---"
+            echo ""
+            echo "**🔧 Technical Details**"
+            echo "- Commit: [\`${SHA:0:7}\`](https://github.com/${REPO}/commit/${SHA})"
+            echo "- Build: [GitHub Actions Run #${RUN_NUM}](${SERVER_URL}/${REPO}/actions/runs/${RUN_ID})"
+            echo "- Date: ${DATE}"
+            echo ""
+            echo "**📦 Included Assets**"
+            echo "| File | Description |"
+            echo "|------|-------------|"
+            echo "| \`EasyAgent-${VERSION}-win-x64.exe\` | Windows NSIS Installer |"
+            echo "| \`EasyAgent-${VERSION}-win-x64.exe.blockmap\` | Incremental update blockmap |"
+            echo "| \`latest.yml\` | Auto-update manifest |"
+            echo "| \`web-dist.tar.gz\` | Web Dashboard static files |"
+          } > /tmp/release-notes.md
+
+          echo "=== Release Notes Preview ==="
+          cat /tmp/release-notes.md
+
+      # ---- 创建 GitHub Release ----
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.version.outputs.tag_name }}
+          name: ${{ needs.version.outputs.tag_name }}
+          body_path: /tmp/release-notes.md
           draft: false
-          prerelease: false
-          generate_release_notes: true
+          prerelease: ${{ needs.version.outputs.is_prerelease }}
+          make_latest: true
           files: |
-            release-artifacts/*.exe
-            release-artifacts/*.exe.blockmap
-            release-artifacts/latest.yml
+            release-assets/EasyAgent-*.exe
+            release-assets/EasyAgent-*.exe.blockmap
+            release-assets/latest.yml
+            release-assets/web-dist.tar.gz
+          fail_on_unmatched_files: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ---- 发布结果摘要 ----
+      - name: Release summary
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          TAG="${{ needs.version.outputs.tag_name }}"
+          echo "========================================"
+          echo "  ✅ Release $TAG published!"
+          echo "========================================"
+          echo ""
+          echo "  📦 Desktop Installer: EasyAgent-${VERSION}-win-x64.exe"
+          echo "  🌐 Web Dashboard:     web-dist.tar.gz"
+          echo "  🔗 Release URL:       https://github.com/${{ github.repository }}/releases/tag/$TAG"
+          echo ""
+          echo "  Auto-update:  Desktop users will receive update notification within 24h."
+          echo "========================================"

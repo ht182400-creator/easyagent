@@ -496,6 +496,12 @@ async function initAutoUpdater(): Promise<void> {
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
 
+    // 禁用 Windows 代码签名校验（项目未持有代码签名证书）
+    // 否则 electron-updater 会拒绝安装："not signed by the application owner"
+    try {
+      (autoUpdater as any).verifyUpdateCodeSignature = false;
+    } catch (_) { /* 安全忽略 */ }
+
     /**
      * 带时间戳的更新日志
      */

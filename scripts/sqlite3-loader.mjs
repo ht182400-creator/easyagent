@@ -10,10 +10,12 @@
  *   node scripts/sqlite3-loader.mjs electron # 强制切为 Electron 版本
  */
 
-import { existsSync, copyFileSync, readFileSync } from 'fs';
+import { existsSync, copyFileSync, statSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createLogger } from './lib/logger.mjs';
 
+const log = createLogger('sqlite3-loader');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = resolve(__dirname, '..');
 
@@ -59,11 +61,11 @@ function main() {
     }
   }
 
-  console.log(`[sqlite3-loader] 当前 Node MODULE_VERSION=${currentModule}, 目标: ${targetName}`);
+  log.info(`当前 Node MODULE_VERSION=${currentModule}, 目标: ${targetName}`);
 
   if (!existsSync(targetBuild)) {
-    console.error(`[sqlite3-loader] ❌ 缺少预编译文件: ${targetBuild}`);
-    console.error('[sqlite3-loader]    请先运行: build-sqlite3.bat');
+    log.error(`缺少预编译文件: ${targetBuild}`);
+    log.error('请先运行: build-sqlite3.bat');
     process.exit(1);
   }
 
@@ -72,8 +74,8 @@ function main() {
   if (existsSync(CURRENT)) {
     try {
       // 简单比较文件大小来判断是否相同版本
-      const curStat = require('fs').statSync(CURRENT);
-      const tgtStat = require('fs').statSync(targetBuild);
+      const curStat = statSync(CURRENT);
+      const tgtStat = statSync(targetBuild);
       needSwitch = curStat.size !== tgtStat.size;
     } catch {
       // 无法比较，强制切换
@@ -82,9 +84,9 @@ function main() {
 
   if (needSwitch) {
     copyFileSync(targetBuild, CURRENT);
-    console.log(`[sqlite3-loader] ✅ 已切换为 ${targetName} 版本 (better_sqlite3.node)`);
+    log.ok(`已切换为 ${targetName} 版本 (better_sqlite3.node)`);
   } else {
-    console.log(`[sqlite3-loader] ✅ 已是 ${targetName} 版本，无需切换`);
+    log.ok(`已是 ${targetName} 版本，无需切换`);
   }
 }
 

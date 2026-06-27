@@ -13,14 +13,19 @@ const ROOT = path.resolve(__dirname, '..');
 let errors = 0;
 let warnings = 0;
 
+// 调试开关: set EASYAGENT_DEBUG=1 启用详细日志
+const IS_DEBUG = process.env.EASYAGENT_DEBUG === '1' || process.env.EASYAGENT_DEBUG === 'true';
+
 function fail(msg) { console.error(`\x1b[31m  [FAIL]\x1b[0m ${msg}`); errors++; }
 function warn(msg) { console.warn(`\x1b[33m  [WARN]\x1b[0m ${msg}`); warnings++; }
 function ok(msg)   { console.log(`\x1b[32m  [OK]\x1b[0m   ${msg}`); }
+function debug(msg) { if (IS_DEBUG) console.log(`\x1b[36m  [DEBUG]\x1b[0m ${msg}`); }
+function title(msg) { console.log(`\n${msg}`); }
 
 // ============================================================
 // 1. 关键文件存在性检查
 // ============================================================
-console.log('\n--- Checking required files ---');
+title('--- Checking required files ---');
 const requiredFiles = [
   ['assets/LICENSE', 'NSIS license page'],
   ['assets/icon.ico', 'NSIS installer icon'],
@@ -41,7 +46,7 @@ for (const [f, desc] of requiredFiles) {
 // ============================================================
 // 2. package.json 版本检查
 // ============================================================
-console.log('\n--- Checking package.json config ---');
+title('--- Checking package.json config ---');
 const pkgPath = path.join(ROOT, 'package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
@@ -135,7 +140,7 @@ if (html.includes('127.0.0.1:3456')) {
 // ============================================================
 // 4. 源码 URL 检查 (localhost -> 127.0.0.1)
 // ============================================================
-console.log('\n--- Checking source for localhost:3456 ---');
+title('--- Checking source for localhost:3456 ---');
 const srcDir = path.join(ROOT, 'src', 'renderer');
 const srcFiles = [
   'api.ts', 'App.tsx',
@@ -166,7 +171,7 @@ if (!foundLocalhost) {
 // ============================================================
 // 5. 双重 .json() 解析检查 (检查所有 .ts/.tsx 文件，排除 api.ts)
 // ============================================================
-console.log('\n--- Checking for double .json() bug (ALL files) ---');
+title('--- Checking for double .json() bug (ALL files) ---');
 
 /** 递归列出目录中所有匹配模式的文件 */
 function walkDir(dir, pattern) {
@@ -208,7 +213,7 @@ if (!foundDoubleJson) {
 // ============================================================
 // 6. 硬编码版本号检查 (版本号必须从 API/package.json 获取，不得硬编码)
 // ============================================================
-console.log('\n--- Checking for hardcoded version numbers !== 0.3.0 ---');
+title('--- Checking for hardcoded version numbers !== 0.3.0 ---');
 const CURRENT_VERSION = '0.4.1';
 const versionCheckFiles = [
   'src/renderer/components/Layout.tsx',
@@ -235,7 +240,7 @@ if (!foundOldVersion) {
 // ============================================================
 // 7. 依赖完整性基础检查
 // ============================================================
-console.log('\n--- Checking critical dependencies ---');
+title('--- Checking critical dependencies ---');
 const criticalDeps = ['better-sqlite3', 'express', 'ws', 'cors', 'multer', 'pino', 'body-parser', 'mime', 'send'];
 for (const dep of criticalDeps) {
   if (pkg.dependencies?.[dep]) {
@@ -248,7 +253,7 @@ for (const dep of criticalDeps) {
 // ============================================================
 // 8. CSS @import 顺序检查
 // ============================================================
-console.log('\n--- Checking index.css ---');
+title('--- Checking index.css ---');
 const cssPath = path.join(ROOT, 'src', 'renderer', 'index.css');
 if (fs.existsSync(cssPath)) {
   const css = fs.readFileSync(cssPath, 'utf8');
@@ -307,7 +312,7 @@ if (!foundCatchBinding) {
 // 确保 .node 文件是为 Electron 30 (Node v20, MODULE_VERSION=123) 编译的
 // 而不是为系统 Node.js 编译的（开发模式 pnpm install 可能用系统 Node）
 // ============================================================
-console.log('\n--- Checking better-sqlite3 MODULE_VERSION ---');
+title('--- Checking better-sqlite3 MODULE_VERSION ---');
 let moduleVersionOk = true;
 const EXPECTED_ELECTRON_VERSION = 123; // Electron 30 = Node v20
 
@@ -377,7 +382,7 @@ try {
 // Express 通过 send@0.19 依赖 mime@1.6.x（有 charsets 属性）
 // 如果 mime@2.x 被 pnpm 提升，Express res.json() 会崩溃 (500)
 // ============================================================
-console.log('\n--- Checking mime version (send/Express dependency) ---');
+title('--- Checking mime version (send/Express dependency) ---');
 try {
   const mimeTopLevel = path.join(ROOT, 'node_modules', 'mime');
   const mimeSendLevel = path.join(ROOT, 'node_modules', 'send', 'node_modules', 'mime');
@@ -494,7 +499,7 @@ try {
 // desktop 声明了 Express 子依赖的较新版本，可能与 Express 自身需求不兼容
 // 开发模式仍能工作（pnpm 提升可能隐藏问题），但 Release 可能异常
 // ============================================================
-console.log('\n--- Checking Express ecosystem version compatibility ---');
+title('--- Checking Express ecosystem version compatibility ---');
 try {
   const EXPRESS_VERSION_CHECKS = [
     { pkg: 'iconv-lite', current: '^0.6.3', needed: '~0.4.24', consumer: 'body-parser' },
@@ -550,7 +555,7 @@ if (!foundEncodingCorruption) {
 // ============================================================
 // 15. preload 脚本格式检查 (CJS, 不是 ESM)
 // ============================================================
-console.log('\n--- Checking preload format (must be CJS) ---');
+title('--- Checking preload format (must be CJS) ---');
 try {
   const preloadPath = path.join(ROOT, 'dist', 'preload.cjs');
   const tsupPreloadConfig = path.join(ROOT, 'tsup.preload.config.ts');
@@ -637,7 +642,7 @@ try {
 // Desktop 使用 HashRouter，页面内导航必须使用 <Link> 或 navigate()
 // <a href="/xxx"> 会触发全页面导航导致黑屏
 // ============================================================
-console.log('\n--- Checking for <a href> in HashRouter (desktop renderer) ---');
+title('--- Checking for <a href> in HashRouter (desktop renderer) ---');
 try {
   const RENDERER_SRC = path.join(ROOT, 'src', 'renderer');
   const tsxFiles = walkDir(RENDERER_SRC, /\.tsx$/);

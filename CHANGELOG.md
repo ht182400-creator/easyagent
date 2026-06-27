@@ -7,9 +7,108 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.3] - 2026-06-27
+
+### Added
+- MEMORY.md 新增：日志优先排查原则
+- 为 Web 版本创建独立的构建脚本（类似 build.bat）
+
+### Changed
+- 用户要求将 GitHub Push → CI → 管线数据更新的完整流程标准化写入 memory，确保所有管线功能块显示正常
+- 🔴 管线自动化修正 — CI 触发而非定时
+- v0.5.3 版本发布
+- release-publish.bat v2.0 增强
+- Desktop EXE 样式错乱 — Tailwind content 路径缺失
+- Deskop EXE 打包手册文档更新
+- [F9] 假成功深度复盘 + 文档化
+- CORS 安全机制文档化
+- [F11-复盘] v0.5.3 vs v0.5.4 源码对比分析 + 完整文档化
+- [F12-文档] 构建链路完整对照表
+- [F9-纠正] 真正根因：better-sqlite3 NODE_MODULE_VERSION 不匹配
+- [F9-纠正2] 文件名不匹配 — better_sqlite3.node ≠ better_sqlite3_system.node
+- 文档：项目启动与运行方式指南
+- Git Push main
+- CHANGELOG.md 更新
+- v0.5.8 GitHub Release 发布
+- [F21] v0.5.12 发布
+- [F25] v0.5.16 发布 — 测试 0.5.15→0.5.16 自动更新
+- [F26] v0.5.17 发布
+- [F29] v0.5.20: 更新机制全场景重构
+- [F30] v0.5.20 测试通过 + 文档更新
+- [F31] v0.5.21 发布
+- [F32] v0.5.22 发布
+- 用户反馈 v0.5.24 "发现新版本 v0.5.25"但下载永不开始。F34 的 scene3 `downloadUpdate()` 修复无效
+- v0.5.27 的 Settings.tsx 显示 `⚠️ ea.checkUpdate 不可用`，不仅因为 preload ESM/CJS 问题，还可疑是 Vite renderer 缓存复用旧代码
+- 构建规范标准化
+- 菜单中添加"启用日志文件"开关，开启后将关键事件写入日志文件，关闭则仅控制台输出
+- 版本号相同(=0.5.30)，Server API 返回 `hasUpdate=false`，但 UI 显示"更新失败，请检查网络连接"
+- v0.5.32 发布 + GitHub 旧 Release EXE 清理
+- 根目录清理 + Git Tag
+- `:UPLOAD_TOKEN` 中 `if not exist "scripts\.release_token" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL`
+- 用户要求建立强制性的调试日志规范——所有代码必须加入 debug 日志、用参数开关控制、形成文档体系、约束在 MEMORY.md
+- 在调试日志规范建立后，对全项目进行日志体系统一迁移，将所有裸 `console.log/error/warn` 替换为统一的 logger
+- 用户要求将使用方法写入规范文档 `docs/36_调试日志规范体系.md`
+- 用户发现 Web 版本(localhost:5173)也走 Desktop 的 electron-updater 更新流程，询问是否合理
+- 将 Desktop/Web 构建分析过程、bat 参数用法、优化建议写成高质量文档，方便初学者使用
+- 实现 CI/CD 自动构建，推送标签 `v*` 时自动构建 Desktop + Web 并发布到 GitHub Release
+- 1) 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
+- 保证 `git commit` 的 message 必须有实际内容，而非只有 `release: v0.x.x`
+- 避免手动 git commit 才能生成有意义的 CHANGELOG，改为从 `.codebuddy/memory/` 结构化记录自动提取
+- `docs/39_CHANGELOG自动生成机制_三级Fallback.md`
+
+### Fixed
+- Web 版设置页面显示"当前版本 v0.3.0"，而实际 `version.json` 已是 `0.5.3`
+- v0.5.4 发布时 NSIS "Can't open output file" 失败。之前加的 retry 逻辑有 bug：
+- release-publish.bat 和 build.bat 输出的管线数据中文全部显示为乱码（如 "瑙﹀彂闆嗘垚" 而非 "触发集成"）
+- - **为什么第一版修复没生效
+- - **真正修复
+- Settings 页面显示"发现新版本 v0.5.10"但无下载动作
+- [F19-续] 重新打包 v0.5.10 EXE with 修复
+- [F24] v0.5.15: 根本修复更新进度不显示问题
+- v0.5.17 中点击"检查更新"检测到 v0.5.18，但没有下载进度/安装界面
+- Settings页版本号后显示"(Gemini)"，发布日期显示"2026-06-20"
+- v0.5.17 点击"检查更新"检测到新版本但没有下载/安装界面
+- 用户点击"检查更新"后 UI 卡在"发现新版本"，不进入下载中状态
+- v0.5.23 "检查更新"后 UI 显示"发现新版本 v0.5.24"但永不进入下载状态。日志显示 `lastUpdateStatus` 已是 `available`（自动检查已发现），手动检查进入场景3时直接返回 available 而非触发下载
+- `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)
+- `ea.checkUpdate()` 返回 "自动更新未启用" → 日志系统显示 `Cannot find module 'jsonfile/utils'`
+- 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)`
+- release-publish.bat Method 2 使用内联 curl 上传，脆弱的 CMD JSON 解析 + `curl -s` 静默失败，导致 GitHub Release 上 0 个 assets
+- Desktop 更新签名校验失败修复
+- Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本
+- release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容
+- BAT 文件 BOM 及 PowerShell 中文乱码修复
+- `git status` 中文文件名显示为 octal 转义（`docs/36_\345\217\214...`）
+
+## [0.6.2] - 2026-06-27
+
+### Changed
+- 新版本发布
+
 ## [0.6.1] - 2026-06-26
 
+### Fixed
+- fix: Settings 页面移除硬编码 v0.5.29 文本，避免版本更新后仍显示旧版变更内容 (ht182400-creator)
+- fix: `/api/version` changelog 提取逻辑改为跳过空条目，避免 release.mjs 生成的空白标题导致更新日志区域无内容 (ht182400-creator)
+
+### Changed
+- refactor: release-publish.bat 简化上传流程，移除冗余的交互步骤 (ht182400-creator)
+- docs: 新增双通道发布对比文档 `docs/38_双通道发布指南_本地vs服务器.md` (ht182400-creator)
+- docs: 新增服务器端发布脚本 `release-server.bat` (ht182400-creator)
+
 ## [0.6.0] - 2026-06-26
+
+### Added
+- feat: 双通道发布支持 — 本地构建 (`release-publish.bat`) + CI/CD 服务器构建 (`release.yml`) (ht182400-creator)
+- feat: electron-updater 自动更新支持，Settings 页面新增下载进度和安装状态显示 (ht182400-creator)
+
+### Fixed
+- fix: hasUpdate=false 时错误状态未清除导致 UI 误显"更新失败" (ht182400-creator)
+- fix: GitHub Release 缺少 latest.yml 导致 electron-updater 检查 404 (ht182400-creator)
+
+### Changed
+- refactor: 构建链优化 — 移除 webpack 依赖，统一使用 tsup + vite (ht182400-creator)
+- refactor: `build.bat` Phase 2.5/3.5 sqlite3 路径修复 + 并行编译支持 (ht182400-creator)
 
 ## [0.5.32] - 2026-06-26
 

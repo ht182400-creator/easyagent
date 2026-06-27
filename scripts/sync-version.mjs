@@ -7,7 +7,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createLogger } from './lib/logger.mjs';
 
+const log = createLogger('sync-version');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const isDryRun = process.argv.includes('--dry-run');
@@ -16,7 +18,7 @@ const isDryRun = process.argv.includes('--dry-run');
 const versionJson = JSON.parse(readFileSync(join(root, 'version.json'), 'utf-8'));
 const version = versionJson.version;
 
-console.log(`\n📦 EasyAgent 版本同步: v${version}${isDryRun ? ' (dry-run)' : ''}\n`);
+log.info(`EasyAgent 版本同步: v${version}${isDryRun ? ' (dry-run)' : ''}`);
 
 /** 需要同步的 package.json 列表 */
 const packages = [
@@ -47,7 +49,7 @@ for (const { name, path: pkgPath } of packages) {
   const oldVersion = pkg.version;
 
   if (oldVersion === version) {
-    console.log(`  ✅ ${name}: v${oldVersion} (已是最新)`);
+    log.info(`  ✅ ${name}: v${oldVersion} (已是最新)`);
     continue;
   }
 
@@ -58,7 +60,7 @@ for (const { name, path: pkgPath } of packages) {
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
   }
   
-  console.log(`  🔄 ${name}: v${oldVersion} → v${version}`);
+  log.info(`  🔄 ${name}: v${oldVersion} → v${version}`);
   updatedCount++;
 }
 
@@ -71,7 +73,7 @@ if (oldServerVersion && oldServerVersion[1] !== version) {
   if (!isDryRun) {
     writeFileSync(serverIndexPath, serverIndex, 'utf-8');
   }
-  console.log(`  🔄 server/src/index.ts: version '${oldServerVersion[1]}' → '${version}'`);
+  log.info(`  🔄 server/src/index.ts: version '${oldServerVersion[1]}' → '${version}'`);
   updatedCount++;
 }
 
@@ -83,7 +85,7 @@ if (oldBannerVersion && oldBannerVersion[1] !== version) {
   if (!isDryRun) {
     writeFileSync(serverIndexPath, serverIndex, 'utf-8');
   }
-  console.log(`  🔄 server 启动横幅: v${oldBannerVersion[1]} → v${version}`);
+  log.info(`  🔄 server 启动横幅: v${oldBannerVersion[1]} → v${version}`);
 }
 
-console.log(`\n${isDryRun ? '📋 预览完成' : '✅ 同步完成'}，共更新 ${updatedCount} 处\n`);
+log.ok(`${isDryRun ? '预览完成' : '同步完成'}，共更新 ${updatedCount} 处`);

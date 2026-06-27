@@ -2,7 +2,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { createLogger } from './lib/logger.mjs';
 
+const log = createLogger('check-encoding');
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
 function walk(dir) {
@@ -37,10 +39,10 @@ for (const pkg of packages) {
 
 if (badFiles.length > 0) {
   for (const f of badFiles) {
-    console.log('CORRUPTED:', f);
+    log.error('CORRUPTED:', f);
   }
-  console.log('\nTotal corrupted: ' + badFiles.length + ' files');
+  log.fail(`共 ${badFiles.length} 个文件编码损坏`);
   process.exit(1);
 } else {
-  console.log('All files OK - no encoding corruption detected');
+  log.ok('所有文件编码正常，未检测到乱码');
 }

@@ -14,8 +14,10 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createLogger } from '../../scripts/lib/logger.mjs';
 import { createApiHandler } from './lib/pipeline-api.mjs';
 
+const log = createLogger('pipeline-server');
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -95,19 +97,19 @@ const server = http.createServer((req, res) => {
   } catch (e) {
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('服务器内部错误');
-    console.error('[server] 静态文件服务错误:', e.message);
+    log.error('静态文件服务错误:', e.message);
   }
 });
 
 server.listen(PORT, () => {
-  console.log(`\n🚀 EasyAgent 管线页面服务器 (v2.0 库化架构)`);
-  console.log(`   地址:       http://localhost:${PORT}/`);
-  console.log(`   API:        http://localhost:${PORT}/api/pipeline`);
-  console.log(`   问题API:    http://localhost:${PORT}/api/issues`);
-  console.log(`   仪表板API:  http://localhost:${PORT}/api/dashboard`);
-  console.log(`   模块API:    http://localhost:${PORT}/api/modules`);
-  console.log(`   状态API:    http://localhost:${PORT}/api/status`);
-  console.log(`   Memory目录: ${MEMORY_DIR}`);
-  console.log(`   库目录:     ${path.join(__dirname, 'lib')}`);
-  console.log(`   按 Ctrl+C 停止服务器\n`);
+  log.info('EasyAgent 管线页面服务器 (v2.0 库化架构)');
+  log.info(`  地址:       http://localhost:${PORT}/`);
+  log.info(`  API:        http://localhost:${PORT}/api/pipeline`);
+  log.info(`  问题API:    http://localhost:${PORT}/api/issues`);
+  log.info(`  仪表板API:  http://localhost:${PORT}/api/dashboard`);
+  log.info(`  模块API:    http://localhost:${PORT}/api/modules`);
+  log.info(`  状态API:    http://localhost:${PORT}/api/status`);
+  log.debug(`  Memory目录: ${MEMORY_DIR}`);
+  log.debug(`  库目录:     ${path.join(__dirname, 'lib')}`);
+  log.info(`  按 Ctrl+C 停止服务器`);
 });

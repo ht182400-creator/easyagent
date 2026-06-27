@@ -10,7 +10,9 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { createLogger } from './lib/logger.mjs';
 
+const log = createLogger('unified-sync');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const PIPELINE_DIR = resolve(ROOT, 'docs/pipeline');
@@ -18,17 +20,17 @@ const PIPELINE_DIR = resolve(ROOT, 'docs/pipeline');
 // ===== 1. 加载模块注册表 =====
 const registryPath = resolve(PIPELINE_DIR, 'lib/module-registry.mjs');
 if (!existsSync(registryPath)) {
-  console.error('❌ module-registry.mjs 不存在，请先创建');
+  log.error('module-registry.mjs 不存在，请先创建');
   process.exit(1);
 }
 // Windows 兼容：将路径转换为 file:// URL
 const registryUrl = pathToFileURL(registryPath).href;
 const { MODULE_REGISTRY, PHASE_DEFINITIONS, BRANCH_DEFINITIONS } = await import(registryUrl);
 
-console.log('📋 模块注册表已加载:');
-console.log(`   主线模块: ${PHASE_DEFINITIONS.flatMap(p => p.nodeIds).length} 个`);
-console.log(`   分支模块: ${BRANCH_DEFINITIONS.flatMap(b => b.nodeIds).length} 个`);
-console.log(`   总计: ${Object.keys(MODULE_REGISTRY).length} 个模块\n`);
+log.info('模块注册表已加载:');
+log.info(`  主线模块: ${PHASE_DEFINITIONS.flatMap(p => p.nodeIds).length} 个`);
+log.info(`  分支模块: ${BRANCH_DEFINITIONS.flatMap(b => b.nodeIds).length} 个`);
+log.info(`  总计: ${Object.keys(MODULE_REGISTRY).length} 个模块`);
 
 // ===== 2. 收集项目中所有测试文件 =====
 function findAllTestFiles(dir, results = []) {
@@ -52,7 +54,7 @@ function findAllTestFiles(dir, results = []) {
 }
 
 const allTestFiles = findAllTestFiles(resolve(ROOT, 'packages'));
-console.log(`🔍 共发现 ${allTestFiles.length} 个测试文件`);
+log.info(`共发现 ${allTestFiles.length} 个测试文件`);
 
 // ===== 3. 统计每个测试文件的用例数 =====
 // 优先级: ① vitest 报告 ② 文件解析 (count it/test blocks)
@@ -80,9 +82,9 @@ function loadVitestFileCounts() {
         }
       }
     }
-    console.log(`   vitest 报告覆盖: ${fileCounts.size} 个文件`);
+    log.info(`  vitest 报告覆盖: ${fileCounts.size} 个文件`);
   } catch (e) {
-    console.warn('   ⚠ 无 vitest 报告可用:', e.message);
+    log.warn(`  无 vitest 报告可用: ${e.message}`);
   }
   return fileCounts;
 }
@@ -98,7 +100,6 @@ function countTestCasesInFile(filePath) {
     let count = 0;
     
     // 匹配独立 it/test 调用（行首可出现任意空白）
-    // 模式: it('name', ...) 或 test('name', ...) 
     const singleMatch = content.match(/^\s*(it|test)\s*\(\s*['"`]/gm);
     count += singleMatch ? singleMatch.length : 0;
     
@@ -111,17 +112,14 @@ function countTestCasesInFile(filePath) {
     count += onlyMatch ? onlyMatch.length : 0;
     
     // 匹配 it.each`...`( 和 test.each`...`( 参数化测试
-    // 每个参数化模板中的条目代表一个测试用例
     const eachMatch = content.match(/(it|test)\.each`([\s\S]*?)`\s*\(/g);
     if (eachMatch) {
       for (const match of eachMatch) {
-        // 提取模板内容中的数组条目数
         const templateMatch = match.match(/\.each`([\s\S]*?)`/);
         if (templateMatch) {
           const template = templateMatch[1];
-          // 按换行分割，每行一个测试条目
           const lines = template.split('\n').filter(l => l.trim().startsWith('[') || l.trim().startsWith('{'));
-          count += Math.max(1, lines.length); // 至少 1 个
+          count += Math.max(1, lines.length);
         }
       }
     }
@@ -259,11 +257,11 @@ const mapping = {
 
 const mappingPath = resolve(PIPELINE_DIR, 'test-case-mapping.json');
 writeFileSync(mappingPath, JSON.stringify(mapping, null, 2), 'utf-8');
-console.log(`\n✅ test-case-mapping.json 已生成:`);
-console.log(`   总用例: ${totalTestCases}`);
-console.log(`   已映射: ${totalTestCases - utilsCases}`);
-console.log(`   未分类: ${utilsCases}`);
-console.log(`   模块数: ${Object.keys(MODULE_REGISTRY).length}`);
+log.ok('test-case-mapping.json 已生成:');
+log.info(`  总用例: ${totalTestCases}`);
+log.info(`  已映射: ${totalTestCases - utilsCases}`);
+log.info(`  未分类: ${utilsCases}`);
+log.info(`  模块数: ${Object.keys(MODULE_REGISTRY).length}`);
 
 // ===== 5. 使用真实 KPI + Dashboard 生成器（与 API 同源）=====
 const pipelineConfigUrl = pathToFileURL(resolve(PIPELINE_DIR, 'lib/pipeline-config.mjs')).href;
@@ -278,12 +276,12 @@ try {
   const cacheFilePath = resolve(PIPELINE_DIR, '_issue_cache.json');
   // 强制清除缓存，确保全量重解析
   if (existsSync(cacheFilePath)) {
-    console.log('🗑 清除旧问题缓存，强制重解析...');
+    log.info('清除旧问题缓存，强制重解析...');
     try { unlinkSync(cacheFilePath); } catch (e) { /* ok */ }
   }
   const { parseMemoryIssues } = await import(pathToFileURL(resolve(PIPELINE_DIR, 'lib/pipeline-parser.mjs')).href);
   issueResult = parseMemoryIssues(memoryDir, cacheFilePath);
-  console.log(`📋 已解析: ${issueResult._totalIssues} 个问题, ${Object.keys(issueResult.modules).length} 个模块`);
+  log.info(`已解析: ${issueResult._totalIssues} 个问题, ${Object.keys(issueResult.modules).length} 个模块`);
   
   // 生成问题摘要列表（供仪表板使用）
   for (const [mid, mod] of Object.entries(issueResult.modules)) {
@@ -299,7 +297,7 @@ try {
   // 按问题数量降序排列
   issueSummaryItems.sort((a, b) => parseInt(b.val) - parseInt(a.val));
 } catch (e) {
-  console.warn(`  ⚠ 问题解析失败: ${e.message}`);
+  log.warn(`  问题解析失败: ${e.message}`);
 }
 
 // ===== 7. 更新 pipeline-data.json =====
@@ -322,7 +320,7 @@ const phases = PHASE_DEFINITIONS.map(p => ({
   nodes: p.nodeIds.map(id => {
     const m = MODULE_REGISTRY[id];
     if (!m) {
-      console.warn(`  ⚠ 模块 ${id} 在注册表中不存在，跳过`);
+      log.warn(`  模块 ${id} 在注册表中不存在，跳过`);
       return null;
     }
     return {
@@ -386,12 +384,12 @@ const pipelineData = {
 };
 
 writeFileSync(pdPath, JSON.stringify(pipelineData, null, 2), 'utf-8');
-console.log(`\n✅ pipeline-data.json 已更新:`);
-console.log(`   阶段数: ${phases.length}, 分支数: ${branches.length}`);
-console.log(`   节点数: ${phases.flatMap(p => p.nodes).length + branches.flatMap(b => b.nodes).length}`);
-console.log(`   KPI: ${mappingKPI.testCases} 用例, ${mappingKPI.scoreTotal}/100 分`);
-console.log(`   Dashboard: ${Object.keys(pipelineData.dashboard).length} 个面板`);
-console.log(`   评分历史: ${scoreHistory.length} 条`);
+log.ok('pipeline-data.json 已更新:');
+log.info(`  阶段数: ${phases.length}, 分支数: ${branches.length}`);
+log.info(`  节点数: ${phases.flatMap(p => p.nodes).length + branches.flatMap(b => b.nodes).length}`);
+log.info(`  KPI: ${mappingKPI.testCases} 用例, ${mappingKPI.scoreTotal}/100 分`);
+log.info(`  Dashboard: ${Object.keys(pipelineData.dashboard).length} 个面板`);
+log.info(`  评分历史: ${scoreHistory.length} 条`);
 
 // ===== 8. 生成 issue-data.json（离线回退文件）=====
 if (issueResult) {
@@ -404,19 +402,19 @@ if (issueResult) {
     _cacheStats: issueResult._cacheStats,
     meta: { exports: 'unified-sync 自动导出', exportedAt: new Date().toISOString() }
   }, null, 2), 'utf-8');
-  console.log(`✅ issue-data.json 已生成: ${issueResult._totalIssues} 个问题`);
+  log.ok(`issue-data.json 已生成: ${issueResult._totalIssues} 个问题`);
 }
 
 // ===== 9. 验证 =====
-console.log('\n===== 验证报告 =====');
+log.title('验证报告');
 const allModIds = Object.keys(MODULE_REGISTRY);
 const withTests = allModIds.filter(id => (MODULE_REGISTRY[id].testFiles?.length || 0) > 0);
 const withoutTests = allModIds.filter(id => !MODULE_REGISTRY[id].testFiles || MODULE_REGISTRY[id].testFiles.length === 0);
 
-console.log(`✅ 有测试文件的模块: ${withTests.length}/${allModIds.length}`);
+log.ok(`有测试文件的模块: ${withTests.length}/${allModIds.length}`);
 if (withoutTests.length > 0) {
-  console.log(`ℹ️  无测试文件的模块 (${withoutTests.length}): ${withoutTests.join(', ')}`);
-  console.log('   这些是非代码类基础设施模块，属正常现象');
+  log.info(`无测试文件的模块 (${withoutTests.length}): ${withoutTests.join(', ')}`);
+  log.info('  这些是非代码类基础设施模块，属正常现象');
 }
 
 // 统计实际测试覆盖率
@@ -425,7 +423,7 @@ const nonInfraMods = allModIds.filter(id => {
   return m.phase !== 'P5' || (m.tags && !m.tags.includes('devops'));
 });
 const coveredRunMods = nonInfraMods.filter(id => (modules[id]?.totalCases || 0) > 0);
-console.log(`✅ 实际可测试模块 ${nonInfraMods.length} 个, 已覆盖 ${coveredRunMods.length} 个`);
-console.log(`✅ 测试用例覆盖率: ${totalTestCases - utilsCases}/${totalTestCases} (${Math.round((totalTestCases - utilsCases) / totalTestCases * 100)}%)`);
+log.ok(`实际可测试模块 ${nonInfraMods.length} 个, 已覆盖 ${coveredRunMods.length} 个`);
+log.ok(`测试用例覆盖率: ${totalTestCases - utilsCases}/${totalTestCases} (${Math.round((totalTestCases - utilsCases) / totalTestCases * 100)}%)`);
 
-console.log('\n🎉 统一同步完成!');
+log.ok('统一同步完成!');

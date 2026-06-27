@@ -11,10 +11,12 @@
  *   node scripts/install-git-hooks.mjs --remove # 移除 hooks
  */
 
-import { writeFileSync, readFileSync, existsSync, unlinkSync, chmodSync, mkdirSync } from 'fs';
+import { writeFileSync, existsSync, unlinkSync, chmodSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createLogger } from './lib/logger.mjs';
 
+const log = createLogger('git-hooks');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const HOOKS_DIR = join(ROOT, '.git', 'hooks');
@@ -54,7 +56,7 @@ function main() {
   const hookPs1Path = join(HOOKS_DIR, 'post-commit.ps1');
 
   if (!existsSync(HOOKS_DIR)) {
-    console.error('❌ 未找到 .git/hooks 目录，请在 Git 仓库根目录运行此命令');
+    log.error('未找到 .git/hooks 目录，请在 Git 仓库根目录运行此命令');
     process.exit(1);
   }
 
@@ -62,14 +64,14 @@ function main() {
     // 移除 hooks
     if (existsSync(hookPath)) {
       unlinkSync(hookPath);
-      console.log('🗑  已移除:', hookPath);
+      log.info('已移除:', hookPath);
     }
     if (existsSync(hookPs1Path)) {
       unlinkSync(hookPs1Path);
-      console.log('🗑  已移除:', hookPs1Path);
+      log.info('已移除:', hookPs1Path);
     }
     if (!existsSync(hookPath) && !existsSync(hookPs1Path)) {
-      console.log('✅ 没有已安装的 hooks');
+      log.ok('没有已安装的 hooks');
     }
     return;
   }
@@ -83,18 +85,18 @@ function main() {
   // PowerShell hook（Windows PowerShell / CMD 环境）
   writeFileSync(hookPs1Path, POST_COMMIT_PS1);
 
-  console.log('✅ Git hooks 安装成功:');
-  console.log(`   ${hookPath}  (Bash/Git Bash)`);
-  console.log(`   ${hookPs1Path}  (PowerShell)`);
-  console.log('');
-  console.log('📋 工作方式:');
-  console.log('   每次 git commit 成功后，自动运行 scripts/update-progress.mjs');
-  console.log('   检测项目文件结构变化，更新 docs/pipeline/project-progress-data.json');
-  console.log('');
-  console.log('💡 提示:');
-  console.log('   手动运行检测:  node scripts/update-progress.mjs');
-  console.log('   预览模式:      node scripts/update-progress.mjs --dry');
-  console.log('   移除 hooks:    node scripts/install-git-hooks.mjs --remove');
+  log.ok('Git hooks 安装成功:');
+  log.info(`  ${hookPath}  (Bash/Git Bash)`);
+  log.info(`  ${hookPs1Path}  (PowerShell)`);
+  log.info('');
+  log.info('工作方式:');
+  log.info('  每次 git commit 成功后，自动运行 scripts/update-progress.mjs');
+  log.info('  检测项目文件结构变化，更新 docs/pipeline/project-progress-data.json');
+  log.info('');
+  log.info('提示:');
+  log.info(`  手动运行检测:  node scripts/update-progress.mjs`);
+  log.info(`  预览模式:      node scripts/update-progress.mjs --dry`);
+  log.info(`  移除 hooks:    node scripts/install-git-hooks.mjs --remove`);
 }
 
 main();

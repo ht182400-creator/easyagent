@@ -9,6 +9,10 @@ cd /d "%~dp0"
 rem 允许 Node 24+ 构建（better-sqlite3 已在本地编译兼容）
 set EASYAGENT_SKIP_NODE_CHECK=1
 
+rem 调试开关：set EASYAGENT_DEBUG=1 启用详细日志（[DEBUG] 行可见）
+set _DBG=0
+if "%EASYAGENT_DEBUG%"=="1" set _DBG=1
+
 :::::: ============================================================
 ::::::  EasyAgent Desktop EXE - Standard Build Pipeline
 ::::::  Usage:
@@ -253,7 +257,7 @@ popd
 goto :PKG_DONE
 
 :PKG_DONE
-echo [DEBUG] Packaging exit code: %_PKG_ERR%
+if %_DBG%==1 echo [DEBUG] Packaging exit code: %_PKG_ERR%
 if %_PKG_ERR% neq 0 goto :PKG_RETRY
 goto :PKG_VERIFY
 
@@ -279,7 +283,7 @@ goto :PKG_RETRY_DONE
 
 :PKG_RETRY_DONE
 popd
-echo [DEBUG] Packaging retry exit code: %_PKG_ERR%
+if %_DBG%==1 echo [DEBUG] Packaging retry exit code: %_PKG_ERR%
 if %_PKG_ERR% neq 0 goto :PKG_RETRY_FAIL
 echo [OK] Packaging succeeded on retry
 cd /d "%~dp0"
@@ -301,7 +305,7 @@ pause
 exit /b 1
 
 :PKG_VERIFY
-echo [DEBUG] Packaging successful
+if %_DBG%==1 echo [DEBUG] Packaging successful
 
 rem Return to workspace root for Phase 4/5 relative paths
 cd ..\..
@@ -381,7 +385,7 @@ echo ============================================
 echo.
 echo   Run: packages\desktop\release\win-unpacked\EasyAgent.exe
 echo.
-echo [DEBUG] Build script finished successfully
+if %_DBG%==1 echo [DEBUG] Build script finished successfully
 endlocal
 exit /b 0
 

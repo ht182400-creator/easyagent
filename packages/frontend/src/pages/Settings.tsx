@@ -59,11 +59,14 @@ export default function SettingsPage() {
     await saveSettings();
   };
 
+  /** 是否为 Desktop (Electron) 环境 — 决定更新策略 */
+  const isDesktop = !!(window as any).easyAgent;
+
   /** 版本信息与更新检查 */
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
-  /** electron-updater 下载状态 */
+  /** electron-updater 下载状态（仅 Desktop） */
   const [updaterStatus, setUpdaterStatus] = useState<UpdateStatus | null>(null);
 
   useEffect(() => {
@@ -74,13 +77,13 @@ export default function SettingsPage() {
       .catch(() => { /* 忽略 */ });
   }, []);
 
-  /** 初始化和监听 electron-updater — 挂载时查询状态 + 注册事件 */
+  /** [Desktop] 初始化和监听 electron-updater — 挂载时查询状态 + 注册事件 */
   useEffect(() => {
-    const ea = (window as any).easyAgent;
-    if (!ea) {
-      console.log('[Settings] easyAgent 不可用 (非桌面环境)');
+    if (!isDesktop) {
+      console.log('[Settings] Web 环境，跳过 Desktop 更新监听');
       return;
     }
+    const ea = (window as any).easyAgent;
 
     // 1. 查询当前状态（处理页面挂载时更新已发生的情况）
     if (ea.getUpdateStatus) {
@@ -135,106 +138,98 @@ export default function SettingsPage() {
   }, []);
 
   /**
-   * 手动检查更新 — 完整状态机处理
+   * 手动检查更新 — Desktop / Web 双路径
    *
-   * 流程：
-   *   1. 先查询后台状态 → 如果已在下载/已完成 → 直接显示
+   * Desktop 流程：
+   *   1. 查询后台 electron-updater 状态 → 如已在下载/已完成 → 直接显示
    *   2. 查询 Server API → 展示版本信息和更新日志
-   *   3. 如有新版本 → 触发 IPC check-update（主进程状态机处理）
-   *   4. 根据返回状态更新 UI
+   *   3. 如有新版本 → 触发 IPC check-update → 下载 .exe → 提示安装
+   *
+   * Web 流程：
+   *   1. 查询 Server API → 展示版本信息
+   *   2. 如有新版本 → 显示 GitHub Releases 链接 → 用户手动更新
    */
   const checkForUpdates = async () => {
     setCheckingUpdate(true);
-    console.log('[Settings] 用户点击检查更新...');
+    console.log('[Settings] 检查更新... 环境:', isDesktop ? 'Desktop' : 'Web');
     try {
-      const ea = (window as any).easyAgent;
+      // ────── [Desktop] Step 0: 查询后台 electron-updater 状态 ──────
+      if (isDesktop) {
+        const ea = (window as any).easyAgent;
+        if (ea?.getUpdateStatus) {
+          const bgStatus = await ea.getUpdateStatus();
+          console.log('[Settings] 后台更新状态:', JSON.stringify(bgStatus));
 
-      // ────── Step 0: 先查询后台更新状态 ──────
-      if (ea?.getUpdateStatus) {
-        const bgStatus = await ea.getUpdateStatus();
-        console.log('[Settings] 后台更新状态:', JSON.stringify(bgStatus));
-
-        switch (bgStatus?.lastUpdateStatus) {
-          case 'downloaded':
-            console.log('[Settings] 后台已下载完成');
-            setUpdaterStatus({ status: 'downloaded', version: bgStatus.lastUpdateInfo?.version });
-            break;
-          case 'downloading':
-            console.log('[Settings] 后台正在下载中');
-            setUpdaterStatus({
-              status: 'downloading',
-              percent: bgStatus.lastUpdateInfo?.percent ?? 0,
-            });
-            break;
-          case 'checking':
-            console.log('[Settings] 后台正在检查中');
-            setUpdaterStatus({ status: 'checking' });
-            break;
-          case 'installing':
-            console.log('[Settings] 正在安装中');
-            setUpdaterStatus({ status: 'installing' });
-            break;
+          switch (bgStatus?.lastUpdateStatus) {
+            case 'downloaded':
+              setUpdaterStatus({ status: 'downloaded', version: bgStatus.lastUpdateInfo?.version });
+              break;
+            case 'downloading':
+              setUpdaterStatus({
+                status: 'downloading',
+                percent: bgStatus.lastUpdateInfo?.percent ?? 0,
+              });
+              break;
+            case 'checking':
+              setUpdaterStatus({ status: 'checking' });
+              break;
+            case 'installing':
+              setUpdaterStatus({ status: 'installing' });
+              break;
+          }
         }
       }
 
-      // ────── Step 1: 查询版本信息（Server API）──────
+      // ────── Step 1: 查询 Server API（所有环境通用）──────
       const apiBase = getApiBase();
       const res = await fetch(`${apiBase}/api/version/check`);
       const result: UpdateCheckResult = await res.json();
       console.log('[Settings] Server API 返回:', JSON.stringify(result));
       setUpdateInfo(result);
 
-      // ────── Step 2: 触发 IPC 更新检查 ──────
+      // ────── Step 2: 根据环境选择更新策略 ──────
       if (result.hasUpdate) {
-        if (ea?.checkUpdate) {
-          console.log('[Settings] 调用 ea.checkUpdate()...');
-          const upResult = await ea.checkUpdate();
-          console.log('[Settings] ea.checkUpdate() 返回:', JSON.stringify(upResult),
-            ' success=', !!upResult?.success,
-            ' status=', upResult?.status);
+        if (isDesktop) {
+          // Desktop: 触发 electron-updater 下载
+          const ea = (window as any).easyAgent;
+          if (ea?.checkUpdate) {
+            console.log('[Settings] Desktop → 调用 ea.checkUpdate()...');
+            const upResult = await ea.checkUpdate();
+            console.log('[Settings] ea.checkUpdate() 返回:', JSON.stringify(upResult));
 
-          // 根据主进程返回的状态更新 UI
-          const st = upResult?.status;
-          console.log('[Settings] 处理 IPC 返回状态:', st, ' success=', !!upResult?.success);
-          if (!upResult?.success) {
-            console.log('[Settings] → UI: error');
-            setUpdaterStatus({ status: 'error', message: upResult?.error || '检查更新失败' });
-          } else if (st === 'downloaded') {
-            console.log('[Settings] → UI: downloaded');
-            setUpdaterStatus({ status: 'downloaded', version: upResult.lastUpdateInfo?.version || upResult.version });
-          } else if (st === 'downloading') {
-            console.log('[Settings] → UI: downloading (percent=', upResult.lastUpdateInfo?.percent ?? 0, ')');
-            setUpdaterStatus({
-              status: 'downloading',
-              version: upResult.version,
-              percent: upResult.lastUpdateInfo?.percent ?? 0,
-            });
-          } else if (st === 'checking') {
-            console.log('[Settings] → UI: checking');
-            setUpdaterStatus({ status: 'checking', message: upResult.message });
-          } else if (st === 'available') {
-            console.log('[Settings] → UI: available (竞态防御检查中...)');
-            setUpdaterStatus(prev => {
-              console.log('[Settings]   available prev.status=', prev?.status);
-              if (prev && (prev.status === 'downloading' || prev.status === 'downloaded')) {
-                console.log('[Settings]   ⚠️ 忽略 available，保持:', prev.status);
-                return prev;
-              }
-              console.log('[Settings]   → 设置 available');
-              return { status: 'available', version: upResult.version };
-            });
-          } else if (st === 'idle') {
-            console.log('[Settings] → UI: idle (无更新)');
-            setUpdaterStatus(null);
+            const st = upResult?.status;
+            if (!upResult?.success) {
+              setUpdaterStatus({ status: 'error', message: upResult?.error || '检查更新失败' });
+            } else if (st === 'downloaded') {
+              setUpdaterStatus({ status: 'downloaded', version: upResult.lastUpdateInfo?.version || upResult.version });
+            } else if (st === 'downloading') {
+              setUpdaterStatus({
+                status: 'downloading',
+                version: upResult.version,
+                percent: upResult.lastUpdateInfo?.percent ?? 0,
+              });
+            } else if (st === 'checking') {
+              setUpdaterStatus({ status: 'checking', message: upResult.message });
+            } else if (st === 'available') {
+              setUpdaterStatus(prev => {
+                if (prev && (prev.status === 'downloading' || prev.status === 'downloaded')) {
+                  return prev; // 竞态防御
+                }
+                return { status: 'available', version: upResult.version };
+              });
+            } else if (st === 'idle') {
+              setUpdaterStatus(null);
+            }
           } else {
-            console.log('[Settings] → UI: 未知状态:', st);
+            console.log('[Settings] Desktop ⚠️ ea.checkUpdate 不可用');
           }
         } else {
-          console.log('[Settings] ⚠️ ea.checkUpdate 不可用');
+          // Web: 不触发下载，仅显示版本信息和 GitHub Releases 链接
+          console.log('[Settings] Web → 显示新版本通知（不触发下载）');
+          setUpdaterStatus(null); // Web 不用 electron-updater 状态
         }
       } else {
-        console.log('[Settings] Server API 返回 hasUpdate=false, 跳过 IPC 检查');
-        // 清除之前的错误状态（如 latest.yml 404），显示"已是最新版本"
+        console.log('[Settings] 已是最新版本，清除更新状态');
         setUpdaterStatus(null);
       }
     } catch (err) {
@@ -244,17 +239,20 @@ export default function SettingsPage() {
         releaseUrl: '', publishedAt: '', body: '',
         error: '检查失败',
       });
-      setUpdaterStatus({ status: 'error', message: '网络异常，请稍后重试' });
+      if (isDesktop) {
+        setUpdaterStatus({ status: 'error', message: '网络异常，请稍后重试' });
+      }
     } finally {
       setCheckingUpdate(false);
     }
   };
 
   /**
-   * 用户点击"立即重启安装"按钮
+   * [Desktop] 用户点击"立即重启安装"按钮
    * 仅在 downloaded 状态下调用
    */
   const handleInstallUpdate = async () => {
+    if (!isDesktop) return;
     const ea = (window as any).easyAgent;
     if (!ea?.installUpdate) {
       console.log('[Settings] installUpdate 不可用');
@@ -515,7 +513,6 @@ export default function SettingsPage() {
           {versionInfo?.releaseDate && (
             <p>发布日期: {versionInfo.releaseDate}</p>
           )}
-          <p className="text-green-400/80">🔧 v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败</p>
           <p>技术栈: TypeScript + React + Zustand + Tailwind CSS + Express + WebSocket</p>
           <p>支持模型: DeepSeek · 智谱GLM · 通义千问 · Kimi · 文心一言 · 豆包 · 混元 · MiniMax · OpenAI · Ollama</p>
         </div>
@@ -584,21 +581,53 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* 更新通知卡片（Server API 发现新版本，但 updater 尚未联动时） */}
+        {/* ──── 更新通知卡片 ────
+             Desktop: Server API 发现新版本但 updater 尚未联动时显示
+             Web: 发现新版本后的主通知（Web 无 electron-updater）──── */}
         {updateInfo?.hasUpdate && !updaterStatus && (
           <div className="mt-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-            <p className="text-sm font-medium text-green-400">🎉 发现新版本 v{updateInfo.latestVersion}</p>
+            <p className="text-sm font-medium text-green-400">
+              🎉 发现新版本 v{updateInfo.latestVersion}
+            </p>
             <p className="text-xs text-gray-400 mt-1">
               发布时间: {updateInfo.publishedAt ? new Date(updateInfo.publishedAt).toLocaleDateString('zh-CN') : '未知'}
+              {!isDesktop && <span className="ml-2 text-amber-400">（Web 版本需手动更新）</span>}
             </p>
-            <a
-              href={updateInfo.releaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 mt-2 text-xs text-blue-400 hover:text-blue-300"
-            >
-              <ExternalLink className="w-3 h-3" /> 查看发布页面
-            </a>
+
+            {/* 操作按钮 */}
+            <div className="flex items-center gap-2 mt-2">
+              <a
+                href={updateInfo.releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 underline"
+              >
+                <ExternalLink className="w-3 h-3" /> 查看发布页面
+              </a>
+              {!isDesktop && (
+                <a
+                  href="https://github.com/ht182400-creator/easyagent#readme"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 underline"
+                >
+                  部署文档
+                </a>
+              )}
+            </div>
+
+            {/* Web 环境：显示手动升级命令提示 */}
+            {!isDesktop && (
+              <div className="mt-2 p-2 rounded bg-black/20 text-xs text-gray-400">
+                <p className="mb-1 text-gray-300 font-medium">💡 Web 环境升级方式：</p>
+                <div className="space-y-1">
+                  <p><code className="text-yellow-400/80">git pull && pnpm install</code> → 重新构建并重启服务</p>
+                  <p className="text-gray-500">
+                    或参考 GitHub Releases 页面中的安装说明，更新后重启后端服务即可生效。
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

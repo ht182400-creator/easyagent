@@ -1,9 +1,13 @@
-﻿@echo off
+@echo off
 rem 设置 UTF-8 代码页，防止中文乱码
 chcp 65001 >nul 2>&1
 setlocal enabledelayedexpansion
 title EasyAgent Release Publisher
 cd /d "%~dp0"
+
+rem 调试开关：set EASYAGENT_DEBUG=1 启用详细日志（[DEBUG] 行可见）
+set _DBG=0
+if "%EASYAGENT_DEBUG%"=="1" set _DBG=1
 
 rem ============================================================
 rem  EasyAgent Release Publisher v2.1
@@ -270,7 +274,7 @@ echo   Running: build.bat --release
 echo   ----------------------------------------
 call build.bat --release
 set _BUILD_ERR=%errorlevel%
-echo [DEBUG A] errorlevel=%_BUILD_ERR%
+if %_DBG%==1 echo [DEBUG A] errorlevel=%_BUILD_ERR%
 if %_BUILD_ERR% neq 0 goto :BUILD_FAILED
 goto :BUILD_OK
 
@@ -291,7 +295,7 @@ pause
 exit /b 1
 
 :BUILD_OK
-echo [DEBUG B] Build OK, proceeding to Step 5
+if %_DBG%==1 echo [DEBUG B] Build OK, proceeding to Step 5
 echo   [OK] Build complete
 
 rem Show output files
@@ -482,9 +486,9 @@ echo   Step 6c: Running unified-sync with CI data
 echo   Step 6d: Restarting pipeline server on port 8899
 echo   Running: powershell -File scripts/pipeline-auto-sync.ps1
 echo   ----------------------------------------
-rem 设置 UTF-8 编码避免中文乱码
+rem 设置 UTF-8 编码避免中文乱码 (CMD 侧 + PowerShell 侧双保险)
 chcp 65001 >nul 2>&1
-powershell -ExecutionPolicy Bypass -File scripts\pipeline-auto-sync.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '.\scripts\pipeline-auto-sync.ps1'"
 set _SYNC_ERR=%errorlevel%
 rem 使用 goto 模式避免 CMD if 块内 () 冲突
 if %_SYNC_ERR% equ 0 goto :SYNC_OK

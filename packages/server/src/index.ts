@@ -496,12 +496,20 @@ export async function createApp(options: CreateAppOptions = {}) {
     try {
       if (existsSync(changelogPath)) {
         const raw = readFileSync(changelogPath, 'utf-8');
-        // 提取最近两个版本的 changelog
+        // 提取最近两个有实质性内容的版本 changelog
+        // 跳过只有标题没有变更内容的空条目（如 release.mjs 自动生成的空标题）
         const sections = raw.split(/^## \[/m);
-        if (sections.length > 0) {
-          const recent = sections.slice(1, 3).map(s => '## [' + s).join('\n');
-          changelog = recent.trim();
+        const meaningful: string[] = [];
+        for (let i = 1; i < sections.length; i++) {
+          const entry = '## [' + sections[i];
+          // 判断是否有实质内容：至少包含一个 ### 分类标题
+          const hasContent = /^###\s/m.test(sections[i]);
+          if (hasContent) {
+            meaningful.push(entry);
+            if (meaningful.length >= 2) break;
+          }
         }
+        changelog = meaningful.join('\n').trim();
       }
     } catch (err) { /* changelog 不可用 */ }
 
@@ -2639,7 +2647,7 @@ if (isMainModule) {
     server.listen(PORT, HOST, () => {
       console.log([
         '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.6.1           ║',
+        '║        EasyAgent Server v0.6.3           ║',
         `║  HTTP:      http://localhost:${PORT}        ║`,
         `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
         '╚══════════════════════════════════════════╝',

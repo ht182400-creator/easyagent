@@ -9,6 +9,10 @@
 # 使用: powershell -File scripts/pipeline-auto-sync.ps1
 #       powershell -File scripts/pipeline-auto-sync.ps1 --skip-ci // 跳过 CI 回取
 # ============================================================
+
+# 确保 PowerShell 输出 UTF-8，防止在 CMD 子进程中乱码
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
+
 param(
     [switch]$SkipCI,    # 跳过 CI 数据回取（使用本地已有数据）
     [int]$Timeout = 600 # CI 等待超时秒数

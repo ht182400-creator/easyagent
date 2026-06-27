@@ -12,10 +12,12 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, statSync, readdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { createLogger } from './lib/logger.mjs';
 
+const log = createLogger('progress');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const DATA_FILE = join(ROOT, 'docs', 'pipeline', 'project-progress-data.json');
@@ -25,7 +27,6 @@ const PIPELINE_DATA_FILE = join(ROOT, 'docs', 'pipeline', 'pipeline-data.json');
 let _calculateScore = null;
 function getCalculateScore() {
   if (!_calculateScore) {
-    // 动态 import ESM 模块
     _calculateScore = import('../docs/pipeline/lib/pipeline-config.mjs').then(m => m.calculateScore);
   }
   return _calculateScore;
@@ -122,10 +123,10 @@ function getTestCount() {
       }
     }
   } catch (e) {
-    console.warn('⚠ 无法读取 test-case-mapping.json:', e.message);
+    log.warn('无法读取 test-case-mapping.json:', e.message);
   }
 
-  // 方式2：尝试从 vitest 报告汇总 (读取 _vitest-*.json 中的 numTotalTests)
+  // 方式2：尝试从 vitest 报告汇总
   const pipelineDir = join(ROOT, 'docs', 'pipeline');
   try {
     if (existsSync(pipelineDir)) {
@@ -141,7 +142,7 @@ function getTestCount() {
     }
   } catch {}
 
-  // 方式3：回退到文件计数（最不精确）
+  // 方式3：回退到文件计数
   try {
     const files = execSync('git ls-files "*.test.ts" "*.test.tsx" "*.spec.ts"', {
       cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']
@@ -157,19 +158,18 @@ function getModelCount() {
     const catalog = join(ROOT, 'models-catalog.json');
     if (existsSync(catalog)) {
       const data = JSON.parse(readFileSync(catalog, 'utf8'));
-      // catalog 可能是数组或对象
       if (Array.isArray(data)) return data.length;
       if (typeof data === 'object') return Object.keys(data).length;
     }
   } catch {}
-  return 10; // 默认值
+  return 10;
 }
 
 // ==================== 检测逻辑 ====================
 
 /**
  * 根据 detect 规则判断任务状态
- * @param {Object} detect - 检测规则 { files: [...], packageKey: '...', commitMsg: '...' }
+ * @param {Object} detect - 检测规则
  * @param {string} gitLog - 最近的 git log
  * @returns {string} 'done' | 'pending'
  */
@@ -219,14 +219,14 @@ function calcPhaseStatus(tasks) {
 // ==================== 主流程 ====================
 
 async function main() {
-  console.log('🔍 EasyAgent 项目进度检测\n');
+  log.title('EasyAgent 项目进度检测');
 
   // 读取现有数据
   let data;
   try {
     data = JSON.parse(readFileSync(DATA_FILE, 'utf8'));
   } catch {
-    console.error('❌ 无法读取数据文件:', DATA_FILE);
+    log.error('无法读取数据文件:', DATA_FILE);
     process.exit(1);
   }
 
@@ -261,12 +261,9 @@ async function main() {
 
       // 如果当前是 done，且未强制覆盖，保持 done
       if (oldStatus === 'done' && !FORCE) {
-        // 重新验证：文件是否仍然存在
         if (task.detect && task.detect.files) {
           const stillValid = task.detect.files.every(f => fileExists(f));
-          if (!stillValid) {
-            // 文件被删除了？不太可能回退，保持 done
-          }
+          // 文件被删除？保留 done 状态
         }
         continue;
       }
@@ -289,11 +286,11 @@ async function main() {
 
   // ==================== 输出结果 ====================
   if (changes === 0) {
-    console.log('✅ 项目状态无变化，所有任务状态与数据一致。');
+    log.ok('项目状态无变化，所有任务状态与数据一致。');
   } else {
-    console.log(`📊 检测到 ${changes} 处变化:\n`);
-    for (const log of changeLog) {
-      console.log(`  ${log}`);
+    log.info(`检测到 ${changes} 处变化:`);
+    for (const item of changeLog) {
+      log.info(`  ${item}`);
     }
   }
 
@@ -306,7 +303,7 @@ async function main() {
     }
   }
   const pct = totalTasks > 0 ? Math.round((totalDone / totalTasks) * 100) : 0;
-  console.log(`\n📈 进度: ${totalDone}/${totalTasks} (${pct}%) · v${version} · ${codename || ''}\n`);
+  log.info(`进度: ${totalDone}/${totalTasks} (${pct}%) · v${version} · ${codename || ''}`);
 
   // CI 模式输出 JSON
   if (CI_MODE) {
@@ -318,21 +315,18 @@ async function main() {
   // 写入文件
   if (!DRY_RUN) {
     writeFileSync(DATA_FILE, JSON.stringify(data, null, 2) + '\n', 'utf8');
-    console.log(`💾 已写入: ${DATA_FILE}`);
+    log.info(`已写入: ${DATA_FILE}`);
 
     // 动态计算综合评分（从 pipeline-config 的五维度加权公式）
     let dynScore = null;
     try {
       const { calculateScore } = await import('../docs/pipeline/lib/pipeline-config.mjs');
       dynScore = calculateScore();
-      console.log(`📊 动态评分: ${dynScore.total} / 100`);
+      log.info(`动态评分: ${dynScore.total} / 100`);
 
-      // 自动更新 project-progress-data.json 中的评分历史（仅当与上次不同时追加）
-      // 查找倒数第二个非 projected/非 dynamic 的实际评分条目（避免硬编码索引 -2）
       const realScores = (data.scoreHistory || []).filter(e => !e.projected && !e.dynamic);
       const lastRealScore = realScores.length > 0 ? realScores[realScores.length - 1].value : null;
       if (lastRealScore !== dynScore.total && !data.scoreHistory?.some(e => e.label === '自动评分（五维度加权）')) {
-        // 在"全量完成"之前插入动态评分条目
         const projectedIdx = data.scoreHistory?.findIndex(e => e.projected);
         if (projectedIdx >= 0) {
           data.scoreHistory.splice(projectedIdx, 0, {
@@ -342,37 +336,34 @@ async function main() {
         }
       }
     } catch (e) {
-      console.warn('⚠ 无法动态计算评分:', e.message);
+      log.warn('无法动态计算评分:', e.message);
     }
 
-    // 同步更新流程图管线数据（含动态评分） —— 仅更新 KPI/元数据
+    // 同步更新流程图管线数据（含动态评分）
     await syncPipelineData(data, { version, codename, testCount, modelCount, now, dynScore });
-    console.log(`💾 已写入: ${PIPELINE_DATA_FILE}`);
+    log.info(`已写入: ${PIPELINE_DATA_FILE}`);
 
-    // 统一同步：从 module-registry.mjs 重新生成 test-case-mapping.json + pipeline-data.json
-    // 确保所有模块的测试映射和管线数据完全一致
+    // 统一同步：从 module-registry.mjs 重新生成
     try {
       const { execSync } = await import('child_process');
       execSync('node scripts/unified-sync.mjs --force', { cwd: resolve(__dirname, '..'), stdio: 'inherit' });
     } catch (e) {
-      console.warn('⚠ unified-sync 执行失败:', e.message);
+      log.warn('unified-sync 执行失败:', e.message);
     }
   } else {
-    console.log('🔍 [DRY RUN] 未写入文件，仅预览');
+    log.info('[DRY RUN] 未写入文件，仅预览');
   }
 }
 
 /**
  * 将项目进度数据同步到流程图管线数据文件
- * @param {Object} progressData - project-progress-data.json 的内容
- * @param {Object} info - 版本/测试/模型/评分信息
  */
 async function syncPipelineData(progressData, info) {
   let pipelineData;
   try {
     pipelineData = JSON.parse(readFileSync(PIPELINE_DATA_FILE, 'utf8'));
   } catch {
-    console.log('⚠ 管线数据文件不存在，跳过同步');
+    log.warn('管线数据文件不存在，跳过同步');
     return;
   }
 
@@ -380,7 +371,6 @@ async function syncPipelineData(progressData, info) {
   if (!pipelineData.meta) {
     pipelineData.meta = {};
   }
-  // 更新 meta 与顶层字段
   pipelineData.meta.version = info.version;
   pipelineData.meta.generatedAt = info.now;
   pipelineData.version = info.version;
@@ -390,7 +380,6 @@ async function syncPipelineData(progressData, info) {
   try {
     const { getKPI, getScoreHistory } = await import('../docs/pipeline/lib/pipeline-config.mjs');
     const kpi = getKPI();
-    // 完整覆盖 KPI 字段（防止部分更新导致数据不一致）
     pipelineData.kpi = {
       ...pipelineData.kpi,
       testCases: kpi.testCases,
@@ -404,13 +393,10 @@ async function syncPipelineData(progressData, info) {
       modes: kpi.modes,
       _totalFiles: kpi._totalFiles,
     };
-    // 同步评分维度
     if (!pipelineData.scoreDimensions) pipelineData.scoreDimensions = [];
     pipelineData.scoreDimensions = kpi._scoreDimensions || info.dynScore?.dimensions || [];
-    // 同步评分历史（从 pipeline-config 权威源，覆盖旧格式）
     pipelineData.scoreHistory = getScoreHistory();
   } catch (e) {
-    // 回退模式：使用 info 中的简单数据
     pipelineData.kpi.testCases = info.testCount;
     pipelineData.kpi.providers = info.modelCount;
     if (info.dynScore) {
@@ -418,7 +404,7 @@ async function syncPipelineData(progressData, info) {
       if (!pipelineData.scoreDimensions) pipelineData.scoreDimensions = [];
       pipelineData.scoreDimensions = info.dynScore.dimensions;
     }
-    console.warn('⚠ 无法完整同步 KPI (回退模式):', e.message);
+    log.warn('无法完整同步 KPI (回退模式):', e.message);
   }
 
   // 遍历主线任务，同步检测后的状态
@@ -429,8 +415,7 @@ async function syncPipelineData(progressData, info) {
     }
   }
 
-  // 同步主阶段节点状态（用检测结果覆盖）
-  // pipeline-data.json 中 data.pipeline.phases 对应阶段列表
+  // 同步主阶段节点状态
   const mainPhases = pipelineData.pipeline && pipelineData.pipeline.phases ? pipelineData.pipeline.phases : [];
   for (const phase of mainPhases) {
     for (const node of phase.nodes) {
@@ -440,7 +425,7 @@ async function syncPipelineData(progressData, info) {
     }
   }
 
-  // 同步分支节点状态（ID 需与 pipeline-data.json 中 branch nodes 一致）
+  // 同步分支节点状态
   const branchDetect = {
     'b2a': ['packages/core/src/benchmark/BenchmarkRunner.ts'],
     'b2b': ['.github/workflows/ci.yml', '.github/workflows/release.yml'],
@@ -467,7 +452,6 @@ async function syncPipelineData(progressData, info) {
     }
   }
 
-  // 写入管线数据
   writeFileSync(PIPELINE_DATA_FILE, JSON.stringify(pipelineData, null, 2) + '\n', 'utf8');
 }
 

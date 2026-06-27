@@ -6,6 +6,16 @@
  *   1. Electron asar 打包环境
  *   2. Windows 下 worker 线程输出的 UTF-8 中文会被控制台以 GBK 错误解码导致乱码
  * 因此这些场景使用同步 pino-pretty Transform stream (主线程) 代替 worker transport。
+ *
+ * ── 调试开关控制 ──
+ * 环境变量控制（优先级从高到低）：
+ *   1. LOG_LEVEL=trace|debug|info|warn|error|fatal → 精确设置日志级别
+ *   2. EASYAGENT_DEBUG=1                      → 快捷方式，等同于 LOG_LEVEL=debug
+ *   3. 均未设置                                → 默认 INFO 级别
+ *
+ * 示例:
+ *   LOG_LEVEL=debug pnpm run start:server     # 精确控制
+ *   set EASYAGENT_DEBUG=1 && build.bat        # Windows 快捷方式
  */
 import pino from 'pino';
 import { resolve } from 'node:path';
@@ -18,6 +28,21 @@ export enum LogLevel {
   WARN = 'warn',
   ERROR = 'error',
   FATAL = 'fatal',
+}
+
+/** 从环境变量解析日志级别 */
+function resolveLogLevel(): LogLevel {
+  // 优先级1: LOG_LEVEL 环境变量精确设置
+  const envLevel = process.env.LOG_LEVEL?.toLowerCase();
+  if (envLevel && Object.values(LogLevel).includes(envLevel as LogLevel)) {
+    return envLevel as LogLevel;
+  }
+  // 优先级2: EASYAGENT_DEBUG 快捷开关
+  if (process.env.EASYAGENT_DEBUG === '1' || process.env.EASYAGENT_DEBUG === 'true') {
+    return LogLevel.DEBUG;
+  }
+  // 优先级3: 默认 INFO
+  return LogLevel.INFO;
 }
 
 /** 判断是否为 Electron 生产环境（asar 打包） */
@@ -80,8 +105,9 @@ function createPrettyTarget(opts: {
   }
 }
 
-/** 创建日志实例 */
-export function createLogger(name: string, level: LogLevel = LogLevel.INFO) {
+/** 创建日志实例，默认级别由环境变量 LOG_LEVEL / EASYAGENT_DEBUG 控制 */
+export function createLogger(name: string, level?: LogLevel) {
+  const effectiveLevel = level ?? resolveLogLevel();
   // Electron 生产环境或显式禁用 transport 时使用纯 JSON 输出
   const disableTransport = isElectronProduction() 
     || process.env.LOG_NO_TRANSPORT === '1'
@@ -96,7 +122,7 @@ export function createLogger(name: string, level: LogLevel = LogLevel.INFO) {
   if (disableTransport) {
     return pino({
       name,
-      level,
+      level: effectiveLevel,
       // 纯 JSON 输出
       formatters: {
         level(label) {
@@ -109,21 +135,21 @@ export function createLogger(name: string, level: LogLevel = LogLevel.INFO) {
   // Windows 平台: 使用同步 pino-pretty stream (主线程)，避免 worker 线程 UTF-8 乱码
   if (process.platform === 'win32') {
     const stream = createPrettyTarget(prettyOptions);
-    return pino({ name, level }, stream);
+    return pino({ name, level: effectiveLevel }, stream);
   }
 
   // 其他平台: 使用 pino-pretty transport (worker 线程，无编码问题)
   try {
     return pino({
       name,
-      level,
+      level: effectiveLevel,
       transport: {
         target: 'pino-pretty',
         options: prettyOptions,
       },
     });
   } catch (err) {
-    return pino({ name, level });
+    return pino({ name, level: effectiveLevel });
   }
 }
 

@@ -10,11 +10,13 @@
  *       --verify  只验证不编译
  */
 import { execSync } from 'child_process';
-import { existsSync, copyFileSync, statSync, mkdirSync, readFileSync, writeFileSync, createReadStream } from 'fs';
+import { existsSync, copyFileSync, statSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import { createRequire } from 'module';
 import { createHash } from 'crypto';
+import { createLogger } from './lib/logger.mjs';
 
+const log = createLogger('rebuild-sqlite3');
 const PROJECT = resolve(import.meta.dirname, '..');
 const SQLITE_DIR = resolve(PROJECT, 'node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3');
 const RELEASE = resolve(SQLITE_DIR, 'build/Release');
@@ -48,7 +50,7 @@ function verifySystem(path) {
     db.close();
     return true;
   } catch(e) {
-    console.log(`  [verifySystem] 错误: ${e.message}`);
+    log.debug('verifySystem 错误:', e.message);
     return false;
   }
 }
@@ -69,56 +71,56 @@ function verifyElectron(path) {
 }
 
 function buildAndSave(title, extraArgs, savePath) {
-  console.log(`\n[${title}] 编译中...`);
+  log.info(`[${title}] 编译中...`);
   const cmd = `npx node-gyp rebuild ${extraArgs || ''}`.trim();
   execSync(cmd, { cwd: SQLITE_DIR, stdio: 'inherit', shell: true });
   if (!existsSync(CURRENT)) { 
-    console.error(`[${title}] 编译失败! better_sqlite3.node 未生成`); 
+    log.error(`[${title}] 编译失败! better_sqlite3.node 未生成`); 
     process.exit(1); 
   }
   writeFileSync(savePath, readFileSync(CURRENT));
-  console.log(`  -> 产物: ${savePath.split(/[/\\]/).pop()} (${statSync(savePath).size} bytes, SHA256=${sha256(savePath)})`);
+  log.info(`  -> 产物: ${savePath.split(/[/\\]/).pop()} (${statSync(savePath).size} bytes, SHA256=${sha256(savePath)})`);
 }
 
 // ================================================================
 if (verifyOnly) {
-  console.log('=== better-sqlite3 验证模式 ===\n');
-  
+  log.title('better-sqlite3 验证模式');
+
   // System 验证
-  console.log('[System 版本验证]');
+  log.info('[System 版本验证]');
   if (existsSync(SYSTEM)) {
     if (verifySystem(SYSTEM)) {
-      console.log(`  ✅ 加载成功 (${statSync(SYSTEM).size}B, SHA256=${sha256(SYSTEM)})`);
+      log.ok(`加载成功 (${statSync(SYSTEM).size}B, SHA256=${sha256(SYSTEM)})`);
     } else {
-      console.log('  ❌ 加载失败 - 需要重新编译');
+      log.fail('加载失败 - 需要重新编译');
     }
   } else {
-    console.log('  ❌ 文件不存在');
+    log.fail('文件不存在');
   }
-  
+
   // Electron 验证
-  console.log('\n[Electron 版本验证]');
+  log.info('[Electron 版本验证]');
   if (existsSync(ELECTRON)) {
     if (verifyElectron(ELECTRON)) {
-      console.log(`  ✅ 文件有效 (${statSync(ELECTRON).size}B, SHA256=${sha256(ELECTRON)}, 与system不同)`);
+      log.ok(`文件有效 (${statSync(ELECTRON).size}B, SHA256=${sha256(ELECTRON)}, 与system不同)`);
     } else {
-      console.log('  ❌ 文件无效 (与 system 版本相同, 可能编译失败)');
+      log.fail('文件无效 (与 system 版本相同, 可能编译失败)');
     }
   } else {
-    console.log('  ❌ 文件不存在');
+    log.fail('文件不存在');
   }
-  
+
   // 当前激活版本
-  console.log('\n[当前激活版本]');
+  log.info('[当前激活版本]');
   if (existsSync(CURRENT)) {
     const curHash = sha256(CURRENT);
     const sysHash = sha256(SYSTEM);
     const elHash = sha256(ELECTRON);
-    if (curHash === sysHash) console.log('  📌 System (Node v24)');
-    else if (curHash === elHash) console.log('  📌 Electron 30');
-    else console.log('  ⚠️ 未知版本');
+    if (curHash === sysHash) log.info('  System (Node v24)');
+    else if (curHash === elHash) log.info('  Electron 30');
+    else log.warn('  未知版本');
   }
-  
+
   process.exit(0);
 }
 
@@ -128,9 +130,9 @@ if (verifyOnly) {
 if (!existsSync(TMP)) mkdirSync(TMP, { recursive: true });
 if (!existsSync(CACHE)) mkdirSync(CACHE, { recursive: true });
 
-console.log('=== better-sqlite3 双版本编译 ===');
-console.log(`  目标: Electron 30 + System Node ${process.version}`);
-console.log(`  源目录: ${SQLITE_DIR}`);
+log.title('better-sqlite3 双版本编译');
+log.info(`目标: Electron 30 + System Node ${process.version}`);
+log.debug(`源目录: ${SQLITE_DIR}`);
 
 // Step 1: Electron 30 (保存到临时目录)
 buildAndSave('Electron 30', '--target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers', resolve(TMP, 'better_sqlite3_electron.node'));
@@ -148,27 +150,27 @@ copyFileSync(resolve(TMP, 'better_sqlite3_system.node'), resolve(CACHE, 'better_
 copyFileSync(resolve(TMP, 'better_sqlite3_electron.node'), resolve(CACHE, 'better_sqlite3_electron.node'));
 
 // Step 5: 验证
-console.log('\n=== 验证结果 ===');
+log.title('验证结果');
 
 const sysOk = verifySystem(CURRENT);
-console.log(`  System 加载测试: ${sysOk ? '✅ 通过' : '❌ 失败'}`);
+log.info(`System 加载测试: ${sysOk ? '✅ 通过' : '❌ 失败'}`);
 
 const elOk = verifyElectron(ELECTRON);
-console.log(`  Electron 文件检查: ${elOk ? '✅ 通过' : '❌ 失败'}`);
+log.info(`Electron 文件检查: ${elOk ? '✅ 通过' : '❌ 失败'}`);
 
 const sysHash = sha256(SYSTEM);
 const elHash = sha256(ELECTRON);
-console.log(`  文件对比: System≠Electron ${sysHash !== elHash ? '✅ 不同 (正确)' : '❌ 相同 (编译失败!)'}`);
+log.info(`文件对比: System≠Electron ${sysHash !== elHash ? '✅ 不同 (正确)' : '❌ 相同 (编译失败!)'}`);
 
-console.log('\n=== 文件摘要 ===');
-console.log(`  System:   ${statSync(SYSTEM).size} bytes | SHA256=${sysHash}`);
-console.log(`  Electron: ${statSync(ELECTRON).size} bytes | SHA256=${elHash}`);
-console.log(`  Active:   ${statSync(CURRENT).size} bytes | SHA256=${sha256(CURRENT)}`);
-console.log(`  Cache:    ${statSync(resolve(CACHE, 'better_sqlite3_system.node')).size} / ${statSync(resolve(CACHE, 'better_sqlite3_electron.node')).size} bytes`);
+log.info('文件摘要:');
+log.info(`  System:   ${statSync(SYSTEM).size} bytes | SHA256=${sysHash}`);
+log.info(`  Electron: ${statSync(ELECTRON).size} bytes | SHA256=${elHash}`);
+log.info(`  Active:   ${statSync(CURRENT).size} bytes | SHA256=${sha256(CURRENT)}`);
+log.info(`  Cache:    ${statSync(resolve(CACHE, 'better_sqlite3_system.node')).size} / ${statSync(resolve(CACHE, 'better_sqlite3_electron.node')).size} bytes`);
 
 if (!sysOk || !elOk || sysHash === elHash) {
-  console.error('\n❌ 验证失败, 请检查编译环境');
+  log.fail('验证失败, 请检查编译环境');
   process.exit(1);
 }
 
-console.log('\n✅ 编译验证全部通过');
+log.ok('编译验证全部通过');
