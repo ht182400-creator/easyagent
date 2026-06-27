@@ -562,6 +562,13 @@
           "problem": ": `:UPLOAD_TOKEN` 中 `if not exist \"scripts\\.release_token\" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL` [根因] : CMD 预解析器在构建 if/for 块时天真地数括号，不区分 echo/rem 等命令内容。`^)` 转义在预解析阶段不总是生效",
           "solution": "`:UPLOAD_TOKEN` token 存在检查 (line 406-417): 反向 `if exist ... goto :UPLOAD_TOKEN_GO`；`:UPLOAD_TOKEN` 上传结果判断 (line 431-440): `goto :UPLOAD_TOKEN_OK` 模式；`:STEP_DTS` DTS 错误报告 (line 228-243): `if equ 0 goto :DTS_OK`；`:BUILD_OK` 产物大小显示 (line 300-305): 去掉 echo 中括号；`:STEP_SYNC` 管线同步结果 (line 489-497): `if equ 0 goto :SYNC_OK`；MEMORY.md: 新增陷阱 #14a (CMD if 块内 echo 含括号)；DTS check + EXE build + GitHub Release + Pipeline Sync completed",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "Desktop 更新签名校验失败修复 (10:48)",
+          "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
+          "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
+          "status": "resolved"
         }
       ]
     },
@@ -1981,6 +1988,20 @@
           "status": "resolved"
         },
         {
+          "date": "2026-06-27",
+          "title": "Desktop 更新签名校验失败修复 (10:48)",
+          "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
+          "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+          "status": "resolved"
+        },
+        {
           "date": "",
           "title": "⚠️ Web ↔ Desktop 代码隔离约束",
           "problem": "⚠️ Web ↔ Desktop 代码隔离约束",
@@ -2306,6 +2327,27 @@
           "title": "[F41] v0.5.30 GitHub Release 缺少 latest.yml 修复 (22:",
           "problem": ": 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)` [根因] : `release-publish.bat` 执行后，`latest.yml` 本地存在但未上传到 GitHub Release。Release #345329965 检查发现 **0 个 asset**（EXE 也没上传）",
           "solution": "写 PS1 临时脚本，通过 GitHub API 单独上传 `latest.yml` (0.3 KB) → `Invoke-RestMethod POST` → 成功；结果: `https://github.com/ht182400-creator/easyagent/releases/download/v0.5.30/latest.yml` 可访问；遗留: Release 仍缺 EXE 和 blockmap（110MB），旧版本用户无法通过 `electron-updater` 下载 v0.5.30 EXE；教训: `release-publish.bat` 上传环节可能静默失败，需增加 post-upload 验证（检查 Release assets 数量/文件名）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "release.mjs CHANGELOG 空条目根因修复 (11:37)",
+          "problem": ": release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容 [根因] : 第 130 行 `if (other.length && !added.length && ...)` — 当所有 commit 分类数组均为空时，`other.length`=0 导致兜底分支被跳过",
+          "solution": "`scripts/release.mjs` 新增最终兜底 — 所有分类为空时插入 `### Changed\\n- 新版本发布`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "git core.quotepath 修复 (12:08)",
+          "problem": ": `git status` 中文文件名显示为 octal 转义（`docs/36_\\345\\217\\214...`）",
+          "solution": "`git config --global core.quotepath false` + 本地同步；结果: ✅ 中文文件名正常显示（如 `docs/36_调试日志规范体系.md`）",
           "status": "resolved"
         }
       ]
@@ -2793,6 +2835,13 @@
           "problem": "[F31] v0.5.21 发布 (13:54)",
           "solution": "`_upload_release.mjs` 中 `make_latest: true` 应为 `\"true\"` 字符串（GitHub API 要求）；Settings.tsx 变更: 删除 `simulateUpdateTest` 函数 + 3 个模拟按钮的 JSX 代码块",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "release.mjs readdirSync 缺失修复 (12:09)",
+          "problem": ": `scripts/release.mjs` 运行时报 `readdirSync is not defined`，导致 changelog 生成失败回退到默认条目 [根因] : 第 13 行 `import { readFileSync, writeFileSync, existsSync } from 'node:fs'` 缺少 `readdirSync`",
+          "solution": "添加 `readdirSync` 到 import 列表",
+          "status": "resolved"
         }
       ]
     },
@@ -3056,6 +3105,13 @@
           "title": "[F41] v0.5.30 GitHub Release 缺少 latest.yml 修复 (22:",
           "problem": ": 用户启动 v0.5.30 → `electron-updater` 报 `Cannot find latest.yml in the latest release artifacts (404)` [根因] : `release-publish.bat` 执行后，`latest.yml` 本地存在但未上传到 GitHub Release。Release #345329965 检查发现 **0 个 asset**（EXE 也没上传）",
           "solution": "写 PS1 临时脚本，通过 GitHub API 单独上传 `latest.yml` (0.3 KB) → `Invoke-RestMethod POST` → 成功；结果: `https://github.com/ht182400-creator/easyagent/releases/download/v0.5.30/latest.yml` 可访问；遗留: Release 仍缺 EXE 和 blockmap（110MB），旧版本用户无法通过 `electron-updater` 下载 v0.5.30 EXE；教训: `release-publish.bat` 上传环节可能静默失败，需增加 post-upload 验证（检查 Release assets 数量/文件名）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "Desktop 更新签名校验失败修复 (10:48)",
+          "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
+          "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
           "status": "resolved"
         }
       ]
@@ -3376,6 +3432,13 @@
           "title": "[F35] v0.5.25→0.5.26 autoDownload=false 根本重构 (15:1",
           "problem": ": 用户反馈 v0.5.24 \"发现新版本 v0.5.25\"但下载永不开始。F34 的 scene3 `downloadUpdate()` 修复无效",
           "solution": "1. **`autoDownload = false`** — 关闭自动下载，所有下载由代码显式调用 `downloadUpdate()` 2. **auto-check**: `checkForUpdatesAndNotify()` → `checkForUpdates()` + 显式 `downloadUpdate()` 3. **IPC check-update handler**: 简化为清晰的 4 场景状态机（downloaded → 返回 / checking → 跳过 / downloading → 返回进度 / idle-available-error → checkForUpdates + downlo 4. **返回真实状态**: IPC 返回当前 `lastUpdateStatus`（事件驱动），不再硬编码；版本: 0.5.25（修复版重建+覆盖上传） + 0.5.26（新 Release 供测试）；发布: v0.5.25 覆盖 Release #345170197 / v0.5.26 创建 Release #345177228 1. 本地装 `EasyAgent-0.5.25-win-x64.exe`（含修复代码） 2. 打开 → 设置 → 检查更新 → 应发现 v0.5.26 并自动进入下载进度 3. 等待 10 秒后自动检查也应触发下载；关键教训: electron-updater 的 autoDownload 行为不可靠，必须设为 false 并显式管理",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "v0.6.1 显示旧版内容修复 (11:34)",
+          "problem": ": Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本 [根因] : 两个 bug",
+          "solution": "1. `Settings.tsx`: 移除硬编码行 (第 516 行) 2. `server/src/index.ts`: 改进 changelog 提取逻辑 — 跳过无 `###` 内容的空条目，向后查找最近2个有实质内容的版本 3. `CHANGELOG.md`: 补充 v0.6.1 和 v0.6.0 的缺失内容 (Added/Changed/Fixed)",
           "status": "resolved"
         }
       ]
@@ -3810,6 +3873,34 @@
           "problem": ": `:UPLOAD_TOKEN` 中 `if not exist \"scripts\\.release_token\" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL` [根因] : CMD 预解析器在构建 if/for 块时天真地数括号，不区分 echo/rem 等命令内容。`^)` 转义在预解析阶段不总是生效",
           "solution": "`:UPLOAD_TOKEN` token 存在检查 (line 406-417): 反向 `if exist ... goto :UPLOAD_TOKEN_GO`；`:UPLOAD_TOKEN` 上传结果判断 (line 431-440): `goto :UPLOAD_TOKEN_OK` 模式；`:STEP_DTS` DTS 错误报告 (line 228-243): `if equ 0 goto :DTS_OK`；`:BUILD_OK` 产物大小显示 (line 300-305): 去掉 echo 中括号；`:STEP_SYNC` 管线同步结果 (line 489-497): `if equ 0 goto :SYNC_OK`；MEMORY.md: 新增陷阱 #14a (CMD if 块内 echo 含括号)；DTS check + EXE build + GitHub Release + Pipeline Sync completed",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "v0.6.1 显示旧版内容修复 (11:34)",
+          "problem": ": Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本 [根因] : 两个 bug",
+          "solution": "1. `Settings.tsx`: 移除硬编码行 (第 516 行) 2. `server/src/index.ts`: 改进 changelog 提取逻辑 — 跳过无 `###` 内容的空条目，向后查找最近2个有实质内容的版本 3. `CHANGELOG.md`: 补充 v0.6.1 和 v0.6.0 的缺失内容 (Added/Changed/Fixed)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "release.mjs CHANGELOG 空条目根因修复 (11:37)",
+          "problem": ": release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容 [根因] : 第 130 行 `if (other.length && !added.length && ...)` — 当所有 commit 分类数组均为空时，`other.length`=0 导致兜底分支被跳过",
+          "solution": "`scripts/release.mjs` 新增最终兜底 — 所有分类为空时插入 `### Changed\\n- 新版本发布`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "release.mjs readdirSync 缺失修复 (12:09)",
+          "problem": ": `scripts/release.mjs` 运行时报 `readdirSync is not defined`，导致 changelog 生成失败回退到默认条目 [根因] : 第 13 行 `import { readFileSync, writeFileSync, existsSync } from 'node:fs'` 缺少 `readdirSync`",
+          "solution": "添加 `readdirSync` 到 import 列表",
+          "status": "resolved"
         }
       ]
     },
@@ -4130,6 +4221,13 @@
           "title": "release-publish.bat CMD if 块内 echo 括号冲突根治 (23:06)",
           "problem": ": `:UPLOAD_TOKEN` 中 `if not exist \"scripts\\.release_token\" (` 块内 `echo Scope: repo (full)` 的 `)` 被 CMD 预解析器当作块结束符，导致 Token 文件存在的正常路径也被跳到 `:UPLOAD_MANUAL` [根因] : CMD 预解析器在构建 if/for 块时天真地数括号，不区分 echo/rem 等命令内容。`^)` 转义在预解析阶段不总是生效",
           "solution": "`:UPLOAD_TOKEN` token 存在检查 (line 406-417): 反向 `if exist ... goto :UPLOAD_TOKEN_GO`；`:UPLOAD_TOKEN` 上传结果判断 (line 431-440): `goto :UPLOAD_TOKEN_OK` 模式；`:STEP_DTS` DTS 错误报告 (line 228-243): `if equ 0 goto :DTS_OK`；`:BUILD_OK` 产物大小显示 (line 300-305): 去掉 echo 中括号；`:STEP_SYNC` 管线同步结果 (line 489-497): `if equ 0 goto :SYNC_OK`；MEMORY.md: 新增陷阱 #14a (CMD if 块内 echo 含括号)；DTS check + EXE build + GitHub Release + Pipeline Sync completed",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+          "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
           "status": "resolved"
         }
       ]
@@ -4884,8 +4982,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 673,
-  "_generatedAt": "2026-06-26T15:31:55.206Z",
+  "_totalIssues": 687,
+  "_generatedAt": "2026-06-27T05:23:24.582Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -4896,16 +4994,17 @@
     "2026-06-24.md",
     "2026-06-25.md",
     "2026-06-26.md",
+    "2026-06-27.md",
     "MEMORY.md",
     "README.md"
   ],
   "_cacheStats": {
-    "totalFiles": 11,
+    "totalFiles": 12,
     "cacheHits": 0,
-    "reparsed": 11
+    "reparsed": 12
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-26T15:31:55.219Z"
+    "exportedAt": "2026-06-27T05:23:24.595Z"
   }
 }

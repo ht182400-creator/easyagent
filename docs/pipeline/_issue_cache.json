@@ -33,12 +33,16 @@
       "size": 36906
     },
     "2026-06-26.md": {
-      "mtimeMs": 1782487858975.1382,
-      "size": 72856
+      "mtimeMs": 1782488919222.1382,
+      "size": 76816
+    },
+    "2026-06-27.md": {
+      "mtimeMs": 1782537758369.6135,
+      "size": 14840
     },
     "MEMORY.md": {
-      "mtimeMs": 1782487850635.2336,
-      "size": 47733
+      "mtimeMs": 1782537707500.203,
+      "size": 51073
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -8778,6 +8782,186 @@
         ]
       }
     ],
+    "2026-06-27.md": [
+      {
+        "moduleId": "f2",
+        "date": "2026-06-27",
+        "title": "Desktop 更新签名校验失败修复 (10:48)",
+        "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
+        "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-27",
+        "title": "Desktop 更新签名校验失败修复 (10:48)",
+        "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
+        "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-27",
+        "title": "Desktop 更新签名校验失败修复 (10:48)",
+        "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
+        "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-06-27",
+        "title": "v0.6.1 显示旧版内容修复 (11:34)",
+        "problem": ": Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本 [根因] : 两个 bug",
+        "solution": "1. `Settings.tsx`: 移除硬编码行 (第 516 行) 2. `server/src/index.ts`: 改进 changelog 提取逻辑 — 跳过无 `###` 内容的空条目，向后查找最近2个有实质内容的版本 3. `CHANGELOG.md`: 补充 v0.6.1 和 v0.6.0 的缺失内容 (Added/Changed/Fixed)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "v0.6.1 显示旧版内容修复 (11:34)",
+        "problem": ": Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本 [根因] : 两个 bug",
+        "solution": "1. `Settings.tsx`: 移除硬编码行 (第 516 行) 2. `server/src/index.ts`: 改进 changelog 提取逻辑 — 跳过无 `###` 内容的空条目，向后查找最近2个有实质内容的版本 3. `CHANGELOG.md`: 补充 v0.6.1 和 v0.6.0 的缺失内容 (Added/Changed/Fixed)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f15",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-27",
+        "title": "release.mjs CHANGELOG 空条目根因修复 (11:37)",
+        "problem": ": release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容 [根因] : 第 130 行 `if (other.length && !added.length && ...)` — 当所有 commit 分类数组均为空时，`other.length`=0 导致兜底分支被跳过",
+        "solution": "`scripts/release.mjs` 新增最终兜底 — 所有分类为空时插入 `### Changed\\n- 新版本发布`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "release.mjs CHANGELOG 空条目根因修复 (11:37)",
+        "problem": ": release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容 [根因] : 第 130 行 `if (other.length && !added.length && ...)` — 当所有 commit 分类数组均为空时，`other.length`=0 导致兜底分支被跳过",
+        "solution": "`scripts/release.mjs` 新增最终兜底 — 所有分类为空时插入 `### Changed\\n- 新版本发布`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-27",
+        "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-27",
+        "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-27",
+        "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
+        "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-27",
+        "title": "git core.quotepath 修复 (12:08)",
+        "problem": ": `git status` 中文文件名显示为 octal 转义（`docs/36_\\345\\217\\214...`）",
+        "solution": "`git config --global core.quotepath false` + 本地同步；结果: ✅ 中文文件名正常显示（如 `docs/36_调试日志规范体系.md`）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-27",
+        "title": "release.mjs readdirSync 缺失修复 (12:09)",
+        "problem": ": `scripts/release.mjs` 运行时报 `readdirSync is not defined`，导致 changelog 生成失败回退到默认条目 [根因] : 第 13 行 `import { readFileSync, writeFileSync, existsSync } from 'node:fs'` 缺少 `readdirSync`",
+        "solution": "添加 `readdirSync` 到 import 列表",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f16"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "release.mjs readdirSync 缺失修复 (12:09)",
+        "problem": ": `scripts/release.mjs` 运行时报 `readdirSync is not defined`，导致 changelog 生成失败回退到默认条目 [根因] : 第 13 行 `import { readFileSync, writeFileSync, existsSync } from 'node:fs'` 缺少 `readdirSync`",
+        "solution": "添加 `readdirSync` 到 import 列表",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11",
+          "f16"
+        ]
+      }
+    ],
     "MEMORY.md": [
       {
         "moduleId": "f9",
@@ -8793,5 +8977,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-26T15:31:55.201Z"
+  "generatedAt": "2026-06-27T05:23:24.579Z"
 }

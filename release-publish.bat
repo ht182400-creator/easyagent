@@ -488,7 +488,7 @@ echo   Running: powershell -File scripts/pipeline-auto-sync.ps1
 echo   ----------------------------------------
 rem 设置 UTF-8 编码避免中文乱码 (CMD 侧 + PowerShell 侧双保险)
 chcp 65001 >nul 2>&1
-powershell -NoProfile -ExecutionPolicy Bypass -Command "[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '.\scripts\pipeline-auto-sync.ps1'"
+powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\pipeline-auto-sync.ps1"
 set _SYNC_ERR=%errorlevel%
 rem 使用 goto 模式避免 CMD if 块内 () 冲突
 if %_SYNC_ERR% equ 0 goto :SYNC_OK

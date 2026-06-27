@@ -1,0 +1,187 @@
+# EasyAgent 文档导航中心
+
+> **最后更新**: 2026-06-27  
+> **适用版本**: v0.6.3+  
+> **欢迎新人！从这里开始 →** 先读 `00_新手上手指南.md`，再按你的角色选读下面的路径。
+
+---
+
+## 📖 新手阅读路径
+
+### 所有人（先花 10 分钟）
+```
+00_新手上手指南.md    ← 从这里开始！（项目简介 → 启动 → 发布）
+14_构建前必检清单.md    ← 30秒救命清单，每次构建前看
+12_项目启动与运行方式指南.md  ← 如何启动后端/前端
+```
+
+### 开发者（写代码）
+```
+37_双重构建体系详解_Desktop与Web.md   ← 理解构建流程
+11_构建链路对照表_tsup_asar_inline详解.md  ← 源码→产物的映射关系
+02_架构设计文档_ADD.md                 ← 完整架构
+36_调试日志规范体系.md                 ← 怎么写 debug 日志
+39_CHANGELOG自动生成机制_三级Fallback.md ← CHANGELOG 怎么来的
+```
+
+### 发布者（发版本）
+```
+38_双通道发布指南_本地vs服务器.md     ← 两种发布方式对比
+40_发布产物与自动化流程详解_面向新手.md  ← latest.yml / release.yml 是什么
+06_版本发布与CI-CD流程指南.md          ← CI/CD 全流程
+05_Desktop_EXE打包标准流程.md          ← 打包技术细节
+07_自动更新分发方案对比.md             ← 自动更新方案
+```
+
+### 排查者（救火）
+```
+MEMORY.md (项目根目录 .codebuddy/memory/)  ← 陷阱清单 37 条 + 高频问题速查
+35_MODULE_VERSION问题分析与根治方案.md     ← better-sqlite3 必读
+04_CORS修复深度复盘_编译链与假成功陷阱.md   ← CORS 陷阱
+10_Desktop连接失败深度排查_React竞态条件修复.md ← 连接问题
+```
+
+---
+
+## 📁 核心文档索引
+
+| 编号 | 标题 | 一句话描述 |
+|:---:|------|-----------|
+| `00` | 新手上手指南 | 从克隆代码到第一次发布的完整步行 |
+| `01` | 需求规格说明书 PRD | 产品需求，版本控制与升级系统 |
+| `02` | 架构设计文档 ADD | 完整技术架构，v5.4 |
+| `03` | 测试案例文档 | 1195 用例，覆盖率报告 |
+| `04` | CORS 修复深度复盘 | 编译链与假成功陷阱 |
+| `05` | Desktop EXE 打包标准流程 | 28 个问题的手册级详解 |
+| `06` | 版本发布与 CI/CD 流程指南 | 发布全流程 |
+| `07` | 自动更新分发方案对比 | GitHub/R2/COS 等 5 方案 |
+| `08` | 项目战略审查与发展蓝皮书 | 决策级参考 |
+| `09` | 项目 Review 与优化建议报告 | CPO + 架构师双视角 |
+| `10` | Desktop 连接失败深度排查 | React 竞态条件修复 |
+| `11` | 构建链路对照表 | 源码→编译→asar→EXE 完整映射 |
+| `12` | 项目启动与运行方式指南 | 环境搭建与启动 |
+| `13` | 自动更新架构设计文档 | 自动更新完整架构 |
+| `14` | 构建前必检清单 | 30 秒避免 2 小时排错 |
+| `35` | MODULE_VERSION 问题根治方案 | better-sqlite3 深度分析 |
+| `36` | 调试日志规范体系 | TS/.mjs/.bat 统一日志标准 |
+| `37` | 双重构建体系详解 | Desktop vs Web 构建原理 |
+| `38` | 双通道发布指南 | 本地构建 vs 服务器构建 |
+| `39` | CHANGELOG 自动生成机制 | 三级 Fallback 方案 |
+| `40` | 发布产物与自动化流程详解 | latest.yml/release.yml 详解 |
+
+---
+
+## 📊 管线系统 —— 项目进度与数据
+
+### 是什么？
+
+管线系统是 EasyAgent 的"指挥中心"，可视化展示：项目进度、测试覆盖率、模块完成状态、问题跟踪、综合评分。
+
+### 怎么访问
+
+```bash
+# 启动管线服务器
+node docs/pipeline/server.mjs
+
+# 浏览器打开
+http://127.0.0.1:8899/index.html      # 仪表板
+http://127.0.0.1:8899/api/pipeline    # 原始 API
+```
+
+### 9 张仪表板卡片
+
+| 卡片 | 说明 | 怎么看 |
+|------|------|--------|
+| 🧪 测试用例总数 | 1195 用例，按模块展开到 L4 | 点击卡片进入树形详情 |
+| ✅ 测试通过率 | 按阶段分组，环形图+柱状图 | 看有没有红色（失败） |
+| 🔧 内置工具数 | 51 工具，按组展开到参数签名 | 了解 Agent 能力边界 |
+| 🤖 模型提供商 | 10 家国产模型 | 确认支持的模型 |
+| 📈 综合评分 | 100/100，版本演进柱状图 | 看质量趋势 |
+| 📋 项目进度 | 6 阶段完工率，进度条全绿 | 看开发到哪了 |
+| ✅ 已完成模块 | 29/29 模块全部完成 | 按状态分组 |
+| 🐛 问题记录 | 535+ 条，覆盖 23+ 模块 | 点击节点查看问题追溯 |
+| 🗺️ SVG 管线图 | 29 节点全绿流动图 | 全局概览 |
+
+### 数据怎么更新
+
+```
+你 git push → CI 自动跑测试 → CI 自动同步数据 → 你 git pull
+```
+
+本地快速刷新：`node scripts/unified-sync.mjs`
+
+### 相关文档
+
+| 文档 | 内容 |
+|------|------|
+| `pipeline/ARCHITECTURE.md` | 管线架构设计文档（24KB） |
+| `pipeline/README.md` | 管线模块说明 |
+| `pipeline/memory-format-spec.md` | Memory 文件格式规范 |
+| `pipeline/code-review-*.md` | 历史代码评审报告 |
+
+---
+
+## 📝 开发规范入口
+
+| 规范 | 在哪 | 强制等级 |
+|------|------|:--:|
+| 编码注释规范 | `MEMORY.md` → 编码规范 | 建议 |
+| 调试日志规范 | `docs/36_调试日志规范体系.md` | 🔴 强制 |
+| Memory 记录格式 | `docs/pipeline/memory-format-spec.md` | 🔴 强制 |
+| 测试数据同步约束 | `MEMORY.md` → 测试数据同步约束（6 文件清单） | 🔴 强制 |
+| 日志优先排查原则 | `MEMORY.md` → 日志优先排查原则（5 步流程） | 🔴 强制 |
+| Web↔Desktop 代码隔离 | `MEMORY.md` → 代码隔离约束 | 🔴 强制 |
+| 陷阱自愈规则 | `MEMORY.md` → 陷阱自愈规则 | 🔴 强制 |
+
+---
+
+## 🐛 陷阱速查
+
+**最常踩的坑**（完整 37 条见 `MEMORY.md` → 关键陷阱清单）：
+
+| # | 陷阱 | 一句话 |
+|:--:|------|--------|
+| 9 | better-sqlite3 编译失败 | 用预编译 .node + `npmRebuild:false` |
+| 21 | mime 缺失 Express 500 | desktop 显式添加 `mime@^1.6.0` |
+| 22 | MODULE_VERSION 不一致 | 构建前跑 build.bat Phase 2.5 |
+| 29 | production CSS 布局错乱 | tailwind content 加 frontend 路径 |
+| 33 | electron-rebuild 静默跳过 | 用 node-gyp rebuild 不要用 electron-rebuild |
+
+---
+
+## 🔗 关键链接
+
+| 链接 | 说明 |
+|------|------|
+| [GitHub 仓库](https://github.com/ht182400-creator/easyagent) | 源码 |
+| [GitHub Releases](https://github.com/ht182400-creator/easyagent/releases) | 下载 EXE |
+| [CI/CD 流水线](https://github.com/ht182400-creator/easyagent/actions) | 查看构建状态 |
+| `http://127.0.0.1:3456` | 本地后端服务 |
+| `http://127.0.0.1:5173` | 本地前端开发服务 |
+| `http://127.0.0.1:8899` | 本地管线仪表板 |
+| `release-publish.bat` | 一键发布（本地全流程） |
+| `release-server.bat` | CI/CD 发布（仅推送标签） |
+| `build.bat --release` | 仅构建 EXE |
+
+---
+
+## 📂 项目文件地图
+
+```
+EasyAgent/
+├── packages/
+│   ├── core/         # 核心库 (Agent/工具/MCP/适配器)
+│   ├── server/       # Express 后端 (端口 3456)
+│   ├── desktop/      # Electron 桌面应用
+│   ├── web/          # Web Dashboard
+│   ├── frontend/     # 共享前端组件 (Desktop+Web 共用)
+│   └── cli/          # 命令行工具
+├── docs/             # 📖 项目文档 (← 你在这里)
+├── scripts/          # 构建/发布/同步脚本
+├── .codebuddy/
+│   └── memory/       # AI 开发日志 + MEMORY.md
+├── .github/workflows/# CI/CD 配置
+├── version.json      # 唯一版本号
+├── CHANGELOG.md      # 版本更新日志
+└── build.bat         # 构建入口
+```
