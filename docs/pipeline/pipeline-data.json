@@ -307,20 +307,20 @@
     ]
   },
   "kpi": {
-    "testCases": 1274,
+    "testCases": 1232,
     "testPassRate": 100,
-    "testPassed": 1195,
+    "testPassed": 1292,
     "testFailed": 0,
     "testSkipped": 0,
-    "_vitestTotal": 1195,
-    "_uncovered": 79,
-    "_coveragePct": 94,
-    "_stale": true,
+    "_vitestTotal": 1292,
+    "_uncovered": 0,
+    "_coveragePct": 105,
+    "_stale": false,
     "tools": 51,
     "providers": 10,
     "scoreTotal": 100,
     "modes": 4,
-    "_source": "vitest-reports(3 files) [coverage 94%]",
+    "_source": "vitest-reports(3 files)",
     "_totalFiles": 48,
     "_vitestFiles": [
       "_vitest-core.json",
@@ -338,7 +338,7 @@
         "label": "测试覆盖",
         "score": 100,
         "max": 100,
-        "note": "1195通过 (100%)/1195已执行 / 1274 定义 用例通过"
+        "note": "1292通过 (100%)/1292已执行 / 1232 定义 用例通过"
       },
       {
         "label": "分支优化",
@@ -403,13 +403,13 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1274用例"
+      "note": "29/29模块+1232用例"
     }
   ],
   "dashboard": {
     "tests": {
       "title": "测试用例详情",
-      "subtitle": "1274 个测试用例 · Vitest 测试框架 · 数据自动采集",
+      "subtitle": "1232 个测试用例 · Vitest 测试框架 · 数据自动采集",
       "items": [
         {
           "label": "多模型适配器",
@@ -4566,15 +4566,15 @@
           ]
         }
       ],
-      "summary": "所有核心模块均已覆盖测试，总用例数 1274，覆盖单元测试、集成测试、端到端测试 + 管线运维自测试"
+      "summary": "所有核心模块均已覆盖测试，总用例数 1232，覆盖单元测试、集成测试、端到端测试 + 管线运维自测试"
     },
     "pass": {
       "title": "测试通过率详情",
-      "subtitle": "✅ GitHub CI v0.5.2 全部通过 (6/6 jobs) · Vitest 已执行 1195 个 (100%) · 代码扫描 79 用例（模块注册表计数，非 vitest 离散单元）",
+      "subtitle": "✅ GitHub CI v0.5.2 全部通过 (6/6 jobs) · Vitest 已执行 1292 个 (100%) · ",
       "stats": [
         {
           "label": "✅ 通过 (vitest)",
-          "val": "1195",
+          "val": "1292",
           "color": "#3fb950"
         },
         {
@@ -4589,7 +4589,7 @@
         },
         {
           "label": "📋 代码扫描用例",
-          "val": "79",
+          "val": "0",
           "color": "#58a6ff",
           "note": "模块注册表通过代码扫描统计的测试定义数。这些用例已随 CI 全部执行，但 vitest 报告格式不产生 1:1 的离散计数。GitHub CI 验证通过。"
         }
@@ -9251,7 +9251,7 @@
           ]
         }
       ],
-      "summary": "✅ GitHub CI 全部通过 (6/6 jobs) · 所有已执行测试通过。 另外 79 个「代码扫描用例」是通过代码静态分析统计的测试定义数量（共 1195），与 vitest 报告的 1195 个离散测试单元之间存在计数口径差异，并非\"未执行\"。GitHub CI 已完整运行所有测试。"
+      "summary": "✅ GitHub CI 全部通过 (6/6 jobs) · 所有已执行测试通过。"
     },
     "tools": {
       "title": "内置工具详情",
@@ -10107,7 +10107,7 @@
           "label": "测试覆盖",
           "score": 100,
           "max": 100,
-          "note": "1195通过 (100%)/1195已执行 / 1274 定义 用例通过"
+          "note": "1292通过 (100%)/1292已执行 / 1232 定义 用例通过"
         },
         {
           "label": "分支优化",
@@ -10758,6 +10758,6 @@
       "summary": "共 699 个问题记录，覆盖 27 个模块。点击流程图中任意模块节点或「问题记录」卡片查看详情。"
     }
   },
-  "lastUpdated": "2026-06-27T08:29:28.273Z",
+  "lastUpdated": "2026-06-27T08:52:15.395Z",
   "source": "module-registry.mjs (统一注册表同步)"
 }
