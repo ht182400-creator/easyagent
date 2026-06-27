@@ -214,17 +214,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/pipeline/test-case-mapping.json
-          git add docs/pipeline/pipeline-data.json
-          git add docs/pipeline/issue-data.json
-          git add docs/pipeline/project-progress-data.json
-          git add docs/pipeline/.pipeline-cache.json
+          # 添加整个管线目录，确保 unified-sync 生成的所有文件都被追踪
+          git add docs/pipeline/
           if git diff --cached --quiet; then
             echo "No pipeline data changes to commit"
           else
             git commit -m "ci: auto-sync pipeline data [skip ci]"
-            # 推送前 rebase 远程，避免与并发 release push 竞态
+            # unified-sync 可能在 commit 瞬间继续生成新文件，导致 unstaged 残留
+            # 推送前 stash → rebase 远程 → pop stash → push，杜绝竞态
+            git stash
             git pull --rebase origin main
+            git stash pop
             git push
             echo "✅ Pipeline data synced and pushed"
           fi
