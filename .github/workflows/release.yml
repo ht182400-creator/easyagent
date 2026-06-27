@@ -138,6 +138,8 @@ jobs:
 
       # ---- Phase 4: Electron 打包 (NSIS 安装包) ----
       - name: Package (electron-builder)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd packages/desktop
           npx electron-builder --win --x64
