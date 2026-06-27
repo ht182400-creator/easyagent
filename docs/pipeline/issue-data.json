@@ -213,6 +213,13 @@
           "problem": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
           "solution": "1. `ContentRouter.tsx` —— `providers` 类型从 PlaceholderView 改为 `<Suspense><ProvidersPage /></Suspense>`（懒加载） 2. `ModelRegistry.ts` —— CATALOG_URL 修正为正确仓库路径 3. 重建链路：`packages/core tsup` → `packages/desktop tsup` (main.js) → `packages/desktop vite build` (renderer) 4. 双版本 sqlite3 已缓存到 `.codebuddy/sqlite3-cache/`（system/electron 各一）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "problem": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "solution": "平台适配器模式 @easyagent/frontend (共享UI层, 零平台依赖) web适配器 / desktop适配器 / (未来) mobile适配器；设计原则: ① 共享层零平台依赖 ② 适配器是薄层(30-50行) ③ 统一包名导入 ④ 独立编译边界；Desktop 改造: `@/mountApp` → `@easyagent/frontend` + IPC桥接抽离为独立模块(`ipcBridge.ts`) + vite alias 改用包名；Web 改造: 同上包名导入 + 移除 tsconfig `include: [\"../frontend/src\"]` + `@/` 回归指向自身；扩展性: 新增平台只需 `packages/<name>/src/main.tsx` (~10行)，frontend 零改动；改动范围: 8个文件，约30行净改动，Desktop 构建链零影响；推荐路径: P0(修复exports) → P1(平台适配器模式,本周) → P2(Library Mode,按需)；变更文件: docs/41_前端架构优化方案_模块共享与解析歧义根治.md (v2.0)",
+          "status": "resolved"
         }
       ]
     },
@@ -575,6 +582,41 @@
           "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
           "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
           "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "文档导读 Web 页面开发 (17:19-17:23)",
+          "problem": ": 页面空白，React 未挂载到 DOM。根因：`main.tsx` 只导出 `mountApp()` 函数，从未在 Vite dev 模式下调用",
+          "solution": "在文件末尾添加 `if (import.meta.env.DEV) { mountApp({...}, false, 'root') }`；涉及文件: DocsGuide.tsx (新建) / App.tsx (+路由) / Layout.tsx (+导航项) / main.tsx (+自启动)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 双重挂载导致主页面字体/样式异常修复 (17:55)",
+          "problem": "[现象] : 添加 DocsGuide 页面后，EasyAgent 主页面字体颜色、背景样式异常",
+          "solution": "删除 `packages/frontend/src/main.tsx` 的自启动代码块。正确模式：frontend/main.tsx 只作为库导出 mountApp()，web/desktop 各自在自己的入口调用 1. CSS 动画/类名必须用唯一前缀，避免全局冲突 2. 任何改动必须理解 monorepo 架构（packages/web 通过别名引用 frontend） 3. 模块入口文件不能自行执行副作用（mountApp 是库函数，不是脚本入口） 4. 双重 React 挂载的症状：字体/颜色/布局全局异常，而非局部功能问题",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "problem": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "solution": "平台适配器模式 @easyagent/frontend (共享UI层, 零平台依赖) web适配器 / desktop适配器 / (未来) mobile适配器；设计原则: ① 共享层零平台依赖 ② 适配器是薄层(30-50行) ③ 统一包名导入 ④ 独立编译边界；Desktop 改造: `@/mountApp` → `@easyagent/frontend` + IPC桥接抽离为独立模块(`ipcBridge.ts`) + vite alias 改用包名；Web 改造: 同上包名导入 + 移除 tsconfig `include: [\"../frontend/src\"]` + `@/` 回归指向自身；扩展性: 新增平台只需 `packages/<name>/src/main.tsx` (~10行)，frontend 零改动；改动范围: 8个文件，约30行净改动，Desktop 构建链零影响；推荐路径: P0(修复exports) → P1(平台适配器模式,本周) → P2(Library Mode,按需)；变更文件: docs/41_前端架构优化方案_模块共享与解析歧义根治.md (v2.0)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "problem": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "solution": "30个预存失败通过 `vitest.config.ts` 添加 `resolve.dedupe:['react','react-dom']` + `server.deps.inline:['react','react-dom','react-dom/client']` 全部修复；Frontend 测试: 5文件(43用例)全覆盖，修复了 api.test.ts 的 unhandled rejection（改用 advanceTimersByTimeAsync 逐步推进）、mountApp.test.tsx 的 length 断言（默认参数 length=0）；Web 测试: 1文件(2用例)入口冒烟测试；全量结果: Core 926/926 ✅ | Server 151/151 ✅ | Desktop 215/215 ✅ | Frontend 43/43 ✅ | Web 2/2 ✅ | **总计 1336/1336 (100%)**；03号文档: 新增6个测试模块详细章节(3.20-3.25)、更新统计表(1336用例/55文件/66+源文件)、新增v5.7修复记录、综合评分92→96",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "03号测试案例文档版本号补更新 (21:44)",
+          "problem": ": 上一轮全量文档更新遗漏了 `docs/03_测试案例文档.md` 中的 5 处 v0.5.28 版本引用",
+          "solution": "第3行(CI版本号): `v0.5.28` → `v0.6.6`；第13行(通过率): `CI v0.5.28` → `CI v0.6.6`；第1817行(维护声明): `覆盖 EasyAgent v0.5.28` → `v0.6.6`；第1967行(尾注): `v0.5.28 P2 测试全覆盖` → `v0.6.6`；第1904行(模拟测试示例): `EasyAgent-0.5.20-win-x64.exe` → `EasyAgent-0.6.6-win-x64.exe`；保留: 第1821行 `(v0.5.20 新增)` — 描述该功能引入时的历史版本，保留为历史事实",
           "status": "resolved"
         }
       ]
@@ -1001,6 +1043,13 @@
           "problem": ": v0.5.11~v0.5.28 共 18 个 tag 指向同一 commit `001a4ad`，v0.5.30~v0.5.32 共 3 个 tag 指向同一 commit `646c388`。GitHub Releases 页面看不到独立的 commit [根因] : 用户在 Step 1 选择 `[0] skip` 跳过版本递增，Step 5 (gh CLI 路径) 在旧 HEAD 上直接创建新 tag，无 commit 变更",
           "solution": "1. **Step 5 gh CLI 路径 (L379-389)**: 创建 tag 前新增安全检查 — `git tag --points-at HEAD --list \"v*\"` 检测 HEAD 是否已有 release tag。若有则拒绝创建并引导用户执行 Step 3 版本递增 2. **Step 1 skip 选项描述 (L74)**: 改为 `[0] skip (已手动递增版本+commit，仅 build/upload - 无新commit则拒绝打tag)` 更明确后果；保护范围: gh CLI 路径 (method 1)，`_release.mjs` 路径不受影响（它通过 GitHub API 创建 Release，不创建本地 tag）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "problem": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "solution": "30个预存失败通过 `vitest.config.ts` 添加 `resolve.dedupe:['react','react-dom']` + `server.deps.inline:['react','react-dom','react-dom/client']` 全部修复；Frontend 测试: 5文件(43用例)全覆盖，修复了 api.test.ts 的 unhandled rejection（改用 advanceTimersByTimeAsync 逐步推进）、mountApp.test.tsx 的 length 断言（默认参数 length=0）；Web 测试: 1文件(2用例)入口冒烟测试；全量结果: Core 926/926 ✅ | Server 151/151 ✅ | Desktop 215/215 ✅ | Frontend 43/43 ✅ | Web 2/2 ✅ | **总计 1336/1336 (100%)**；03号文档: 新增6个测试模块详细章节(3.20-3.25)、更新统计表(1336用例/55文件/66+源文件)、新增v5.7修复记录、综合评分92→96",
+          "status": "resolved"
         }
       ]
     },
@@ -1384,6 +1433,13 @@
           "title": "[F9] Desktop 前端 file:// 协议下裸 fetch 修复 (05:00-05:07",
           "problem": "[F9] Desktop 前端 file:// 协议下裸 fetch 修复 (05:00-05:07)",
           "solution": "11 个文件 23 处 fetch 调用全部改为使用 `getApiBase()`： // 修改前（Desktop 生产模式失败） fetch('/api/sessions') // 修改后（Web/Desktop 均正常） const apiBase = getApiBase();  // Desktop: 'http://127.0.0.1:3456', Web: '' fetch(`${apiBase}/api/sessions`)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "problem": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "solution": "平台适配器模式 @easyagent/frontend (共享UI层, 零平台依赖) web适配器 / desktop适配器 / (未来) mobile适配器；设计原则: ① 共享层零平台依赖 ② 适配器是薄层(30-50行) ③ 统一包名导入 ④ 独立编译边界；Desktop 改造: `@/mountApp` → `@easyagent/frontend` + IPC桥接抽离为独立模块(`ipcBridge.ts`) + vite alias 改用包名；Web 改造: 同上包名导入 + 移除 tsconfig `include: [\"../frontend/src\"]` + `@/` 回归指向自身；扩展性: 新增平台只需 `packages/<name>/src/main.tsx` (~10行)，frontend 零改动；改动范围: 8个文件，约30行净改动，Desktop 构建链零影响；推荐路径: P0(修复exports) → P1(平台适配器模式,本周) → P2(Library Mode,按需)；变更文件: docs/41_前端架构优化方案_模块共享与解析歧义根治.md (v2.0)",
           "status": "resolved"
         }
       ]
@@ -2016,9 +2072,37 @@
           "status": "resolved"
         },
         {
+          "date": "2026-06-27",
+          "title": "DocsGuide 双重挂载导致主页面字体/样式异常修复 (17:55)",
+          "problem": "[现象] : 添加 DocsGuide 页面后，EasyAgent 主页面字体颜色、背景样式异常",
+          "solution": "删除 `packages/frontend/src/main.tsx` 的自启动代码块。正确模式：frontend/main.tsx 只作为库导出 mountApp()，web/desktop 各自在自己的入口调用 1. CSS 动画/类名必须用唯一前缀，避免全局冲突 2. 任何改动必须理解 monorepo 架构（packages/web 通过别名引用 frontend） 3. 模块入口文件不能自行执行副作用（mountApp 是库函数，不是脚本入口） 4. 双重 React 挂载的症状：字体/颜色/布局全局异常，而非局部功能问题",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 全页面空白 — 根因定位与修复 (18:55-19:09)",
+          "problem": "[现象] : 重启 Vite 后所有页面（首页 + DocsGuide）`#root` 完全为空，无 JS 错误 [根因] : `frontend/src/main.tsx` 和 `web/src/main.tsx` 同名，Vite 在模块解析时将 `/src/main.tsx` 错误解析到 frontend 的文件（因其在 tsconfig `include` 中：`\"include\": [\"src\", \"../frontend/src\"]`）",
+          "solution": "1. 重命名 `frontend/src/main.tsx` → `frontend/src/mountApp.tsx`（该文件只导出 mountApp 函数，新名称更语义化） 2. 更新引用: `web/src/main.tsx` 中 `@/main` → `@/mountApp` 3. 更新引用: `desktop/src/renderer/main.tsx` 中 `@/main` → `@/mountApp`；变更文件: frontend/src/main.tsx→mountApp.tsx / web/src/main.tsx / desktop/src/renderer/main.tsx；Node.js fetch `/src/main.tsx` → 1755 bytes, `[web/main.tsx]` log 出现, mountApp() 被调用 ✅；Playwright 自动化测试: 页面完整渲染, Sidebar + DocsGuide 全部功能正常 ✅；Console: 0 JS 错误 (仅 favicon.ico 404) 1. Vite 多源路径下同名文件会导致模块解析冲突，tsconfig `include` 会引入额外的解析目标 2. 排查 \"#root 为空\" 应先用 `fetch('/src/main.tsx')` 验证模块是否正确加载 3. 手动调用 `mountApp()` 后页面渲染成功 → 说明模块体系正常，问题在入口文件解析",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "problem": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "solution": "平台适配器模式 @easyagent/frontend (共享UI层, 零平台依赖) web适配器 / desktop适配器 / (未来) mobile适配器；设计原则: ① 共享层零平台依赖 ② 适配器是薄层(30-50行) ③ 统一包名导入 ④ 独立编译边界；Desktop 改造: `@/mountApp` → `@easyagent/frontend` + IPC桥接抽离为独立模块(`ipcBridge.ts`) + vite alias 改用包名；Web 改造: 同上包名导入 + 移除 tsconfig `include: [\"../frontend/src\"]` + `@/` 回归指向自身；扩展性: 新增平台只需 `packages/<name>/src/main.tsx` (~10行)，frontend 零改动；改动范围: 8个文件，约30行净改动，Desktop 构建链零影响；推荐路径: P0(修复exports) → P1(平台适配器模式,本周) → P2(Library Mode,按需)；变更文件: docs/41_前端架构优化方案_模块共享与解析歧义根治.md (v2.0)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "problem": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "solution": "30个预存失败通过 `vitest.config.ts` 添加 `resolve.dedupe:['react','react-dom']` + `server.deps.inline:['react','react-dom','react-dom/client']` 全部修复；Frontend 测试: 5文件(43用例)全覆盖，修复了 api.test.ts 的 unhandled rejection（改用 advanceTimersByTimeAsync 逐步推进）、mountApp.test.tsx 的 length 断言（默认参数 length=0）；Web 测试: 1文件(2用例)入口冒烟测试；全量结果: Core 926/926 ✅ | Server 151/151 ✅ | Desktop 215/215 ✅ | Frontend 43/43 ✅ | Web 2/2 ✅ | **总计 1336/1336 (100%)**；03号文档: 新增6个测试模块详细章节(3.20-3.25)、更新统计表(1336用例/55文件/66+源文件)、新增v5.7修复记录、综合评分92→96",
+          "status": "resolved"
+        },
+        {
           "date": "",
-          "title": "⚠️ Web ↔ Desktop 代码隔离约束",
-          "problem": "⚠️ Web ↔ Desktop 代码隔离约束",
+          "title": "⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)",
+          "problem": "⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)",
           "solution": "1. **MEMORY.md** ── 在陷阱表中新增一行，**必须标注 🎯 范围标记**（🖥️=Desktop / 🌐=Web / 🔀=两者） 2. **verify-build.cjs** ── 添加对应的自动检查逻辑；目的：让脚本替人记住教训，下次构建自动拦截",
           "status": "resolved"
         }
@@ -2362,6 +2446,55 @@
           "title": "git core.quotepath 修复 (12:08)",
           "problem": ": `git status` 中文文件名显示为 octal 转义（`docs/36_\\345\\217\\214...`）",
           "solution": "`git config --global core.quotepath false` + 本地同步；结果: ✅ 中文文件名正常显示（如 `docs/36_调试日志规范体系.md`）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "文档导读 Web 页面开发 (17:19-17:23)",
+          "problem": "文档导读 Web 页面开发 (17:19-17:23)",
+          "solution": "`packages/frontend/src/main.tsx` — 添加 `import.meta.env.DEV` 自启动逻辑",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "文档导读 Web 页面开发 (17:19-17:23)",
+          "problem": ": 页面空白，React 未挂载到 DOM。根因：`main.tsx` 只导出 `mountApp()` 函数，从未在 Vite dev 模式下调用",
+          "solution": "在文件末尾添加 `if (import.meta.env.DEV) { mountApp({...}, false, 'root') }`；涉及文件: DocsGuide.tsx (新建) / App.tsx (+路由) / Layout.tsx (+导航项) / main.tsx (+自启动)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "problem": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "solution": "平台适配器模式 @easyagent/frontend (共享UI层, 零平台依赖) web适配器 / desktop适配器 / (未来) mobile适配器；设计原则: ① 共享层零平台依赖 ② 适配器是薄层(30-50行) ③ 统一包名导入 ④ 独立编译边界；Desktop 改造: `@/mountApp` → `@easyagent/frontend` + IPC桥接抽离为独立模块(`ipcBridge.ts`) + vite alias 改用包名；Web 改造: 同上包名导入 + 移除 tsconfig `include: [\"../frontend/src\"]` + `@/` 回归指向自身；扩展性: 新增平台只需 `packages/<name>/src/main.tsx` (~10行)，frontend 零改动；改动范围: 8个文件，约30行净改动，Desktop 构建链零影响；推荐路径: P0(修复exports) → P1(平台适配器模式,本周) → P2(Library Mode,按需)；变更文件: docs/41_前端架构优化方案_模块共享与解析歧义根治.md (v2.0)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "problem": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "solution": "30个预存失败通过 `vitest.config.ts` 添加 `resolve.dedupe:['react','react-dom']` + `server.deps.inline:['react','react-dom','react-dom/client']` 全部修复；Frontend 测试: 5文件(43用例)全覆盖，修复了 api.test.ts 的 unhandled rejection（改用 advanceTimersByTimeAsync 逐步推进）、mountApp.test.tsx 的 length 断言（默认参数 length=0）；Web 测试: 1文件(2用例)入口冒烟测试；全量结果: Core 926/926 ✅ | Server 151/151 ✅ | Desktop 215/215 ✅ | Frontend 43/43 ✅ | Web 2/2 ✅ | **总计 1336/1336 (100%)**；03号文档: 新增6个测试模块详细章节(3.20-3.25)、更新统计表(1336用例/55文件/66+源文件)、新增v5.7修复记录、综合评分92→96",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "03号测试案例文档版本号补更新 (21:44)",
+          "problem": ": 上一轮全量文档更新遗漏了 `docs/03_测试案例文档.md` 中的 5 处 v0.5.28 版本引用",
+          "solution": "第3行(CI版本号): `v0.5.28` → `v0.6.6`；第13行(通过率): `CI v0.5.28` → `CI v0.6.6`；第1817行(维护声明): `覆盖 EasyAgent v0.5.28` → `v0.6.6`；第1967行(尾注): `v0.5.28 P2 测试全覆盖` → `v0.6.6`；第1904行(模拟测试示例): `EasyAgent-0.5.20-win-x64.exe` → `EasyAgent-0.6.6-win-x64.exe`；保留: 第1821行 `(v0.5.20 新增)` — 描述该功能引入时的历史版本，保留为历史事实",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "03号文档管线测试模块登记补更新 (21:45)",
+          "problem": ": 用户指出版本号更新外，管线测试模块（4个 .test.mjs 文件）从未在模块注册表中登记 [根因] : 文档 Section 2（模块注册表）只列出了 Vitest 测试（#1-#39），遗漏了 `node --test` 执行的管线模块。详细章节（3.28-3.31）存在但注册表缺失，统计表错误写为\"管线 1\"",
+          "solution": "测试文件: \"55个 (管线 1)\" → \"59个 (管线 4) + 性能基准 1\"；测试用例区分: Vitest 1336 + Node.js Test Runner 66 = 合计 1402；覆盖源文件: \"66+ (管线 1)\" → \"70+ (管线 4)\"；合计文档更新: 12 个文件、53 处修改",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "03号文档管线模块具体测试案例补写入 (21:50)",
+          "problem": ": 用户指出管线模块只写了概要分类（7行覆盖36个测试），没有像其他模块那样为每个 it() 块写具体测试案例 [根因] : 3.28 pipeline-config 将 36 个 it() 压缩为 7 行概要表，完全丢失了每个测试块的断言细节、边界条件、算法校验等",
+          "solution": "Section 2: 29→36/15→16/8→9；Section 8: 管线合计 66→75, 全量合计 1403/1401→1412/1410；头部: \"测试总数 1336\"→\"1411 (Vitest 1336 + Node.js 75)\", \"24/24模块\"→\"28/28模块\"；尾部维护声明: \"1336\"→\"1411\"；尾部日期行: \"1336/1336\"→\"1411/1411\"；合计文档更新: 12 个文件、62 处修改",
           "status": "resolved"
         }
       ]
@@ -2870,6 +3003,27 @@
           "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
           "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "文档导读 Web 页面开发 (17:19-17:23)",
+          "problem": "文档导读 Web 页面开发 (17:19-17:23)",
+          "solution": "`packages/frontend/src/main.tsx` — 添加 `import.meta.env.DEV` 自启动逻辑",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "文档导读 Web 页面开发 (17:19-17:23)",
+          "problem": ": 页面空白，React 未挂载到 DOM。根因：`main.tsx` 只导出 `mountApp()` 函数，从未在 Vite dev 模式下调用",
+          "solution": "在文件末尾添加 `if (import.meta.env.DEV) { mountApp({...}, false, 'root') }`；涉及文件: DocsGuide.tsx (新建) / App.tsx (+路由) / Layout.tsx (+导航项) / main.tsx (+自启动)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "problem": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "solution": "30个预存失败通过 `vitest.config.ts` 添加 `resolve.dedupe:['react','react-dom']` + `server.deps.inline:['react','react-dom','react-dom/client']` 全部修复；Frontend 测试: 5文件(43用例)全覆盖，修复了 api.test.ts 的 unhandled rejection（改用 advanceTimersByTimeAsync 逐步推进）、mountApp.test.tsx 的 length 断言（默认参数 length=0）；Web 测试: 1文件(2用例)入口冒烟测试；全量结果: Core 926/926 ✅ | Server 151/151 ✅ | Desktop 215/215 ✅ | Frontend 43/43 ✅ | Web 2/2 ✅ | **总计 1336/1336 (100%)**；03号文档: 新增6个测试模块详细章节(3.20-3.25)、更新统计表(1336用例/55文件/66+源文件)、新增v5.7修复记录、综合评分92→96",
+          "status": "resolved"
         }
       ]
     },
@@ -3140,6 +3294,13 @@
           "title": "Desktop 更新签名校验失败修复 (10:48)",
           "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
           "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 全页面空白 — 根因定位与修复 (18:55-19:09)",
+          "problem": "[现象] : 重启 Vite 后所有页面（首页 + DocsGuide）`#root` 完全为空，无 JS 错误 [根因] : `frontend/src/main.tsx` 和 `web/src/main.tsx` 同名，Vite 在模块解析时将 `/src/main.tsx` 错误解析到 frontend 的文件（因其在 tsconfig `include` 中：`\"include\": [\"src\", \"../frontend/src\"]`）",
+          "solution": "1. 重命名 `frontend/src/main.tsx` → `frontend/src/mountApp.tsx`（该文件只导出 mountApp 函数，新名称更语义化） 2. 更新引用: `web/src/main.tsx` 中 `@/main` → `@/mountApp` 3. 更新引用: `desktop/src/renderer/main.tsx` 中 `@/main` → `@/mountApp`；变更文件: frontend/src/main.tsx→mountApp.tsx / web/src/main.tsx / desktop/src/renderer/main.tsx；Node.js fetch `/src/main.tsx` → 1755 bytes, `[web/main.tsx]` log 出现, mountApp() 被调用 ✅；Playwright 自动化测试: 页面完整渲染, Sidebar + DocsGuide 全部功能正常 ✅；Console: 0 JS 错误 (仅 favicon.ico 404) 1. Vite 多源路径下同名文件会导致模块解析冲突，tsconfig `include` 会引入额外的解析目标 2. 排查 \"#root 为空\" 应先用 `fetch('/src/main.tsx')` 验证模块是否正确加载 3. 手动调用 `mountApp()` 后页面渲染成功 → 说明模块体系正常，问题在入口文件解析",
           "status": "resolved"
         }
       ]
@@ -4306,6 +4467,13 @@
           "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
           "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "03号文档管线模块具体测试案例补写入 (21:50)",
+          "problem": ": 用户指出管线模块只写了概要分类（7行覆盖36个测试），没有像其他模块那样为每个 it() 块写具体测试案例 [根因] : 3.28 pipeline-config 将 36 个 it() 压缩为 7 行概要表，完全丢失了每个测试块的断言细节、边界条件、算法校验等",
+          "solution": "Section 2: 29→36/15→16/8→9；Section 8: 管线合计 66→75, 全量合计 1403/1401→1412/1410；头部: \"测试总数 1336\"→\"1411 (Vitest 1336 + Node.js 75)\", \"24/24模块\"→\"28/28模块\"；尾部维护声明: \"1336\"→\"1411\"；尾部日期行: \"1336/1336\"→\"1411/1411\"；合计文档更新: 12 个文件、62 处修改",
+          "status": "resolved"
         }
       ]
     },
@@ -4605,6 +4773,20 @@
           "problem": ": `pipeline-data.json` KPI 数据严重过时 (testCases:40 vs 实际1146, providers:4 vs 实际10) [根因] : `update-progress.mjs` 的 `getTestCount()` 统计的是测试**文件数**(git ls-files *.test.ts)而非测试用例数",
           "solution": "手动更新两个管线数据文件；`pipeline-data.json` kpi: testCases 40→1146, testPassed 977→1146, providers 4→10, _totalFiles 40→46；`project-progress-data.json` meta: totalTests 40→1146, modelsSupported 4→10",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "problem": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "solution": "30个预存失败通过 `vitest.config.ts` 添加 `resolve.dedupe:['react','react-dom']` + `server.deps.inline:['react','react-dom','react-dom/client']` 全部修复；Frontend 测试: 5文件(43用例)全覆盖，修复了 api.test.ts 的 unhandled rejection（改用 advanceTimersByTimeAsync 逐步推进）、mountApp.test.tsx 的 length 断言（默认参数 length=0）；Web 测试: 1文件(2用例)入口冒烟测试；全量结果: Core 926/926 ✅ | Server 151/151 ✅ | Desktop 215/215 ✅ | Frontend 43/43 ✅ | Web 2/2 ✅ | **总计 1336/1336 (100%)**；03号文档: 新增6个测试模块详细章节(3.20-3.25)、更新统计表(1336用例/55文件/66+源文件)、新增v5.7修复记录、综合评分92→96",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "03号文档管线测试模块登记补更新 (21:45)",
+          "problem": ": 用户指出版本号更新外，管线测试模块（4个 .test.mjs 文件）从未在模块注册表中登记 [根因] : 文档 Section 2（模块注册表）只列出了 Vitest 测试（#1-#39），遗漏了 `node --test` 执行的管线模块。详细章节（3.28-3.31）存在但注册表缺失，统计表错误写为\"管线 1\"",
+          "solution": "测试文件: \"55个 (管线 1)\" → \"59个 (管线 4) + 性能基准 1\"；测试用例区分: Vitest 1336 + Node.js Test Runner 66 = 合计 1402；覆盖源文件: \"66+ (管线 1)\" → \"70+ (管线 4)\"；合计文档更新: 12 个文件、53 处修改",
+          "status": "resolved"
         }
       ]
     },
@@ -4666,6 +4848,41 @@
           "title": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-update",
           "problem": "[F38] v0.5.29 — 修复 CSP 字体加载 + 自动更新 electron-updater 加载失败 (20:01)",
           "solution": "verify-build.cjs 中 CSS 检查路径从 `src/renderer/index.css` 更新为 `../frontend/src/styles/index.css`（因 Desktop 独立 CSS 已删除）；产物: `EasyAgent-0.5.29-win-x64.exe` (~105 MB)，`win-unpacked/EasyAgent.exe` (~169 MB)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "文档导读 Web 页面开发 (17:19-17:23)",
+          "problem": "文档导读 Web 页面开发 (17:19-17:23)",
+          "solution": "`packages/frontend/src/main.tsx` — 添加 `import.meta.env.DEV` 自启动逻辑",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 双重挂载导致主页面字体/样式异常修复 (17:55)",
+          "problem": "[现象] : 添加 DocsGuide 页面后，EasyAgent 主页面字体颜色、背景样式异常",
+          "solution": "删除 `packages/frontend/src/main.tsx` 的自启动代码块。正确模式：frontend/main.tsx 只作为库导出 mountApp()，web/desktop 各自在自己的入口调用 1. CSS 动画/类名必须用唯一前缀，避免全局冲突 2. 任何改动必须理解 monorepo 架构（packages/web 通过别名引用 frontend） 3. 模块入口文件不能自行执行副作用（mountApp 是库函数，不是脚本入口） 4. 双重 React 挂载的症状：字体/颜色/布局全局异常，而非局部功能问题",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 全页面空白 — 根因定位与修复 (18:55-19:09)",
+          "problem": "[现象] : 重启 Vite 后所有页面（首页 + DocsGuide）`#root` 完全为空，无 JS 错误 [根因] : `frontend/src/main.tsx` 和 `web/src/main.tsx` 同名，Vite 在模块解析时将 `/src/main.tsx` 错误解析到 frontend 的文件（因其在 tsconfig `include` 中：`\"include\": [\"src\", \"../frontend/src\"]`）",
+          "solution": "1. 重命名 `frontend/src/main.tsx` → `frontend/src/mountApp.tsx`（该文件只导出 mountApp 函数，新名称更语义化） 2. 更新引用: `web/src/main.tsx` 中 `@/main` → `@/mountApp` 3. 更新引用: `desktop/src/renderer/main.tsx` 中 `@/main` → `@/mountApp`；变更文件: frontend/src/main.tsx→mountApp.tsx / web/src/main.tsx / desktop/src/renderer/main.tsx；Node.js fetch `/src/main.tsx` → 1755 bytes, `[web/main.tsx]` log 出现, mountApp() 被调用 ✅；Playwright 自动化测试: 页面完整渲染, Sidebar + DocsGuide 全部功能正常 ✅；Console: 0 JS 错误 (仅 favicon.ico 404) 1. Vite 多源路径下同名文件会导致模块解析冲突，tsconfig `include` 会引入额外的解析目标 2. 排查 \"#root 为空\" 应先用 `fetch('/src/main.tsx')` 验证模块是否正确加载 3. 手动调用 `mountApp()` 后页面渲染成功 → 说明模块体系正常，问题在入口文件解析",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "problem": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
+          "solution": "平台适配器模式 @easyagent/frontend (共享UI层, 零平台依赖) web适配器 / desktop适配器 / (未来) mobile适配器；设计原则: ① 共享层零平台依赖 ② 适配器是薄层(30-50行) ③ 统一包名导入 ④ 独立编译边界；Desktop 改造: `@/mountApp` → `@easyagent/frontend` + IPC桥接抽离为独立模块(`ipcBridge.ts`) + vite alias 改用包名；Web 改造: 同上包名导入 + 移除 tsconfig `include: [\"../frontend/src\"]` + `@/` 回归指向自身；扩展性: 新增平台只需 `packages/<name>/src/main.tsx` (~10行)，frontend 零改动；改动范围: 8个文件，约30行净改动，Desktop 构建链零影响；推荐路径: P0(修复exports) → P1(平台适配器模式,本周) → P2(Library Mode,按需)；变更文件: docs/41_前端架构优化方案_模块共享与解析歧义根治.md (v2.0)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "problem": "全量测试完成 + 03号文档更新 (21:06-21:10)",
+          "solution": "30个预存失败通过 `vitest.config.ts` 添加 `resolve.dedupe:['react','react-dom']` + `server.deps.inline:['react','react-dom','react-dom/client']` 全部修复；Frontend 测试: 5文件(43用例)全覆盖，修复了 api.test.ts 的 unhandled rejection（改用 advanceTimersByTimeAsync 逐步推进）、mountApp.test.tsx 的 length 断言（默认参数 length=0）；Web 测试: 1文件(2用例)入口冒烟测试；全量结果: Core 926/926 ✅ | Server 151/151 ✅ | Desktop 215/215 ✅ | Frontend 43/43 ✅ | Web 2/2 ✅ | **总计 1336/1336 (100%)**；03号文档: 新增6个测试模块详细章节(3.20-3.25)、更新统计表(1336用例/55文件/66+源文件)、新增v5.7修复记录、综合评分92→96",
           "status": "resolved"
         }
       ]
@@ -4852,6 +5069,13 @@
           "title": "CI pnpm-lock.yaml 不匹配修复 (14:24)",
           "problem": ": CI pipeline 报错 `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH - \"pnpmfileChecksum\" doesn't match` [根因] :",
           "solution": "1. `package.json`: 新增 `\"packageManager\": \"pnpm@11.7.0\"` 锁定 pnpm 版本 2. `.github/workflows/release.yml`: 2 处移除 `with: version: 9`，改为从 packageManager 自动检测 3. `.github/workflows/ci.yml`: 5 处移除 `with: version: 9`，同上 4. `pnpm-lock.yaml`: 手动修正 `pnpmfileChecksum` 为当前 `.pnpmfile.cjs` 的 sha256（因 pnpm install 在已更新的情况下不会重新计算 checksum）；效果: CI 现在自动使用 pnpm 11.7.0 + lockfile checksum 匹配",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 全页面空白 — 根因定位与修复 (18:55-19:09)",
+          "problem": "[现象] : 重启 Vite 后所有页面（首页 + DocsGuide）`#root` 完全为空，无 JS 错误 [根因] : `frontend/src/main.tsx` 和 `web/src/main.tsx` 同名，Vite 在模块解析时将 `/src/main.tsx` 错误解析到 frontend 的文件（因其在 tsconfig `include` 中：`\"include\": [\"src\", \"../frontend/src\"]`）",
+          "solution": "1. 重命名 `frontend/src/main.tsx` → `frontend/src/mountApp.tsx`（该文件只导出 mountApp 函数，新名称更语义化） 2. 更新引用: `web/src/main.tsx` 中 `@/main` → `@/mountApp` 3. 更新引用: `desktop/src/renderer/main.tsx` 中 `@/main` → `@/mountApp`；变更文件: frontend/src/main.tsx→mountApp.tsx / web/src/main.tsx / desktop/src/renderer/main.tsx；Node.js fetch `/src/main.tsx` → 1755 bytes, `[web/main.tsx]` log 出现, mountApp() 被调用 ✅；Playwright 自动化测试: 页面完整渲染, Sidebar + DocsGuide 全部功能正常 ✅；Console: 0 JS 错误 (仅 favicon.ico 404) 1. Vite 多源路径下同名文件会导致模块解析冲突，tsconfig `include` 会引入额外的解析目标 2. 排查 \"#root 为空\" 应先用 `fetch('/src/main.tsx')` 验证模块是否正确加载 3. 手动调用 `mountApp()` 后页面渲染成功 → 说明模块体系正常，问题在入口文件解析",
           "status": "resolved"
         }
       ]
@@ -5057,6 +5281,27 @@
           "problem": "[F9] Desktop 模型提供商页面空白 + 版本号修复 (04:00-04:08)",
           "solution": "1. `ContentRouter.tsx` —— `providers` 类型从 PlaceholderView 改为 `<Suspense><ProvidersPage /></Suspense>`（懒加载） 2. `ModelRegistry.ts` —— CATALOG_URL 修正为正确仓库路径 3. 重建链路：`packages/core tsup` → `packages/desktop tsup` (main.js) → `packages/desktop vite build` (renderer) 4. 双版本 sqlite3 已缓存到 `.codebuddy/sqlite3-cache/`（system/electron 各一）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "文档导读 Web 页面开发 (17:19-17:23)",
+          "problem": ": 页面空白，React 未挂载到 DOM。根因：`main.tsx` 只导出 `mountApp()` 函数，从未在 Vite dev 模式下调用",
+          "solution": "在文件末尾添加 `if (import.meta.env.DEV) { mountApp({...}, false, 'root') }`；涉及文件: DocsGuide.tsx (新建) / App.tsx (+路由) / Layout.tsx (+导航项) / main.tsx (+自启动)",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 双重挂载导致主页面字体/样式异常修复 (17:55)",
+          "problem": "[现象] : 添加 DocsGuide 页面后，EasyAgent 主页面字体颜色、背景样式异常",
+          "solution": "删除 `packages/frontend/src/main.tsx` 的自启动代码块。正确模式：frontend/main.tsx 只作为库导出 mountApp()，web/desktop 各自在自己的入口调用 1. CSS 动画/类名必须用唯一前缀，避免全局冲突 2. 任何改动必须理解 monorepo 架构（packages/web 通过别名引用 frontend） 3. 模块入口文件不能自行执行副作用（mountApp 是库函数，不是脚本入口） 4. 双重 React 挂载的症状：字体/颜色/布局全局异常，而非局部功能问题",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "DocsGuide 全页面空白 — 根因定位与修复 (18:55-19:09)",
+          "problem": "[现象] : 重启 Vite 后所有页面（首页 + DocsGuide）`#root` 完全为空，无 JS 错误 [根因] : `frontend/src/main.tsx` 和 `web/src/main.tsx` 同名，Vite 在模块解析时将 `/src/main.tsx` 错误解析到 frontend 的文件（因其在 tsconfig `include` 中：`\"include\": [\"src\", \"../frontend/src\"]`）",
+          "solution": "1. 重命名 `frontend/src/main.tsx` → `frontend/src/mountApp.tsx`（该文件只导出 mountApp 函数，新名称更语义化） 2. 更新引用: `web/src/main.tsx` 中 `@/main` → `@/mountApp` 3. 更新引用: `desktop/src/renderer/main.tsx` 中 `@/main` → `@/mountApp`；变更文件: frontend/src/main.tsx→mountApp.tsx / web/src/main.tsx / desktop/src/renderer/main.tsx；Node.js fetch `/src/main.tsx` → 1755 bytes, `[web/main.tsx]` log 出现, mountApp() 被调用 ✅；Playwright 自动化测试: 页面完整渲染, Sidebar + DocsGuide 全部功能正常 ✅；Console: 0 JS 错误 (仅 favicon.ico 404) 1. Vite 多源路径下同名文件会导致模块解析冲突，tsconfig `include` 会引入额外的解析目标 2. 排查 \"#root 为空\" 应先用 `fetch('/src/main.tsx')` 验证模块是否正确加载 3. 手动调用 `mountApp()` 后页面渲染成功 → 说明模块体系正常，问题在入口文件解析",
+          "status": "resolved"
         }
       ]
     },
@@ -5066,8 +5311,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 699,
-  "_generatedAt": "2026-06-27T08:47:29.381Z",
+  "_totalIssues": 734,
+  "_generatedAt": "2026-06-27T13:55:14.136Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -5089,6 +5334,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-27T08:47:29.393Z"
+    "exportedAt": "2026-06-27T13:55:14.147Z"
   }
 }

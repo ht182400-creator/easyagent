@@ -303,68 +303,31 @@
             "testCount": 0
           }
         ]
-      },
-      {
-        "id": "B4",
-        "label": "B4 前端架构优化",
-        "source": "P1",
-        "nodes": [
-          {
-            "id": "b4a",
-            "icon": "🚑",
-            "label": "P0 紧急修复",
-            "desc": "exports修复+ESLint\n跨平台兼容性",
-            "status": "pending",
-            "testCount": 0
-          },
-          {
-            "id": "b4b",
-            "icon": "🏗️",
-            "label": "P1 平台适配器模式",
-            "desc": "包名导入+tsconfig修复\nWeb/Desktop统一入口",
-            "status": "pending",
-            "testCount": 0
-          },
-          {
-            "id": "b4c",
-            "icon": "⚡",
-            "label": "P2 工程效率提升",
-            "desc": "构建脚本现代化\n根目录清理+Library Mode",
-            "status": "pending",
-            "testCount": 0
-          },
-          {
-            "id": "b4d",
-            "icon": "✨",
-            "label": "P3 长期质量",
-            "desc": "Prettier格式化\nCI增强+版本对齐",
-            "status": "pending",
-            "testCount": 0
-          }
-        ]
       }
     ]
   },
   "kpi": {
-    "testCases": 1269,
-    "testPassRate": 100,
-    "testPassed": 1114,
-    "testFailed": 0,
+    "testCases": 1313,
+    "testPassRate": 98,
+    "testPassed": 1306,
+    "testFailed": 30,
     "testSkipped": 0,
-    "_vitestTotal": 1114,
-    "_uncovered": 155,
-    "_coveragePct": 88,
-    "_stale": true,
+    "_vitestTotal": 1336,
+    "_uncovered": 0,
+    "_coveragePct": 102,
+    "_stale": false,
     "tools": 51,
     "providers": 10,
     "scoreTotal": 100,
     "modes": 4,
-    "_source": "vitest-reports(3 files) [coverage 88%]",
+    "_source": "vitest-reports(5 files)",
     "_totalFiles": 48,
     "_vitestFiles": [
       "_vitest-core.json",
       "_vitest-desktop.json",
-      "_vitest-server.json"
+      "_vitest-frontend.json",
+      "_vitest-server.json",
+      "_vitest-web.json"
     ],
     "_scoreDimensions": [
       {
@@ -375,9 +338,9 @@
       },
       {
         "label": "测试覆盖",
-        "score": 100,
+        "score": 98,
         "max": 100,
-        "note": "1114通过 (100%)/1114已执行 / 1269 定义 用例通过"
+        "note": "1306通过 (98%)/1336已执行 / 1313 定义 用例通过"
       },
       {
         "label": "分支优化",
@@ -442,9 +405,9 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1269用例"
+      "note": "29/29模块+1313用例"
     }
   ],
-  "lastUpdated": "2026-06-27T08:47:29.391Z",
+  "lastUpdated": "2026-06-27T13:55:14.144Z",
   "source": "module-registry.mjs (统一注册表同步)"
 }

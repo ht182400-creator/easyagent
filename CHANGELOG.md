@@ -7,6 +7,15 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.7] - 2026-06-27
+
+### Added
+- test: remove obsolete simulateUpdate button tests (feature removed in v0.5.21) (ht182400-creator)
+
+### Fixed
+- fix(ci): normalize .pnpmfile.cjs to LF + update lockfile checksum to fix pnpmfileChecksum mismatch on CI (ht182400-creator)
+- fix(ci): upgrade NODE_VERSION from 20 to 22 for pnpm 11.7.0 compatibility (ht182400-creator)
+
 ## [0.6.6] - 2026-06-27
 
 ### Fixed

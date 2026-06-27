@@ -3,9 +3,9 @@
     "repo": "ht182400-creator/easyagent",
     "version": "0.6.6",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-27T11:35:00.000Z",
+    "lastUpdated": "2026-06-27T13:55:13.981Z",
     "engine": "auto-detected",
-    "totalTests": 1274,
+    "totalTests": 1269,
     "modelsSupported": 4
   },
   "phases": [
@@ -299,17 +299,19 @@
     {
       "id": "P6",
       "name": "前端架构优化与工程质量",
-      "status": "in-progress",
+      "status": "running",
       "priority": "p6",
       "tasks": [
         {
           "id": "p6-exports",
           "name": "P0: 修复 @easyagent/frontend exports",
           "desc": "main/exports[\".\"] 从已删除的 main.tsx 改为 mountApp.tsx，让包名导入可用",
-          "status": "pending",
+          "status": "done",
           "time": "5min",
           "detect": {
-            "files": ["packages/frontend/package.json"]
+            "files": [
+              "packages/frontend/package.json"
+            ]
           }
         },
         {
@@ -319,7 +321,9 @@
           "status": "pending",
           "time": "30min",
           "detect": {
-            "files": ["eslint.config.mjs"]
+            "files": [
+              "eslint.config.mjs"
+            ]
           }
         },
         {
@@ -336,7 +340,7 @@
           "id": "p6-platform-adapter",
           "name": "P1: 平台适配器模式实施",
           "desc": "包名导入(@easyagent/frontend)替代 @/ 穿透 + tsconfig include 修复 + Web/Desktop 入口统一 + IPC桥接抽离",
-          "status": "pending",
+          "status": "done",
           "time": "1.5h",
           "detect": {
             "files": [
@@ -350,7 +354,7 @@
           "id": "p6-deps-clean",
           "name": "P1: 依赖清理与版本对齐",
           "desc": "Desktop 删除 ~60个传递依赖 + Web 删除冗余依赖 + frontend 版本对齐 v0.6.7",
-          "status": "pending",
+          "status": "done",
           "time": "45min",
           "detect": {
             "files": [
@@ -364,20 +368,24 @@
           "id": "p6-build-modern",
           "name": "P2: 构建脚本现代化",
           "desc": "串行 cd && npx 改为 pnpm --filter / -r --topological 并行+拓扑排序",
-          "status": "pending",
+          "status": "done",
           "time": "30min",
           "detect": {
-            "files": ["package.json"]
+            "files": [
+              "package.json"
+            ]
           }
         },
         {
           "id": "p6-repo-clean",
           "name": "P2: 根目录清理 + .gitignore 补全",
           "desc": "删除孤立文件($null/18.0.0) + 调试PNG移入screenshots/ + .gitignore 覆盖完整",
-          "status": "pending",
+          "status": "done",
           "time": "15min",
           "detect": {
-            "files": [".gitignore"]
+            "files": [
+              ".gitignore"
+            ]
           }
         },
         {
@@ -387,27 +395,33 @@
           "status": "pending",
           "time": "2h",
           "detect": {
-            "files": ["packages/frontend/dist/frontend.es.js"]
+            "files": [
+              "packages/frontend/dist/frontend.es.js"
+            ]
           }
         },
         {
           "id": "p6-prettier",
           "name": "P3: Prettier 格式化配置",
           "desc": "安装 prettier + .prettierrc 配置 + package.json format 脚本",
-          "status": "pending",
+          "status": "done",
           "time": "15min",
           "detect": {
-            "files": [".prettierrc"]
+            "files": [
+              ".prettierrc"
+            ]
           }
         },
         {
           "id": "p6-ci-enhance",
           "name": "P3: CI 流程增强",
           "desc": "CI pipeline 新增 lint + format-check 步骤",
-          "status": "pending",
+          "status": "done",
           "time": "20min",
           "detect": {
-            "files": [".github/workflows/ci.yml"]
+            "files": [
+              ".github/workflows/ci.yml"
+            ]
           }
         }
       ]

@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-06-27T08:47:29.332Z",
+    "generatedAt": "2026-06-27T13:55:14.090Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1269,
-    "unmappedCases": 74,
+    "totalTestCases": 1313,
+    "unmappedCases": 118,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -396,9 +396,7 @@
     "b1a": {
       "moduleId": "b1a",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B1"
+      "subModules": {}
     },
     "b1b": {
       "moduleId": "b1b",
@@ -414,23 +412,17 @@
             }
           ]
         }
-      },
-      "phase": "P4",
-      "branch": "B1"
+      }
     },
     "b2a": {
       "moduleId": "b2a",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B2"
+      "subModules": {}
     },
     "b2b": {
       "moduleId": "b2b",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B2"
+      "subModules": {}
     },
     "b2c": {
       "moduleId": "b2c",
@@ -450,104 +442,40 @@
             }
           ]
         }
-      },
-      "phase": "P4",
-      "branch": "B2"
+      }
     },
     "b2d": {
       "moduleId": "b2d",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B2"
+      "subModules": {}
     },
     "b2e": {
       "moduleId": "b2e",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B2"
+      "subModules": {}
     },
     "b3a": {
       "moduleId": "b3a",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B3"
+      "subModules": {}
     },
     "b3b": {
       "moduleId": "b3b",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B3"
+      "subModules": {}
     },
     "b3c": {
       "moduleId": "b3c",
       "totalCases": 0,
-      "subModules": {},
-      "phase": "P4",
-      "branch": "B3"
-    },
-    "b4a": {
-      "moduleId": "b4a",
-      "totalCases": 0,
-      "phase": "P6",
-      "branch": "B4",
-      "subModules": {
-        "P0-紧急修复": {
-          "name": "P0 exports修复 + ESLint + 跨平台",
-          "cases": 0,
-          "files": []
-        }
-      }
-    },
-    "b4b": {
-      "moduleId": "b4b",
-      "totalCases": 0,
-      "phase": "P6",
-      "branch": "B4",
-      "subModules": {
-        "P1-平台适配器": {
-          "name": "P1 包名导入 + tsconfig修复 + 依赖清理",
-          "cases": 0,
-          "files": []
-        }
-      }
-    },
-    "b4c": {
-      "moduleId": "b4c",
-      "totalCases": 0,
-      "phase": "P6",
-      "branch": "B4",
-      "subModules": {
-        "P2-工程效率": {
-          "name": "P2 构建现代化 + 根目录清理 + Library Mode",
-          "cases": 0,
-          "files": []
-        }
-      }
-    },
-    "b4d": {
-      "moduleId": "b4d",
-      "totalCases": 0,
-      "phase": "P6",
-      "branch": "B4",
-      "subModules": {
-        "P3-长期质量": {
-          "name": "P3 Prettier + CI增强",
-          "cases": 0,
-          "files": []
-        }
-      }
+      "subModules": {}
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 74,
+      "totalCases": 118,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 74,
+          "cases": 118,
           "files": [
             {
               "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",
@@ -556,6 +484,30 @@
             {
               "path": "packages/desktop/src/__tests__/main/auto-updater-state.test.ts",
               "cases": 37
+            },
+            {
+              "path": "packages/frontend/src/__tests__/api.test.ts",
+              "cases": 12
+            },
+            {
+              "path": "packages/frontend/src/__tests__/config.test.tsx",
+              "cases": 3
+            },
+            {
+              "path": "packages/frontend/src/__tests__/events.test.ts",
+              "cases": 11
+            },
+            {
+              "path": "packages/frontend/src/__tests__/mountapp.test.tsx",
+              "cases": 5
+            },
+            {
+              "path": "packages/frontend/src/__tests__/request.test.ts",
+              "cases": 11
+            },
+            {
+              "path": "packages/web/src/__tests__/main.test.ts",
+              "cases": 2
             }
           ]
         }
