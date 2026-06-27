@@ -1,0 +1,5 @@
+# 强制 .pnpmfile.cjs 使用 LF 行尾，确保跨平台 checksum 一致
+.pnpmfile.cjs text eol=lf
+
+# 通用：自动检测文本文件，标准化为 LF
+* text=auto
