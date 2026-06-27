@@ -5,7 +5,7 @@
  * 使用 mock window.easyAgent 模拟桌面环境
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent, cleanup, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react';
 import { useAppStore } from '@/stores/appStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -38,7 +38,6 @@ function mockEasyAgent(overrides: Record<string, unknown> = {}) {
       lastUpdateInfo: {},
     }),
     installUpdate: vi.fn().mockResolvedValue({ success: true, status: 'installing' }),
-    simulateUpdate: vi.fn().mockResolvedValue({ success: true }),
     onUpdateStatus: vi.fn().mockReturnValue(vi.fn()), // 返回清理函数
     onAgentEvent: vi.fn().mockReturnValue(vi.fn()),
     onChatChunk: vi.fn().mockReturnValue(vi.fn()),
@@ -127,31 +126,6 @@ describe('Settings 页面 - 自动更新 UI', () => {
       });
     });
 
-    it('非桌面环境不应显示模拟测试按钮', async () => {
-      clearEasyAgent();
-      (window as any).easyAgent = undefined;
-
-      const SettingsPage = await importSettingsPage();
-      render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByText('✔下载')).toBeNull();
-        expect(screen.queryByText('✘失败')).toBeNull();
-      });
-    });
-
-    it('桌面环境应显示模拟测试按钮', async () => {
-      mockEasyAgent({ simulateUpdate: vi.fn().mockResolvedValue({ success: true }) });
-
-      const SettingsPage = await importSettingsPage();
-      render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('✔下载')).toBeDefined();
-        expect(screen.getByText('✘失败')).toBeDefined();
-        expect(screen.getByText('◎检查')).toBeDefined();
-      });
-    });
   });
 
   // ============ 状态卡片样式函数测试（组件外纯函数） ============
@@ -302,100 +276,6 @@ describe('Settings 页面 - 自动更新 UI', () => {
       });
     });
 
-    it('点击模拟 ✔下载 应调用 simulateUpdate', async () => {
-      const mockSimulateUpdate = vi.fn().mockResolvedValue({ success: true });
-
-      mockEasyAgent({
-        getUpdateStatus: vi.fn().mockResolvedValue({
-          isUpdateSupported: true,
-          currentVersion: '0.5.20',
-          lastUpdateStatus: 'idle',
-          lastUpdateInfo: {},
-        }),
-        simulateUpdate: mockSimulateUpdate,
-        onUpdateStatus: vi.fn().mockReturnValue(vi.fn()),
-      });
-
-      const SettingsPage = await importSettingsPage();
-      render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('✔下载')).toBeDefined();
-      });
-
-      fireEvent.click(screen.getByText('✔下载'));
-
-      await waitFor(() => {
-        expect(mockSimulateUpdate).toHaveBeenCalledWith({ scenario: 'success', version: '9.9.9-success' });
-      });
-    });
-
-    it('点击模拟 ✘失败 应调用 simulateUpdate', async () => {
-      const mockSimulateUpdate = vi.fn().mockResolvedValue({ success: true });
-
-      mockEasyAgent({
-        getUpdateStatus: vi.fn().mockResolvedValue({
-          isUpdateSupported: true,
-          currentVersion: '0.5.20',
-          lastUpdateStatus: 'idle',
-          lastUpdateInfo: {},
-        }),
-        simulateUpdate: mockSimulateUpdate,
-        onUpdateStatus: vi.fn().mockReturnValue(vi.fn()),
-      });
-
-      const SettingsPage = await importSettingsPage();
-      render(<SettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('✘失败')).toBeDefined();
-      });
-
-      fireEvent.click(screen.getByText('✘失败'));
-
-      await waitFor(() => {
-        expect(mockSimulateUpdate).toHaveBeenCalledWith({ scenario: 'error', version: '9.9.9-error' });
-      });
-    });
-
-    it('点击模拟 ◎检查 应调用 simulateUpdate', async () => {
-      const mockSimulateUpdate = vi.fn().mockResolvedValue({ success: true });
-
-      mockEasyAgent({
-        getUpdateStatus: vi.fn().mockResolvedValue({
-          isUpdateSupported: true,
-          currentVersion: '0.5.20',
-          lastUpdateStatus: 'idle',
-          lastUpdateInfo: {},
-        }),
-        simulateUpdate: mockSimulateUpdate,
-        onUpdateStatus: vi.fn().mockReturnValue(vi.fn()),
-      });
-
-      const SettingsPage = await importSettingsPage();
-      await act(async () => {
-        render(<SettingsPage />);
-      });
-
-      // 等待按钮出现
-      const checkBtn = await screen.findByText('◎检查', {}, { timeout: 3000 });
-      expect(checkBtn).toBeDefined();
-
-      // 点击触发
-      await act(async () => {
-        fireEvent.click(checkBtn);
-      });
-
-      // 验证 simulateUpdate 被调用（放宽参数匹配，避免闭包/异步问题）
-      await waitFor(() => {
-        expect(mockSimulateUpdate).toHaveBeenCalled();
-      }, { timeout: 3000 });
-
-      // 验证参数包含正确的 scenario
-      const callArgs = mockSimulateUpdate.mock.calls[0]?.[0];
-      expect(callArgs).toBeDefined();
-      expect(callArgs.scenario).toBe('check-only');
-    });
   });
 
   // ============ 事件监听测试 ============
