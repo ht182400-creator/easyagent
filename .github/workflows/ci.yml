@@ -223,6 +223,8 @@ jobs:
             echo "No pipeline data changes to commit"
           else
             git commit -m "ci: auto-sync pipeline data [skip ci]"
+            # 推送前 rebase 远程，避免与并发 release push 竞态
+            git pull --rebase origin main
             git push
             echo "✅ Pipeline data synced and pushed"
           fi
