@@ -41,7 +41,10 @@ describe('apiFetch', () => {
 
       await apiFetch('/api/status', 'http://127.0.0.1:3456');
 
-      expect(mockFetch).toHaveBeenCalledWith('http://127.0.0.1:3456/api/status', expect.any(Object));
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://127.0.0.1:3456/api/status',
+        expect.any(Object),
+      );
     });
 
     it('已含 http(s) 的 path 不应拼接 apiBase', async () => {

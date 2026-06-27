@@ -1,0 +1,7 @@
+[WARN] Unsupported engine: wanted: {"node":">=18.0.0 <24.0.0"} (current: {"node":"v24.13.0","pnpm":"11.7.0"})
+packages/cli                             | [WARN] Unsupported engine: wanted: {"node":">=18.0.0 <24.0.0"} (current: {"node":"v24.13.0","pnpm":"11.7.0"})
+packages/core                            | [WARN] Unsupported engine: wanted: {"node":">=18.0.0 <24.0.0"} (current: {"node":"v24.13.0","pnpm":"11.7.0"})
+packages/server                          | [WARN] Unsupported engine: wanted: {"node":">=18.0.0 <24.0.0"} (current: {"node":"v24.13.0","pnpm":"11.7.0"})
+Scope: all 8 workspace projects
+Already up to date
+Done in 328ms using pnpm v11.7.0

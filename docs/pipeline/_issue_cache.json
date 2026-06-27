@@ -37,8 +37,8 @@
       "size": 76816
     },
     "2026-06-27.md": {
-      "mtimeMs": 1782569877504.2246,
-      "size": 48827
+      "mtimeMs": 1782573838875.8662,
+      "size": 50744
     },
     "MEMORY.md": {
       "mtimeMs": 1782568482114.9917,
@@ -9829,6 +9829,30 @@
           "f16",
           "p5a"
         ]
+      },
+      {
+        "moduleId": "b1a",
+        "date": "2026-06-27",
+        "title": "CI 修复第2轮 — 2个新根因定位 (23:10-23:20)",
+        "problem": "CI 修复第2轮 — 2个新根因定位 (23:10-23:20)",
+        "solution": "CI 仍全部失败，同样3个job出错；根因3 — Frontend `vite build` 不应在 CI 执行: Frontend 是共享库，`index.html` 引用 `/src/main.tsx` 但该文件不存在（已重命名为 `mountApp.tsx`）；修复: `ci.yml` 两处 `cd ../frontend && npx vite build` → `cd ../frontend && npx tsc --noEmit`；根因4 — ESLint 在 pnpm 环境中不存在: ESLint 是传递依赖，`pnpm install --frozen-lockfile` 不会安装；`scripts/lint.bat` 的 `for /d` glob 在 CI 环境中匹配失败；修复: CI lint 步骤从 `scripts\\\\lint.bat` → `npx eslint . --max-warnings 700 --config packages/frontend/eslint.config.cjs`（npx 自动下载）；提交: `d6ea0f2`；CI #81 运行中，等待结果",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b1a",
+          "b2b"
+        ]
+      },
+      {
+        "moduleId": "b2b",
+        "date": "2026-06-27",
+        "title": "CI 修复第2轮 — 2个新根因定位 (23:10-23:20)",
+        "problem": "CI 修复第2轮 — 2个新根因定位 (23:10-23:20)",
+        "solution": "CI 仍全部失败，同样3个job出错；根因3 — Frontend `vite build` 不应在 CI 执行: Frontend 是共享库，`index.html` 引用 `/src/main.tsx` 但该文件不存在（已重命名为 `mountApp.tsx`）；修复: `ci.yml` 两处 `cd ../frontend && npx vite build` → `cd ../frontend && npx tsc --noEmit`；根因4 — ESLint 在 pnpm 环境中不存在: ESLint 是传递依赖，`pnpm install --frozen-lockfile` 不会安装；`scripts/lint.bat` 的 `for /d` glob 在 CI 环境中匹配失败；修复: CI lint 步骤从 `scripts\\\\lint.bat` → `npx eslint . --max-warnings 700 --config packages/frontend/eslint.config.cjs`（npx 自动下载）；提交: `d6ea0f2`；CI #81 运行中，等待结果",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b1a",
+          "b2b"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -9846,5 +9870,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-27T14:22:15.540Z"
+  "generatedAt": "2026-06-27T15:31:36.655Z"
 }

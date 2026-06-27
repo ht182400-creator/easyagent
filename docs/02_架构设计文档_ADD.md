@@ -839,19 +839,19 @@ onUpdateStatus → 状态展示:
 
 #### 5.1.3 版本号分布 (修复前 vs 修复后)
 
-| 位置                          | 修复前        | 修复后                |
-| ----------------------------- | ------------- | --------------------- |
-| version.json (唯一源)         | ❌ 不存在     | ✅ 0.3.0              |
-| root package.json             | 0.2.0         | 0.3.0                 |
-| packages/core/package.json    | 0.1.0         | 0.3.0                 |
-| packages/cli/package.json     | 0.5.0         | 0.3.0                 |
-| packages/server/package.json  | 0.2.0         | 0.3.0                 |
-| packages/web/package.json     | 0.2.0         | 0.3.0                 |
-| packages/desktop/package.json | 0.8.0         | 0.3.0                 |
+| 位置                           | 修复前        | 修复后                |
+| ------------------------------ | ------------- | --------------------- |
+| version.json (唯一源)          | ❌ 不存在     | ✅ 0.3.0              |
+| root package.json              | 0.2.0         | 0.3.0                 |
+| packages/core/package.json     | 0.1.0         | 0.3.0                 |
+| packages/cli/package.json      | 0.5.0         | 0.3.0                 |
+| packages/server/package.json   | 0.2.0         | 0.3.0                 |
+| packages/web/package.json      | 0.2.0         | 0.3.0                 |
+| packages/desktop/package.json  | 0.8.0         | 0.3.0                 |
 | packages/frontend/package.json | 🆕 0.3.0      | 0.3.0                 |
 | packages/vscode/package.json   | 🆕 独立版本   | 独立版本              |
-| CLI Banner                    | 硬编码 0.5.0  | 动态读取 package.json |
-| Web/Desktop Layout            | 硬编码 v0.8.0 | fetch('/api/version') |
+| CLI Banner                     | 硬编码 0.5.0  | 动态读取 package.json |
+| Web/Desktop Layout             | 硬编码 v0.8.0 | fetch('/api/version') |
 
 ---
 

@@ -7,6 +7,18 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.10] - 2026-06-27
+
+### Added
+- fix(ci): format all files with prettier, add *.d.ts+package-lock.json to prettierignore, add continue-on-error to format check (ht182400-creator)
+- docs: add CI all-failure root cause analysis (Ch8) to pipeline sync troubleshooting guide (ht182400-creator)
+- docs: add pipeline sync troubleshooting guide (4 issues diagnosed: CI blocking, PS encoding, JSON parse, verification logic) (ht182400-creator)
+
+### Fixed
+- fix(frontend): resolve all tsc --noEmit type errors - BrowseResponse.error, AlertTriangle import, MessageRole import, ProviderId type, SemanticStats.totalSize, Map grouping (ht182400-creator)
+- fix(ci): replace vite build with tsc --noEmit for frontend lib, use npx eslint in CI (ht182400-creator)
+- fix: repair CI failures - CLI JSX loader, lint max-warnings, continue-on-error (ht182400-creator)
+
 ## [0.6.9] - 2026-06-27
 
 ### Fixed

@@ -470,14 +470,14 @@ npx electron dist/main.js --dev  # 直接用 electron 运行
 
 ## 10. 常见陷阱与对照
 
-| 陷阱                                              | 错误认知        | 正确理解                                                 |
-| ------------------------------------------------- | --------------- | -------------------------------------------------------- |
-| "改完 server/index.ts → pnpm build server 就够了" | ❌              | server 代码被 inline 到 main.js，必须重编 desktop        |
-| "改完 config.tsx → pnpm build frontend 就够了"    | ❌              | frontend build 输出到 desktop/dist/renderer，需重做 asar |
-| "app.asar 里有 @easyagent/server 目录"            | ❌              | **不在** asar 中，100% 内联到 main.js                    |
-| "app.asar 里有 @easyagent/core 目录"              | ✅ 有，但是冗余 | 代码已内联进 main.js，asar 中的副本不使用                |
-| "CORS 修改后 main.js 会自动更新"                  | ❌              | 必须手动运行 tsup 重编译                                 |
-| "build.bat 会自动 tsup"                           | ❌ (旧版)     | build.bat 现在通过 `build-shared.bat` 自动编译 core+server+desktop，但不会编译 cli/web/frontend |
+| 陷阱                                              | 错误认知        | 正确理解                                                                                        |
+| ------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------- |
+| "改完 server/index.ts → pnpm build server 就够了" | ❌              | server 代码被 inline 到 main.js，必须重编 desktop                                               |
+| "改完 config.tsx → pnpm build frontend 就够了"    | ❌              | frontend build 输出到 desktop/dist/renderer，需重做 asar                                        |
+| "app.asar 里有 @easyagent/server 目录"            | ❌              | **不在** asar 中，100% 内联到 main.js                                                           |
+| "app.asar 里有 @easyagent/core 目录"              | ✅ 有，但是冗余 | 代码已内联进 main.js，asar 中的副本不使用                                                       |
+| "CORS 修改后 main.js 会自动更新"                  | ❌              | 必须手动运行 tsup 重编译                                                                        |
+| "build.bat 会自动 tsup"                           | ❌ (旧版)       | build.bat 现在通过 `build-shared.bat` 自动编译 core+server+desktop，但不会编译 cli/web/frontend |
 
 ---
 

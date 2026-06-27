@@ -70,16 +70,16 @@ Desktop App 启动
 
 ### 2.1 当前工具链
 
-| 脚本                                        | 功能                                                      |
-| ------------------------------------------- | --------------------------------------------------------- |
-| `release-publish.bat`                       | **一键交互式发布**：版本递增 → 构建 → GitHub Release 上传 |
-| `version.json`                              | 唯一版本源，记录版本号 + 代号 + 发布日期                  |
+| 脚本                                        | 功能                                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------ |
+| `release-publish.bat`                       | **一键交互式发布**：版本递增 → 构建 → GitHub Release 上传                |
+| `version.json`                              | 唯一版本源，记录版本号 + 代号 + 发布日期                                 |
 | `scripts/sync-version.mjs`                  | 将 `version.json` 同步到 7 个子包 `package.json`（含 frontend + vscode） |
-| `scripts/release.mjs`                       | 版本递增：同步 → CHANGELOG → git commit/tag/push          |
-| `CHANGELOG.md`                              | 遵循 Keep a Changelog 格式的更新日志                      |
-| `build.bat`                                 | Desktop EXE 打包流水线（编译 + electron-builder）         |
-| `packages/desktop/scripts/verify-build.cjs` | 打包前 8 大类自动检查                                     |
-| `scripts/.release_token`                    | GitHub Token（仅本地，已 gitignored）                     |
+| `scripts/release.mjs`                       | 版本递增：同步 → CHANGELOG → git commit/tag/push                         |
+| `CHANGELOG.md`                              | 遵循 Keep a Changelog 格式的更新日志                                     |
+| `build.bat`                                 | Desktop EXE 打包流水线（编译 + electron-builder）                        |
+| `packages/desktop/scripts/verify-build.cjs` | 打包前 8 大类自动检查                                                    |
+| `scripts/.release_token`                    | GitHub Token（仅本地，已 gitignored）                                    |
 
 ### 2.2 推荐方式：release-publish.bat 一键发布
 

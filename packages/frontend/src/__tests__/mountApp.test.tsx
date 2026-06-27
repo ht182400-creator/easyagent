@@ -41,9 +41,7 @@ describe('mountApp', () => {
 
   describe('容器检查', () => {
     it('不存在容器时应抛出错误', () => {
-      expect(() => mountApp({}, false, 'nonexistent-id')).toThrow(
-        '找不到挂载容器 #nonexistent-id',
-      );
+      expect(() => mountApp({}, false, 'nonexistent-id')).toThrow('找不到挂载容器 #nonexistent-id');
     });
 
     it('容器存在时应开始渲染（不验证渲染结果）', () => {
