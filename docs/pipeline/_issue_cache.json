@@ -37,8 +37,8 @@
       "size": 76816
     },
     "2026-06-27.md": {
-      "mtimeMs": 1782543927867.946,
-      "size": 17889
+      "mtimeMs": 1782545266486.2346,
+      "size": 18991
     },
     "MEMORY.md": {
       "mtimeMs": 1782537707500.203,
@@ -9047,6 +9047,81 @@
           "p5a",
           "b2b"
         ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-27",
+        "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+        "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+        "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "f11",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-27",
+        "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+        "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+        "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "f11",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-27",
+        "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+        "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+        "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "f11",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+        "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+        "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "f11",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-27",
+        "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+        "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+        "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "f11",
+          "f16",
+          "p5a"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -9064,5 +9139,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-27T07:26:42.158Z"
+  "generatedAt": "2026-06-27T07:28:50.165Z"
 }

@@ -7,6 +7,11 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.6] - 2026-06-27
+
+### Fixed
+- chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7 (ht182400-creator)
+
 ## [0.6.5] - 2026-06-27
 
 ### Added

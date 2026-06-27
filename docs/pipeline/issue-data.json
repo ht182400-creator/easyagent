@@ -569,6 +569,13 @@
           "problem": "[现象] : Desktop 版本升级报错 \"New version 0.6.1 is not signed by the application owner: publisherName: EasyAgent Team\" [根因] : `electron-updater` 在 Windows 下默认检查 .exe 代码签名证书（`verifyUpdateCodeSignature`）。项目无代码签名证书 → 校验失败 → 拒绝安装",
           "solution": "在 `initAutoUpdater()` 中添加 `(autoUpdater as any).verifyUpdateCodeSignature = false` 禁用签名校验；注意: 修改后需重新构建 desktop 才能生效",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+          "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+          "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+          "status": "resolved"
         }
       ]
     },
@@ -2661,6 +2668,13 @@
           "problem": "[F15] CI 修复：Test Core 超时 (03:23-03:26)",
           "solution": "`packages/core/vitest.config.ts`: `testTimeout: 30_000`, `hookTimeout: 15_000`；Server 包已有 15s / Desktop 包已有 10s — 仅 core 缺失超时配置",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+          "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+          "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+          "status": "resolved"
         }
       ]
     },
@@ -2848,6 +2862,13 @@
           "title": "release.mjs readdirSync 缺失修复 (12:09)",
           "problem": ": `scripts/release.mjs` 运行时报 `readdirSync is not defined`，导致 changelog 生成失败回退到默认条目 [根因] : 第 13 行 `import { readFileSync, writeFileSync, existsSync } from 'node:fs'` 缺少 `readdirSync`",
           "solution": "添加 `readdirSync` 到 import 列表",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+          "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+          "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
           "status": "resolved"
         }
       ]
@@ -3929,6 +3950,13 @@
           "problem": ": CI pipeline 报错 `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH - \"pnpmfileChecksum\" doesn't match` [根因] :",
           "solution": "1. `package.json`: 新增 `\"packageManager\": \"pnpm@11.7.0\"` 锁定 pnpm 版本 2. `.github/workflows/release.yml`: 2 处移除 `with: version: 9`，改为从 packageManager 自动检测 3. `.github/workflows/ci.yml`: 5 处移除 `with: version: 9`，同上 4. `pnpm-lock.yaml`: 手动修正 `pnpmfileChecksum` 为当前 `.pnpmfile.cjs` 的 sha256（因 pnpm install 在已更新的情况下不会重新计算 checksum）；效果: CI 现在自动使用 pnpm 11.7.0 + lockfile checksum 匹配",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+          "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+          "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
+          "status": "resolved"
         }
       ]
     },
@@ -4270,6 +4298,13 @@
           "title": "CI pnpm-lock.yaml 不匹配修复 (14:24)",
           "problem": ": CI pipeline 报错 `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH - \"pnpmfileChecksum\" doesn't match` [根因] :",
           "solution": "1. `package.json`: 新增 `\"packageManager\": \"pnpm@11.7.0\"` 锁定 pnpm 版本 2. `.github/workflows/release.yml`: 2 处移除 `with: version: 9`，改为从 packageManager 自动检测 3. `.github/workflows/ci.yml`: 5 处移除 `with: version: 9`，同上 4. `pnpm-lock.yaml`: 手动修正 `pnpmfileChecksum` 为当前 `.pnpmfile.cjs` 的 sha256（因 pnpm install 在已更新的情况下不会重新计算 checksum）；效果: CI 现在自动使用 pnpm 11.7.0 + lockfile checksum 匹配",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "v0.6.5 产物提交遗漏修复 + release-publish.bat Step 7 (15:2",
+          "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
+          "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
           "status": "resolved"
         }
       ]
@@ -5031,8 +5066,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 694,
-  "_generatedAt": "2026-06-27T07:26:42.161Z",
+  "_totalIssues": 699,
+  "_generatedAt": "2026-06-27T07:28:50.168Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -5054,6 +5089,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-27T07:26:42.175Z"
+    "exportedAt": "2026-06-27T07:28:50.180Z"
   }
 }
