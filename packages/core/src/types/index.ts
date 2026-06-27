@@ -146,8 +146,8 @@ export interface ModelInfo {
   supportsVision: boolean;
   /** 价格(每百万token) */
   pricing?: {
-    input: number;   // 每百万输入token价格(元)
-    output: number;  // 每百万输出token价格(元)
+    input: number; // 每百万输入token价格(元)
+    output: number; // 每百万输出token价格(元)
   };
 }
 

@@ -128,7 +128,7 @@ export const DANGEROUS_PERMISSIONS: Partial<Record<keyof PluginPermissions, stri
  */
 export function checkPermissions(
   requested: PluginPermissions,
-  allowed: PluginPermissions = PermissionLevels.full
+  allowed: PluginPermissions = PermissionLevels.full,
 ): PermissionCheckResult {
   // 1. 检查 shell 权限
   if (requested.shell && !allowed.shell) {
@@ -184,7 +184,7 @@ export function checkPermissions(
  * @returns 危险权限列表
  */
 export function getDangerousPermissions(
-  permissions: PluginPermissions
+  permissions: PluginPermissions,
 ): Array<{ key: string; warning: string }> {
   const dangerous: Array<{ key: string; warning: string }> = [];
 

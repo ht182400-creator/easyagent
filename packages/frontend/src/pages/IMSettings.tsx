@@ -24,13 +24,16 @@ interface AnyIMConfig {
   verificationToken?: string;
 }
 
-const platformMeta: Record<IMPlatform, {
-  label: string;
-  icon: string;
-  color: string;
-  docsUrl: string;
-  description: string;
-}> = {
+const platformMeta: Record<
+  IMPlatform,
+  {
+    label: string;
+    icon: string;
+    color: string;
+    docsUrl: string;
+    description: string;
+  }
+> = {
   telegram: {
     label: 'Telegram',
     icon: '✈️',
@@ -161,7 +164,13 @@ export default function IMSettings() {
       const defaults: Record<string, Partial<AnyIMConfig>> = {
         telegram: { platform: 'telegram', name: 'Telegram Bot', botToken: '', mode: 'polling' },
         feishu: { platform: 'feishu', name: '飞书 Bot', appId: '', appSecret: '' },
-        wechat: { platform: 'wechat', name: '企业微信 Bot', corpId: '', agentId: '', appSecret: '' },
+        wechat: {
+          platform: 'wechat',
+          name: '企业微信 Bot',
+          corpId: '',
+          agentId: '',
+          appSecret: '',
+        },
       };
       setEditForm(defaults[platform] || { platform });
     }
@@ -194,7 +203,7 @@ export default function IMSettings() {
 
       {/* 平台卡片列表 */}
       <div className="space-y-4">
-        {(Object.entries(platformMeta) as [IMPlatform, typeof platformMeta[IMPlatform]][]).map(
+        {(Object.entries(platformMeta) as [IMPlatform, (typeof platformMeta)[IMPlatform]][]).map(
           ([platform, meta]) => {
             const cfg = configs.find((c) => c.platform === platform);
             const isEditing = expanded === platform;
@@ -211,7 +220,8 @@ export default function IMSettings() {
                     <div>
                       <h3 className="font-semibold text-gray-900">{meta.label}</h3>
                       <p className="text-sm text-gray-400">
-                        {cfg ? `${cfg.name} · ` : ''}{getStatusText(platform)}
+                        {cfg ? `${cfg.name} · ` : ''}
+                        {getStatusText(platform)}
                       </p>
                     </div>
                     <span className="ml-2">{getStatusIcon(platform)}</span>
@@ -220,7 +230,7 @@ export default function IMSettings() {
                     {/* 启动/停止按钮 */}
                     {cfg && (
                       <>
-                        {(statuses[platform]?.status === 'running') ? (
+                        {statuses[platform]?.status === 'running' ? (
                           <button
                             onClick={() => handleToggle(platform, 'stop')}
                             className="px-3 py-1.5 text-sm bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors"
@@ -266,7 +276,9 @@ export default function IMSettings() {
                     {platform === 'telegram' && (
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">显示名称</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            显示名称
+                          </label>
                           <input
                             type="text"
                             value={(editForm as { name?: string }).name || ''}
@@ -287,14 +299,30 @@ export default function IMSettings() {
                             placeholder="123456:ABC-DEF1234gh..."
                           />
                           <p className="text-xs text-gray-400 mt-1">
-                            从 <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">@BotFather</a> 获取
+                            从{' '}
+                            <a
+                              href="https://t.me/BotFather"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:underline"
+                            >
+                              @BotFather
+                            </a>{' '}
+                            获取
                           </p>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">连接模式</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            连接模式
+                          </label>
                           <select
                             value={(editForm as { mode?: string }).mode || 'polling'}
-                            onChange={(e) => setEditForm({ ...editForm, mode: e.target.value as 'polling' | 'webhook' })}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                mode: e.target.value as 'polling' | 'webhook',
+                              })
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="polling">长轮询 (polling) - 无需公网</option>
@@ -307,7 +335,9 @@ export default function IMSettings() {
                     {platform === 'feishu' && (
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">显示名称</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            显示名称
+                          </label>
                           <input
                             type="text"
                             value={(editForm as { name?: string }).name || ''}
@@ -317,7 +347,9 @@ export default function IMSettings() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">App ID <span className="text-red-500">*</span></label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            App ID <span className="text-red-500">*</span>
+                          </label>
                           <input
                             type="text"
                             value={(editForm as { appId?: string }).appId || ''}
@@ -327,11 +359,15 @@ export default function IMSettings() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">App Secret <span className="text-red-500">*</span></label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            App Secret <span className="text-red-500">*</span>
+                          </label>
                           <input
                             type="password"
                             value={(editForm as { appSecret?: string }).appSecret || ''}
-                            onChange={(e) => setEditForm({ ...editForm, appSecret: e.target.value })}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, appSecret: e.target.value })
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
                           />
                         </div>
@@ -341,7 +377,9 @@ export default function IMSettings() {
                     {platform === 'wechat' && (
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">显示名称</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            显示名称
+                          </label>
                           <input
                             type="text"
                             value={(editForm as { name?: string }).name || ''}
@@ -351,7 +389,9 @@ export default function IMSettings() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">企业 Corp ID</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            企业 Corp ID
+                          </label>
                           <input
                             type="text"
                             value={(editForm as { corpId?: string }).corpId || ''}
@@ -361,7 +401,9 @@ export default function IMSettings() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">应用 Agent ID</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            应用 Agent ID
+                          </label>
                           <input
                             type="text"
                             value={(editForm as { agentId?: string }).agentId || ''}
@@ -371,17 +413,22 @@ export default function IMSettings() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">应用 Secret</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            应用 Secret
+                          </label>
                           <input
                             type="password"
                             value={(editForm as { appSecret?: string }).appSecret || ''}
-                            onChange={(e) => setEditForm({ ...editForm, appSecret: e.target.value })}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, appSecret: e.target.value })
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
                           />
                         </div>
                         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-700">
                           <AlertCircle className="w-3.5 h-3.5 inline mr-1" />
-                          企业微信接入需要公网服务器和域名，消息接收 URL 为: <code className="bg-yellow-100 px-1 rounded">/api/im/webhook/wechat</code>
+                          企业微信接入需要公网服务器和域名，消息接收 URL 为:{' '}
+                          <code className="bg-yellow-100 px-1 rounded">/api/im/webhook/wechat</code>
                         </div>
                       </div>
                     )}
@@ -414,7 +461,7 @@ export default function IMSettings() {
                 )}
               </div>
             );
-          }
+          },
         )}
       </div>
 
@@ -422,9 +469,21 @@ export default function IMSettings() {
       <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-xl">
         <p className="text-sm text-blue-700 font-medium mb-1">💡 使用提示</p>
         <ul className="text-xs text-blue-600 space-y-1">
-          <li>• <strong>Telegram</strong>: 推荐使用长轮询模式，无需公网即可测试</li>
-          <li>• <strong>飞书</strong>: Webhook URL 为 <code className="bg-blue-100 px-1 rounded">http://你的服务器:端口/api/im/webhook/feishu</code></li>
-          <li>• <strong>企业微信</strong>: 消息接收 URL 为 <code className="bg-blue-100 px-1 rounded">http://你的服务器:端口/api/im/webhook/wechat</code></li>
+          <li>
+            • <strong>Telegram</strong>: 推荐使用长轮询模式，无需公网即可测试
+          </li>
+          <li>
+            • <strong>飞书</strong>: Webhook URL 为{' '}
+            <code className="bg-blue-100 px-1 rounded">
+              http://你的服务器:端口/api/im/webhook/feishu
+            </code>
+          </li>
+          <li>
+            • <strong>企业微信</strong>: 消息接收 URL 为{' '}
+            <code className="bg-blue-100 px-1 rounded">
+              http://你的服务器:端口/api/im/webhook/wechat
+            </code>
+          </li>
         </ul>
       </div>
     </div>

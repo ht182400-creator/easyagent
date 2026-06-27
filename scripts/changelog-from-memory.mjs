@@ -1,6 +1,6 @@
 /**
  * 从 .codebuddy/memory 记录文件自动生成 CHANGELOG 条目
- * 
+ *
  * 用法:
  *   node scripts/changelog-from-memory.mjs              # 交互式选择日期范围
  *   node scripts/changelog-from-memory.mjs 0.6.2         # 指定版本号，自动从上次 tag 日期到今天
@@ -16,16 +16,27 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const memoryDir = join(root, '.codebuddy', 'memory');
 
-function log(msg) { console.log(`  ${msg}`); }
-function success(msg) { console.log(`\x1b[32m✓\x1b[0m ${msg}`); }
-function warn(msg) { console.log(`\x1b[33m⚠\x1b[0m ${msg}`); }
-function info(msg) { console.log(`\x1b[36mℹ\x1b[0m ${msg}`); }
+function log(msg) {
+  console.log(`  ${msg}`);
+}
+function success(msg) {
+  console.log(`\x1b[32m✓\x1b[0m ${msg}`);
+}
+function warn(msg) {
+  console.log(`\x1b[33m⚠\x1b[0m ${msg}`);
+}
+function info(msg) {
+  console.log(`\x1b[36mℹ\x1b[0m ${msg}`);
+}
 
 /** 询问用户 */
 function askQuestion(query) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise(resolve => {
-    rl.question(query, answer => { rl.close(); resolve(answer); });
+  return new Promise((resolve) => {
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
   });
 }
 
@@ -33,8 +44,11 @@ function askQuestion(query) {
 function getLastTagDate() {
   try {
     const tag = execSync('git describe --tags --abbrev=0', { cwd: root, encoding: 'utf-8' }).trim();
-    const date = execSync(`git log -1 --format=%ai ${tag}`, { cwd: root, encoding: 'utf-8' }).trim();
-    return date.split(' ')[0];  // "2026-06-26 11:09:00 +0800" → "2026-06-26"
+    const date = execSync(`git log -1 --format=%ai ${tag}`, {
+      cwd: root,
+      encoding: 'utf-8',
+    }).trim();
+    return date.split(' ')[0]; // "2026-06-26 11:09:00 +0800" → "2026-06-26"
   } catch {
     // 无 tag 时返回 7 天前
     const d = new Date();
@@ -95,11 +109,11 @@ function getMemoryFiles(sinceDate) {
   if (!existsSync(memoryDir)) return [];
 
   const files = readdirSync(memoryDir)
-    .filter(f => f.endsWith('.md') && f.match(/^\d{4}-\d{2}-\d{2}\.md$/))
-    .filter(f => f >= `${sinceDate}.md`)
+    .filter((f) => f.endsWith('.md') && f.match(/^\d{4}-\d{2}-\d{2}\.md$/))
+    .filter((f) => f >= `${sinceDate}.md`)
     .sort();
 
-  return files.map(f => join(memoryDir, f));
+  return files.map((f) => join(memoryDir, f));
 }
 
 /** 生成 Keep a Changelog 格式的条目 */
@@ -175,7 +189,7 @@ async function main() {
     warn(`在 ${memoryDir} 中未找到 ${sinceDate} 之后的记录文件`);
     process.exit(0);
   }
-  info(`找到 ${files.length} 个记录文件: ${files.map(f => f.split(/[/\\]/).pop()).join(', ')}`);
+  info(`找到 ${files.length} 个记录文件: ${files.map((f) => f.split(/[/\\]/).pop()).join(', ')}`);
 
   // 解析所有条目
   const allEntries = [];
@@ -222,12 +236,16 @@ async function main() {
 
   let changelog = readFileSync(changelogPath, 'utf-8');
   // 移除文件中可能已存在的相同版本空标题（避免重复）
-  changelog = changelog.replace(new RegExp(`## \\[${version}\\] - \\d{4}-\\d{2}-\\d{2}\\n*`, 'g'), '');
+  changelog = changelog.replace(
+    new RegExp(`## \\[${version}\\] - \\d{4}-\\d{2}-\\d{2}\\n*`, 'g'),
+    '',
+  );
 
   const insertPos = changelog.indexOf('## [');
   if (insertPos === -1) {
     const titleEnd = changelog.indexOf('\n\n');
-    changelog = changelog.substring(0, titleEnd + 2) + entry + '\n' + changelog.substring(titleEnd + 2);
+    changelog =
+      changelog.substring(0, titleEnd + 2) + entry + '\n' + changelog.substring(titleEnd + 2);
   } else {
     changelog = changelog.substring(0, insertPos) + entry + '\n' + changelog.substring(insertPos);
   }
@@ -237,7 +255,7 @@ async function main() {
   info('现在可以运行 release.mjs 或 release-server.bat 发布版本');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(`失败: ${err.message}`);
   process.exit(1);
 });

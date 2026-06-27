@@ -208,7 +208,9 @@ describe('FeishuAdapter - 事件回调', () => {
 
     let called = false;
     adapter.setCallbacks({
-      onMessage: async () => { called = true; },
+      onMessage: async () => {
+        called = true;
+      },
     });
 
     // 非 im.message.receive_v1 事件
@@ -242,29 +244,38 @@ describe('FeishuAdapter - 消息发送', () => {
 
       // Token 接口
       if (urlStr.includes('tenant_access_token')) {
-        return new Response(JSON.stringify({
-          code: 0,
-          msg: 'ok',
-          tenant_access_token: 'test_access_token_123',
-          expire: 7200,
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            tenant_access_token: 'test_access_token_123',
+            expire: 7200,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       // 发送消息接口
       if (urlStr.includes('/messages') && options?.method === 'POST') {
-        return new Response(JSON.stringify({
-          code: 0,
-          msg: 'ok',
-          data: { message_id: 'msg_sent_001' },
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            data: { message_id: 'msg_sent_001' },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       // 删除消息接口
       if (urlStr.includes('/messages') && options?.method === 'DELETE') {
-        return new Response(JSON.stringify({
-          code: 0,
-          msg: 'ok',
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       return new Response('{}', { status: 200 });
@@ -287,7 +298,7 @@ describe('FeishuAdapter - 消息发送', () => {
     const adapter = new FeishuAdapter(config);
     // 先启动获取 token
     await adapter.start();
-    
+
     const msgId = await adapter.sendMessage('oc_test_chat', '测试消息');
     expect(msgId).toBe('msg_sent_001');
 
@@ -348,35 +359,51 @@ describe('FeishuAdapter - 图片/文件上传', () => {
 
       // Token 接口
       if (urlStr.includes('tenant_access_token')) {
-        return new Response(JSON.stringify({
-          code: 0, msg: 'ok',
-          tenant_access_token: 'test_token',
-          expire: 7200,
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            tenant_access_token: 'test_token',
+            expire: 7200,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       // 图片上传
       if (urlStr.includes('/images')) {
-        return new Response(JSON.stringify({
-          code: 0, msg: 'ok',
-          data: { image_key: 'img_key_001' },
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            data: { image_key: 'img_key_001' },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       // 文件上传
       if (urlStr.includes('/files')) {
-        return new Response(JSON.stringify({
-          code: 0, msg: 'ok',
-          data: { file_key: 'file_key_001' },
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            data: { file_key: 'file_key_001' },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       // 发送消息
       if (urlStr.includes('/messages')) {
-        return new Response(JSON.stringify({
-          code: 0, msg: 'ok',
-          data: { message_id: 'msg_media_001' },
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            data: { message_id: 'msg_media_001' },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       // 下载 URL (模拟)
@@ -422,7 +449,8 @@ describe('FeishuAdapter - 图片/文件上传', () => {
     const adapter = new FeishuAdapter(config);
     await adapter.start();
 
-    const base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const base64Image =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
     const msgId = await adapter.sendPhoto('oc_chat', base64Image);
     expect(msgId).toBe('msg_media_001');
 
@@ -453,11 +481,15 @@ describe('FeishuAdapter - 图片/文件上传', () => {
       const urlStr = String(url);
 
       if (urlStr.includes('tenant_access_token')) {
-        return new Response(JSON.stringify({
-          code: 0, msg: 'ok',
-          tenant_access_token: 'test_token',
-          expire: 7200,
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            tenant_access_token: 'test_token',
+            expire: 7200,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
 
       // 模拟下载失败
@@ -502,11 +534,15 @@ describe('FeishuAdapter - 生命周期', () => {
     origFetch = globalThis.fetch;
     globalThis.fetch = (async (url: string) => {
       if (String(url).includes('tenant_access_token')) {
-        return new Response(JSON.stringify({
-          code: 0, msg: 'ok',
-          tenant_access_token: 'tok',
-          expire: 7200,
-        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(
+          JSON.stringify({
+            code: 0,
+            msg: 'ok',
+            tenant_access_token: 'tok',
+            expire: 7200,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
       }
       return new Response('{}', { status: 200 });
     }) as typeof globalThis.fetch;
@@ -563,10 +599,13 @@ describe('FeishuAdapter - Token 获取失败', () => {
     origFetch = globalThis.fetch;
     // 模拟 token 获取失败
     globalThis.fetch = (async () => {
-      return new Response(JSON.stringify({
-        code: 999,
-        msg: 'invalid app secret',
-      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(
+        JSON.stringify({
+          code: 999,
+          msg: 'invalid app secret',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
     }) as typeof globalThis.fetch;
   });
 

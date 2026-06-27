@@ -23,7 +23,7 @@ const CACHE_TTL = 60000; // 60秒缓存
 
 function getOrBuildMap(workspace: string, maxDepth = 6, maxFiles = 300) {
   const now = Date.now();
-  if (_cachedMap && _cachedRoot === workspace && (now - _cacheTime) < CACHE_TTL) {
+  if (_cachedMap && _cachedRoot === workspace && now - _cacheTime < CACHE_TTL) {
     return _cachedMap;
   }
   _cachedMap = buildSemanticMap(workspace, maxDepth, maxFiles);
@@ -134,7 +134,7 @@ export const SymbolSearchTool: ITool = {
       let results = searchSymbol(map, query, caseSensitive);
 
       if (kindFilter) {
-        results = results.filter(s => s.kind === kindFilter);
+        results = results.filter((s) => s.kind === kindFilter);
       }
 
       const maxResults = 50;
@@ -151,7 +151,7 @@ export const SymbolSearchTool: ITool = {
       } else {
         for (const sym of limited) {
           lines.push(
-            `  ${sym.kind.toUpperCase().padEnd(10)} ${sym.name}${sym.signature ? ` ${sym.signature}` : ''} — ${sym.filePath}:${sym.line}`
+            `  ${sym.kind.toUpperCase().padEnd(10)} ${sym.name}${sym.signature ? ` ${sym.signature}` : ''} — ${sym.filePath}:${sym.line}`,
           );
         }
       }
@@ -204,9 +204,9 @@ export const ReferenceFindTool: ITool = {
       const map = getOrBuildMap(workspace);
       const refs = findReferences(map, symbol, workspace);
 
-      const definitions = refs.filter(r => r.kind === 'definition');
-      const usages = refs.filter(r => r.kind === 'reference');
-      const imports = refs.filter(r => r.kind === 'import');
+      const definitions = refs.filter((r) => r.kind === 'definition');
+      const usages = refs.filter((r) => r.kind === 'reference');
+      const imports = refs.filter((r) => r.kind === 'import');
 
       const lines: string[] = [
         `📎 符号引用分析: "${symbol}"`,

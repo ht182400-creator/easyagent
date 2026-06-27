@@ -41,3 +41,9 @@ packages/docs/
 scripts/.release_token
 # CI 回取的原始日志（仅本地保留）
 docs/pipeline/ci-logs/
+# 根目录调试产物（截图/日志/临时文件，防止再次堆积 #14）
+*.png
+$null
+/NUL
+18.0.0
+temp/root-cleanup/

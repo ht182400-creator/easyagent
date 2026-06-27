@@ -88,22 +88,20 @@ export class ErnieAdapter extends BaseAdapter {
     }
 
     if (!this.secretKey) {
-      throw new Error(
-        '文心一言需要同时提供API Key和Secret Key，格式: "apiKey:secretKey"'
-      );
+      throw new Error('文心一言需要同时提供API Key和Secret Key，格式: "apiKey:secretKey"');
     }
 
     try {
       const response = await fetch(
         `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${this.apiKey}&client_secret=${this.secretKey}`,
-        { method: 'POST' }
+        { method: 'POST' },
       );
 
       if (!response.ok) {
         throw new Error(`获取Access Token失败: ${response.status}`);
       }
 
-      const data = await response.json() as { access_token: string; expires_in: number };
+      const data = (await response.json()) as { access_token: string; expires_in: number };
       this.accessToken = data.access_token;
       this.tokenExpiry = Date.now() + (data.expires_in - 60) * 1000; // 提前60秒刷新
 
@@ -138,8 +136,8 @@ export class ErnieAdapter extends BaseAdapter {
         content = msg.content;
       } else if (Array.isArray(msg.content)) {
         content = msg.content
-          .filter(c => c.type === 'text')
-          .map(c => (c as { text: string }).text)
+          .filter((c) => c.type === 'text')
+          .map((c) => (c as { text: string }).text)
           .join('\n');
       }
 
@@ -158,7 +156,7 @@ export class ErnieAdapter extends BaseAdapter {
    */
   private convertTools(tools: ChatOptions['tools']) {
     if (!tools || tools.length === 0) return undefined;
-    return tools.map(t => ({
+    return tools.map((t) => ({
       name: t.name,
       description: t.description,
       parameters: t.parameters,
@@ -229,10 +227,7 @@ export class ErnieAdapter extends BaseAdapter {
   }
 
   /** 流式聊天 */
-  async *chatStream(
-    messages: Message[],
-    options?: ChatOptions
-  ): AsyncGenerator<ChatChunk> {
+  async *chatStream(messages: Message[], options?: ChatOptions): AsyncGenerator<ChatChunk> {
     const token = await this.getAccessToken();
     const endpoint = this.getEndpoint();
 

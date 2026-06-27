@@ -43,12 +43,12 @@
 
 ### 1.2 关键理解
 
-| 操作 | 含义 | 用户能不能更新？ |
-|------|------|:---:|
-| `git push` | 把源代码推送到 GitHub | ❌ 不能 |
-| `git tag v0.3.1` | 在仓库中打一个版本标记 | ❌ 不能 |
+| 操作                    | 含义                         |    用户能不能更新？     |
+| ----------------------- | ---------------------------- | :---------------------: |
+| `git push`              | 把源代码推送到 GitHub        |         ❌ 不能         |
+| `git tag v0.3.1`        | 在仓库中打一个版本标记       |         ❌ 不能         |
 | **创建 GitHub Release** | 在 GitHub 网页上发布正式版本 | ⚠️ 能检测但无文件可下载 |
-| **上传 EXE 到 Release** | 把安装包放到 Release 资源中 | ✅ 可以自动更新 |
+| **上传 EXE 到 Release** | 把安装包放到 Release 资源中  |     ✅ 可以自动更新     |
 
 > **结论**：只有源代码 + Tag 是不够的，必须把编译好的 `.exe` 安装包上传到 GitHub Release，用户才能通过自动更新功能获取新版本。
 
@@ -70,16 +70,16 @@ Desktop App 启动
 
 ### 2.1 当前工具链
 
-| 脚本 | 功能 |
-|------|------|
-| `release-publish.bat` | **一键交互式发布**：版本递增 → 构建 → GitHub Release 上传 |
-| `version.json` | 唯一版本源，记录版本号 + 代号 + 发布日期 |
-| `scripts/sync-version.mjs` | 将 `version.json` 同步到 6 个子包 `package.json` |
-| `scripts/release.mjs` | 版本递增：同步 → CHANGELOG → git commit/tag/push |
-| `CHANGELOG.md` | 遵循 Keep a Changelog 格式的更新日志 |
-| `build.bat` | Desktop EXE 打包流水线（编译 + electron-builder） |
-| `packages/desktop/scripts/verify-build.cjs` | 打包前 8 大类自动检查 |
-| `scripts/.release_token` | GitHub Token（仅本地，已 gitignored） |
+| 脚本                                        | 功能                                                      |
+| ------------------------------------------- | --------------------------------------------------------- |
+| `release-publish.bat`                       | **一键交互式发布**：版本递增 → 构建 → GitHub Release 上传 |
+| `version.json`                              | 唯一版本源，记录版本号 + 代号 + 发布日期                  |
+| `scripts/sync-version.mjs`                  | 将 `version.json` 同步到 7 个子包 `package.json`（含 frontend + vscode） |
+| `scripts/release.mjs`                       | 版本递增：同步 → CHANGELOG → git commit/tag/push          |
+| `CHANGELOG.md`                              | 遵循 Keep a Changelog 格式的更新日志                      |
+| `build.bat`                                 | Desktop EXE 打包流水线（编译 + electron-builder）         |
+| `packages/desktop/scripts/verify-build.cjs` | 打包前 8 大类自动检查                                     |
+| `scripts/.release_token`                    | GitHub Token（仅本地，已 gitignored）                     |
 
 ### 2.2 推荐方式：release-publish.bat 一键发布
 
@@ -114,11 +114,11 @@ Step 5: Create GitHub Release
 
 **常用场景**：
 
-| 场景 | 选择 | 说明 |
-|------|------|------|
-| 新版本发布（patch） | `1 → Y → Y → 2` | 版本递增 + 构建 + curl 上传 |
-| 已有 tag 重新构建上传 | `0 → Y → Y → 2` | 跳过版本递增，只构建上传 |
-| 仅上游代码，不构建 | `1 → Y → n → 0` | 只做版本递增推送，后续手动处理 |
+| 场景                  | 选择            | 说明                           |
+| --------------------- | --------------- | ------------------------------ |
+| 新版本发布（patch）   | `1 → Y → Y → 2` | 版本递增 + 构建 + curl 上传    |
+| 已有 tag 重新构建上传 | `0 → Y → Y → 2` | 跳过版本递增，只构建上传       |
+| 仅上游代码，不构建    | `1 → Y → n → 0` | 只做版本递增推送，后续手动处理 |
 
 ### 2.3 Token 自动加载机制
 
@@ -188,12 +188,14 @@ powershell -ExecutionPolicy Bypass -File scripts\upload-release.ps1
 ### 3.1 为什么需要？
 
 手动发布的问题：
+
 - **环境依赖**：必须在 Windows 上构建（electron-builder 生成 .exe）
 - **容易遗漏**：上传文件到 Release 需要手动操作
 - **不可重复**：不同机器构建可能产生不同结果
 - **效率低**：每次发布需要 10+ 分钟人工操作
 
 GitHub Actions 能解决：
+
 - ✅ 推送 Tag 后自动触发构建
 - ✅ 在 GitHub 的 Windows 虚拟机上构建（环境一致）
 - ✅ 自动上传 EXE 到 Release
@@ -227,22 +229,22 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'               # 推送 v0.3.1 等 tag 时触发
-  workflow_dispatch:        # 允许手动触发
+      - 'v*' # 推送 v0.3.1 等 tag 时触发
+  workflow_dispatch: # 允许手动触发
     inputs:
       version:
         description: '版本号 (如 0.3.1)'
         required: true
 
 permissions:
-  contents: write           # 允许创建 Release
+  contents: write # 允许创建 Release
 
 jobs:
   build-and-release:
     name: Build on ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest]    # 目前只需 Windows，未来可加 macos-latest, ubuntu-latest
+        os: [windows-latest] # 目前只需 Windows，未来可加 macos-latest, ubuntu-latest
         include:
           - os: windows-latest
             artifact_name: EasyAgent-${{ github.ref_name }}-win-x64.exe
@@ -257,7 +259,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0    # 获取所有历史（CHANGELOG 生成需要）
+          fetch-depth: 0 # 获取所有历史（CHANGELOG 生成需要）
 
       # ============================================================
       # Step 2: 设置 Node.js 和 pnpm
@@ -288,13 +290,13 @@ jobs:
           $tag = "${{ github.ref_name }}"
           $version = $tag -replace '^v', ''
           Write-Host "Building version: $version"
-          
+
           # 更新 version.json
           $versionJson = Get-Content version.json -Raw | ConvertFrom-Json
           $versionJson.version = $version
           $versionJson.releaseDate = (Get-Date -Format "yyyy-MM-dd")
           $versionJson | ConvertTo-Json -Depth 10 | Set-Content version.json
-          
+
           # 运行版本同步
           node scripts/sync-version.mjs
 
@@ -414,16 +416,16 @@ git push origin v0.3.1-test
 
 ## 四、两种方案对比
 
-| 维度 | 方案 A：release-publish.bat | 方案 B：GitHub Actions |
-|------|:---:|:---:|
-| 初始设置 | ✅ 配置 Token 文件一次即可 | ⚠️ 需要 PAT + Workflow YAML |
-| 每次发布耗时 | ~5 分钟（交互式） | ~1 分钟（推送即触发） |
-| 构建环境 | 依赖本机 Windows | GitHub Windows 虚拟机（一致） |
-| 上传 Release | 自动（curl API，Token 自动读取） | 自动上传 |
-| 出错风险 | ✅ 脚本化，逐步确认 | ✅ 脚本化，一致性高 |
-| 成本 | 本机电费 | GitHub 免费（公开仓库） |
-| 离线发布 | ✅ 本地构建，构建可离线 | ❌ 必须联网 |
-| macOS/Linux 构建 | 需要对应设备 | 添加 matrix 即可 |
+| 维度             |   方案 A：release-publish.bat    |    方案 B：GitHub Actions     |
+| ---------------- | :------------------------------: | :---------------------------: |
+| 初始设置         |    ✅ 配置 Token 文件一次即可    |  ⚠️ 需要 PAT + Workflow YAML  |
+| 每次发布耗时     |        ~5 分钟（交互式）         |     ~1 分钟（推送即触发）     |
+| 构建环境         |         依赖本机 Windows         | GitHub Windows 虚拟机（一致） |
+| 上传 Release     | 自动（curl API，Token 自动读取） |           自动上传            |
+| 出错风险         |       ✅ 脚本化，逐步确认        |      ✅ 脚本化，一致性高      |
+| 成本             |             本机电费             |    GitHub 免费（公开仓库）    |
+| 离线发布         |     ✅ 本地构建，构建可离线      |          ❌ 必须联网          |
+| macOS/Linux 构建 |           需要对应设备           |       添加 matrix 即可        |
 
 ### 推荐策略
 
@@ -434,6 +436,7 @@ git push origin v0.3.1-test
 > - 前置条件：GitHub Settings → Secrets → Actions 中添加 `GH_TOKEN`
 
 **当前双轨策略**：
+
 1. **日常开发**：`release-publish.bat` 交互式发布，适合快速修复和小版本
 2. **正式发布**：`git push --follow-tags` 触发 GitHub Actions 自动构建，适合大版本和跨平台构建
 
@@ -451,11 +454,11 @@ git push origin v0.3.1-test
 
 ### Q3：为什么要上传 3 个文件而不是 1 个？
 
-| 文件 | 作用 |
-|------|------|
-| `EasyAgent-0.3.1-win-x64.exe` | 完整安装包，新用户直接下载 |
-| `EasyAgent-0.3.1-win-x64.exe.blockmap` | 增量更新映射，老用户只下载变更部分（省流量） |
-| `latest.yml` | electron-updater 的元数据文件（版本号、文件路径、SHA512） |
+| 文件                                   | 作用                                                      |
+| -------------------------------------- | --------------------------------------------------------- |
+| `EasyAgent-0.3.1-win-x64.exe`          | 完整安装包，新用户直接下载                                |
+| `EasyAgent-0.3.1-win-x64.exe.blockmap` | 增量更新映射，老用户只下载变更部分（省流量）              |
+| `latest.yml`                           | electron-updater 的元数据文件（版本号、文件路径、SHA512） |
 
 ### Q4：release.mjs 报错 "工作区有未提交的更改" 怎么办？
 

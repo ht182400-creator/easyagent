@@ -1,33 +1,29 @@
 /**
  * 微信适配器 (企业微信/微信公众平台)
- * 
+ *
  * ## 接入方式说明
- * 
+ *
  * ### 企业微信
  * 1. 在企业微信管理后台创建自建应用
  * 2. 获取 Corp ID、Agent ID、App Secret
  * 3. 配置消息接收 URL (指向 EasyAgent Server 的 /api/im/wechat/callback)
  * 4. 设置 Token 和 EncodingAESKey 用于消息加解密
- * 
+ *
  * ### 微信公众号(服务号)
  * 1. 在微信公众平台配置服务器 URL
  * 2. 使用被动回复消息或客服消息接口
  * 3. 需要已完成认证的服务号
- * 
+ *
  * ## 依赖要求
  * - 企业微信需要 `xml2js` 或 `fast-xml-parser` 解析 XML 消息体
  * - 需要实现 AES 加解密 (EncodingAESKey)
- * 
+ *
  * ## 当前状态: 占位实现
  * 由于企业微信/微信公众平台的接入需要企业资质认证和公网服务器，
  * 此处提供框架代码和接入文档，实际接入时补充完整实现。
  */
 import { BaseIMAdapter } from './BaseIMAdapter.js';
-import type {
-  WeChatConfig,
-  IMMessage,
-  IMSendOptions,
-} from './types.js';
+import type { WeChatConfig, IMMessage, IMSendOptions } from './types.js';
 import { logger } from '../utils/logger.js';
 import { createDecipheriv, createHash, randomBytes } from 'node:crypto';
 
@@ -36,7 +32,7 @@ const WECOM_API_BASE = 'https://qyapi.weixin.qq.com/cgi-bin';
 
 /**
  * 微信适配器 (企业微信)
- * 
+ *
  * 主要功能:
  * - 接收企业微信消息回调
  * - 通过企业微信 API 发送/回复消息
@@ -59,18 +55,21 @@ export class WeChatAdapter extends BaseIMAdapter {
     if (!this.config.corpId || !this.config.appSecret) {
       throw new Error(
         '企业微信接入需要配置 corpId 和 appSecret\n' +
-        '参考: https://developer.work.weixin.qq.com/document/path/90665'
+          '参考: https://developer.work.weixin.qq.com/document/path/90665',
       );
     }
 
     await this.refreshToken();
 
     // 每 1.5 小时刷新 token
-    this.refreshTimer = setInterval(() => {
-      this.refreshToken().catch((err) => {
-        logger.error({ error: (err as Error).message }, '企业微信 token 刷新失败');
-      });
-    }, 90 * 60 * 1000);
+    this.refreshTimer = setInterval(
+      () => {
+        this.refreshToken().catch((err) => {
+          logger.error({ error: (err as Error).message }, '企业微信 token 刷新失败');
+        });
+      },
+      90 * 60 * 1000,
+    );
 
     logger.info({ corpId: this.config.corpId }, '企业微信适配器已启动 (框架模式)');
   }
@@ -85,11 +84,7 @@ export class WeChatAdapter extends BaseIMAdapter {
 
   // ========== 消息发送 ==========
 
-  async sendMessage(
-    chatId: string,
-    text: string,
-    _options?: IMSendOptions
-  ): Promise<string> {
+  async sendMessage(chatId: string, text: string, _options?: IMSendOptions): Promise<string> {
     const token = await this.ensureToken();
 
     const body = {
@@ -115,11 +110,7 @@ export class WeChatAdapter extends BaseIMAdapter {
     return ''; // 企业微信 send 接口不返回 message_id
   }
 
-  async editMessage(
-    _chatId: string,
-    _messageId: string,
-    newText: string
-  ): Promise<boolean> {
+  async editMessage(_chatId: string, _messageId: string, newText: string): Promise<boolean> {
     // 企业微信不支持编辑已发送消息
     logger.warn('企业微信不支持消息编辑');
     return false;
@@ -129,11 +120,7 @@ export class WeChatAdapter extends BaseIMAdapter {
     // 企业微信无 typing 指示器 API
   }
 
-  async sendPhoto(
-    chatId: string,
-    _imageUrl: string,
-    _caption?: string
-  ): Promise<string> {
+  async sendPhoto(chatId: string, _imageUrl: string, _caption?: string): Promise<string> {
     // 企业微信图片消息需先上传素材获取 media_id
     const token = await this.ensureToken();
 
@@ -142,11 +129,7 @@ export class WeChatAdapter extends BaseIMAdapter {
     return '';
   }
 
-  async sendDocument(
-    chatId: string,
-    _fileUrl: string,
-    _caption?: string
-  ): Promise<string> {
+  async sendDocument(chatId: string, _fileUrl: string, _caption?: string): Promise<string> {
     const token = await this.ensureToken();
 
     // TODO: 实现文件上传 → media_id → 发送文件消息
@@ -159,7 +142,7 @@ export class WeChatAdapter extends BaseIMAdapter {
   /**
    * 处理企业微信 URL 验证 (GET 请求)
    * 企业微信配置回调 URL 时会发送 GET 请求验证
-   * 
+   *
    * @param query - 查询参数 { msg_signature, timestamp, nonce, echostr }
    * @returns 解密后的 echostr
    */
@@ -183,7 +166,10 @@ export class WeChatAdapter extends BaseIMAdapter {
         logger.info('企业微信 URL 验证成功');
         return decrypted;
       } catch (err) {
-        logger.warn({ error: (err as Error).message }, '企业微信 URL 验证解密失败，返回原始 echostr');
+        logger.warn(
+          { error: (err as Error).message },
+          '企业微信 URL 验证解密失败，返回原始 echostr',
+        );
         return echostr;
       }
     }
@@ -195,7 +181,7 @@ export class WeChatAdapter extends BaseIMAdapter {
   /**
    * 处理企业微信消息回调 (POST 请求)
    * 企业微信会将消息以加密 XML 格式 POST 到回调 URL
-   * 
+   *
    * @param body - 加密的消息体 (XML)
    * @returns 回复消息 (XML 或空)
    */
@@ -225,11 +211,13 @@ export class WeChatAdapter extends BaseIMAdapter {
       // 3. 调用消息处理器
       const imMsg: IMMessage = {
         chatId: msg.fromUserName || '',
-        text: msg.content || msg.msgType === 'text' ? (msg.content || '') : `[${msg.msgType}]`,
+        text: msg.content || msg.msgType === 'text' ? msg.content || '' : `[${msg.msgType}]`,
         messageId: msg.msgId || `wechat_${Date.now()}`,
         senderId: msg.fromUserName || '',
         senderName: '',
-        timestamp: msg.createTime ? new Date(parseInt(msg.createTime, 10) * 1000).toISOString() : new Date().toISOString(),
+        timestamp: msg.createTime
+          ? new Date(parseInt(msg.createTime, 10) * 1000).toISOString()
+          : new Date().toISOString(),
       };
 
       await this.handleIncomingMessage(imMsg);
@@ -246,7 +234,7 @@ export class WeChatAdapter extends BaseIMAdapter {
 
   private async refreshToken(): Promise<string> {
     const url = `${WECOM_API_BASE}/gettoken?corpid=${this.config.corpId}&corpsecret=${this.config.appSecret}`;
-    
+
     const result = await this.fetchApi<{
       errcode: number;
       errmsg: string;

@@ -20,18 +20,14 @@ export default defineConfig({
     'better-sqlite3',
     'pino',
     'pino-pretty',
-    // Express 生态系统保持 external（Native/CJS 模块，由 node_modules 提供）
-    'express',
-    'cors',
-    'ws',
-    'multer',
     // electron 相关包保持 external
     'electron-updater',
     'electron-store',
   ],
   // 将 @easyagent/core 和 @easyagent/server 打包进 main.js
   // 避免 pnpm workspace symlink 在 asar 中失效
-  noExternal: ['@easyagent/core', '@easyagent/server'],
+  // express/cors/ws/multer 也内联 → 消除 Desktop 对 server 运行时依赖的"代理声明"
+  noExternal: ['@easyagent/core', '@easyagent/server', 'express', 'cors', 'ws', 'multer'],
   // esbuild 选项
   esbuildOptions(options) {
     // 设置平台为 node，支持 Node.js 内置模块

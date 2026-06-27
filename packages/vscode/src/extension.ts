@@ -12,8 +12,10 @@ let serverVersion = '';
 
 /** EasyAgent 后端基地址 */
 function getBaseUrl(): string {
-  return vscode.workspace.getConfiguration('easyagent').get<string>('serverUrl')
-    || 'http://127.0.0.1:3456';
+  return (
+    vscode.workspace.getConfiguration('easyagent').get<string>('serverUrl') ||
+    'http://127.0.0.1:3456'
+  );
 }
 
 // ---- HTTP 请求封装 ----
@@ -39,7 +41,9 @@ function apiRequest<T>(path: string, method = 'GET', body?: unknown): Promise<T>
 
     const req = http.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk: Buffer) => { data += chunk.toString(); });
+      res.on('data', (chunk: Buffer) => {
+        data += chunk.toString();
+      });
       res.on('end', () => {
         try {
           resolve(JSON.parse(data) as T);
@@ -129,7 +133,10 @@ async function analyzeCode(context: 'selection' | 'file'): Promise<void> {
   }
 
   await vscode.window.withProgress(
-    { location: vscode.ProgressLocation.Notification, title: `EasyAgent 正在分析 ${sourceLabel}...` },
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `EasyAgent 正在分析 ${sourceLabel}...`,
+    },
     async () => {
       try {
         // 通过 chat API 发送分析请求
@@ -147,7 +154,7 @@ async function analyzeCode(context: 'selection' | 'file'): Promise<void> {
         const msg = err instanceof Error ? err.message : String(err);
         vscode.window.showErrorMessage(`EasyAgent 分析失败: ${msg}`);
       }
-    }
+    },
   );
 }
 
@@ -176,7 +183,7 @@ async function explainCode(): Promise<void> {
         const msg = err instanceof Error ? err.message : String(err);
         vscode.window.showErrorMessage(`代码解释失败: ${msg}`);
       }
-    }
+    },
   );
 }
 
@@ -197,10 +204,7 @@ function showInOutputPanel(title: string, content: string): void {
 /** 插件激活入口 */
 export function activate(context: vscode.ExtensionContext): void {
   // 状态栏
-  statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    100
-  );
+  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBarItem.command = 'easyagent.openDashboard';
   context.subscriptions.push(statusBarItem);
 
@@ -219,11 +223,13 @@ export function activate(context: vscode.ExtensionContext): void {
           const ok = await checkConnection();
           updateStatusBar();
           if (ok) {
-            vscode.window.showInformationMessage(`✅ EasyAgent v${serverVersion} 在线 · ${getBaseUrl()}`);
+            vscode.window.showInformationMessage(
+              `✅ EasyAgent v${serverVersion} 在线 · ${getBaseUrl()}`,
+            );
           } else {
             vscode.window.showErrorMessage(`❌ EasyAgent 离线 · 请确认后端已启动: ${getBaseUrl()}`);
           }
-        }
+        },
       );
     }),
   );

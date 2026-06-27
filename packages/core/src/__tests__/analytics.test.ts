@@ -67,9 +67,19 @@ describe('AnalyticsEngine', () => {
     it('统计最近7天的活跃用户', () => {
       const now = Date.now();
       engine.track({ type: 'session_start', timestamp: now, sessionId: 's1', userId: 'u1' });
-      engine.track({ type: 'session_start', timestamp: now - 3 * 24 * 60 * 60 * 1000, sessionId: 's2', userId: 'u2' });
+      engine.track({
+        type: 'session_start',
+        timestamp: now - 3 * 24 * 60 * 60 * 1000,
+        sessionId: 's2',
+        userId: 'u2',
+      });
       // 8天前的事件不应计入
-      engine.track({ type: 'session_start', timestamp: now - 8 * 24 * 60 * 60 * 1000, sessionId: 's3', userId: 'u3' });
+      engine.track({
+        type: 'session_start',
+        timestamp: now - 8 * 24 * 60 * 60 * 1000,
+        sessionId: 's3',
+        userId: 'u3',
+      });
       expect(engine.calculateWAU()).toBe(2);
     });
   });
@@ -78,9 +88,19 @@ describe('AnalyticsEngine', () => {
     it('统计最近30天的活跃用户', () => {
       const now = Date.now();
       engine.track({ type: 'session_start', timestamp: now, sessionId: 's1', userId: 'u1' });
-      engine.track({ type: 'session_start', timestamp: now - 20 * 24 * 60 * 60 * 1000, sessionId: 's2', userId: 'u2' });
+      engine.track({
+        type: 'session_start',
+        timestamp: now - 20 * 24 * 60 * 60 * 1000,
+        sessionId: 's2',
+        userId: 'u2',
+      });
       // 31天前的事件不应计入
-      engine.track({ type: 'session_start', timestamp: now - 31 * 24 * 60 * 60 * 1000, sessionId: 's3', userId: 'u3' });
+      engine.track({
+        type: 'session_start',
+        timestamp: now - 31 * 24 * 60 * 60 * 1000,
+        sessionId: 's3',
+        userId: 'u3',
+      });
       expect(engine.calculateMAU()).toBe(2);
     });
   });
@@ -94,10 +114,34 @@ describe('AnalyticsEngine', () => {
 
     it('计算正确的成功率', () => {
       const now = Date.now();
-      engine.track({ type: 'tool_call', timestamp: now, sessionId: 's1', userId: 'u1', data: { tool: 'read' } });
-      engine.track({ type: 'tool_result', timestamp: now + 100, sessionId: 's1', userId: 'u1', data: { success: true } });
-      engine.track({ type: 'tool_call', timestamp: now, sessionId: 's1', userId: 'u1', data: { tool: 'write' } });
-      engine.track({ type: 'tool_result', timestamp: now + 100, sessionId: 's1', userId: 'u1', data: { success: false } });
+      engine.track({
+        type: 'tool_call',
+        timestamp: now,
+        sessionId: 's1',
+        userId: 'u1',
+        data: { tool: 'read' },
+      });
+      engine.track({
+        type: 'tool_result',
+        timestamp: now + 100,
+        sessionId: 's1',
+        userId: 'u1',
+        data: { success: true },
+      });
+      engine.track({
+        type: 'tool_call',
+        timestamp: now,
+        sessionId: 's1',
+        userId: 'u1',
+        data: { tool: 'write' },
+      });
+      engine.track({
+        type: 'tool_result',
+        timestamp: now + 100,
+        sessionId: 's1',
+        userId: 'u1',
+        data: { success: false },
+      });
       expect(engine.calculateToolSuccessRate()).toBe(0.5);
     });
   });
@@ -112,9 +156,26 @@ describe('AnalyticsEngine', () => {
     it('计算首次成功时间中位数', () => {
       const base = Date.now();
       engine.track({ type: 'session_start', timestamp: base, sessionId: 's1', userId: 'u1' });
-      engine.track({ type: 'tool_result', timestamp: base + 5000, sessionId: 's1', userId: 'u1', data: { success: true } });
-      engine.track({ type: 'session_start', timestamp: base + 1000, sessionId: 's2', userId: 'u2' });
-      engine.track({ type: 'tool_result', timestamp: base + 11000, sessionId: 's2', userId: 'u2', data: { success: true } });
+      engine.track({
+        type: 'tool_result',
+        timestamp: base + 5000,
+        sessionId: 's1',
+        userId: 'u1',
+        data: { success: true },
+      });
+      engine.track({
+        type: 'session_start',
+        timestamp: base + 1000,
+        sessionId: 's2',
+        userId: 'u2',
+      });
+      engine.track({
+        type: 'tool_result',
+        timestamp: base + 11000,
+        sessionId: 's2',
+        userId: 'u2',
+        data: { success: true },
+      });
       // u1: 5000ms, u2: 10000ms → 中位数 7500ms = 7.5s
       const ftsr = engine.calculateFTSR();
       expect(ftsr).toBeGreaterThan(0);
@@ -127,7 +188,12 @@ describe('AnalyticsEngine', () => {
     it('DAU/MAU 比例在 0-1 范围内', () => {
       const now = Date.now();
       for (let i = 0; i < 5; i++) {
-        engine.track({ type: 'session_start', timestamp: now, sessionId: `s${i}`, userId: `u${i}` });
+        engine.track({
+          type: 'session_start',
+          timestamp: now,
+          sessionId: `s${i}`,
+          userId: `u${i}`,
+        });
       }
       const report = engine.generateReport();
       expect(report.northStar.stickiness).toBeGreaterThanOrEqual(0);
@@ -141,7 +207,7 @@ describe('AnalyticsEngine', () => {
     it('返回指定天数的数组', () => {
       const trend = engine.getDAUTrend(7);
       expect(trend).toHaveLength(7);
-      expect(trend.every(v => typeof v === 'number')).toBe(true);
+      expect(trend.every((v) => typeof v === 'number')).toBe(true);
     });
   });
 

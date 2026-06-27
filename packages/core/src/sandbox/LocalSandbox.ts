@@ -1,13 +1,13 @@
 /**
  * 本地进程沙箱（Docker 不可用时的降级方案）
- * 
+ *
  * 功能特性:
  * - 基于 child_process.spawn 直接执行命令
  * - 超时控制 + SIGKILL 强制终止
  * - 输出大小限制（stdout 10MB, stderr 5MB）
  * - 工作目录隔离
  * - 环境变量注入
- * 
+ *
  * 安全注意事项:
  * - 无容器隔离，命令在主机直接执行
  * - 无 CPU/内存硬限制（仅超时+输出大小限制）
@@ -17,7 +17,13 @@
 import { spawn, execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { logger } from '../utils/logger.js';
-import type { SandboxOptions, SandboxResult, SandboxStatus, SandboxInfo, SandboxLimits } from './DockerSandbox.js';
+import type {
+  SandboxOptions,
+  SandboxResult,
+  SandboxStatus,
+  SandboxInfo,
+  SandboxLimits,
+} from './DockerSandbox.js';
 
 /** 本地进程沙箱实例 */
 export class LocalSandbox {
@@ -53,8 +59,8 @@ export class LocalSandbox {
     if (this.containsShellMetacharacters(command)) {
       throw new Error(
         `命令包含不安全的 shell 元字符，已被拒绝执行。` +
-        `允许的字符: 字母数字、空格、路径字符(/ \\ . : - _)、引号(用于路径)和常见参数标识符。` +
-        `命令: ${command.slice(0, 200)}`
+          `允许的字符: 字母数字、空格、路径字符(/ \\ . : - _)、引号(用于路径)和常见参数标识符。` +
+          `命令: ${command.slice(0, 200)}`,
       );
     }
   }
@@ -77,11 +83,11 @@ export class LocalSandbox {
     // \n \r - 换行注入
     // # - 注释（可用于截断命令）
     const dangerousPatterns = [
-      /[;&|`$()><#\x00-\x08\x0B\x0C\x0E-\x1F]/,  // 单个危险字符 + 控制字符
-      /&&/,   // 逻辑与
+      /[;&|`$()><#\x00-\x08\x0B\x0C\x0E-\x1F]/, // 单个危险字符 + 控制字符
+      /&&/, // 逻辑与
       /\|\|/, // 逻辑或
-      /\n/,   // 换行符
-      /\r/,   // 回车符
+      /\n/, // 换行符
+      /\r/, // 回车符
     ];
 
     for (const pattern of dangerousPatterns) {
@@ -123,7 +129,7 @@ export class LocalSandbox {
 
           // 设置环境变量
           const env: Record<string, string> = {
-            ...process.env as Record<string, string>,
+            ...(process.env as Record<string, string>),
             ...(this.options.env || {}),
             SANDBOX_ID: this.id,
             SANDBOX_MODE: this.options.readOnly ? 'readonly' : 'readwrite',
@@ -176,7 +182,9 @@ export class LocalSandbox {
               if (isWindows && proc.pid) {
                 try {
                   execSync(`taskkill /F /T /PID ${proc.pid}`, { windowsHide: true });
-                } catch (err) { proc.kill(); }
+                } catch (err) {
+                  proc.kill();
+                }
               } else {
                 proc.kill();
               }
@@ -192,7 +200,9 @@ export class LocalSandbox {
               if (isWindows && proc.pid) {
                 try {
                   execSync(`taskkill /F /T /PID ${proc.pid}`, { windowsHide: true });
-                } catch (err) { proc.kill(); }
+                } catch (err) {
+                  proc.kill();
+                }
               } else {
                 proc.kill();
               }

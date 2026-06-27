@@ -87,9 +87,9 @@ export interface AnalyticsReport {
   byProvider: Record<string, { messages: number; toolCalls: number; errors: number }>;
   byModel: Record<string, { calls: number; avgTokens: number }>;
   trends: {
-    dauTrend: number[];       // 最近30天 DAU 趋势
-    messagesTrend: number[];  // 最近30天消息趋势
-    retentionTrend: number[];  // 最近7天留存率趋势
+    dauTrend: number[]; // 最近30天 DAU 趋势
+    messagesTrend: number[]; // 最近30天消息趋势
+    retentionTrend: number[]; // 最近7天留存率趋势
   };
 }
 
@@ -104,8 +104,8 @@ export class AnalyticsEngine extends EventEmitter {
   private maxEvents: number;
   private dailyStats: Map<string, DailyStats> = new Map();
   private userSessions: Map<string, Set<string>> = new Map(); // userId → Set<sessionId>
-  private userFirstSeen: Map<string, number> = new Map();      // userId → timestamp
-  private sessionStartTimes: Map<string, number> = new Map();   // sessionId → startTime
+  private userFirstSeen: Map<string, number> = new Map(); // userId → timestamp
+  private sessionStartTimes: Map<string, number> = new Map(); // sessionId → startTime
   private flushing = false;
 
   constructor(maxEvents = 10000) {
@@ -173,7 +173,7 @@ export class AnalyticsEngine extends EventEmitter {
    */
   calculateFTSR(): number {
     const successEvents = this.events.filter(
-      e => e.type === 'tool_result' && e.data?.success === true
+      (e) => e.type === 'tool_result' && e.data?.success === true,
     );
 
     if (successEvents.length === 0) return 0;
@@ -194,9 +194,7 @@ export class AnalyticsEngine extends EventEmitter {
     const times = Array.from(userFirstSuccess.values()).sort((a, b) => a - b);
     if (times.length === 0) return 0;
     const mid = Math.floor(times.length / 2);
-    return times.length % 2 === 0
-      ? (times[mid - 1] + times[mid]) / 2
-      : times[mid];
+    return times.length % 2 === 0 ? (times[mid - 1] + times[mid]) / 2 : times[mid];
   }
 
   /**
@@ -238,7 +236,10 @@ export class AnalyticsEngine extends EventEmitter {
     for (const event of this.events) {
       if (event.type === 'session_start') {
         sessions.set(event.sessionId, { start: event.timestamp });
-      } else if ((event.type === 'chat_message' || event.type === 'tool_result') && sessions.has(event.sessionId)) {
+      } else if (
+        (event.type === 'chat_message' || event.type === 'tool_result') &&
+        sessions.has(event.sessionId)
+      ) {
         const s = sessions.get(event.sessionId)!;
         if (!s.firstValue) {
           s.firstValue = event.timestamp;
@@ -256,9 +257,7 @@ export class AnalyticsEngine extends EventEmitter {
     if (ttfvs.length === 0) return 0;
     ttfvs.sort((a, b) => a - b);
     const mid = Math.floor(ttfvs.length / 2);
-    return ttfvs.length % 2 === 0
-      ? (ttfvs[mid - 1] + ttfvs[mid]) / 2
-      : ttfvs[mid];
+    return ttfvs.length % 2 === 0 ? (ttfvs[mid - 1] + ttfvs[mid]) / 2 : ttfvs[mid];
   }
 
   // ========== DAU/WAU/MAU ==========
@@ -319,11 +318,11 @@ export class AnalyticsEngine extends EventEmitter {
    * 计算工具调用成功率
    */
   calculateToolSuccessRate(): number {
-    const total = this.events.filter(e => e.type === 'tool_call').length;
+    const total = this.events.filter((e) => e.type === 'tool_call').length;
     if (total === 0) return 1;
 
     const successful = this.events.filter(
-      e => e.type === 'tool_result' && e.data?.success === true
+      (e) => e.type === 'tool_result' && e.data?.success === true,
     ).length;
 
     return successful / total;
@@ -339,7 +338,7 @@ export class AnalyticsEngine extends EventEmitter {
 
     for (const [sessionId, startTime] of this.sessionStartTimes) {
       const endEvent = this.events.find(
-        e => e.sessionId === sessionId && e.type === 'session_end'
+        (e) => e.sessionId === sessionId && e.type === 'session_end',
       );
       if (endEvent) {
         durations.push(endEvent.timestamp - startTime);
@@ -399,24 +398,24 @@ export class AnalyticsEngine extends EventEmitter {
     return {
       installToConfig: {
         count: configuredUsers.size,
-        rate: allUsers.size > 0 ? configuredUsers.size / allUsers.size : 0
+        rate: allUsers.size > 0 ? configuredUsers.size / allUsers.size : 0,
       },
       configToFirstChat: {
         count: chattedUsers.size,
-        rate: configuredUsers.size > 0 ? chattedUsers.size / configuredUsers.size : 0
+        rate: configuredUsers.size > 0 ? chattedUsers.size / configuredUsers.size : 0,
       },
       firstChatToToolUse: {
         count: toolUsers.size,
-        rate: chattedUsers.size > 0 ? toolUsers.size / chattedUsers.size : 0
+        rate: chattedUsers.size > 0 ? toolUsers.size / chattedUsers.size : 0,
       },
       toolUseToWAU: {
         count: wau,
-        rate: toolUsers.size > 0 ? wau / toolUsers.size : 0
+        rate: toolUsers.size > 0 ? wau / toolUsers.size : 0,
       },
       wauToMAU: {
         count: mau,
-        rate: wau > 0 ? mau / wau : 0
-      }
+        rate: wau > 0 ? mau / wau : 0,
+      },
     };
   }
 
@@ -486,8 +485,7 @@ export class AnalyticsEngine extends EventEmitter {
         byModel[model].calls++;
         const tokens = (event.data?.tokens as number) || 0;
         byModel[model].avgTokens =
-          (byModel[model].avgTokens * (byModel[model].calls - 1) + tokens) /
-          byModel[model].calls;
+          (byModel[model].avgTokens * (byModel[model].calls - 1) + tokens) / byModel[model].calls;
       }
     }
 
@@ -496,7 +494,7 @@ export class AnalyticsEngine extends EventEmitter {
       generatedAt: new Date().toISOString(),
       period: {
         from: new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        to: new Date().toISOString()
+        to: new Date().toISOString(),
       },
       northStar: {
         ftsr: this.calculateFTSR(),
@@ -508,19 +506,17 @@ export class AnalyticsEngine extends EventEmitter {
         stickiness: mau > 0 ? dau / mau : 0,
         avgSessionDuration: this.calculateAvgSessionDuration(),
         avgMessagesPerUser: this.calculateAvgMessagesPerUser(),
-        toolSuccessRate: this.calculateToolSuccessRate()
+        toolSuccessRate: this.calculateToolSuccessRate(),
       },
-      daily: Array.from(this.dailyStats.values()).sort(
-        (a, b) => a.date.localeCompare(b.date)
-      ),
+      daily: Array.from(this.dailyStats.values()).sort((a, b) => a.date.localeCompare(b.date)),
       funnel: this.calculateUserFunnel(),
       byProvider,
       byModel,
       trends: {
         dauTrend: this.getDAUTrend(30),
         messagesTrend: this.getMessagesTrend(30),
-        retentionTrend: this.getRetentionTrend(7)
-      }
+        retentionTrend: this.getRetentionTrend(7),
+      },
     };
   }
 
@@ -557,7 +553,7 @@ export class AnalyticsEngine extends EventEmitter {
       errors: 0,
       uniqueUsers: 0,
       uniqueProviders: 0,
-      totalTokens: 0
+      totalTokens: 0,
     };
   }
 
@@ -598,7 +594,12 @@ export class AnalyticsEngine extends EventEmitter {
         if (event.userId && event.timestamp >= prevStart && event.timestamp < dayStart) {
           cohort.add(event.userId);
         }
-        if (event.userId && event.timestamp >= dayStart && event.timestamp < dayEnd && cohort.has(event.userId)) {
+        if (
+          event.userId &&
+          event.timestamp >= dayStart &&
+          event.timestamp < dayEnd &&
+          cohort.has(event.userId)
+        ) {
           retained.add(event.userId);
         }
       }

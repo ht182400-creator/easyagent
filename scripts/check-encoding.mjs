@@ -18,11 +18,19 @@ function walk(dir) {
         results.push(p);
       }
     }
-  } catch (_e) { /* skip inaccessible dirs */ }
+  } catch (_e) {
+    /* skip inaccessible dirs */
+  }
   return results;
 }
 
-const packages = ['packages/cli/src', 'packages/core/src', 'packages/desktop/src', 'packages/server/src', 'packages/web/src'];
+const packages = [
+  'packages/cli/src',
+  'packages/core/src',
+  'packages/desktop/src',
+  'packages/server/src',
+  'packages/web/src',
+];
 let badFiles = [];
 
 for (const pkg of packages) {

@@ -1,8 +1,8 @@
 /**
  * EasyAgent 版本发布脚本
- * 
+ *
  * 功能: 版本号同步 → 代码构建 → Git 提交/Tag → GitHub Release 创建
- * 
+ *
  * 用法:
  *   node scripts/release.mjs <version>            # 发布指定版本
  *   node scripts/release.mjs patch               # 自动递增 patch (0.3.0 → 0.3.1)
@@ -22,11 +22,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 
 /** 日志包装函数（保持向后兼容的 API） */
-function warn(msg) { log.warn(msg); }
-function error(msg) { log.error(msg); }
-function success(msg) { log.ok(msg); }
-function info(msg) { log.info(msg); }
-function header(msg) { log.title(msg); }
+function warn(msg) {
+  log.warn(msg);
+}
+function error(msg) {
+  log.error(msg);
+}
+function success(msg) {
+  log.ok(msg);
+}
+function info(msg) {
+  log.info(msg);
+}
+function header(msg) {
+  log.title(msg);
+}
 
 /** 判断是否为 dry-run */
 const isDryRun = process.argv.includes('--dry-run');
@@ -37,9 +47,12 @@ function bumpVersion(current, type) {
   if (parts.length !== 3) throw new Error(`无效的版本号: ${current}`);
 
   switch (type) {
-    case 'major': return `${parts[0] + 1}.0.0`;
-    case 'minor': return `${parts[0]}.${parts[1] + 1}.0`;
-    case 'patch': return `${parts[0]}.${parts[1]}.${parts[2] + 1}`;
+    case 'major':
+      return `${parts[0] + 1}.0.0`;
+    case 'minor':
+      return `${parts[0]}.${parts[1] + 1}.0`;
+    case 'patch':
+      return `${parts[0]}.${parts[1]}.${parts[2] + 1}`;
   }
 }
 
@@ -48,8 +61,8 @@ function getTargetVersion() {
   const arg = process.argv[2];
 
   // 跳过 node 路径和脚本名，取第一个非 -- 参数
-  const targetArg = process.argv.slice(2).find(a => !a.startsWith('--'));
-  
+  const targetArg = process.argv.slice(2).find((a) => !a.startsWith('--'));
+
   if (targetArg === 'patch' || targetArg === 'minor' || targetArg === 'major') {
     const currentVersion = JSON.parse(readFileSync(join(root, 'version.json'), 'utf-8')).version;
     return bumpVersion(currentVersion, targetArg);
@@ -57,7 +70,7 @@ function getTargetVersion() {
   if (targetArg && /^\d+\.\d+\.\d+$/.test(targetArg)) {
     return targetArg;
   }
-  
+
   // 没有参数，默认 patch
   const currentVersion = JSON.parse(readFileSync(join(root, 'version.json'), 'utf-8')).version;
   return bumpVersion(currentVersion, 'patch');
@@ -66,8 +79,11 @@ function getTargetVersion() {
 /** 询问用户确认 */
 function askQuestion(query) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise(resolve => {
-    rl.question(query, answer => { rl.close(); resolve(answer); });
+  return new Promise((resolve) => {
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
   });
 }
 
@@ -78,7 +94,7 @@ function checkRepoStatus() {
     if (status) {
       warn('工作区有未提交的更改:');
       const lines = status.split('\n').slice(0, 10);
-      lines.forEach(l => log.info(`  ${l}`));
+      lines.forEach((l) => log.info(`  ${l}`));
       if (status.split('\n').length > 10) {
         log.info(`  ... 还有 ${status.split('\n').length - 10} 个文件`);
       }
@@ -101,8 +117,14 @@ function extractFromMemory(version) {
   // 确定起始日期：上次 tag 的日期 或 7 天前
   let sinceDate;
   try {
-    const lastTag = execSync('git describe --tags --abbrev=0', { cwd: root, encoding: 'utf-8' }).trim();
-    const tagDate = execSync(`git log -1 --format=%ai ${lastTag}`, { cwd: root, encoding: 'utf-8' }).trim();
+    const lastTag = execSync('git describe --tags --abbrev=0', {
+      cwd: root,
+      encoding: 'utf-8',
+    }).trim();
+    const tagDate = execSync(`git log -1 --format=%ai ${lastTag}`, {
+      cwd: root,
+      encoding: 'utf-8',
+    }).trim();
     sinceDate = tagDate.split(' ')[0];
   } catch {
     const d = new Date();
@@ -111,8 +133,8 @@ function extractFromMemory(version) {
   }
 
   const files = readdirSync(memoryDir)
-    .filter(f => f.endsWith('.md') && f.match(/^\d{4}-\d{2}-\d{2}\.md$/))
-    .filter(f => f >= `${sinceDate}.md`)
+    .filter((f) => f.endsWith('.md') && f.match(/^\d{4}-\d{2}-\d{2}\.md$/))
+    .filter((f) => f >= `${sinceDate}.md`)
     .sort();
 
   if (files.length === 0) return null;
@@ -135,7 +157,10 @@ function extractFromMemory(version) {
       let desc = '';
       for (const key of ['问题', '背景', '需求', '产物', '实施内容', '实施修改']) {
         const m = section.match(new RegExp(`\\*\\*${key}\\*\\*[：:]\\s*(.+)`));
-        if (m) { desc = m[1]; break; }
+        if (m) {
+          desc = m[1];
+          break;
+        }
       }
       if (!desc) desc = title;
 
@@ -169,16 +194,18 @@ function extractFromMemory(version) {
 /** 生成当前版本的 changelog 条目（git commits 优先，空时从 memory 回退） */
 function generateChangelogEntry(version) {
   const today = new Date().toISOString().split('T')[0];
-  
+
   try {
     // 获取上一个 tag 以来的提交
     let since = '';
     try {
       since = execSync('git describe --tags --abbrev=0', { cwd: root, encoding: 'utf-8' }).trim();
-    } catch { since = ''; }
+    } catch {
+      since = '';
+    }
 
     const logArgs = since ? `git log ${since}..HEAD --pretty=format:"- %s (%an)"` : '';
-    
+
     if (!logArgs) {
       // 无历史 tag，尝试从 memory 记录提取
       const memEntry = extractFromMemory(version);
@@ -198,16 +225,17 @@ function generateChangelogEntry(version) {
       const l = line.trim();
       if (l.toLowerCase().includes('add') || l.toLowerCase().includes('feat')) added.push(l);
       else if (l.toLowerCase().includes('fix') || l.toLowerCase().includes('bug')) fixed.push(l);
-      else if (l.toLowerCase().includes('change') || l.toLowerCase().includes('refactor')) changed.push(l);
+      else if (l.toLowerCase().includes('change') || l.toLowerCase().includes('refactor'))
+        changed.push(l);
       else other.push(l);
     }
 
     let entry = `## [${version}] - ${today}\n`;
-    if (added.length) entry += `\n### Added\n${added.map(l => l).join('\n')}\n`;
-    if (changed.length) entry += `\n### Changed\n${changed.map(l => l).join('\n')}\n`;
-    if (fixed.length) entry += `\n### Fixed\n${fixed.map(l => l).join('\n')}\n`;
+    if (added.length) entry += `\n### Added\n${added.map((l) => l).join('\n')}\n`;
+    if (changed.length) entry += `\n### Changed\n${changed.map((l) => l).join('\n')}\n`;
+    if (fixed.length) entry += `\n### Fixed\n${fixed.map((l) => l).join('\n')}\n`;
     if (other.length && !added.length && !changed.length && !fixed.length) {
-      entry += `\n### Changed\n${other.map(l => l).join('\n')}\n`;
+      entry += `\n### Changed\n${other.map((l) => l).join('\n')}\n`;
     }
 
     // 兜底：git log 为空时从 memory 记录回退
@@ -234,16 +262,18 @@ function updateChangelog(version) {
 
   const changelog = readFileSync(changelogPath, 'utf-8');
   const entry = generateChangelogEntry(version);
-  
+
   // 插入到第一个 ## [ 之前
   const insertPos = changelog.indexOf('## [');
   let newChangelog;
   if (insertPos === -1) {
     // 在标题后插入
     const titleEnd = changelog.indexOf('\n\n');
-    newChangelog = changelog.substring(0, titleEnd + 2) + entry + '\n' + changelog.substring(titleEnd + 2);
+    newChangelog =
+      changelog.substring(0, titleEnd + 2) + entry + '\n' + changelog.substring(titleEnd + 2);
   } else {
-    newChangelog = changelog.substring(0, insertPos) + entry + '\n' + changelog.substring(insertPos);
+    newChangelog =
+      changelog.substring(0, insertPos) + entry + '\n' + changelog.substring(insertPos);
   }
 
   if (!isDryRun) {
@@ -256,7 +286,7 @@ function updateChangelog(version) {
 /** 主流程 */
 async function main() {
   const targetVersion = getTargetVersion();
-  
+
   log.hr();
   log.info(`EasyAgent Release v${targetVersion}${isDryRun ? ' (DRY RUN)' : ''}`);
   log.hr();
@@ -299,7 +329,7 @@ async function main() {
   }
 
   // 4.1 检查是否有实质变更（避免 commit 内容为空）
-  const commitLines = changelogEntry.split('\n').filter(l => l.startsWith('- '));
+  const commitLines = changelogEntry.split('\n').filter((l) => l.startsWith('- '));
   const hasContent = commitLines.length > 0;
   if (!hasContent) {
     warn('未从 git log 提取到任何提交记录！');
@@ -319,19 +349,22 @@ async function main() {
   try {
     // 构造含变更摘要的 commit message
     const changelogSummary = changelogEntry
-      .replace(/^## \[.*\] - .*\n/gm, '')  // 去掉标题行
-      .replace(/^###\s/gm, '')              // 保留分类名但去 ### 前缀
+      .replace(/^## \[.*\] - .*\n/gm, '') // 去掉标题行
+      .replace(/^###\s/gm, '') // 保留分类名但去 ### 前缀
       .trim();
     const commitMsg = `release: v${targetVersion}\n\n${changelogSummary}`;
-    
+
     execSync('git add .', { cwd: root, stdio: 'inherit' });
     execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, { cwd: root, stdio: 'inherit' });
     success(`Git commit: release v${targetVersion}`);
     info(`  ${commitLines.length} 条变更`);
-    
-    execSync(`git tag -a v${targetVersion} -m "EasyAgent v${targetVersion}"`, { cwd: root, stdio: 'inherit' });
+
+    execSync(`git tag -a v${targetVersion} -m "EasyAgent v${targetVersion}"`, {
+      cwd: root,
+      stdio: 'inherit',
+    });
     success(`Git tag: v${targetVersion}`);
-    
+
     execSync('git push origin main --follow-tags', { cwd: root, stdio: 'inherit' });
     success('已推送到 GitHub (main + tags)');
   } catch (err) {
@@ -346,7 +379,7 @@ async function main() {
   log.info('下一步: 在 GitHub Release 页面手动补充 Release Notes');
 }
 
-main().catch(err => {
+main().catch((err) => {
   error(`发布失败: ${(err && err.message) || err}`);
   process.exit(1);
 });

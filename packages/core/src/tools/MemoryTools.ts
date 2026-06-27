@@ -2,7 +2,14 @@
  * 记忆/知识库工具集
  * 支持会话级别的记忆存取，便于跨轮次上下文保持
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, unlinkSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  unlinkSync,
+} from 'node:fs';
 import { resolve, join } from 'node:path';
 import type { ITool } from './ToolRegistry.js';
 import type { ToolResult, ToolContext } from '../types/index.js';
@@ -27,7 +34,10 @@ export const RememberTool: ITool = {
     properties: {
       key: { type: 'string', description: '记忆的键名/标识符(用于检索)' },
       content: { type: 'string', description: '要存储的内容' },
-      category: { type: 'string', description: '可选: 分类标签, 如 convention/preference/decision/fact' },
+      category: {
+        type: 'string',
+        description: '可选: 分类标签, 如 convention/preference/decision/fact',
+      },
     },
     required: ['key', 'content'],
   },
@@ -73,9 +83,11 @@ export const RecallTool: ITool = {
 
       if (params.key) {
         const key = (params.key as string).replace(/[^a-zA-Z0-9_\-]/g, '_');
-        const category = params.category as string || '';
+        const category = (params.category as string) || '';
         // 寻找匹配文件
-        const files = readdirSync(memDir).filter((f) => f.includes(key) && (category ? f.includes(category) : true));
+        const files = readdirSync(memDir).filter(
+          (f) => f.includes(key) && (category ? f.includes(category) : true),
+        );
         if (files.length === 0) {
           return { success: true, content: `未找到记忆: ${key}` };
         }
@@ -92,12 +104,19 @@ export const RecallTool: ITool = {
       }
       const titles = files.map((f) => {
         const content = readFileSync(join(memDir, f), 'utf-8');
-        const firstLine = content.split('\n').find((l) => l.startsWith('# '))?.replace('# ', '') || f;
+        const firstLine =
+          content
+            .split('\n')
+            .find((l) => l.startsWith('# '))
+            ?.replace('# ', '') || f;
         const category = content.match(/> 分类: (\w+)/)?.[1] || 'general';
         return `  [${category}] ${firstLine} (${f})`;
       });
 
-      return { success: true, content: `记忆库 (${files.length}条):\n${titles.join('\n')}\n\n使用 key 参数检索指定记忆内容` };
+      return {
+        success: true,
+        content: `记忆库 (${files.length}条):\n${titles.join('\n')}\n\n使用 key 参数检索指定记忆内容`,
+      };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       return { success: false, content: `检索记忆失败: ${msg}`, error: msg };

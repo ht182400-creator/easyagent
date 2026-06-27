@@ -1,20 +1,20 @@
 import type { FC } from 'react';
 /** 消息类型 */
 export interface CLIMessage {
-    id: string;
-    role: 'user' | 'assistant' | 'system';
-    content: string;
-    isStreaming?: boolean;
-    /** 工具调用信息 */
-    toolCall?: {
-        name: string;
-        status: 'pending' | 'running' | 'done' | 'error';
-    };
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  isStreaming?: boolean;
+  /** 工具调用信息 */
+  toolCall?: {
+    name: string;
+    status: 'pending' | 'running' | 'done' | 'error';
+  };
 }
 interface MessageListProps {
-    messages: CLIMessage[];
-    /** 最大显示行数(超出后折叠) */
-    maxVisible?: number;
+  messages: CLIMessage[];
+  /** 最大显示行数(超出后折叠) */
+  maxVisible?: number;
 }
 /**
  * 消息列表 - 区分显示用户/助手/系统消息

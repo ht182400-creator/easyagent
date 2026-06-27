@@ -61,14 +61,16 @@ describe('TabBar', () => {
 
     it('不可关闭的标签不应有关闭按钮', () => {
       // 添加不可关闭标签
-      useUIStore.getState().openTab(makeTab({ id: 'settings', type: 'settings', title: '设置', closable: false }));
+      useUIStore
+        .getState()
+        .openTab(makeTab({ id: 'settings', type: 'settings', title: '设置', closable: false }));
       useUIStore.getState().setActiveTab('settings');
 
       const { container } = render(<TabBar />);
       const closeButtons = container.querySelectorAll('button');
       // 不可关闭的标签没有关闭按钮（只有 tab 容器可能有点击）
       const xButtons = Array.from(container.querySelectorAll('svg')).filter(
-        (el) => el.closest('[class*="opacity-0 group-hover:opacity-100"]') !== null
+        (el) => el.closest('[class*="opacity-0 group-hover:opacity-100"]') !== null,
       );
       // closable=false 的不显示关闭 X
       expect(xButtons.length).toBeLessThanOrEqual(1); // 只有 chat 标签有 X
@@ -81,7 +83,9 @@ describe('TabBar', () => {
     beforeEach(() => {
       useUIStore.getState().openTab(makeTab({ id: 'tab-1', title: '对话 1' }));
       useUIStore.getState().openTab(makeTab({ id: 'tab-2', title: '对话 2', sessionId: 's2' }));
-      useUIStore.getState().openTab(makeTab({ id: 'tab-3', title: '设置', type: 'settings', closable: false }));
+      useUIStore
+        .getState()
+        .openTab(makeTab({ id: 'tab-3', title: '设置', type: 'settings', closable: false }));
     });
 
     it('应显示所有标签标题', () => {
@@ -98,9 +102,9 @@ describe('TabBar', () => {
       const { container } = render(<TabBar />);
       // 通过文本内容找到 tab-2
       const tabElements = container.querySelectorAll('.no-drag');
-      const tab2El = Array.from(tabElements).find(
-        (el) => el.textContent?.includes('对话 2')
-      ) as HTMLElement | undefined;
+      const tab2El = Array.from(tabElements).find((el) => el.textContent?.includes('对话 2')) as
+        | HTMLElement
+        | undefined;
       if (tab2El) fireEvent.click(tab2El);
 
       // 现在 tab-2 应该是活动的
@@ -122,9 +126,9 @@ describe('TabBar', () => {
   describe('异常边界', () => {
     it('大量标签应正常渲染', () => {
       for (let i = 0; i < 20; i++) {
-        useUIStore.getState().openTab(
-          makeTab({ id: `tab-${i}`, title: `对话 ${i}`, sessionId: `s${i}` })
-        );
+        useUIStore
+          .getState()
+          .openTab(makeTab({ id: `tab-${i}`, title: `对话 ${i}`, sessionId: `s${i}` }));
       }
       const { container } = render(<TabBar />);
       // 应有 20 个 tab DOM 节点

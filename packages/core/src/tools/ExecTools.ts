@@ -135,7 +135,7 @@ export const GitStatusTool: ITool = {
   },
   async execute(params, context): Promise<ToolResult> {
     try {
-      const repoPath = params.path ? params.path as string : context.workspace;
+      const repoPath = params.path ? (params.path as string) : context.workspace;
 
       if (!existsSync(repoPath)) {
         return { success: false, content: `路径不存在: ${repoPath}` };
@@ -183,7 +183,7 @@ export const GitDiffTool: ITool = {
   async execute(params, context): Promise<ToolResult> {
     try {
       const staged = params.staged as boolean;
-      const targetPath = params.path as string || '.';
+      const targetPath = (params.path as string) || '.';
 
       const args = ['diff'];
       if (staged) args.push('--staged');
@@ -267,7 +267,11 @@ export const GitBranchTool: ITool = {
   parameters: {
     type: 'object',
     properties: {
-      action: { type: 'string', enum: ['list', 'create', 'delete', 'switch'], description: '操作: list(列表)/create(创建)/delete(删除)/switch(切换)' },
+      action: {
+        type: 'string',
+        enum: ['list', 'create', 'delete', 'switch'],
+        description: '操作: list(列表)/create(创建)/delete(删除)/switch(切换)',
+      },
       branchName: { type: 'string', description: '分支名称(create/delete/switch时需要)' },
     },
     required: [],
@@ -279,7 +283,11 @@ export const GitBranchTool: ITool = {
 
       switch (action) {
         case 'list': {
-          const output = execSync('git branch -a', { encoding: 'utf-8', cwd: context.workspace, timeout: 10000 });
+          const output = execSync('git branch -a', {
+            encoding: 'utf-8',
+            cwd: context.workspace,
+            timeout: 10000,
+          });
           return { success: true, content: output.trim() };
         }
         case 'create': {
@@ -332,7 +340,10 @@ export const GitBlameTool: ITool = {
       }
       args.push('--', filePath);
       const output = execSync(`git ${args.join(' ')}`, {
-        cwd: context.workspace, encoding: 'utf-8', timeout: 15000, maxBuffer: 1024 * 1024,
+        cwd: context.workspace,
+        encoding: 'utf-8',
+        timeout: 15000,
+        maxBuffer: 1024 * 1024,
       });
       return { success: true, content: output.trim() || '无blame信息' };
     } catch (error) {
@@ -353,7 +364,11 @@ export const GitCommitTool: ITool = {
     type: 'object',
     properties: {
       message: { type: 'string', description: '提交信息' },
-      files: { type: 'array', items: { type: 'string', description: '文件路径' }, description: '要暂存的文件路径列表(相对于工作区), 不指定则提交所有变更' },
+      files: {
+        type: 'array',
+        items: { type: 'string', description: '文件路径' },
+        description: '要暂存的文件路径列表(相对于工作区), 不指定则提交所有变更',
+      },
       amend: { type: 'boolean', description: '是否修改上一次提交(amend), 默认false' },
     },
     required: ['message'],
@@ -362,7 +377,7 @@ export const GitCommitTool: ITool = {
     try {
       const message = params.message as string;
       const files = params.files as string[] | undefined;
-      const amend = params.amend as boolean || false;
+      const amend = (params.amend as boolean) || false;
 
       // 暂存文件
       if (files && files.length > 0) {
@@ -374,7 +389,11 @@ export const GitCommitTool: ITool = {
       // 提交
       const commitArgs = ['commit', '-m', `"${message.replace(/"/g, '\\"')}"`];
       if (amend) commitArgs.push('--amend', '--no-edit');
-      const output = execSync(`git ${commitArgs.join(' ')}`, { cwd: context.workspace, encoding: 'utf-8', timeout: 30000 });
+      const output = execSync(`git ${commitArgs.join(' ')}`, {
+        cwd: context.workspace,
+        encoding: 'utf-8',
+        timeout: 30000,
+      });
       return { success: true, content: output.trim() || '提交成功' };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -384,4 +403,12 @@ export const GitCommitTool: ITool = {
 };
 
 /** 执行与Git工具 */
-export const ExecTools = [ExecTool, GitStatusTool, GitDiffTool, GitLogTool, GitBranchTool, GitBlameTool, GitCommitTool];
+export const ExecTools = [
+  ExecTool,
+  GitStatusTool,
+  GitDiffTool,
+  GitLogTool,
+  GitBranchTool,
+  GitBlameTool,
+  GitCommitTool,
+];

@@ -9,7 +9,10 @@ import { tmpdir } from 'node:os';
 
 /** 创建临时测试目录 */
 function createTestDir(): string {
-  const dir = resolve(tmpdir(), `ea-mcp-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = resolve(
+    tmpdir(),
+    `ea-mcp-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -27,7 +30,9 @@ function createMcpScript(scriptCode: string): [string, string] {
 
 /** 清理临时目录 */
 function cleanMcpDir(dir: string): void {
-  try { rmSync(dir, { recursive: true, force: true }); } catch (err) { }
+  try {
+    rmSync(dir, { recursive: true, force: true });
+  } catch (err) {}
 }
 
 // ==================== MCPClient 测试 ====================
@@ -83,7 +88,10 @@ rl.on('line', (line) => {
 });
 `);
     const client = new MCPClient({
-      name: 'echo-server', command: 'node', args: [scriptPath], enabled: true,
+      name: 'echo-server',
+      command: 'node',
+      args: [scriptPath],
+      enabled: true,
     });
     try {
       const tools = await client.connect();
@@ -114,7 +122,10 @@ rl.on('line', (line) => {
 });
 `);
     const client = new MCPClient({
-      name: 'tools-server', command: 'node', args: [scriptPath], enabled: true,
+      name: 'tools-server',
+      command: 'node',
+      args: [scriptPath],
+      enabled: true,
     });
     try {
       const tools = await client.connect();
@@ -137,7 +148,10 @@ rl.on('line', (line) => {
 });
 `);
     const client = new MCPClient({
-      name: 'reconnect-server', command: 'node', args: [scriptPath], enabled: true,
+      name: 'reconnect-server',
+      command: 'node',
+      args: [scriptPath],
+      enabled: true,
     });
     try {
       const tools1 = await client.connect();
@@ -159,7 +173,10 @@ rl.on('line', (line) => {
 });
 `);
     const client = new MCPClient({
-      name: 'disc-server', command: 'node', args: [scriptPath], enabled: true,
+      name: 'disc-server',
+      command: 'node',
+      args: [scriptPath],
+      enabled: true,
     });
     try {
       await client.connect();
@@ -215,7 +232,10 @@ rl.on('line', (line) => {
 });
 `);
     const client = new MCPClient({
-      name: 'err-server', command: 'node', args: [scriptPath], enabled: true,
+      name: 'err-server',
+      command: 'node',
+      args: [scriptPath],
+      enabled: true,
     });
     try {
       await expect(client.connect()).rejects.toThrow('Internal error');
@@ -272,7 +292,10 @@ rl.on('line', (line) => {
 `);
     try {
       const tools = await manager.connect({
-        name: 'test-mcp', command: 'node', args: [scriptPath], enabled: true,
+        name: 'test-mcp',
+        command: 'node',
+        args: [scriptPath],
+        enabled: true,
       });
       expect(tools).toHaveLength(1);
       expect(tools[0].name).toBe('mcp_test-mcp_tool1');
@@ -303,11 +326,17 @@ rl.on('line', (line) => {
 `);
     try {
       await manager.connect({
-        name: 'dup-server', command: 'node', args: [scriptPath1], enabled: true,
+        name: 'dup-server',
+        command: 'node',
+        args: [scriptPath1],
+        enabled: true,
       });
       // 第二次连接
       const tools = await manager.connect({
-        name: 'dup-server', command: 'node', args: [scriptPath2], enabled: true,
+        name: 'dup-server',
+        command: 'node',
+        args: [scriptPath2],
+        enabled: true,
       });
       expect(tools[0].name).toContain('v2');
       expect(manager.getConnectedServers().length).toBe(1);
@@ -320,12 +349,14 @@ rl.on('line', (line) => {
 
   it('connect失败应清理已添加的client', async () => {
     const manager = new MCPManager();
-    await expect(manager.connect({
-      name: 'fail-server',
-      command: 'non_existent_cmd_xyz_99',
-      args: [],
-      enabled: true,
-    })).rejects.toThrow();
+    await expect(
+      manager.connect({
+        name: 'fail-server',
+        command: 'non_existent_cmd_xyz_99',
+        args: [],
+        enabled: true,
+      }),
+    ).rejects.toThrow();
     expect(manager.getConnectedServers()).toEqual([]);
   }, 10000);
 
@@ -349,10 +380,16 @@ rl.on('line', (line) => {
 `);
     try {
       await manager.connect({
-        name: 'srv-a', command: 'node', args: [scriptPathA], enabled: true,
+        name: 'srv-a',
+        command: 'node',
+        args: [scriptPathA],
+        enabled: true,
       });
       await manager.connect({
-        name: 'srv-b', command: 'node', args: [scriptPathB], enabled: true,
+        name: 'srv-b',
+        command: 'node',
+        args: [scriptPathB],
+        enabled: true,
       });
       expect(manager.getConnectedServers().length).toBe(2);
       await manager.disconnectAll();
@@ -385,7 +422,10 @@ rl.on('line', (line) => {
 `);
     try {
       const tools = await manager.connect({
-        name: 'prefix-test', command: 'node', args: [scriptPath], enabled: true,
+        name: 'prefix-test',
+        command: 'node',
+        args: [scriptPath],
+        enabled: true,
       });
       expect(tools[0].name).toBe('mcp_prefix-test_my_tool');
       expect(tools[0].parameters.required).toContain('param');
@@ -412,7 +452,10 @@ rl.on('line', (line) => {
 `);
     try {
       const tools = await manager.connect({
-        name: 'echo-srv', command: 'node', args: [scriptPath], enabled: true,
+        name: 'echo-srv',
+        command: 'node',
+        args: [scriptPath],
+        enabled: true,
       });
       const result = await manager.callTool('mcp_echo-srv_echo', { input: 'hello' });
       expect(result.success).toBe(true);
@@ -449,7 +492,10 @@ rl.on('line', (line) => {
 `);
     try {
       await manager.connect({
-        name: 'multi-srv', command: 'node', args: [scriptPath], enabled: true,
+        name: 'multi-srv',
+        command: 'node',
+        args: [scriptPath],
+        enabled: true,
       });
       const allTools = manager.getAllITools();
       expect(allTools.length).toBe(2);
@@ -472,7 +518,10 @@ rl.on('line', (line) => {
 `);
     try {
       const tools = await manager.connect({
-        name: 'auto-srv', command: 'node', args: [scriptPath], enabled: true,
+        name: 'auto-srv',
+        command: 'node',
+        args: [scriptPath],
+        enabled: true,
         autoApprove: ['safe_tool'],
       });
       const safeTool = tools.find((t: any) => t.name.includes('safe_tool'));
@@ -501,7 +550,10 @@ rl.on('line', (line) => {
 `);
     try {
       const tools = await manager.connect({
-        name: 'extract-srv', command: 'node', args: [scriptPath], enabled: true,
+        name: 'extract-srv',
+        command: 'node',
+        args: [scriptPath],
+        enabled: true,
       });
       const result = await manager.callTool('mcp_extract-srv_extract', {});
       expect(result.success).toBe(true);
@@ -553,7 +605,10 @@ rl.on('line', (line) => {
 `);
     try {
       const tools = await manager.connect({
-        name: 'str-srv', command: 'node', args: [scriptPath], enabled: true,
+        name: 'str-srv',
+        command: 'node',
+        args: [scriptPath],
+        enabled: true,
       });
       const result = await manager.callTool('mcp_str-srv_strtool', {});
       expect(result.success).toBe(true);

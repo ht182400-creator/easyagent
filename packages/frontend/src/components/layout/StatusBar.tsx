@@ -20,7 +20,10 @@ export const StatusBar: FC = () => {
     const api = (window as any).easyAgent;
     if (api) {
       // 获取版本号
-      api.getAppVersion().then((v: string) => setAppVersion(v)).catch(() => {});
+      api
+        .getAppVersion()
+        .then((v: string) => setAppVersion(v))
+        .catch(() => {});
       // 监听更新状态
       api.onUpdateStatus((s: UpdateInfo) => setUpdateInfo(s));
     }
@@ -38,15 +41,16 @@ export const StatusBar: FC = () => {
         <Zap className="w-3 h-3" />
         <span>v{appVersion}</span>
         {updateInfo?.status === 'available' && (
-          <span className="text-yellow-400 cursor-pointer" title={`新版本 ${updateInfo.version} 可用`}>
+          <span
+            className="text-yellow-400 cursor-pointer"
+            title={`新版本 ${updateInfo.version} 可用`}
+          >
             <Download className="w-3 h-3 inline mr-1" />
             更新可用
           </span>
         )}
         {isUpdating && (
-          <span className="text-blue-400">
-            下载中... {updateInfo?.percent?.toFixed(0)}%
-          </span>
+          <span className="text-blue-400">下载中... {updateInfo?.percent?.toFixed(0)}%</span>
         )}
         {updateInfo?.status === 'downloaded' && (
           <span className="text-green-400">重启以安装更新</span>

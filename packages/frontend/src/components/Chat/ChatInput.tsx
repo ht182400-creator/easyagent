@@ -3,10 +3,7 @@
  * 模型列表从 /api/providers/all-models 动态获取
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  Send, Loader2, Paperclip, Cpu, Shield, X,
-  ChevronDown, Command
-} from 'lucide-react';
+import { Send, Loader2, Paperclip, Cpu, Shield, X, ChevronDown, Command } from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
 import { useProviderStore } from '../../stores/providerStore';
 import { getApiBase } from '../../request';
@@ -40,7 +37,9 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
   const [availableModels, setAvailableModels] = useState<DynamicModel[]>([]);
   const [modelsLoading, setModelsLoading] = useState(false);
   const isGenerating = useChatStore((s) => s.sessions[sessionId]?.isGenerating || false);
-  const connectionState = useChatStore((s) => s.sessions[sessionId]?.connectionState || 'disconnected');
+  const connectionState = useChatStore(
+    (s) => s.sessions[sessionId]?.connectionState || 'disconnected',
+  );
   const composerPrefill = useChatStore((s) => s.composerPrefill);
   const clearComposerPrefill = useChatStore((s) => s.clearComposerPrefill);
   const currentProvider = useProviderStore((s) => s.currentProvider);
@@ -152,18 +151,21 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
         handleSend();
       }
     },
-    [handleSend, sendBehavior]
+    [handleSend, sendBehavior],
   );
 
   // 附件处理
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setAttachments((prev) => [...prev, ...files].slice(0, 5));
-      addNotification({ type: 'info', message: `已添加 ${files.length} 个文件`, duration: 2000 });
-    }
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  }, [addNotification]);
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) {
+        setAttachments((prev) => [...prev, ...files].slice(0, 5));
+        addNotification({ type: 'info', message: `已添加 ${files.length} 个文件`, duration: 2000 });
+      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    },
+    [addNotification],
+  );
 
   const removeAttachment = useCallback((index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
@@ -188,30 +190,42 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
       }
     }
     fetchModels();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // 当 providers store 更新时也刷新模型列表（避免数组引用变化导致重复请求）
-  const providersId = useProviderStore((s) => s.providers.map((p) => p.id).sort().join(','));
+  const providersId = useProviderStore((s) =>
+    s.providers
+      .map((p) => p.id)
+      .sort()
+      .join(','),
+  );
   useEffect(() => {
     const upstreamProviders = useProviderStore.getState().providers;
     if (upstreamProviders.length > 0) {
       const apiBase = getApiBase();
       fetch(`${apiBase}/api/providers/all-models`)
         .then((r) => r.json())
-        .then((data) => { if (data.success) setAvailableModels(data.models || []); })
+        .then((data) => {
+          if (data.success) setAvailableModels(data.models || []);
+        })
         .catch(() => {});
     }
   }, [providersId]);
 
   // 模型选择
-  const handleModelSelect = useCallback((provider: string, model: string) => {
-    setCurrentModel(provider, model);
-    setShowModelMenu(false);
-  }, [setCurrentModel]);
+  const handleModelSelect = useCallback(
+    (provider: string, model: string) => {
+      setCurrentModel(provider, model);
+      setShowModelMenu(false);
+    },
+    [setCurrentModel],
+  );
 
   const currentModelInfo = availableModels.find(
-    (m) => m.modelId === currentModel && m.provider === currentProvider
+    (m) => m.modelId === currentModel && m.provider === currentProvider,
   );
 
   // 按提供商分组模型
@@ -264,9 +278,7 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
 
           {/* 字符计数 */}
           {input.length > 0 && (
-            <span className="absolute right-3 bottom-2 text-xs text-gray-600">
-              {input.length}
-            </span>
+            <span className="absolute right-3 bottom-2 text-xs text-gray-600">{input.length}</span>
           )}
         </div>
 
@@ -299,7 +311,9 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
               <span className="text-xs max-w-[100px] truncate">
                 {currentModelInfo?.modelName || currentModel}
               </span>
-              <ChevronDown className={`w-3 h-3 transition-transform ${showModelMenu ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-3 h-3 transition-transform ${showModelMenu ? 'rotate-180' : ''}`}
+              />
             </button>
 
             {showModelMenu && (
@@ -332,10 +346,14 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
                             <span className="truncate">{m.modelName}</span>
                             <div className="flex items-center gap-1 shrink-0">
                               {m.supportsTools && (
-                                <span className="text-[10px] text-blue-500" title="支持工具调用">🛠</span>
+                                <span className="text-[10px] text-blue-500" title="支持工具调用">
+                                  🛠
+                                </span>
                               )}
                               {m.supportsVision && (
-                                <span className="text-[10px] text-green-500" title="支持图像">👁</span>
+                                <span className="text-[10px] text-green-500" title="支持图像">
+                                  👁
+                                </span>
                               )}
                             </div>
                           </button>
@@ -350,11 +368,7 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
 
           {/* 发送 / 停止按钮 */}
           {isGenerating ? (
-            <button
-              onClick={handleStop}
-              className="btn btn-danger btn-sm"
-              title="停止生成"
-            >
+            <button onClick={handleStop} className="btn btn-danger btn-sm" title="停止生成">
               <X className="w-4 h-4" /> 停止
             </button>
           ) : (

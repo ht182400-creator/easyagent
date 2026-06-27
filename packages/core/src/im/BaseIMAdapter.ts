@@ -3,9 +3,7 @@
  * 所有平台适配器继承此类，实现平台特定的消息收发逻辑
  */
 import { EventEmitter } from 'events';
-import {
-  IMAdapterEvent,
-} from './types.js';
+import { IMAdapterEvent } from './types.js';
 import type {
   IMPlatform,
   IMAdapterStatus,
@@ -120,11 +118,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
    * @param options - 发送选项
    * @returns 发送的消息 ID
    */
-  abstract sendMessage(
-    chatId: string,
-    text: string,
-    options?: IMSendOptions
-  ): Promise<string>;
+  abstract sendMessage(chatId: string, text: string, options?: IMSendOptions): Promise<string>;
 
   /**
    * 编辑已发送的消息（用于流式更新）
@@ -133,11 +127,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
    * @param newText - 新文本
    * @returns 是否成功
    */
-  abstract editMessage(
-    chatId: string,
-    messageId: string,
-    newText: string
-  ): Promise<boolean>;
+  abstract editMessage(chatId: string, messageId: string, newText: string): Promise<boolean>;
 
   /**
    * 发送"正在输入"状态
@@ -151,11 +141,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
    * @param imageUrl - 图片 URL 或本地路径
    * @param caption - 图片说明
    */
-  abstract sendPhoto(
-    chatId: string,
-    imageUrl: string,
-    caption?: string
-  ): Promise<string>;
+  abstract sendPhoto(chatId: string, imageUrl: string, caption?: string): Promise<string>;
 
   /**
    * 发送文件
@@ -163,11 +149,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
    * @param fileUrl - 文件 URL 或本地路径
    * @param caption - 文件说明
    */
-  abstract sendDocument(
-    chatId: string,
-    fileUrl: string,
-    caption?: string
-  ): Promise<string>;
+  abstract sendDocument(chatId: string, fileUrl: string, caption?: string): Promise<string>;
 
   // ========== 流式响应辅助 ==========
 
@@ -179,7 +161,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
    */
   async sendStreamingMessage(
     chatId: string,
-    streamGenerator: AsyncGenerator<string>
+    streamGenerator: AsyncGenerator<string>,
   ): Promise<string> {
     // 发送初始空消息
     let messageId: string;
@@ -240,7 +222,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
   protected async handleIncomingMessage(message: IMMessage): Promise<void> {
     logger.debug(
       { platform: this.platform, chatId: message.chatId, messageId: message.messageId },
-      '收到 IM 消息'
+      '收到 IM 消息',
     );
     this.emit(IMAdapterEvent.MESSAGE as string, message);
     if (this.callbacks?.onMessage) {
@@ -254,7 +236,7 @@ export abstract class BaseIMAdapter extends EventEmitter {
   protected async handleCallbackQuery(
     callbackData: string,
     chatId: string,
-    senderId: string
+    senderId: string,
   ): Promise<void> {
     this.emit(IMAdapterEvent.CALLBACK_QUERY as string, { callbackData, chatId, senderId });
     if (this.callbacks?.onCallbackQuery) {

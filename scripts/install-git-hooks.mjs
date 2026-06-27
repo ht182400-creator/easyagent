@@ -2,10 +2,10 @@
 
 /**
  * 安装 Git Hooks
- * 
+ *
  * 将 post-commit hook 安装到 .git/hooks/ 目录
  * 每次 git commit 后自动运行项目进度检测
- * 
+ *
  * 使用方式:
  *   node scripts/install-git-hooks.mjs          # 安装 hooks
  *   node scripts/install-git-hooks.mjs --remove # 移除 hooks
@@ -80,7 +80,9 @@ function main() {
   // Bash hook（Git Bash / WSL / Linux / macOS）
   writeFileSync(hookPath, POST_COMMIT_CONTENT, { mode: 0o755 });
   // 尝试设置可执行权限（Windows 下可能无效，但不报错）
-  try { chmodSync(hookPath, 0o755); } catch {}
+  try {
+    chmodSync(hookPath, 0o755);
+  } catch {}
 
   // PowerShell hook（Windows PowerShell / CMD 环境）
   writeFileSync(hookPs1Path, POST_COMMIT_PS1);

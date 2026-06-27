@@ -1,11 +1,11 @@
 /**
  * better-sqlite3 双版本编译 + 验证
- * 
- * 关键陷阱: 
+ *
+ * 关键陷阱:
  *   1. node-gyp rebuild 会清除 build/Release/ 下所有 .node 文件
  *   2. 字节扫描 MODULE_VERSION 不可靠 (总是读到 sqlite3 源码中的巧合值 116)
  *   3. 正确验证方式: 加载模块测试 (系统 Node) / 对比文件哈希 (Electron)
- * 
+ *
  * 用法: node scripts/rebuild-sqlite3.mjs [--verify]
  *       --verify  只验证不编译
  */
@@ -18,12 +18,15 @@ import { createLogger } from './lib/logger.mjs';
 
 const log = createLogger('rebuild-sqlite3');
 const PROJECT = resolve(import.meta.dirname, '..');
-const SQLITE_DIR = resolve(PROJECT, 'node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3');
+const SQLITE_DIR = resolve(
+  PROJECT,
+  'node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3',
+);
 const RELEASE = resolve(SQLITE_DIR, 'build/Release');
-const CURRENT  = resolve(RELEASE, 'better_sqlite3.node');
-const SYSTEM   = resolve(RELEASE, 'better_sqlite3_system.node');
+const CURRENT = resolve(RELEASE, 'better_sqlite3.node');
+const SYSTEM = resolve(RELEASE, 'better_sqlite3_system.node');
 const ELECTRON = resolve(RELEASE, 'better_sqlite3_electron.node');
-const CACHE   = resolve(PROJECT, '.codebuddy/sqlite3-cache');
+const CACHE = resolve(PROJECT, '.codebuddy/sqlite3-cache');
 
 // 临时安全保存目录 (不在 build/Release 下)
 const TMP = resolve(PROJECT, 'temp/sqlite3-build');
@@ -49,7 +52,7 @@ function verifySystem(path) {
     db.exec('SELECT 1');
     db.close();
     return true;
-  } catch(e) {
+  } catch (e) {
     log.debug('verifySystem 错误:', e.message);
     return false;
   }
@@ -74,12 +77,14 @@ function buildAndSave(title, extraArgs, savePath) {
   log.info(`[${title}] 编译中...`);
   const cmd = `npx node-gyp rebuild ${extraArgs || ''}`.trim();
   execSync(cmd, { cwd: SQLITE_DIR, stdio: 'inherit', shell: true });
-  if (!existsSync(CURRENT)) { 
-    log.error(`[${title}] 编译失败! better_sqlite3.node 未生成`); 
-    process.exit(1); 
+  if (!existsSync(CURRENT)) {
+    log.error(`[${title}] 编译失败! better_sqlite3.node 未生成`);
+    process.exit(1);
   }
   writeFileSync(savePath, readFileSync(CURRENT));
-  log.info(`  -> 产物: ${savePath.split(/[/\\]/).pop()} (${statSync(savePath).size} bytes, SHA256=${sha256(savePath)})`);
+  log.info(
+    `  -> 产物: ${savePath.split(/[/\\]/).pop()} (${statSync(savePath).size} bytes, SHA256=${sha256(savePath)})`,
+  );
 }
 
 // ================================================================
@@ -135,7 +140,11 @@ log.info(`目标: Electron 30 + System Node ${process.version}`);
 log.debug(`源目录: ${SQLITE_DIR}`);
 
 // Step 1: Electron 30 (保存到临时目录)
-buildAndSave('Electron 30', '--target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers', resolve(TMP, 'better_sqlite3_electron.node'));
+buildAndSave(
+  'Electron 30',
+  '--target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers',
+  resolve(TMP, 'better_sqlite3_electron.node'),
+);
 
 // Step 2: System Node (保存到临时目录)
 buildAndSave('System Node', '', resolve(TMP, 'better_sqlite3_system.node'));
@@ -146,8 +155,14 @@ copyFileSync(resolve(TMP, 'better_sqlite3_electron.node'), ELECTRON);
 copyFileSync(resolve(TMP, 'better_sqlite3_system.node'), CURRENT);
 
 // Step 4: 更新缓存
-copyFileSync(resolve(TMP, 'better_sqlite3_system.node'), resolve(CACHE, 'better_sqlite3_system.node'));
-copyFileSync(resolve(TMP, 'better_sqlite3_electron.node'), resolve(CACHE, 'better_sqlite3_electron.node'));
+copyFileSync(
+  resolve(TMP, 'better_sqlite3_system.node'),
+  resolve(CACHE, 'better_sqlite3_system.node'),
+);
+copyFileSync(
+  resolve(TMP, 'better_sqlite3_electron.node'),
+  resolve(CACHE, 'better_sqlite3_electron.node'),
+);
 
 // Step 5: 验证
 log.title('验证结果');
@@ -160,13 +175,17 @@ log.info(`Electron 文件检查: ${elOk ? '✅ 通过' : '❌ 失败'}`);
 
 const sysHash = sha256(SYSTEM);
 const elHash = sha256(ELECTRON);
-log.info(`文件对比: System≠Electron ${sysHash !== elHash ? '✅ 不同 (正确)' : '❌ 相同 (编译失败!)'}`);
+log.info(
+  `文件对比: System≠Electron ${sysHash !== elHash ? '✅ 不同 (正确)' : '❌ 相同 (编译失败!)'}`,
+);
 
 log.info('文件摘要:');
 log.info(`  System:   ${statSync(SYSTEM).size} bytes | SHA256=${sysHash}`);
 log.info(`  Electron: ${statSync(ELECTRON).size} bytes | SHA256=${elHash}`);
 log.info(`  Active:   ${statSync(CURRENT).size} bytes | SHA256=${sha256(CURRENT)}`);
-log.info(`  Cache:    ${statSync(resolve(CACHE, 'better_sqlite3_system.node')).size} / ${statSync(resolve(CACHE, 'better_sqlite3_electron.node')).size} bytes`);
+log.info(
+  `  Cache:    ${statSync(resolve(CACHE, 'better_sqlite3_system.node')).size} / ${statSync(resolve(CACHE, 'better_sqlite3_electron.node')).size} bytes`,
+);
 
 if (!sysOk || !elOk || sysHash === elHash) {
   log.fail('验证失败, 请检查编译环境');

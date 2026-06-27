@@ -53,7 +53,7 @@ export interface CollaborationTask {
   description: string;
   subTasks: SubTask[];
   status: 'pending' | 'in_progress' | 'completed' | 'failed';
-  agents: string[];        // 分配的 Agent ID
+  agents: string[]; // 分配的 Agent ID
   results: Map<string, CollaborationResult>;
   startTime: string;
   endTime?: string;
@@ -74,16 +74,16 @@ export interface CollaborationResult {
 
 /** 协作事件 */
 export type CollaborationEventType =
-  | 'task_started'      // 总任务开始
-  | 'task_completed'    // 总任务完成
-  | 'subtask_assigned'  // 子任务分配给Agent
-  | 'subtask_started'   // Agent开始处理子任务
+  | 'task_started' // 总任务开始
+  | 'task_completed' // 总任务完成
+  | 'subtask_assigned' // 子任务分配给Agent
+  | 'subtask_started' // Agent开始处理子任务
   | 'subtask_completed' // 子任务完成
-  | 'subtask_failed'    // 子任务失败
-  | 'agent_idle'        // Agent变为空闲
-  | 'agent_busy'        // Agent变为忙碌
+  | 'subtask_failed' // 子任务失败
+  | 'agent_idle' // Agent变为空闲
+  | 'agent_busy' // Agent变为忙碌
   | 'conflict_detected' // 检测到Agent冲突
-  | 'error';            // 协作出错
+  | 'error'; // 协作出错
 
 export interface CollaborationEvent {
   type: CollaborationEventType;
@@ -103,7 +103,8 @@ export const PREDEFINED_ROLES: AgentRole[] = [
     id: 'architect',
     name: '系统架构师',
     description: '负责系统设计、架构决策、技术选型',
-    systemPrompt: '你是一位资深系统架构师，擅长设计可扩展、高性能的系统架构。分析需求，提出架构方案，评估技术选型的优劣。',
+    systemPrompt:
+      '你是一位资深系统架构师，擅长设计可扩展、高性能的系统架构。分析需求，提出架构方案，评估技术选型的优劣。',
     expertise: ['architecture', 'system-design', 'tech-stack', 'scalability'],
     tools: ['code_semantic_map', 'code_overview', 'git_repo_map', 'web_search'],
     priority: 10,
@@ -112,7 +113,8 @@ export const PREDEFINED_ROLES: AgentRole[] = [
     id: 'coder',
     name: '代码实现者',
     description: '负责具体的代码实现、功能开发',
-    systemPrompt: '你是一位高级全栈工程师，精通多种编程语言和框架。根据架构设计实现具体功能，编写高质量、可维护的代码。',
+    systemPrompt:
+      '你是一位高级全栈工程师，精通多种编程语言和框架。根据架构设计实现具体功能，编写高质量、可维护的代码。',
     expertise: ['coding', 'implementation', 'api-design', 'frontend', 'backend'],
     tools: ['read_file', 'write_file', 'edit_file', 'exec', 'grep'],
     priority: 8,
@@ -121,7 +123,8 @@ export const PREDEFINED_ROLES: AgentRole[] = [
     id: 'reviewer',
     name: '代码审查员',
     description: '负责代码审查、质量保证、安全审计',
-    systemPrompt: '你是一位严格的代码审查员，关注代码质量、安全性、性能最佳实践。发现潜在问题，提出改进建议。',
+    systemPrompt:
+      '你是一位严格的代码审查员，关注代码质量、安全性、性能最佳实践。发现潜在问题，提出改进建议。',
     expertise: ['code-review', 'quality', 'security', 'best-practices'],
     tools: ['lint_code', 'format_code', 'read_lints', 'type_check', 'read_file'],
     priority: 6,
@@ -130,7 +133,8 @@ export const PREDEFINED_ROLES: AgentRole[] = [
     id: 'tester',
     name: '测试工程师',
     description: '负责编写和执行测试用例，保证测试覆盖率',
-    systemPrompt: '你是一位专业测试工程师，擅长编写全面的测试用例。覆盖单元测试、集成测试、边界条件和异常场景。',
+    systemPrompt:
+      '你是一位专业测试工程师，擅长编写全面的测试用例。覆盖单元测试、集成测试、边界条件和异常场景。',
     expertise: ['testing', 'unit-test', 'integration-test', 'coverage'],
     tools: ['write_file', 'exec', 'run_tests', 'grep'],
     priority: 5,
@@ -148,7 +152,8 @@ export const PREDEFINED_ROLES: AgentRole[] = [
     id: 'docs',
     name: '文档编写员',
     description: '负责技术文档、API文档、使用指南的编写',
-    systemPrompt: '你是一位技术文档专家，擅长将复杂的技术概念转化为清晰易懂的文档。编写API文档、README、使用指南。',
+    systemPrompt:
+      '你是一位技术文档专家，擅长将复杂的技术概念转化为清晰易懂的文档。编写API文档、README、使用指南。',
     expertise: ['documentation', 'api-docs', 'tutorial', 'readme'],
     tools: ['write_file', 'read_file', 'edit_file', 'code_semantic_map'],
     priority: 3,
@@ -204,17 +209,14 @@ export class MultiAgentCoordinator extends EventEmitter {
    * 通过能力标签匹配Agent
    */
   findMatchingAgents(expertise: string[]): AgentInstance[] {
-    const available = [...this.agents.values()]
-      .filter(a => a.status === 'idle');
+    const available = [...this.agents.values()].filter((a) => a.status === 'idle');
 
     if (available.length === 0) return [];
 
     // 按匹配度和优先级排序
     return available
-      .map(agent => {
-        const matchScore = expertise.filter(e =>
-          agent.role.expertise.includes(e)
-        ).length;
+      .map((agent) => {
+        const matchScore = expertise.filter((e) => agent.role.expertise.includes(e)).length;
         return { agent, matchScore };
       })
       .filter(({ matchScore }) => matchScore > 0)
@@ -256,9 +258,7 @@ export class MultiAgentCoordinator extends EventEmitter {
         description: `代码实现: ${taskDescription}`,
         requiredExpertise: ['coding', 'implementation'],
         priority: 8,
-        dependencies: subTasks.length > 0
-          ? [subTasks[subTasks.length - 1].id]
-          : [],
+        dependencies: subTasks.length > 0 ? [subTasks[subTasks.length - 1].id] : [],
         maxRetries: 3,
       });
     }
@@ -271,9 +271,7 @@ export class MultiAgentCoordinator extends EventEmitter {
         description: `测试验证: ${taskDescription}`,
         requiredExpertise: ['testing', 'unit-test'],
         priority: 5,
-        dependencies: subTasks
-          .filter(t => t.id.includes('_impl_'))
-          .map(t => t.id),
+        dependencies: subTasks.filter((t) => t.id.includes('_impl_')).map((t) => t.id),
         maxRetries: 2,
       });
     }
@@ -286,9 +284,7 @@ export class MultiAgentCoordinator extends EventEmitter {
         description: `代码审查: ${taskDescription}`,
         requiredExpertise: ['code-review', 'quality'],
         priority: 4,
-        dependencies: subTasks
-          .filter(t => t.id.includes('_impl_'))
-          .map(t => t.id),
+        dependencies: subTasks.filter((t) => t.id.includes('_impl_')).map((t) => t.id),
         maxRetries: 1,
       });
     }
@@ -301,9 +297,7 @@ export class MultiAgentCoordinator extends EventEmitter {
         description: `文档编写: ${taskDescription}`,
         requiredExpertise: ['documentation'],
         priority: 3,
-        dependencies: subTasks
-          .filter(t => t.id.includes('_impl_'))
-          .map(t => t.id),
+        dependencies: subTasks.filter((t) => t.id.includes('_impl_')).map((t) => t.id),
         maxRetries: 2,
       });
     }
@@ -316,9 +310,7 @@ export class MultiAgentCoordinator extends EventEmitter {
         description: `部署运维: ${taskDescription}`,
         requiredExpertise: ['devops', 'deployment', 'docker'],
         priority: 6,
-        dependencies: subTasks
-          .filter(t => t.id.includes('_test_'))
-          .map(t => t.id),
+        dependencies: subTasks.filter((t) => t.id.includes('_test_')).map((t) => t.id),
         maxRetries: 2,
       });
     }
@@ -368,7 +360,7 @@ export class MultiAgentCoordinator extends EventEmitter {
 
     if (candidates.length === 0) {
       // 放宽约束：找任何空闲Agent
-      const anyIdle = [...this.agents.values()].find(a => a.status === 'idle');
+      const anyIdle = [...this.agents.values()].find((a) => a.status === 'idle');
       if (anyIdle) {
         this.assignAgentToTask(anyIdle, subTask);
         return anyIdle;
@@ -390,22 +382,33 @@ export class MultiAgentCoordinator extends EventEmitter {
     agent.assignedTasks.push(subTask.id);
     agent.lastActivity = new Date();
 
-    this.emitEvent('subtask_assigned', {
-      agentId: agent.role.id,
-      subTaskId: subTask.id,
-    }, `子任务 "${subTask.description.substring(0, 50)}" 已分配给 ${agent.role.name}`);
+    this.emitEvent(
+      'subtask_assigned',
+      {
+        agentId: agent.role.id,
+        subTaskId: subTask.id,
+      },
+      `子任务 "${subTask.description.substring(0, 50)}" 已分配给 ${agent.role.name}`,
+    );
   }
 
   /**
    * 处理完成状态
    */
-  completeSubTask(taskId: string, subTaskId: string, agentId: string, success: boolean, output?: string, error?: string): void {
+  completeSubTask(
+    taskId: string,
+    subTaskId: string,
+    agentId: string,
+    success: boolean,
+    output?: string,
+    error?: string,
+  ): void {
     const task = this.tasks.get(taskId);
     const agent = this.agents.get(agentId);
     if (!task || !agent) return;
 
     // 找子任务
-    const subTask = task.subTasks.find(s => s.id === subTaskId);
+    const subTask = task.subTasks.find((s) => s.id === subTaskId);
     const retries = task.results.get(subTaskId)?.retries || 0;
 
     const result: CollaborationResult = {
@@ -423,9 +426,12 @@ export class MultiAgentCoordinator extends EventEmitter {
 
     if (success) {
       agent.completedTasks.push(subTaskId);
-      agent.assignedTasks = agent.assignedTasks.filter(id => id !== subTaskId);
-      this.emitEvent('subtask_completed', { agentId, subTaskId, taskId },
-        `${agent.role.name} 完成了子任务: ${subTask?.description.substring(0, 50)}`);
+      agent.assignedTasks = agent.assignedTasks.filter((id) => id !== subTaskId);
+      this.emitEvent(
+        'subtask_completed',
+        { agentId, subTaskId, taskId },
+        `${agent.role.name} 完成了子任务: ${subTask?.description.substring(0, 50)}`,
+      );
     } else {
       // 检查是否应重试
       if (subTask && retries < subTask.maxRetries) {
@@ -434,14 +440,20 @@ export class MultiAgentCoordinator extends EventEmitter {
         agent.status = 'idle';
         agent.currentTask = undefined;
         agent.lastActivity = new Date();
-        this.emitEvent('subtask_failed', { agentId, subTaskId, error },
-          `${agent.role.name} 子任务失败，重试 ${retries + 1}/${subTask.maxRetries}`);
+        this.emitEvent(
+          'subtask_failed',
+          { agentId, subTaskId, error },
+          `${agent.role.name} 子任务失败，重试 ${retries + 1}/${subTask.maxRetries}`,
+        );
         // 重新加入队列
         this.taskQueue.push(subTask);
       } else {
         agent.failedTasks.push(subTaskId);
-        this.emitEvent('subtask_failed', { agentId, subTaskId, error },
-          `${agent.role.name} 子任务最终失败`);
+        this.emitEvent(
+          'subtask_failed',
+          { agentId, subTaskId, error },
+          `${agent.role.name} 子任务最终失败`,
+        );
       }
     }
 
@@ -461,18 +473,21 @@ export class MultiAgentCoordinator extends EventEmitter {
     const task = this.tasks.get(taskId);
     if (!task) return;
 
-    const allDone = task.subTasks.every(st => {
+    const allDone = task.subTasks.every((st) => {
       const result = task.results.get(st.id);
       return result && (result.success || result.retries > (st.maxRetries || 3));
     });
 
     if (allDone) {
-      const allSuccess = [...task.results.values()].every(r => r.success);
+      const allSuccess = [...task.results.values()].every((r) => r.success);
       task.status = allSuccess ? 'completed' : 'failed';
       task.endTime = new Date().toISOString();
 
-      this.emitEvent('task_completed', { taskId },
-        `协作任务 ${allSuccess ? '完成' : '部分失败'}: ${task.description.substring(0, 60)}`);
+      this.emitEvent(
+        'task_completed',
+        { taskId },
+        `协作任务 ${allSuccess ? '完成' : '部分失败'}: ${task.description.substring(0, 60)}`,
+      );
     }
   }
 
@@ -488,15 +503,18 @@ export class MultiAgentCoordinator extends EventEmitter {
     const task = this.createTask(description);
     task.status = 'in_progress';
 
-    this.emitEvent('task_started', { taskId: task.id },
-      `协作任务开始: ${description.substring(0, 60)}`);
+    this.emitEvent(
+      'task_started',
+      { taskId: task.id },
+      `协作任务开始: ${description.substring(0, 60)}`,
+    );
 
     // 初始化任务队列
     this.taskQueue = [...task.subTasks];
 
     // 模拟处理每个子任务
     for (const subTask of [...this.taskQueue]) {
-      this.taskQueue = this.taskQueue.filter(t => t.id !== subTask.id);
+      this.taskQueue = this.taskQueue.filter((t) => t.id !== subTask.id);
 
       const agent = this.assignSubTask(subTask);
       if (!agent) {
@@ -513,7 +531,7 @@ export class MultiAgentCoordinator extends EventEmitter {
         agent.role.id,
         success,
         success ? `[${agent.role.name}] 完成任务: ${subTask.description}` : undefined,
-        success ? undefined : '模拟执行失败'
+        success ? undefined : '模拟执行失败',
       );
 
       // 标记agent已分配
@@ -537,7 +555,7 @@ export class MultiAgentCoordinator extends EventEmitter {
     totalCompleted: number;
     totalFailed: number;
   }> {
-    return [...this.agents.values()].map(a => ({
+    return [...this.agents.values()].map((a) => ({
       id: a.role.id,
       name: a.role.name,
       status: a.status,
@@ -560,12 +578,11 @@ export class MultiAgentCoordinator extends EventEmitter {
     const tasks = [...this.tasks.values()];
     return {
       total: tasks.length,
-      active: tasks.filter(t => t.status === 'in_progress').length,
-      completed: tasks.filter(t => t.status === 'completed').length,
-      failed: tasks.filter(t => t.status === 'failed').length,
-      averageSubtasks: tasks.length > 0
-        ? tasks.reduce((s, t) => s + t.subTasks.length, 0) / tasks.length
-        : 0,
+      active: tasks.filter((t) => t.status === 'in_progress').length,
+      completed: tasks.filter((t) => t.status === 'completed').length,
+      failed: tasks.filter((t) => t.status === 'failed').length,
+      averageSubtasks:
+        tasks.length > 0 ? tasks.reduce((s, t) => s + t.subTasks.length, 0) / tasks.length : 0,
     };
   }
 
@@ -574,7 +591,7 @@ export class MultiAgentCoordinator extends EventEmitter {
    */
   generateReport(taskId?: string): string {
     const tasks = taskId
-      ? [this.tasks.get(taskId)].filter(Boolean) as CollaborationTask[]
+      ? ([this.tasks.get(taskId)].filter(Boolean) as CollaborationTask[])
       : [...this.tasks.values()];
 
     const lines: string[] = [
@@ -596,15 +613,20 @@ export class MultiAgentCoordinator extends EventEmitter {
     for (const agent of this.getAgentStatus()) {
       const statusIcon = agent.status === 'idle' ? '⏳' : agent.status === 'busy' ? '🔄' : '❌';
       lines.push(`  ${statusIcon} ${agent.name} (${agent.id})`);
-      lines.push(`     状态: ${agent.status} | 完成: ${agent.totalCompleted} | 失败: ${agent.totalFailed}`);
+      lines.push(
+        `     状态: ${agent.status} | 完成: ${agent.totalCompleted} | 失败: ${agent.totalFailed}`,
+      );
     }
     lines.push('');
 
     for (const task of tasks) {
-      const statusIcon = task.status === 'completed' ? '✅' : task.status === 'failed' ? '❌' : '🔄';
+      const statusIcon =
+        task.status === 'completed' ? '✅' : task.status === 'failed' ? '❌' : '🔄';
       lines.push(`${statusIcon} 任务: ${task.description.substring(0, 80)}`);
       lines.push(`  ID: ${task.id} | 状态: ${task.status}`);
-      lines.push(`  子任务: ${task.subTasks.length} 个 | Agent: ${task.agents.join(', ') || '未分配'}`);
+      lines.push(
+        `  子任务: ${task.subTasks.length} 个 | Agent: ${task.agents.join(', ') || '未分配'}`,
+      );
       lines.push(`  开始: ${task.startTime}${task.endTime ? ` | 结束: ${task.endTime}` : ''}`);
       lines.push('');
 

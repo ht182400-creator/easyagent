@@ -162,7 +162,9 @@ describe('chatStore', () => {
       useChatStore.getState().addToolCall(SESSION_ID, msg.id, makeToolCall({ toolName: 'tool_b' }));
       useChatStore.getState().addToolCall(SESSION_ID, msg.id, makeToolCall({ toolName: 'tool_c' }));
 
-      const tcNames = useChatStore.getState().sessions[SESSION_ID].messages[0].toolCalls!.map((tc) => tc.toolName);
+      const tcNames = useChatStore
+        .getState()
+        .sessions[SESSION_ID].messages[0].toolCalls!.map((tc) => tc.toolName);
       expect(tcNames).toEqual(['tool_a', 'tool_b', 'tool_c']);
     });
 
@@ -198,8 +200,12 @@ describe('chatStore', () => {
       useChatStore.getState().addMessage(SESSION_ID, msg);
       useChatStore.getState().addToolCall(SESSION_ID, msg.id, makeToolCall());
 
-      useChatStore.getState().updateToolCall(SESSION_ID, msg.id, 'non-existent', { status: 'done' });
-      expect(useChatStore.getState().sessions[SESSION_ID].messages[0].toolCalls![0].status).toBe('running');
+      useChatStore
+        .getState()
+        .updateToolCall(SESSION_ID, msg.id, 'non-existent', { status: 'done' });
+      expect(useChatStore.getState().sessions[SESSION_ID].messages[0].toolCalls![0].status).toBe(
+        'running',
+      );
     });
   });
 
@@ -232,7 +238,9 @@ describe('chatStore', () => {
     it('不同会话的消息应完全隔离', () => {
       useChatStore.getState().addMessage(SESSION_ID, makeMsg({ content: 'A-1' }));
       useChatStore.getState().addMessage(SESSION_ID_2, makeMsg({ content: 'B-1' }));
-      useChatStore.getState().addMessage(SESSION_ID, makeMsg({ content: 'A-2', role: 'assistant' }));
+      useChatStore
+        .getState()
+        .addMessage(SESSION_ID, makeMsg({ content: 'A-2', role: 'assistant' }));
 
       const state = useChatStore.getState();
       expect(state.sessions[SESSION_ID].messages).toHaveLength(2);
@@ -244,8 +252,12 @@ describe('chatStore', () => {
       const msgB = makeMsg({ role: 'assistant', content: 'B' });
       useChatStore.getState().addMessage(SESSION_ID, msgA);
       useChatStore.getState().addMessage(SESSION_ID_2, msgB);
-      useChatStore.getState().addToolCall(SESSION_ID, msgA.id, makeToolCall({ toolName: 'tool-a' }));
-      useChatStore.getState().addToolCall(SESSION_ID_2, msgB.id, makeToolCall({ toolName: 'tool-b' }));
+      useChatStore
+        .getState()
+        .addToolCall(SESSION_ID, msgA.id, makeToolCall({ toolName: 'tool-a' }));
+      useChatStore
+        .getState()
+        .addToolCall(SESSION_ID_2, msgB.id, makeToolCall({ toolName: 'tool-b' }));
 
       const aTCs = useChatStore.getState().sessions[SESSION_ID].messages[0].toolCalls!;
       const bTCs = useChatStore.getState().sessions[SESSION_ID_2].messages[0].toolCalls!;
@@ -327,16 +339,23 @@ describe('chatStore', () => {
   describe('异常边界', () => {
     it('大量消息应正常工作', () => {
       for (let i = 0; i < 100; i++) {
-        useChatStore.getState().addMessage(
-          SESSION_ID,
-          makeMsg({ content: `消息 ${i}`, role: i % 2 === 0 ? 'user' : 'assistant' })
-        );
+        useChatStore
+          .getState()
+          .addMessage(
+            SESSION_ID,
+            makeMsg({ content: `消息 ${i}`, role: i % 2 === 0 ? 'user' : 'assistant' }),
+          );
       }
       expect(useChatStore.getState().sessions[SESSION_ID].messages).toHaveLength(100);
     });
 
     it('特殊字符内容应正常存储', () => {
-      const special = ['<script>alert(1)</script>', '&lt;&gt;&amp;', '你好👋🌍', '{\\"key\\": \\"value\\"}'];
+      const special = [
+        '<script>alert(1)</script>',
+        '&lt;&gt;&amp;',
+        '你好👋🌍',
+        '{\\"key\\": \\"value\\"}',
+      ];
       special.forEach((c) => {
         useChatStore.getState().addMessage(SESSION_ID, makeMsg({ content: c }));
       });

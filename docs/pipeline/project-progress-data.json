@@ -3,7 +3,7 @@
     "repo": "ht182400-creator/easyagent",
     "version": "0.6.6",
     "codename": "Gemini",
-    "lastUpdated": "2026-06-27T08:29:28.071Z",
+    "lastUpdated": "2026-06-27T11:35:00.000Z",
     "engine": "auto-detected",
     "totalTests": 1274,
     "modelsSupported": 4
@@ -295,6 +295,122 @@
           }
         }
       ]
+    },
+    {
+      "id": "P6",
+      "name": "前端架构优化与工程质量",
+      "status": "in-progress",
+      "priority": "p6",
+      "tasks": [
+        {
+          "id": "p6-exports",
+          "name": "P0: 修复 @easyagent/frontend exports",
+          "desc": "main/exports[\".\"] 从已删除的 main.tsx 改为 mountApp.tsx，让包名导入可用",
+          "status": "pending",
+          "time": "5min",
+          "detect": {
+            "files": ["packages/frontend/package.json"]
+          }
+        },
+        {
+          "id": "p6-eslint",
+          "name": "P0: ESLint 配置恢复",
+          "desc": "安装 eslint + typescript-eslint + 创建 eslint.config.mjs Flat Config，修复 lint 脚本",
+          "status": "pending",
+          "time": "30min",
+          "detect": {
+            "files": ["eslint.config.mjs"]
+          }
+        },
+        {
+          "id": "p6-cross-platform",
+          "name": "P0: 跨平台兼容性修复",
+          "desc": "cross-env 替换 set 命令 + rimraf 替换 rm -rf",
+          "status": "pending",
+          "time": "20min",
+          "detect": {
+            "packageKey": "devDependencies.cross-env"
+          }
+        },
+        {
+          "id": "p6-platform-adapter",
+          "name": "P1: 平台适配器模式实施",
+          "desc": "包名导入(@easyagent/frontend)替代 @/ 穿透 + tsconfig include 修复 + Web/Desktop 入口统一 + IPC桥接抽离",
+          "status": "pending",
+          "time": "1.5h",
+          "detect": {
+            "files": [
+              "packages/web/src/main.tsx",
+              "packages/desktop/src/renderer/main.tsx",
+              "packages/desktop/src/renderer/ipcBridge.ts"
+            ]
+          }
+        },
+        {
+          "id": "p6-deps-clean",
+          "name": "P1: 依赖清理与版本对齐",
+          "desc": "Desktop 删除 ~60个传递依赖 + Web 删除冗余依赖 + frontend 版本对齐 v0.6.7",
+          "status": "pending",
+          "time": "45min",
+          "detect": {
+            "files": [
+              "packages/desktop/package.json",
+              "packages/web/package.json",
+              "packages/frontend/package.json"
+            ]
+          }
+        },
+        {
+          "id": "p6-build-modern",
+          "name": "P2: 构建脚本现代化",
+          "desc": "串行 cd && npx 改为 pnpm --filter / -r --topological 并行+拓扑排序",
+          "status": "pending",
+          "time": "30min",
+          "detect": {
+            "files": ["package.json"]
+          }
+        },
+        {
+          "id": "p6-repo-clean",
+          "name": "P2: 根目录清理 + .gitignore 补全",
+          "desc": "删除孤立文件($null/18.0.0) + 调试PNG移入screenshots/ + .gitignore 覆盖完整",
+          "status": "pending",
+          "time": "15min",
+          "detect": {
+            "files": [".gitignore"]
+          }
+        },
+        {
+          "id": "p6-library-mode",
+          "name": "P2: Vite Library Mode 构建",
+          "desc": "frontend 构建为 ESM/UMD 产物，web/desktop 导入编译产物享受 tree-shaking",
+          "status": "pending",
+          "time": "2h",
+          "detect": {
+            "files": ["packages/frontend/dist/frontend.es.js"]
+          }
+        },
+        {
+          "id": "p6-prettier",
+          "name": "P3: Prettier 格式化配置",
+          "desc": "安装 prettier + .prettierrc 配置 + package.json format 脚本",
+          "status": "pending",
+          "time": "15min",
+          "detect": {
+            "files": [".prettierrc"]
+          }
+        },
+        {
+          "id": "p6-ci-enhance",
+          "name": "P3: CI 流程增强",
+          "desc": "CI pipeline 新增 lint + format-check 步骤",
+          "status": "pending",
+          "time": "20min",
+          "detect": {
+            "files": [".github/workflows/ci.yml"]
+          }
+        }
+      ]
     }
   ],
   "scoreHistory": [
@@ -342,6 +458,10 @@
     {
       "label": "v0.5.2 B3b VS Code插件+P4补齐 (2026-06-25)",
       "value": 100
+    },
+    {
+      "label": "v0.6.6 B4前端架构优化立项 (2026-06-27)",
+      "value": 97
     }
   ],
   "metadata": {
@@ -353,7 +473,7 @@
       "testSkipped": 2,
       "tools": 51,
       "providers": 10,
-      "scoreTotal": 100,
+      "scoreTotal": 97,
       "modes": 4,
       "_source": "test-case-mapping.json (manual sync 2026-06-25)",
       "_totalFiles": 51,
@@ -377,9 +497,9 @@
         },
         {
           "label": "分支优化",
-          "score": 100,
+          "score": 91,
           "max": 100,
-          "note": "10/10 分支完成"
+          "note": "10完成/1进行中 — B4前端架构优化新增"
         },
         {
           "label": "CI/CD 成熟度",
@@ -396,7 +516,7 @@
       ]
     },
     "score": {
-      "total": 100,
+      "total": 98,
       "dimensions": [
         {
           "label": "功能完整度",
@@ -412,9 +532,9 @@
         },
         {
           "label": "分支优化",
-          "score": 100,
+          "score": 91,
           "max": 100,
-          "note": "10/10 分支完成"
+          "note": "10完成/1进行中 — B4前端架构优化新增"
         },
         {
           "label": "CI/CD 成熟度",
@@ -469,13 +589,19 @@
         "note": "PluginManager沙箱+管线KPI修复"
       },
       {
+        "version": "v0.6.6",
+        "date": "2026-06-27",
+        "score": 98,
+        "note": "B4前端架构优化立项 — 15项改进需求识别、平台适配器模式设计"
+      },
+      {
         "version": "current",
-        "date": "2026-06-25",
-        "score": 84,
+        "date": "2026-06-27",
+        "score": 98,
         "note": "动态计算（五维度加权）",
         "dynamic": true
       }
     ],
-    "syncedAt": "2026-06-25T08:10:00.000Z"
+    "syncedAt": "2026-06-27T11:35:00.000Z"
   }
 }

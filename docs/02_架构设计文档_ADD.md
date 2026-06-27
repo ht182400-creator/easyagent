@@ -47,19 +47,19 @@
 
 ## 二、技术选型
 
-| 层级 | 技术 | 理由 | 注意事项 |
-|------|------|------|----------|
-| 运行时 | Node.js 18+ | Windows兼容性最好，生态丰富 | 推荐 20 LTS |
-| 语言 | TypeScript 5.x | 类型安全，ESM 输出 | |
-| CLI框架 | Ink (React Terminal) | 类似Claude Code的终端体验 | Banner/Chat/StatusBar 组件 |
-| Web框架 | Express + React 18 + Vite | 轻量高效 | Zustand + WebSocket 流式 |
-| 桌面框架 | Electron 30 + React/Vite | 原生桌面体验 | 四件套: Shell/Sidebar/TabBar/Content |
-| 数据库 | **better-sqlite3** (SQLite) | 零配置，本地存储 | ⚠️ Node 24 需编译工具链 |
-| 测试 | Vitest | 快速，Vite生态 | better-sqlite3 通过 alias mock |
-| 构建 | tsup + Vite | 快速TypeScript打包 + 前端构建 | 多 entry 打包 |
-| 包管理 | pnpm | monorepo workspace | |
-| 插件系统 | 自研 PluginManager | 生命周期 + 钩子 + 技能注册 | IPlugin/ISkill 接口 |
-| IM协议 | 原生 fetch (零外部依赖) | Telegram Bot API / 飞书 / 企业微信 | 长轮询 + Webhook |
+| 层级     | 技术                        | 理由                               | 注意事项                             |
+| -------- | --------------------------- | ---------------------------------- | ------------------------------------ |
+| 运行时   | Node.js 18+                 | Windows兼容性最好，生态丰富        | 推荐 20 LTS                          |
+| 语言     | TypeScript 5.x              | 类型安全，ESM 输出                 |                                      |
+| CLI框架  | Ink (React Terminal)        | 类似Claude Code的终端体验          | Banner/Chat/StatusBar 组件           |
+| Web框架  | Express + React 18 + Vite   | 轻量高效                           | Zustand + WebSocket 流式             |
+| 桌面框架 | Electron 30 + React/Vite    | 原生桌面体验                       | 四件套: Shell/Sidebar/TabBar/Content |
+| 数据库   | **better-sqlite3** (SQLite) | 零配置，本地存储                   | ⚠️ Node 24 需编译工具链              |
+| 测试     | Vitest                      | 快速，Vite生态                     | better-sqlite3 通过 alias mock       |
+| 构建     | tsup + Vite                 | 快速TypeScript打包 + 前端构建      | 多 entry 打包                        |
+| 包管理   | pnpm                        | monorepo workspace                 |                                      |
+| 插件系统 | 自研 PluginManager          | 生命周期 + 钩子 + 技能注册         | IPlugin/ISkill 接口                  |
+| IM协议   | 原生 fetch (零外部依赖)     | Telegram Bot API / 飞书 / 企业微信 | 长轮询 + Webhook                     |
 
 ## 三、核心模块设计
 
@@ -69,7 +69,7 @@
 interface IModelAdapter {
   readonly provider: string;
   readonly modelName: string;
-  
+
   chat(messages: Message[], options?: ChatOptions): Promise<ChatResponse>;
   chatStream(messages: Message[], options?: ChatOptions): AsyncGenerator<ChatChunk>;
   getModels(): Promise<ModelInfo[]>;
@@ -79,17 +79,17 @@ interface IModelAdapter {
 
 **支持的提供商及API类型**:
 
-| 提供商 | API类型 | 端点格式 |
-|--------|---------|----------|
-| DeepSeek | OpenAI兼容 | `https://api.deepseek.com/v1` |
-| 智谱GLM | OpenAI兼容 | `https://open.bigmodel.cn/api/paas/v4` |
-| 通义千问 | OpenAI兼容 | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
-| Kimi | OpenAI兼容 | `https://api.moonshot.cn/v1` |
-| 文心一言 | 自有API | `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/` |
-| 豆包 | OpenAI兼容 | `https://ark.cn-beijing.volces.com/api/v3` |
-| 混元 | 自有API | `https://hunyuan.tencentcloudapi.com` |
-| MiniMax | OpenAI兼容 | `https://api.minimax.chat/v1` |
-| Ollama | OpenAI兼容 | `http://localhost:11434/v1` |
+| 提供商   | API类型    | 端点格式                                                             |
+| -------- | ---------- | -------------------------------------------------------------------- |
+| DeepSeek | OpenAI兼容 | `https://api.deepseek.com/v1`                                        |
+| 智谱GLM  | OpenAI兼容 | `https://open.bigmodel.cn/api/paas/v4`                               |
+| 通义千问 | OpenAI兼容 | `https://dashscope.aliyuncs.com/compatible-mode/v1`                  |
+| Kimi     | OpenAI兼容 | `https://api.moonshot.cn/v1`                                         |
+| 文心一言 | 自有API    | `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/` |
+| 豆包     | OpenAI兼容 | `https://ark.cn-beijing.volces.com/api/v3`                           |
+| 混元     | 自有API    | `https://hunyuan.tencentcloudapi.com`                                |
+| MiniMax  | OpenAI兼容 | `https://api.minimax.chat/v1`                                        |
+| Ollama   | OpenAI兼容 | `http://localhost:11434/v1`                                          |
 
 ### 3.2 Agent Engine（智能体引擎）
 
@@ -123,7 +123,7 @@ interface ITool {
   description: string;
   requiresConfirm: boolean;  // 危险操作需确认
   parameters: JSONSchema;
-  
+
   execute(params: any, context: ToolContext): Promise<ToolResult>;
   validate?(params: any): ValidationResult;
 }
@@ -135,21 +135,21 @@ interface ToolContext {
 }
 ```
 
-| 分组 | 工具数 | 核心工具 | 说明 |
-|------|--------|----------|------|
-| FileTools | 5 | read_file, write_file, edit_file, delete_file, list_dir | 基础文件操作 |
-| FileExtraTools | 4 | file_info, create_dir, move_file, batch_edit | 扩展文件操作 |
-| SearchTools | 4 | grep, glob, web_search, web_fetch | 内容搜索与网络 |
-| ExecTools | 7 | exec, git_status/diff/log/branch/blame/commit | 命令执行与Git |
-| CodeTools | 4 | code_stats, run_tests, find_imports, find_definitions | 代码分析 |
-| QualityTools 🆕 | 4 | lint_code, format_code, read_lints, type_check | 代码质量 |
-| ProjectTools | 4 | read_config, package_run, env_info, project_overview | 项目管理 |
-| PreviewTools 🆕 | 4 | start_server, preview_url, diff_files, ask_user | 预览与交互 |
-| MediaTools 🆕 | 3 | read_image, generate_image, screenshot | 媒体操作 |
-| DatabaseTools 🆕 | 2 | query_db, db_schema | 数据库查询 |
-| KnowledgeTools 🆕 | 5 | knowledge_add/search/get/list/remove | 知识库管理 |
-| SubAgentTools 🆕 | 3 | delegate_task, list_subagents, install_runtime | 子Agent委派 |
-| MemoryTools | 3 | remember, recall, forget | 记忆管理 |
+| 分组              | 工具数 | 核心工具                                                | 说明           |
+| ----------------- | ------ | ------------------------------------------------------- | -------------- |
+| FileTools         | 5      | read_file, write_file, edit_file, delete_file, list_dir | 基础文件操作   |
+| FileExtraTools    | 4      | file_info, create_dir, move_file, batch_edit            | 扩展文件操作   |
+| SearchTools       | 4      | grep, glob, web_search, web_fetch                       | 内容搜索与网络 |
+| ExecTools         | 7      | exec, git_status/diff/log/branch/blame/commit           | 命令执行与Git  |
+| CodeTools         | 4      | code_stats, run_tests, find_imports, find_definitions   | 代码分析       |
+| QualityTools 🆕   | 4      | lint_code, format_code, read_lints, type_check          | 代码质量       |
+| ProjectTools      | 4      | read_config, package_run, env_info, project_overview    | 项目管理       |
+| PreviewTools 🆕   | 4      | start_server, preview_url, diff_files, ask_user         | 预览与交互     |
+| MediaTools 🆕     | 3      | read_image, generate_image, screenshot                  | 媒体操作       |
+| DatabaseTools 🆕  | 2      | query_db, db_schema                                     | 数据库查询     |
+| KnowledgeTools 🆕 | 5      | knowledge_add/search/get/list/remove                    | 知识库管理     |
+| SubAgentTools 🆕  | 3      | delegate_task, list_subagents, install_runtime          | 子Agent委派    |
+| MemoryTools       | 3      | remember, recall, forget                                | 记忆管理       |
 
 ### 3.4 Session Management（会话管理）
 
@@ -199,6 +199,7 @@ Session {
 ```
 
 **核心接口**:
+
 ```typescript
 interface SandboxInstance {
   id: string;
@@ -210,8 +211,9 @@ interface SandboxInstance {
 ```
 
 **降级决策流程**:
+
 ```
-SandboxManager.init() 
+SandboxManager.init()
   → 检测 Docker 可用性(docker info)
   ├── Docker 可用 → 模式: docker (完整功能, 容器隔离)
   ├── Docker 不可用 → 模式: local (本地进程, 无隔离但可用)
@@ -528,6 +530,7 @@ Express 路由注册顺序（影响匹配优先级）：
 ```
 
 **核心接口**:
+
 ```typescript
 interface IModelRegistry {
   /** 初始化：下载远程目录并缓存 */
@@ -550,11 +553,13 @@ interface RegistryStatus {
 ```
 
 **数据源优先级**:
+
 1. **ModelRegistry 远程目录** (GitHub/CDN → `models-catalog.json`) — 最高优先级
 2. **各提供商 /models API** (Server 动态获取，5分钟缓存) — 中等优先级
 3. **ProviderPresets 硬编码** (内置兜底，2026最新模型) — 最低优先级
 
 **下载配置**:
+
 - 主 URL: `https://raw.githubusercontent.com/ht182400-creator/easyagent/main/models-catalog.json`
 - 备用 URL: `https://cdn.jsdelivr.net/gh/ht182400-creator/easyagent@main/models-catalog.json`
 - 超时: 15 秒
@@ -630,6 +635,14 @@ easyagent/
 │   ├── server/                  # Web服务端 (20KB)
 │   │   └── src/index.ts         # REST + WS + Plugins + IM API
 │   │
+│   ├── frontend/                # 共享前端组件 (Desktop+Web 共用) 🆕
+│   │   ├── src/                 # React 组件/页面/stores/样式
+│   │   │   ├── components/      # 共享 UI 组件 (Chat/Settings/Layout)
+│   │   │   ├── pages/           # 页面入口
+│   │   │   ├── stores/          # Zustand 状态管理
+│   │   │   └── styles/          # 全局样式/主题
+│   │   └── package.json
+│   │
 │   ├── web/                     # Web Dashboard v4 WorkBuddy (306KB JS + 46KB CSS)
 │   │   ├── src/
 │   │   │   ├── stores/          # Zustand: app/chat/provider/session/settings
@@ -652,6 +665,10 @@ easyagent/
 │           ├── components/layout/ # AppShell/Sidebar/TabBar/ContentRouter/StatusBar
 │           └── components/chat/   # ChatView (消息气泡+流式+动态版本号)
 │
+│   └── vscode/                   # VS Code 扩展 🆕
+│       ├── src/                   # 扩展源码 (Provider/Completion/InlineChat)
+│       └── package.json           # 独立版本号
+│
 ├── docs/                        # 文档
 │   ├── 01_需求规格说明书_PRD.md
 │   ├── 02_架构设计文档_ADD.md
@@ -660,8 +677,12 @@ easyagent/
 │   ├── 06_版本发布与CI-CD流程指南.md 🆕
 │   └── 07_自动更新分发方案对比.md 🆕
 ├── scripts/                     # 工具脚本 🆕
-│   ├── sync-version.mjs         # 版本同步 (version.json → package.json)
+│   ├── sync-version.mjs         # 版本同步 (version.json → 7个package.json)
 │   └── release.mjs              # 发布自动化 (patch/minor/major)
+├── build.bat                     # Desktop EXE 构建入口
+├── build-web.bat                 # Web Dashboard 构建入口
+├── build-shared.bat              # 共享构建 (core + server) 🆕
+├── repack.bat                    # 快速重打包 (不编译，仅 electron-builder) 🆕
 ├── CHANGELOG.md                  # 更新日志 (Keep a Changelog 格式) 🆕
 ├── version.json                  # 单一版本源 🆕
 ├── models-catalog.json          # 远程模型目录模板 🆕
@@ -677,6 +698,7 @@ easyagent/
 ## 五、Desktop 自动更新架构 🆕
 
 ### 5.0 自动更新流程
+
 ```
 应用启动 → 5s静默检查 → 发现新版本?
   ├── 是 → 下载更新 (StatusBar实时进度)
@@ -691,6 +713,7 @@ easyagent/
 ```
 
 ### 5.0.1 技术实现
+
 ```typescript
 // 主进程 (main.ts)
 initAutoUpdater() → electron-updater
@@ -707,14 +730,16 @@ onUpdateStatus → 状态展示:
 ```
 
 ### 5.0.2 IPC 通道 (新增)
-| 通道 | 方向 | 功能 |
-|------|------|------|
-| `get-app-version` | renderer → main | 获取当前版本号 |
-| `check-update` | renderer → main | 手动触发更新检查 |
+
+| 通道                | 方向            | 功能             |
+| ------------------- | --------------- | ---------------- |
+| `get-app-version`   | renderer → main | 获取当前版本号   |
+| `check-update`      | renderer → main | 手动触发更新检查 |
 | `get-update-status` | renderer → main | 查询更新系统状态 |
-| `update-status` | main → renderer | 推送更新状态变更 |
+| `update-status`     | main → renderer | 推送更新状态变更 |
 
 ### 5.0.3 electron-builder 发布配置
+
 ```json
 {
   "publish": {
@@ -724,6 +749,7 @@ onUpdateStatus → 状态展示:
   }
 }
 ```
+
 - **版本**: 精确锁定 **electron-builder 23.6.0**（禁止使用 24.x alpha 版本）
 - Windows (NSIS): 支持差分更新 (blockmap)，输出 `EasyAgent-{version}-win-x64.exe`
 - macOS (DMG): 需要 Apple Developer 签名
@@ -738,6 +764,7 @@ onUpdateStatus → 状态展示:
 ### 5.1 版本控制与升级系统 🆕 v5.4
 
 #### 5.1.0 版本控制架构
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Version Control System                        │
@@ -751,8 +778,8 @@ onUpdateStatus → 状态展示:
 │           ▼                                                      │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │              scripts/sync-version.mjs                      │   │
-│  │  同步 version.json → 所有 package.json (7处)               │   │
-│  │  Root / CLI / Core / Server / Web / Desktop x 2           │   │
+│  │  同步 version.json → 所有 package.json (8处)               │   │
+│  │  Root / CLI / Core / Server / Web / Desktop / Frontend / VSCode │
 │  └──────────────────────────────────────────────────────────┘   │
 │           │                                                      │
 │           ├──────────────────────────────────────┐               │
@@ -785,6 +812,7 @@ onUpdateStatus → 状态展示:
 ```
 
 #### 5.1.1 版本更新检查流程
+
 ```
 用户点击"检查更新" / 定期检查
   └── GET /api/version/check
@@ -796,6 +824,7 @@ onUpdateStatus → 状态展示:
 ```
 
 #### 5.1.2 发布工作流
+
 ```
 开发者运行: node scripts/release.mjs [patch|minor|major]
   ├── [1/5] 读取 version.json 当前版本 (0.3.0)
@@ -809,23 +838,27 @@ onUpdateStatus → 状态展示:
 ```
 
 #### 5.1.3 版本号分布 (修复前 vs 修复后)
-| 位置 | 修复前 | 修复后 |
-|------|--------|--------|
-| version.json (唯一源) | ❌ 不存在 | ✅ 0.3.0 |
-| root package.json | 0.2.0 | 0.3.0 |
-| packages/core/package.json | 0.1.0 | 0.3.0 |
-| packages/cli/package.json | 0.5.0 | 0.3.0 |
-| packages/server/package.json | 0.2.0 | 0.3.0 |
-| packages/web/package.json | 0.2.0 | 0.3.0 |
-| packages/desktop/package.json | 0.8.0 | 0.3.0 |
-| CLI Banner | 硬编码 0.5.0 | 动态读取 package.json |
-| Web/Desktop Layout | 硬编码 v0.8.0 | fetch('/api/version') |
+
+| 位置                          | 修复前        | 修复后                |
+| ----------------------------- | ------------- | --------------------- |
+| version.json (唯一源)         | ❌ 不存在     | ✅ 0.3.0              |
+| root package.json             | 0.2.0         | 0.3.0                 |
+| packages/core/package.json    | 0.1.0         | 0.3.0                 |
+| packages/cli/package.json     | 0.5.0         | 0.3.0                 |
+| packages/server/package.json  | 0.2.0         | 0.3.0                 |
+| packages/web/package.json     | 0.2.0         | 0.3.0                 |
+| packages/desktop/package.json | 0.8.0         | 0.3.0                 |
+| packages/frontend/package.json | 🆕 0.3.0      | 0.3.0                 |
+| packages/vscode/package.json   | 🆕 独立版本   | 独立版本              |
+| CLI Banner                    | 硬编码 0.5.0  | 动态读取 package.json |
+| Web/Desktop Layout            | 硬编码 v0.8.0 | fetch('/api/version') |
 
 ---
 
 ## 六、数据流设计
 
 ### 6.1 Agent对话流 (多通道)
+
 ```
 User Input → CLI/Web/Desktop/IM → SessionManager
   → AgentLoop → ModelAdapter → LLM API
@@ -835,6 +868,7 @@ User Input → CLI/Web/Desktop/IM → SessionManager
 ```
 
 ### 6.2 IM 消息流 🆕
+
 ```
 Telegram/飞书/微信 → IMAdapter.poll/webhook
   → IMManager.messageHandler
@@ -843,6 +877,7 @@ Telegram/飞书/微信 → IMAdapter.poll/webhook
 ```
 
 ### 5.3 插件钩子流 🆕
+
 ```
 AgentLoop.preRun → PluginManager.triggerHook("preRun", ctx)
   → AgentLoop.run → [Tool execution] → PluginManager.triggerHook("preTool", ctx)
@@ -852,12 +887,14 @@ AgentLoop.preRun → PluginManager.triggerHook("preRun", ctx)
 ```
 
 ### 5.4 MCP工具调用流
+
 ```
 AgentLoop → MCPClient → MCP Server (stdio/HTTP)
   → listTools/callTool → Result → AgentLoop
 ```
 
 ### 5.5 WebSocket 流式通信
+
 ```
 Web Client → ws://server/ws → subscribe(chatId)
   → chat message → AgentEngine.run(onPartialResponse)
@@ -868,6 +905,7 @@ Web Client → ws://server/ws → subscribe(chatId)
 ```
 
 ### 6.6 知识库双作用域路由流 🆕 v5.3
+
 ```
 Client Request  →  Express Router
   │
@@ -886,6 +924,7 @@ Client Request  →  Express Router
 ```
 
 ### 6.7 文件上传导入流 🆕 v5.3
+
 ```
 User (浏览器) → 拖拽/选择文件
   │
@@ -901,6 +940,7 @@ User (浏览器) → 拖拽/选择文件
 ```
 
 ### 6.8 模型目录更新流 🆕
+
 ```
 应用启动 → ModelRegistry.initialize()
   ├── 检查本地缓存 (24h TTL)
@@ -933,13 +973,14 @@ User (浏览器) → 拖拽/选择文件
 
 `better-sqlite3` 是 C++ 原生 Node.js 模块，运行时需要匹配当前平台的 `.node` 二进制文件：
 
-| Node.js 版本 | Windows x64 预编译 | 解决方案 |
-|-------------|-------------------|---------|
-| 18.x / 20.x | ✅ 有 | 开箱即用 |
-| 22.x | ✅ 有 | 开箱即用 |
-| **24.x** | ❌ **无** | 需安装 C++ 编译工具链从源码编译 |
+| Node.js 版本 | Windows x64 预编译 | 解决方案                        |
+| ------------ | ------------------ | ------------------------------- |
+| 18.x / 20.x  | ✅ 有              | 开箱即用                        |
+| 22.x         | ✅ 有              | 开箱即用                        |
+| **24.x**     | ❌ **无**          | 需安装 C++ 编译工具链从源码编译 |
 
 **从源码编译所需工具**:
+
 - Windows: Visual Studio Build Tools (含 C++ 工作负载) + Python 3.x
 - macOS: Xcode Command Line Tools
 - Linux: build-essential + python3
@@ -947,6 +988,7 @@ User (浏览器) → 拖拽/选择文件
 **测试环境**: vitest 已通过 `resolve.alias` 配置内存 mock (`src/__mocks__/better-sqlite3.ts`)，用 Map 模拟 SQLite 操作，测试在任何 Node 版本下均可运行。
 
 ### SessionManager SQLite Schema
+
 ```sql
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
@@ -966,18 +1008,19 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 ## 九、编译产物
 
-| 包 | 大小 | 方式 | 备注 |
-|-----|------|------|------|
-| core | 195.99KB + DTS 42.85KB | tsup ESM | better-sqlite3 external |
-| cli | 14KB | tsup | Ink React 组件内联 |
-| server | 20.04KB | tsup ESM | Express + WS + Plugins + IM |
-| web | 266.3KB JS + 37.7KB CSS | Vite | react-window + Zustand |
-| desktop-main | 10KB | tsup ESM | Electron 主进程 + autoUpdater |
-| desktop-renderer | 173KB JS + 16KB CSS | Vite | React 原生 UI |
+| 包               | 大小                    | 方式     | 备注                          |
+| ---------------- | ----------------------- | -------- | ----------------------------- |
+| core             | 195.99KB + DTS 42.85KB  | tsup ESM | better-sqlite3 external       |
+| cli              | 14KB                    | tsup     | Ink React 组件内联            |
+| server           | 20.04KB                 | tsup ESM | Express + WS + Plugins + IM   |
+| web              | 266.3KB JS + 37.7KB CSS | Vite     | react-window + Zustand        |
+| desktop-main     | 10KB                    | tsup ESM | Electron 主进程 + autoUpdater |
+| desktop-renderer | 173KB JS + 16KB CSS     | Vite     | React 原生 UI                 |
 
 ## 十、部署方案
 
 ### 开发模式
+
 ```bash
 pnpm install
 pnpm --filter @easyagent/core build     # 先编译核心
@@ -987,6 +1030,7 @@ pnpm --filter @easyagent/web dev        # 开发 Web Dashboard
 ```
 
 **快捷启动脚本** (自动开启可见 cmd 窗口，便于查看运行日志):
+
 ```cmd
 :: 后端 (Express :3456)
 start-backend.bat
@@ -994,11 +1038,13 @@ start-backend.bat
 :: 前端 (Vite :5173)
 start-frontend.bat
 ```
+
 - 后端窗口标题: `EasyAgent Backend`
 - 前端窗口标题: `EasyAgent Frontend`
 - ⚠️ 开发阶段必须用可见窗口，禁止使用 `Start-Process -NoNewWindow`
 
 ### 生产构建
+
 ```bash
 pnpm --filter @easyagent/core build
 pnpm --filter @easyagent/server build   # → dist/index.js

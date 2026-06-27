@@ -83,7 +83,11 @@ interface SandboxState {
   /** 创建沙箱 */
   createSandbox: (options: CreateSandboxOptions) => Promise<SandboxInfo | null>;
   /** 执行命令 */
-  execCommand: (sandboxId: string, command: string, timeout?: number) => Promise<SandboxExecResult | null>;
+  execCommand: (
+    sandboxId: string,
+    command: string,
+    timeout?: number,
+  ) => Promise<SandboxExecResult | null>;
   /** 获取沙箱信息 */
   getSandbox: (id: string) => Promise<SandboxInfo | null>;
   /** 销毁沙箱 */
@@ -114,7 +118,9 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
       set({ dockerStatus: data, sandboxes: data.sandbox.sandboxes, loading: false });
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      useAppStore.getState().addNotification({ type: 'error', message: `加载沙箱状态失败: ${msg}` });
+      useAppStore
+        .getState()
+        .addNotification({ type: 'error', message: `加载沙箱状态失败: ${msg}` });
       set({ loading: false });
     }
   },
@@ -135,8 +141,15 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
       });
       if (data.success) {
         const { sandboxes } = get();
-        set({ sandboxes: [...sandboxes, data.sandbox], selectedSandbox: data.sandbox, creating: false });
-        useAppStore.getState().addNotification({ type: 'success', message: `沙箱 ${data.sandbox.id.slice(0, 12)} 已创建` });
+        set({
+          sandboxes: [...sandboxes, data.sandbox],
+          selectedSandbox: data.sandbox,
+          creating: false,
+        });
+        useAppStore.getState().addNotification({
+          type: 'success',
+          message: `沙箱 ${data.sandbox.id.slice(0, 12)} 已创建`,
+        });
         return data.sandbox;
       }
       throw new Error(data.error || '创建失败');
@@ -185,7 +198,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
     try {
       await apiRequest(`/api/sandbox/${id}`, { method: 'DELETE' });
       const { sandboxes, selectedSandbox } = get();
-      const updated = sandboxes.filter(s => s.id !== id);
+      const updated = sandboxes.filter((s) => s.id !== id);
       set({
         sandboxes: updated,
         selectedSandbox: selectedSandbox?.id === id ? null : selectedSandbox,
@@ -200,7 +213,7 @@ export const useSandboxStore = create<SandboxState>((set, get) => ({
   /** 销毁所有沙箱 */
   destroyAll: async () => {
     const { sandboxes } = get();
-    await Promise.all(sandboxes.map(s => get().destroySandbox(s.id)));
+    await Promise.all(sandboxes.map((s) => get().destroySandbox(s.id)));
   },
 
   /** 选择沙箱 */

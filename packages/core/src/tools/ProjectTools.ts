@@ -13,19 +13,34 @@ import type { ToolResult, ToolContext } from '../types/index.js';
  */
 export const ReadConfigTool: ITool = {
   name: 'read_config',
-  description: '读取项目配置文件(package.json, tsconfig.json, pyproject.toml, .env等)。方便了解项目依赖和配置。',
+  description:
+    '读取项目配置文件(package.json, tsconfig.json, pyproject.toml, .env等)。方便了解项目依赖和配置。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
     properties: {
-      configFile: { type: 'string', description: '配置文件名, 如 package.json, tsconfig.json, 不指定则列出所有可用配置文件' },
+      configFile: {
+        type: 'string',
+        description: '配置文件名, 如 package.json, tsconfig.json, 不指定则列出所有可用配置文件',
+      },
     },
     required: [],
   },
   async execute(params, context): Promise<ToolResult> {
     try {
       const ws = context.workspace;
-      const commonConfigs = ['package.json', 'tsconfig.json', '.eslintrc.json', '.prettierrc', 'pyproject.toml', 'Cargo.toml', 'go.mod', '.env.example', 'docker-compose.yml', 'Makefile'];
+      const commonConfigs = [
+        'package.json',
+        'tsconfig.json',
+        '.eslintrc.json',
+        '.prettierrc',
+        'pyproject.toml',
+        'Cargo.toml',
+        'go.mod',
+        '.env.example',
+        'docker-compose.yml',
+        'Makefile',
+      ];
 
       if (params.configFile) {
         const filePath = resolve(ws, params.configFile as string);
@@ -33,7 +48,10 @@ export const ReadConfigTool: ITool = {
           return { success: false, content: `配置文件不存在: ${params.configFile}` };
         }
         const content = readFileSync(filePath, 'utf-8');
-        return { success: true, content: `=== ${params.configFile} ===\n${content.slice(0, 10000)}` };
+        return {
+          success: true,
+          content: `=== ${params.configFile} ===\n${content.slice(0, 10000)}`,
+        };
       }
 
       // 列出所有可用的配置文件
@@ -41,12 +59,17 @@ export const ReadConfigTool: ITool = {
       if (found.length === 0) {
         return { success: true, content: '工作区中未找到常见的配置文件' };
       }
-      const info = found.map((f) => {
-        const stat = require('node:fs').statSync(resolve(ws, f));
-        return `  ${f} (${(stat.size / 1024).toFixed(1)}KB)`;
-      }).join('\n');
+      const info = found
+        .map((f) => {
+          const stat = require('node:fs').statSync(resolve(ws, f));
+          return `  ${f} (${(stat.size / 1024).toFixed(1)}KB)`;
+        })
+        .join('\n');
 
-      return { success: true, content: `可用的配置文件:\n${info}\n\n使用 configFile 参数读取指定文件内容` };
+      return {
+        success: true,
+        content: `可用的配置文件:\n${info}\n\n使用 configFile 参数读取指定文件内容`,
+      };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       return { success: false, content: `读取配置失败: ${msg}`, error: msg };
@@ -59,12 +82,16 @@ export const ReadConfigTool: ITool = {
  */
 export const NpmRunTool: ITool = {
   name: 'package_run',
-  description: '运行包管理器命令(npm/pip/cargo等)。适用 npm install/add/run、pip install、cargo build等。',
+  description:
+    '运行包管理器命令(npm/pip/cargo等)。适用 npm install/add/run、pip install、cargo build等。',
   requiresConfirm: true,
   parameters: {
     type: 'object',
     properties: {
-      command: { type: 'string', description: '包管理器命令, 例如 npm install express, pip install requests, npm run build' },
+      command: {
+        type: 'string',
+        description: '包管理器命令, 例如 npm install express, pip install requests, npm run build',
+      },
       cwd: { type: 'string', description: '可选: 工作子目录, 默认为工作区根目录' },
     },
     required: ['command'],
@@ -76,15 +103,32 @@ export const NpmRunTool: ITool = {
       const command = params.command as string;
 
       // 基本安全检查
-      if (command.includes('sudo') || command.includes('chmod 777') || command.includes('rm -rf /')) {
+      if (
+        command.includes('sudo') ||
+        command.includes('chmod 777') ||
+        command.includes('rm -rf /')
+      ) {
         return { success: false, content: '拒绝执行危险命令', error: 'DANGEROUS_COMMAND' };
       }
 
-      const output = execSync(command, { cwd, encoding: 'utf-8', timeout: 300000, maxBuffer: 1024 * 1024 * 5 });
-      return { success: true, content: output.slice(-5000) || '命令执行成功(无输出)', metadata: { command, cwd: relative(context.workspace, cwd) } };
+      const output = execSync(command, {
+        cwd,
+        encoding: 'utf-8',
+        timeout: 300000,
+        maxBuffer: 1024 * 1024 * 5,
+      });
+      return {
+        success: true,
+        content: output.slice(-5000) || '命令执行成功(无输出)',
+        metadata: { command, cwd: relative(context.workspace, cwd) },
+      };
     } catch (error: any) {
       const msg = error.stdout || error.stderr || error.message || String(error);
-      return { success: false, content: `包管理命令失败:\n${msg.slice(-3000)}`, error: 'PKG_CMD_FAILED' };
+      return {
+        success: false,
+        content: `包管理命令失败:\n${msg.slice(-3000)}`,
+        error: 'PKG_CMD_FAILED',
+      };
     }
   },
 };
@@ -108,7 +152,11 @@ export const EnvInfoTool: ITool = {
       const { execSync } = await import('node:child_process');
 
       const tryVersion = (cmd: string): string => {
-        try { return execSync(cmd, { encoding: 'utf-8', timeout: 5000 }).trim().split('\n')[0]; } catch (err) { return '未安装'; }
+        try {
+          return execSync(cmd, { encoding: 'utf-8', timeout: 5000 }).trim().split('\n')[0];
+        } catch (err) {
+          return '未安装';
+        }
       };
 
       const info = [
@@ -170,7 +218,8 @@ export const ProjectStatsTool: ITool = {
         if (deps.lucide) techStack.push('Zustand');
       }
       if (existsSync(join(ws, 'go.mod'))) techStack.push('Go');
-      if (existsSync(join(ws, 'requirements.txt')) || existsSync(join(ws, 'pyproject.toml'))) techStack.push('Python');
+      if (existsSync(join(ws, 'requirements.txt')) || existsSync(join(ws, 'pyproject.toml')))
+        techStack.push('Python');
       if (existsSync(join(ws, 'Cargo.toml'))) techStack.push('Rust');
       if (existsSync(join(ws, '.github'))) techStack.push('GitHub CI');
       if (existsSync(join(ws, 'Dockerfile'))) techStack.push('Docker');

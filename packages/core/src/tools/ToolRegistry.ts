@@ -76,7 +76,7 @@ export class ToolRegistry {
    * 批量设置禁用工具列表（从持久化配置加载）
    */
   setDisabledNames(names: string[]): void {
-    this.disabledSet = new Set(names.filter(n => this.tools.has(n)));
+    this.disabledSet = new Set(names.filter((n) => this.tools.has(n)));
   }
 
   /**
@@ -115,7 +115,7 @@ export class ToolRegistry {
   async execute(
     name: string,
     params: Record<string, unknown>,
-    context: ToolContext
+    context: ToolContext,
   ): Promise<ToolResult> {
     const tool = this.tools.get(name);
     if (!tool) {
@@ -177,9 +177,7 @@ export class ToolRegistry {
     for (const tool of this.tools.values()) {
       const params = Object.entries(tool.parameters.properties || {})
         .map(([key, prop]) => {
-          const required = tool.parameters.required?.includes(key)
-            ? ' (必需)'
-            : '';
+          const required = tool.parameters.required?.includes(key) ? ' (必需)' : '';
           return `  - ${key}: ${prop.description}${required}`;
         })
         .join('\n');
@@ -196,8 +194,14 @@ ${params}
   /**
    * 获取工具列表（含参数、分组、启用状态，供前端展示）
    */
-  list(): Array<{ name: string; description: string; parameters: ToolDefinition['parameters']; group?: string; enabled: boolean }> {
-    return Array.from(this.tools.values()).map(t => ({
+  list(): Array<{
+    name: string;
+    description: string;
+    parameters: ToolDefinition['parameters'];
+    group?: string;
+    enabled: boolean;
+  }> {
+    return Array.from(this.tools.values()).map((t) => ({
       name: t.name,
       description: t.description,
       parameters: t.parameters,

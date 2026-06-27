@@ -11,11 +11,7 @@ import { tmpdir } from 'os';
 // ==================== 测试辅助函数 ====================
 
 /** 创建临时测试插件目录 */
-function createTestPlugin(
-  dir: string,
-  name: string,
-  files: Record<string, string>
-): string {
+function createTestPlugin(dir: string, name: string, files: Record<string, string>): string {
   const pluginDir = join(dir, name);
   mkdirSync(pluginDir, { recursive: true });
   for (const [filename, content] of Object.entries(files)) {
@@ -55,25 +51,19 @@ describe('PluginPermission - 权限检查', () => {
   });
 
   it('只读权限应在完整权限下通过', () => {
-    const result = checkPermissions(
-      PermissionLevels.readonly,
-      PermissionLevels.full
-    );
+    const result = checkPermissions(PermissionLevels.readonly, PermissionLevels.full);
     expect(result.allowed).toBe(true);
   });
 
   it('标准权限应在完整权限下通过', () => {
-    const result = checkPermissions(
-      PermissionLevels.standard,
-      PermissionLevels.full
-    );
+    const result = checkPermissions(PermissionLevels.standard, PermissionLevels.full);
     expect(result.allowed).toBe(true);
   });
 
   it('应拒绝未授权的 shell 权限', () => {
     const result = checkPermissions(
       { shell: { allow: ['git'] } },
-      { fs: { read: ['**/*'] } }  // 没有 shell 权限
+      { fs: { read: ['**/*'] } }, // 没有 shell 权限
     );
     expect(result.allowed).toBe(false);
     expect(result.deniedPermission).toBe('shell');
@@ -83,7 +73,7 @@ describe('PluginPermission - 权限检查', () => {
   it('应拒绝不在白名单中的 shell 命令', () => {
     const result = checkPermissions(
       { shell: { allow: ['rm', 'sudo'] } },
-      { shell: { allow: ['git', 'node'] } }
+      { shell: { allow: ['git', 'node'] } },
     );
     expect(result.allowed).toBe(false);
     expect(result.deniedPermission).toMatch(/shell\.allow/);
@@ -92,7 +82,7 @@ describe('PluginPermission - 权限检查', () => {
   it('应允许白名单中的 shell 命令', () => {
     const result = checkPermissions(
       { shell: { allow: ['git', 'node'] } },
-      { shell: { allow: ['git', 'node', 'npm'] } }
+      { shell: { allow: ['git', 'node', 'npm'] } },
     );
     expect(result.allowed).toBe(true);
   });
@@ -100,7 +90,7 @@ describe('PluginPermission - 权限检查', () => {
   it('shell.allow 通配符 * 应允许所有命令', () => {
     const result = checkPermissions(
       { shell: { allow: ['rm', 'sudo', 'curl'] } },
-      { shell: { allow: ['*'] } }
+      { shell: { allow: ['*'] } },
     );
     expect(result.allowed).toBe(true);
   });
@@ -108,7 +98,7 @@ describe('PluginPermission - 权限检查', () => {
   it('应拒绝未授权的网络权限', () => {
     const result = checkPermissions(
       { network: { allow: ['api.example.com'] } },
-      { fs: { read: ['**/*'] } }
+      { fs: { read: ['**/*'] } },
     );
     expect(result.allowed).toBe(false);
     expect(result.deniedPermission).toBe('network');
@@ -117,7 +107,7 @@ describe('PluginPermission - 权限检查', () => {
   it('应拒绝未授权的文件写入权限', () => {
     const result = checkPermissions(
       { fs: { write: ['output/**'] } },
-      { fs: { read: ['**/*'] } }  // 只有读权限
+      { fs: { read: ['**/*'] } }, // 只有读权限
     );
     expect(result.allowed).toBe(false);
     expect(result.deniedPermission).toBe('fs.write');

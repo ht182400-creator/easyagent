@@ -41,9 +41,10 @@ export const TabBar: FC = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`no-drag flex items-center gap-1.5 px-3 py-1.5 h-full text-xs cursor-pointer select-none
               border-r border-border-subtle transition-colors duration-150 group max-w-[180px]
-              ${isActive
-                ? 'bg-surface-main text-text-primary border-t-2 border-t-brand'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised'
+              ${
+                isActive
+                  ? 'bg-surface-main text-text-primary border-t-2 border-t-brand'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-raised'
               }`}
           >
             <span className="text-xs">{TAB_ICON_MAP[tab.type] || '📄'}</span>

@@ -109,15 +109,15 @@ export const useMCPStore = create<MCPState>((set, get) => ({
         method: 'POST',
         body: JSON.stringify(server),
       });
-    } catch (err) { /* 本地存储 */ }
+    } catch (err) {
+      /* 本地存储 */
+    }
   },
 
   removeServer: async (name) => {
     set((s) => ({
       servers: s.servers.filter((sv) => sv.name !== name),
-      runtimes: Object.fromEntries(
-        Object.entries(s.runtimes).filter(([k]) => k !== name)
-      ),
+      runtimes: Object.fromEntries(Object.entries(s.runtimes).filter(([k]) => k !== name)),
     }));
     useAppStore.getState().addNotification({
       type: 'info',
@@ -126,14 +126,14 @@ export const useMCPStore = create<MCPState>((set, get) => ({
 
     try {
       await apiRequest(`/api/mcp/servers/${name}`, { method: 'DELETE' });
-    } catch (err) { /* ignore */ }
+    } catch (err) {
+      /* ignore */
+    }
   },
 
   toggleServer: async (name, enabled) => {
     set((s) => ({
-      servers: s.servers.map((sv) =>
-        sv.name === name ? { ...sv, enabled } : sv
-      ),
+      servers: s.servers.map((sv) => (sv.name === name ? { ...sv, enabled } : sv)),
     }));
 
     if (enabled) {
@@ -145,9 +145,7 @@ export const useMCPStore = create<MCPState>((set, get) => ({
 
   updateAutoApprove: async (name, tools) => {
     set((s) => ({
-      servers: s.servers.map((sv) =>
-        sv.name === name ? { ...sv, autoApprove: tools } : sv
-      ),
+      servers: s.servers.map((sv) => (sv.name === name ? { ...sv, autoApprove: tools } : sv)),
     }));
   },
 

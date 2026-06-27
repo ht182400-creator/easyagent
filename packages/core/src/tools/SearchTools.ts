@@ -15,7 +15,8 @@ import { logger } from '../utils/logger.js';
  */
 export const GrepTool: ITool = {
   name: 'grep',
-  description: '在文件中搜索匹配的文本模式。支持正则表达式。搜索速度非常快，适用于在大型代码库中查找代码。',
+  description:
+    '在文件中搜索匹配的文本模式。支持正则表达式。搜索速度非常快，适用于在大型代码库中查找代码。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
@@ -201,9 +202,7 @@ export const GlobTool: ITool = {
         cmd = `Get-ChildItem -Path "${searchPath}" -Recurse -Filter "${pattern.replace('**/', '')}" | Select-Object -ExpandProperty FullName`;
         cmd = `powershell -Command "${cmd}"`;
       } else {
-        const findPattern = pattern
-          .replace(/\*\*\/?/g, '')
-          .replace(/\*/g, '*');
+        const findPattern = pattern.replace(/\*\*\/?/g, '').replace(/\*/g, '*');
         cmd = `find "${searchPath}" -name "${findPattern}" -type f 2>/dev/null`;
       }
 
@@ -217,7 +216,7 @@ export const GlobTool: ITool = {
         .trim()
         .split('\n')
         .filter(Boolean)
-        .map(f => relative(context.workspace, f.trim()))
+        .map((f) => relative(context.workspace, f.trim()))
         .join('\n');
 
       return {
@@ -272,7 +271,7 @@ export const WebSearchTool: ITool = {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         AbstractText?: string;
         AbstractURL?: string;
         RelatedTopics?: Array<{ Text: string; FirstURL: string }>;

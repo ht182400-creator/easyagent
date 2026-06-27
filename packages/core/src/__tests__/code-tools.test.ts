@@ -8,7 +8,10 @@ import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 function createTestDir(): string {
-  const dir = resolve(tmpdir(), `ea-ct-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = resolve(
+    tmpdir(),
+    `ea-ct-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -30,7 +33,9 @@ describe('CodeStatsTool - 代码统计', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能统计工作区代码(默认根目录)', async () => {
@@ -101,7 +106,9 @@ describe('RunTestsTool - 运行测试', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('requiresConfirm应为true(运行测试需确认)', () => {
@@ -115,29 +122,38 @@ describe('RunTestsTool - 运行测试', () => {
   });
 
   it('应检测Node.js项目(package.json)', async () => {
-    writeFileSync(join(workspace, 'package.json'), JSON.stringify({
-      scripts: { test: 'echo "tests passed"' }
-    }));
+    writeFileSync(
+      join(workspace, 'package.json'),
+      JSON.stringify({
+        scripts: { test: 'echo "tests passed"' },
+      }),
+    );
     const result = await RunTestsTool.execute({}, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('tests passed');
   });
 
   it('应支持testPath参数过滤', async () => {
-    writeFileSync(join(workspace, 'package.json'), JSON.stringify({
-      scripts: { test: 'echo "running tests"' }
-    }));
+    writeFileSync(
+      join(workspace, 'package.json'),
+      JSON.stringify({
+        scripts: { test: 'echo "running tests"' },
+      }),
+    );
     const result = await RunTestsTool.execute(
       { testPath: 'src/__tests__/specific.test.ts' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
   });
 
   it('测试失败应返回错误信息', async () => {
-    writeFileSync(join(workspace, 'package.json'), JSON.stringify({
-      scripts: { test: 'exit 1' }
-    }));
+    writeFileSync(
+      join(workspace, 'package.json'),
+      JSON.stringify({
+        scripts: { test: 'exit 1' },
+      }),
+    );
     const result = await RunTestsTool.execute({}, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.error).toBe('TEST_FAILED');
@@ -159,15 +175,14 @@ describe('FindImportsTool - 查找导入', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能查找模块导入位置', async () => {
     writeFileSync(join(workspace, 'app.ts'), "import { foo } from './utils';\nconsole.log(foo);");
-    const result = await FindImportsTool.execute(
-      { moduleOrSymbol: 'utils' },
-      ctx(workspace)
-    );
+    const result = await FindImportsTool.execute({ moduleOrSymbol: 'utils' }, ctx(workspace));
     // 结果可能成功也可能未找到rg, 两种情况都合理
     expect(result.success).toBeDefined();
   });
@@ -176,7 +191,7 @@ describe('FindImportsTool - 查找导入', () => {
     writeFileSync(join(workspace, 'code.ts'), "import React from 'react';");
     const result = await FindImportsTool.execute(
       { moduleOrSymbol: 'React', filePattern: '*.ts' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBeDefined();
   });
@@ -184,7 +199,7 @@ describe('FindImportsTool - 查找导入', () => {
   it('未找到导入应返回结果(非错误)', async () => {
     const result = await FindImportsTool.execute(
       { moduleOrSymbol: 'xyz_nonexistent_module' },
-      ctx(workspace)
+      ctx(workspace),
     );
     // 未找到时rg可能有非零退出码, expect稳定处理
     expect(result).toHaveProperty('success');
@@ -210,14 +225,16 @@ describe('FindDefinitionsTool - 查找定义', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能查找TypeScript函数定义', async () => {
     writeFileSync(join(workspace, 'service.ts'), 'function handleClick() { return 42; }');
     const result = await FindDefinitionsTool.execute(
       { symbol: 'handleClick', kind: 'function' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
   });
@@ -226,7 +243,7 @@ describe('FindDefinitionsTool - 查找定义', () => {
     writeFileSync(join(workspace, 'model.ts'), 'class UserModel { id: number; }');
     const result = await FindDefinitionsTool.execute(
       { symbol: 'UserModel', kind: 'class' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
   });
@@ -235,7 +252,7 @@ describe('FindDefinitionsTool - 查找定义', () => {
     writeFileSync(join(workspace, 'types.ts'), 'interface IConfig { url: string; }');
     const result = await FindDefinitionsTool.execute(
       { symbol: 'IConfig', kind: 'interface' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
   });
@@ -243,7 +260,7 @@ describe('FindDefinitionsTool - 查找定义', () => {
   it('不支持的语言会回退到typescript patterns', async () => {
     const result = await FindDefinitionsTool.execute(
       { symbol: 'test', kind: 'unknown_kind', language: 'unsupported_lang' },
-      ctx(workspace)
+      ctx(workspace),
     );
     // 不支持的语言会回退到typescript patterns，未找到时rg返回非零但被捕获
     expect(result).toHaveProperty('success');
@@ -252,7 +269,7 @@ describe('FindDefinitionsTool - 查找定义', () => {
   it('未找到定义应返回结果(非错误)', async () => {
     const result = await FindDefinitionsTool.execute(
       { symbol: 'nonexistent_symbol_xyz_42' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('未找到');

@@ -7,7 +7,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /** 支持的编程语言 */
-export type SupportedLanguage = 'javascript' | 'typescript' | 'python' | 'json' | 'tsx' | 'jsx' | 'css' | 'html' | 'markdown' | 'rust' | 'go' | 'java' | 'c' | 'cpp';
+export type SupportedLanguage =
+  | 'javascript'
+  | 'typescript'
+  | 'python'
+  | 'json'
+  | 'tsx'
+  | 'jsx'
+  | 'css'
+  | 'html'
+  | 'markdown'
+  | 'rust'
+  | 'go'
+  | 'java'
+  | 'c'
+  | 'cpp';
 
 /** 语言→文件扩展名映射 */
 const LANGUAGE_EXTENSIONS: Record<SupportedLanguage, string[]> = {
@@ -30,7 +44,16 @@ const LANGUAGE_EXTENSIONS: Record<SupportedLanguage, string[]> = {
 /** 符号提取结果 */
 export interface SymbolInfo {
   name: string;
-  kind: 'function' | 'class' | 'interface' | 'type' | 'variable' | 'import' | 'export' | 'enum' | 'method';
+  kind:
+    | 'function'
+    | 'class'
+    | 'interface'
+    | 'type'
+    | 'variable'
+    | 'import'
+    | 'export'
+    | 'enum'
+    | 'method';
   line: number;
   column: number;
   filePath: string;
@@ -74,9 +97,23 @@ export interface SemanticMap {
 
 /** 忽略的目录模式 */
 const IGNORE_PATTERNS = [
-  'node_modules', '.git', 'dist', 'build', '.next', 'coverage',
-  '__pycache__', '.venv', 'venv', '.idea', '.vscode', 'target',
-  '.turbo', 'out', '.cache', '*.min.js', '*.bundle.js',
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  '.next',
+  'coverage',
+  '__pycache__',
+  '.venv',
+  'venv',
+  '.idea',
+  '.vscode',
+  'target',
+  '.turbo',
+  'out',
+  '.cache',
+  '*.min.js',
+  '*.bundle.js',
 ];
 
 /** 代码符号正则模式（按语言） */
@@ -90,7 +127,11 @@ const SYMBOL_PATTERNS: Record<string, Array<{ regex: RegExp; kind: SymbolInfo['k
     { regex: /^(?:export\s+)?enum\s+(\w+)/gm, kind: 'enum' },
     { regex: /\b(?:public|private|protected)?\s*(?:async\s+)?(\w+)\s*\(/gm, kind: 'method' },
     { regex: /^import\s+.*from\s+['"]([^'"]+)['"]/gm, kind: 'import' },
-    { regex: /^export\s+(?:default\s+)?(?:const|let|var|function|class|interface|type|enum)?\s*(\w+)/gm, kind: 'export' },
+    {
+      regex:
+        /^export\s+(?:default\s+)?(?:const|let|var|function|class|interface|type|enum)?\s*(\w+)/gm,
+      kind: 'export',
+    },
   ],
   javascript: [
     { regex: /^(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm, kind: 'function' },
@@ -98,7 +139,10 @@ const SYMBOL_PATTERNS: Record<string, Array<{ regex: RegExp; kind: SymbolInfo['k
     { regex: /^(?:export\s+)?(?:const|let|var)\s+(\w+)/gm, kind: 'variable' },
     { regex: /\b(\w+)\s*\(/gm, kind: 'method' },
     { regex: /^import\s+.*from\s+['"]([^'"]+)['"]/gm, kind: 'import' },
-    { regex: /^export\s+(?:default\s+)?(?:const|let|var|function|class)?\s*(\w+)/gm, kind: 'export' },
+    {
+      regex: /^export\s+(?:default\s+)?(?:const|let|var|function|class)?\s*(\w+)/gm,
+      kind: 'export',
+    },
     { regex: /^module\.exports\s*=/gm, kind: 'export' },
     { regex: /require\s*\(\s*['"]([^'"]+)['"]\s*\)/gm, kind: 'import' },
   ],
@@ -125,7 +169,10 @@ const SYMBOL_PATTERNS: Record<string, Array<{ regex: RegExp; kind: SymbolInfo['k
     { regex: /^import\s+(?:\(|\"(\S+)\")/gm, kind: 'import' },
   ],
   java: [
-    { regex: /^(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?\w+\s+(\w+)\s*\(/gm, kind: 'method' },
+    {
+      regex: /^(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?\w+\s+(\w+)\s*\(/gm,
+      kind: 'method',
+    },
     { regex: /^(?:public\s+)?class\s+(\w+)/gm, kind: 'class' },
     { regex: /^(?:public\s+)?interface\s+(\w+)/gm, kind: 'interface' },
     { regex: /^(?:public\s+)?enum\s+(\w+)/gm, kind: 'enum' },
@@ -145,7 +192,7 @@ function extToLanguage(filePath: string): SupportedLanguage | null {
 /** 检查路径是否应该被忽略 */
 function shouldIgnore(filePath: string, root: string): boolean {
   const rel = path.relative(root, filePath);
-  return IGNORE_PATTERNS.some(pattern => {
+  return IGNORE_PATTERNS.some((pattern) => {
     if (pattern.includes('*')) {
       const regex = new RegExp(pattern.replace(/\./g, '\\.').replace(/\*/g, '.*'));
       return regex.test(path.basename(filePath));
@@ -161,8 +208,10 @@ export function findRepoRoot(startPath: string): string {
     if (fs.existsSync(path.join(current, '.git'))) {
       return current;
     }
-    if (fs.existsSync(path.join(current, 'package.json')) &&
-        fs.existsSync(path.join(current, 'pnpm-workspace.yaml'))) {
+    if (
+      fs.existsSync(path.join(current, 'package.json')) &&
+      fs.existsSync(path.join(current, 'pnpm-workspace.yaml'))
+    ) {
       return current;
     }
     current = path.dirname(current);
@@ -226,9 +275,37 @@ export function extractSymbols(filePath: string, language: SupportedLanguage): S
     while ((match = regex.exec(content)) !== null) {
       const name = match[1];
       if (!name || name.length < 2) continue;
-      if (['if', 'for', 'while', 'return', 'break', 'continue', 'throw', 'new', 'this', 'super',
-           'true', 'false', 'null', 'undefined', 'typeof', 'instanceof', 'else', 'switch', 'case',
-           'catch', 'finally', 'try', 'class', 'function', 'const', 'let', 'var'].includes(name)) {
+      if (
+        [
+          'if',
+          'for',
+          'while',
+          'return',
+          'break',
+          'continue',
+          'throw',
+          'new',
+          'this',
+          'super',
+          'true',
+          'false',
+          'null',
+          'undefined',
+          'typeof',
+          'instanceof',
+          'else',
+          'switch',
+          'case',
+          'catch',
+          'finally',
+          'try',
+          'class',
+          'function',
+          'const',
+          'let',
+          'var',
+        ].includes(name)
+      ) {
         continue;
       }
 
@@ -277,13 +354,18 @@ export function analyzeFile(filePath: string): FileSemanticInfo {
     content = fs.readFileSync(filePath, 'utf-8');
   } catch (err) {
     return {
-      filePath, language, symbols: [], imports: [], exports: [],
-      lineCount: 0, size: 0,
+      filePath,
+      language,
+      symbols: [],
+      imports: [],
+      exports: [],
+      lineCount: 0,
+      size: 0,
     };
   }
 
-  const imports = symbols.filter(s => s.kind === 'import').map(s => s.name);
-  const exports = symbols.filter(s => s.kind === 'export').map(s => s.name);
+  const imports = symbols.filter((s) => s.kind === 'import').map((s) => s.name);
+  const exports = symbols.filter((s) => s.kind === 'export').map((s) => s.name);
 
   return {
     filePath,
@@ -358,11 +440,7 @@ export function buildSemanticMap(rootPath: string, maxDepth = 8, maxFiles = 500)
 /**
  * 搜索符号定义
  */
-export function searchSymbol(
-  map: SemanticMap,
-  query: string,
-  caseSensitive = false
-): SymbolInfo[] {
+export function searchSymbol(map: SemanticMap, query: string, caseSensitive = false): SymbolInfo[] {
   const results: SymbolInfo[] = [];
   const q = caseSensitive ? query : query.toLowerCase();
 
@@ -381,7 +459,7 @@ export function searchSymbol(
 export function findReferences(
   map: SemanticMap,
   symbolName: string,
-  workspaceRoot?: string
+  workspaceRoot?: string,
 ): ReferenceInfo[] {
   const references: ReferenceInfo[] = [];
   const range = workspaceRoot || map.root;
@@ -402,9 +480,9 @@ export function findReferences(
       while ((match = regex.exec(content)) !== null) {
         const line = (content.substring(0, match.index).match(/\n/g) || []).length + 1;
         // 跳过已在符号索引中的定义
-        const isDefined = map.symbolIndex.get(symbolName)?.some(
-          s => s.filePath === file.filePath && s.line === line
-        );
+        const isDefined = map.symbolIndex
+          .get(symbolName)
+          ?.some((s) => s.filePath === file.filePath && s.line === line);
         if (isDefined) continue;
 
         references.push({
@@ -442,7 +520,11 @@ export function formatSemanticMap(map: SemanticMap): string {
   ];
 
   // 生成文件树
-  const treeLines = generateFileTree(map.root, map.files.map(f => f.filePath), 4);
+  const treeLines = generateFileTree(
+    map.root,
+    map.files.map((f) => f.filePath),
+    4,
+  );
   lines.push(...treeLines);
 
   // 符号索引摘要
@@ -450,14 +532,14 @@ export function formatSemanticMap(map: SemanticMap): string {
     lines.push('');
     lines.push(`🔍 符号索引 (${map.symbolIndex.size} 个唯一符号):`);
     const sortedSymbols = [...map.symbolIndex.entries()]
-      .filter(([, syms]) => syms.length > 1)  // 只显示多处引用的符号
+      .filter(([, syms]) => syms.length > 1) // 只显示多处引用的符号
       .sort(([, a], [, b]) => b.length - a.length)
       .slice(0, 20);
 
     for (const [name, syms] of sortedSymbols) {
-      const locations = syms.map(s =>
-        `${path.relative(map.root, s.filePath)}:${s.line}`
-      ).join(', ');
+      const locations = syms
+        .map((s) => `${path.relative(map.root, s.filePath)}:${s.line}`)
+        .join(', ');
       lines.push(`  ${name} (${syms.length}处) → ${locations}`);
     }
   }
@@ -470,7 +552,7 @@ export function formatSemanticMap(map: SemanticMap): string {
  */
 function generateFileTree(root: string, files: string[], maxDepth: number): string[] {
   const lines: string[] = [];
-  const relFiles = files.map(f => path.relative(root, f)).sort();
+  const relFiles = files.map((f) => path.relative(root, f)).sort();
 
   // 构建目录结构
   const dirMap = new Map<string, { dirs: Set<string>; files: string[] }>();
@@ -498,8 +580,10 @@ function generateFileTree(root: string, files: string[], maxDepth: number): stri
     const entry = dirMap.get(dir);
     if (!entry) return;
 
-    const items = [...entry.dirs].sort().map(d => ({ name: path.basename(d), isDir: true, path: d }));
-    items.push(...entry.files.sort().map(f => ({ name: f, isDir: false, path: '' })));
+    const items = [...entry.dirs]
+      .sort()
+      .map((d) => ({ name: path.basename(d), isDir: true, path: d }));
+    items.push(...entry.files.sort().map((f) => ({ name: f, isDir: false, path: '' })));
 
     for (let i = 0; i < items.length; i++) {
       const isLast = i === items.length - 1;
@@ -531,7 +615,12 @@ function escapeRegex(str: string): string {
 export function getCodebaseOverview(rootPath: string): {
   root: string;
   fileTree: string;
-  stats: { totalFiles: number; totalLines: number; totalSize: number; languages: Record<string, number> };
+  stats: {
+    totalFiles: number;
+    totalLines: number;
+    totalSize: number;
+    languages: Record<string, number>;
+  };
 } {
   const root = findRepoRoot(rootPath);
   const files = collectSourceFiles(root, 6).slice(0, 300);

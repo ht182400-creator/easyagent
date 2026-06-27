@@ -72,7 +72,7 @@ interface ChatState {
     sessionId: string,
     messageId: string,
     toolCallId: string,
-    updates: Partial<ToolCallBlock>
+    updates: Partial<ToolCallBlock>,
   ) => void;
   setStreamingText: (sessionId: string, text: string) => void;
   appendStreamingText: (sessionId: string, delta: string) => void;
@@ -137,7 +137,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((s) => {
       const session = { ...ensureSession(s, sessionId) };
       session.messages = session.messages.map((m) =>
-        m.id === messageId ? { ...m, ...updates } : m
+        m.id === messageId ? { ...m, ...updates } : m,
       );
       return { sessions: { ...s.sessions, [sessionId]: session } };
     }),
@@ -162,7 +162,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           return {
             ...m,
             toolCalls: m.toolCalls.map((tc) =>
-              tc.toolCallId === toolCallId ? { ...tc, ...updates } : tc
+              tc.toolCallId === toolCallId ? { ...tc, ...updates } : tc,
             ),
           };
         }
@@ -429,7 +429,7 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
         role: 'assistant',
         content: '',
         timestamp: Date.now(),
-        error: data.message as string || '未知错误',
+        error: (data.message as string) || '未知错误',
       });
       store.setGenerating(sessionId, false);
       break;

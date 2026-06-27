@@ -27,10 +27,13 @@ export class MCPClient {
   readonly serverName: string;
   private process: ChildProcess | null = null;
   private requestId = 0;
-  private pendingRequests = new Map<number | string, {
-    resolve: (value: unknown) => void;
-    reject: (error: Error) => void;
-  }>();
+  private pendingRequests = new Map<
+    number | string,
+    {
+      resolve: (value: unknown) => void;
+      reject: (error: Error) => void;
+    }
+  >();
   private tools: MCPTool[] = [];
   private buffer = '';
   private eventCallback: MCPEventCallback | null = null;
@@ -87,20 +90,25 @@ export class MCPClient {
           protocolVersion: '2024-11-05',
           capabilities: { tools: {} },
           clientInfo: { name: 'EasyAgent', version: '0.2.0' },
-        }).then(() => {
-          // 请求工具列表
-          return this.sendRequest('tools/list', {});
-        }).then((result: any) => {
-          this.tools = (result?.tools || []).map((t: any) => ({
-            name: t.name,
-            description: t.description || '',
-            inputSchema: t.inputSchema || {},
-            serverName: this.serverName,
-          }));
-          logger.info({ server: this.serverName, toolCount: this.tools.length }, 'MCP 服务器就绪');
-          resolve(this.tools);
-        }).catch(reject);
-
+        })
+          .then(() => {
+            // 请求工具列表
+            return this.sendRequest('tools/list', {});
+          })
+          .then((result: any) => {
+            this.tools = (result?.tools || []).map((t: any) => ({
+              name: t.name,
+              description: t.description || '',
+              inputSchema: t.inputSchema || {},
+              serverName: this.serverName,
+            }));
+            logger.info(
+              { server: this.serverName, toolCount: this.tools.length },
+              'MCP 服务器就绪',
+            );
+            resolve(this.tools);
+          })
+          .catch(reject);
       } catch (error) {
         reject(error);
       }
@@ -112,7 +120,9 @@ export class MCPClient {
     if (!this.process) return;
     try {
       await this.sendRequest('shutdown', {});
-    } catch (err) { /* ignore shutdown errors */ }
+    } catch (err) {
+      /* ignore shutdown errors */
+    }
     this.process.kill();
     this.process = null;
     this.tools = [];
@@ -156,8 +166,14 @@ export class MCPClient {
       }, 30000);
 
       this.pendingRequests.set(id, {
-        resolve: (value) => { clearTimeout(timeout); resolve(value); },
-        reject: (err) => { clearTimeout(timeout); reject(err); },
+        resolve: (value) => {
+          clearTimeout(timeout);
+          resolve(value);
+        },
+        reject: (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        },
       });
 
       this.process?.stdin?.write(JSON.stringify(message) + '\n');

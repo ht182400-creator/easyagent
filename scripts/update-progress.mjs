@@ -2,9 +2,9 @@
 
 /**
  * 项目进度管线自动更新脚本
- * 
+ *
  * 通过检测项目文件结构和 Git 状态，自动更新 docs/pipeline/project-progress-data.json
- * 
+ *
  * 使用方式:
  *   node scripts/update-progress.mjs          # 手动运行
  *   node scripts/update-progress.mjs --dry    # 预览模式（不写文件）
@@ -27,7 +27,9 @@ const PIPELINE_DATA_FILE = join(ROOT, 'docs', 'pipeline', 'pipeline-data.json');
 let _calculateScore = null;
 function getCalculateScore() {
   if (!_calculateScore) {
-    _calculateScore = import('../docs/pipeline/lib/pipeline-config.mjs').then(m => m.calculateScore);
+    _calculateScore = import('../docs/pipeline/lib/pipeline-config.mjs').then(
+      (m) => m.calculateScore,
+    );
   }
   return _calculateScore;
 }
@@ -77,7 +79,9 @@ function getVersion() {
 function getLatestTag() {
   try {
     return execSync('git describe --tags --abbrev=0', {
-      cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
   } catch {
     return null;
@@ -88,7 +92,9 @@ function getLatestTag() {
 function getGitLog(n = 10) {
   try {
     return execSync(`git log --oneline -${n}`, {
-      cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
   } catch {
     return '';
@@ -99,7 +105,9 @@ function getGitLog(n = 10) {
 function getChangedFiles(sinceCommit) {
   try {
     return execSync(`git diff --name-only ${sinceCommit}..HEAD`, {
-      cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
   } catch {
     return '';
@@ -130,7 +138,9 @@ function getTestCount() {
   const pipelineDir = join(ROOT, 'docs', 'pipeline');
   try {
     if (existsSync(pipelineDir)) {
-      const files = readdirSync(pipelineDir).filter(f => f.startsWith('_vitest-') && f.endsWith('.json'));
+      const files = readdirSync(pipelineDir).filter(
+        (f) => f.startsWith('_vitest-') && f.endsWith('.json'),
+      );
       let total = 0;
       for (const f of files) {
         try {
@@ -145,8 +155,13 @@ function getTestCount() {
   // 方式3：回退到文件计数
   try {
     const files = execSync('git ls-files "*.test.ts" "*.test.tsx" "*.spec.ts"', {
-      cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']
-    }).trim().split('\n').filter(Boolean);
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+      .trim()
+      .split('\n')
+      .filter(Boolean);
     return files.length > 0 ? files.length : 806;
   } catch {}
   return 806;
@@ -178,7 +193,7 @@ function detectTaskStatus(detect, gitLog) {
 
   // 1. 检测文件/目录是否存在
   if (detect.files && Array.isArray(detect.files)) {
-    const allExist = detect.files.every(f => fileExists(f));
+    const allExist = detect.files.every((f) => fileExists(f));
     if (allExist && detect.files.length > 0) return 'done';
   }
 
@@ -208,9 +223,9 @@ function detectTaskStatus(detect, gitLog) {
 
 /** 计算阶段状态 */
 function calcPhaseStatus(tasks) {
-  const allDone = tasks.every(t => t.status === 'done');
-  const anyDone = tasks.some(t => t.status === 'done');
-  const anyRunning = tasks.some(t => t.status === 'running');
+  const allDone = tasks.every((t) => t.status === 'done');
+  const anyDone = tasks.some((t) => t.status === 'done');
+  const anyRunning = tasks.some((t) => t.status === 'running');
   if (allDone) return 'done';
   if (anyDone || anyRunning) return 'running';
   return 'pending';
@@ -262,7 +277,7 @@ async function main() {
       // 如果当前是 done，且未强制覆盖，保持 done
       if (oldStatus === 'done' && !FORCE) {
         if (task.detect && task.detect.files) {
-          const stillValid = task.detect.files.every(f => fileExists(f));
+          const stillValid = task.detect.files.every((f) => fileExists(f));
           // 文件被删除？保留 done 状态
         }
         continue;
@@ -295,7 +310,8 @@ async function main() {
   }
 
   // 统计摘要
-  let totalDone = 0, totalTasks = 0;
+  let totalDone = 0,
+    totalTasks = 0;
   for (const ph of data.phases) {
     for (const t of ph.tasks) {
       totalTasks++;
@@ -324,10 +340,13 @@ async function main() {
       dynScore = calculateScore();
       log.info(`动态评分: ${dynScore.total} / 100`);
 
-      const realScores = (data.scoreHistory || []).filter(e => !e.projected && !e.dynamic);
+      const realScores = (data.scoreHistory || []).filter((e) => !e.projected && !e.dynamic);
       const lastRealScore = realScores.length > 0 ? realScores[realScores.length - 1].value : null;
-      if (lastRealScore !== dynScore.total && !data.scoreHistory?.some(e => e.label === '自动评分（五维度加权）')) {
-        const projectedIdx = data.scoreHistory?.findIndex(e => e.projected);
+      if (
+        lastRealScore !== dynScore.total &&
+        !data.scoreHistory?.some((e) => e.label === '自动评分（五维度加权）')
+      ) {
+        const projectedIdx = data.scoreHistory?.findIndex((e) => e.projected);
         if (projectedIdx >= 0) {
           data.scoreHistory.splice(projectedIdx, 0, {
             label: '自动评分（五维度加权）',
@@ -346,7 +365,10 @@ async function main() {
     // 统一同步：从 module-registry.mjs 重新生成
     try {
       const { execSync } = await import('child_process');
-      execSync('node scripts/unified-sync.mjs --force', { cwd: resolve(__dirname, '..'), stdio: 'inherit' });
+      execSync('node scripts/unified-sync.mjs --force', {
+        cwd: resolve(__dirname, '..'),
+        stdio: 'inherit',
+      });
     } catch (e) {
       log.warn('unified-sync 执行失败:', e.message);
     }
@@ -416,7 +438,8 @@ async function syncPipelineData(progressData, info) {
   }
 
   // 同步主阶段节点状态
-  const mainPhases = pipelineData.pipeline && pipelineData.pipeline.phases ? pipelineData.pipeline.phases : [];
+  const mainPhases =
+    pipelineData.pipeline && pipelineData.pipeline.phases ? pipelineData.pipeline.phases : [];
   for (const phase of mainPhases) {
     for (const node of phase.nodes) {
       if (detectMap.has(node.id)) {
@@ -427,24 +450,25 @@ async function syncPipelineData(progressData, info) {
 
   // 同步分支节点状态
   const branchDetect = {
-    'b2a': ['packages/core/src/benchmark/BenchmarkRunner.ts'],
-    'b2b': ['.github/workflows/ci.yml', '.github/workflows/release.yml'],
-    'b1a': ['packages/frontend/package.json'],
-    'b1b': ['packages/core/src/plugins/PluginPermission.ts'],
-    'b2c': ['packages/core/src/__tests__/integration/'],
-    'b2d': ['docs/benchmark-report.md'],
-    'b2e': ['packages/core/src/analytics/'],
-    'b3a': ['scripts/install.sh'],
-    'b3b': ['packages/vscode/package.json'],
-    'b3c': ['.github/CONTRIBUTING.md'],
+    b2a: ['packages/core/src/benchmark/BenchmarkRunner.ts'],
+    b2b: ['.github/workflows/ci.yml', '.github/workflows/release.yml'],
+    b1a: ['packages/frontend/package.json'],
+    b1b: ['packages/core/src/plugins/PluginPermission.ts'],
+    b2c: ['packages/core/src/__tests__/integration/'],
+    b2d: ['docs/benchmark-report.md'],
+    b2e: ['packages/core/src/analytics/'],
+    b3a: ['scripts/install.sh'],
+    b3b: ['packages/vscode/package.json'],
+    b3c: ['.github/CONTRIBUTING.md'],
   };
 
-  const branchLanes = pipelineData.pipeline && pipelineData.pipeline.branches ? pipelineData.pipeline.branches : [];
+  const branchLanes =
+    pipelineData.pipeline && pipelineData.pipeline.branches ? pipelineData.pipeline.branches : [];
   for (const branch of branchLanes) {
     for (const node of branch.nodes) {
       const files = branchDetect[node.id];
       if (files && files.length > 0) {
-        const allExist = files.every(f => fileExists(f));
+        const allExist = files.every((f) => fileExists(f));
         if (allExist) {
           node.status = 'done';
         }

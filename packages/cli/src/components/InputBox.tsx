@@ -22,11 +22,7 @@ interface InputBoxProps {
  * - Ctrl+C: 不做特殊处理(由上层处理)
  * - 其他: 追加到输入
  */
-export const InputBox: FC<InputBoxProps> = ({
-  onSubmit,
-  disabled = false,
-  prompt = 'EA> ',
-}) => {
+export const InputBox: FC<InputBoxProps> = ({ onSubmit, disabled = false, prompt = 'EA> ' }) => {
   const [input, setInput] = useState('');
 
   const handleSubmit = useCallback(() => {
@@ -53,9 +49,7 @@ export const InputBox: FC<InputBoxProps> = ({
       <Text color={disabled ? 'gray' : 'cyan'} bold>
         {prompt}
       </Text>
-      <Text dimColor={disabled}>
-        {input}
-      </Text>
+      <Text dimColor={disabled}>{input}</Text>
       {!disabled && <Text color="gray">|</Text>}
     </Box>
   );

@@ -3,8 +3,17 @@
   "displayName": "EasyAgent - AI 编程助手",
   "version": "0.1.0",
   "description": "EasyAgent VS Code 集成 — 在 IDE 中直接使用国产大模型进行智能编程",
-  "categories": ["Programming Languages", "Machine Learning", "Other"],
-  "keywords": ["ai", "easyagent", "deepseek", "coding-assistant"],
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "easyagent",
+    "deepseek",
+    "coding-assistant"
+  ],
   "icon": "icon.png",
   "publisher": "easyagent",
   "license": "MIT",

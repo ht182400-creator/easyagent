@@ -38,7 +38,7 @@ export interface IMManagerOptions {
 /**
  * IM 管理器
  * 管理所有 IM 平台适配器的生命周期
- * 
+ *
  * 使用示例:
  * ```typescript
  * const im = new IMManager({
@@ -47,7 +47,7 @@ export interface IMManagerOptions {
  *     return { streamGenerator: stream };
  *   }
  * });
- * 
+ *
  * im.configure('telegram', { botToken: '123:abc', enabled: true });
  * await im.startAll();
  * ```
@@ -220,12 +220,9 @@ export class IMManager extends EventEmitter {
     } catch (err) {
       logger.error(
         { platform: adapter.platform, error: (err as Error).message },
-        '消息路由处理失败'
+        '消息路由处理失败',
       );
-      await adapter.sendMessage(
-        message.chatId,
-        `⚠️ 处理出错: ${(err as Error).message}`
-      );
+      await adapter.sendMessage(message.chatId, `⚠️ 处理出错: ${(err as Error).message}`);
     }
   }
 
@@ -328,7 +325,7 @@ export class IMManager extends EventEmitter {
    */
   async handleWebhook(
     platform: IMPlatform,
-    req: { method: string; query: Record<string, string>; body: unknown }
+    req: { method: string; query: Record<string, string>; body: unknown },
   ): Promise<unknown> {
     const adapter = this.adapters.get(platform);
     if (!adapter) {
@@ -337,7 +334,9 @@ export class IMManager extends EventEmitter {
 
     if (platform === 'feishu') {
       const feishu = adapter as FeishuAdapter;
-      return feishu.handleEventCallback(req.body as Parameters<FeishuAdapter['handleEventCallback']>[0]);
+      return feishu.handleEventCallback(
+        req.body as Parameters<FeishuAdapter['handleEventCallback']>[0],
+      );
     }
 
     if (platform === 'wechat') {
@@ -358,7 +357,7 @@ export class IMManager extends EventEmitter {
     return Array.from(this.configs.entries())
       .filter(
         ([, config]) =>
-          config.enabled && (config.platform === 'feishu' || config.platform === 'wechat')
+          config.enabled && (config.platform === 'feishu' || config.platform === 'wechat'),
       )
       .map(([platform]) => platform);
   }

@@ -71,16 +71,16 @@
 
 ### 关键指标
 
-| 指标 | v1.0 (重构前) | v2.2 (当前) | 改善 |
-|------|-------------|-----------|------|
-| 硬编码行数 | ~530 行 | 0 行 | **-100%** |
-| 配置源数量 | 3 个不同步 | 1 个 (`pipeline-config.mjs`) | **-67%** |
-| 渲染函数耦合 | 直接访问全局变量 | 纯函数,接受数据参数 | ✅ |
-| 数据加载 | 单一回退 | 三级渐进式 (API/JSON/嵌入) | ✅ |
-| Dashboard 卡片 | 6(部分L1→L2) | 9张(L1→L4全覆盖) | **+50%** |
-| L4 用例覆盖率 | 仅F1(43/209=21%) | 全部14模块(含P5管线/209=100%) | **+79pp** |
-| 模块变更影响 | 3 文件需同步修改 | 仅改 `pipeline-config.mjs` | **-67%** |
-| **管线自测试** 🆕 | 0 | 4文件×58用例 100%通过 | **∞** |
+| 指标              | v1.0 (重构前)    | v2.2 (当前)                   | 改善      |
+| ----------------- | ---------------- | ----------------------------- | --------- |
+| 硬编码行数        | ~530 行          | 0 行                          | **-100%** |
+| 配置源数量        | 3 个不同步       | 1 个 (`pipeline-config.mjs`)  | **-67%**  |
+| 渲染函数耦合      | 直接访问全局变量 | 纯函数,接受数据参数           | ✅        |
+| 数据加载          | 单一回退         | 三级渐进式 (API/JSON/嵌入)    | ✅        |
+| Dashboard 卡片    | 6(部分L1→L2)     | 9张(L1→L4全覆盖)              | **+50%**  |
+| L4 用例覆盖率     | 仅F1(43/209=21%) | 全部14模块(含P5管线/209=100%) | **+79pp** |
+| 模块变更影响      | 3 文件需同步修改 | 仅改 `pipeline-config.mjs`    | **-67%**  |
+| **管线自测试** 🆕 | 0                | 4文件×58用例 100%通过         | **∞**     |
 
 ---
 
@@ -122,25 +122,27 @@ export function getStatusMap() → { moduleId: status }
 
 **职责**: 将配置数据以 RESTful JSON 格式提供给前端。
 
-| 端点 | 方法 | 数据源 | 说明 |
-|------|------|--------|------|
-| `/api/pipeline` | GET | `getPipelineView()` + KPI + scoreHistory | 管线结构 + KPI 指标 |
-| `/api/dashboard` | GET | `generateDashboardDetails()` | 仪表板 9 张卡片详情 |
-| `/api/dashboard/:id` | GET | `generateDashboardDetails()[id]` | 单张卡片详情 |
-| `/api/issues` | GET | `parseMemoryIssues()` | 实时解析 memory 目录 |
-| `/api/status` | GET | 综合状态 | 服务器健康 + 缓存统计 |
-| `/api/modules` | GET | `getPipelineView()` | 扁平模块列表 |
+| 端点                 | 方法 | 数据源                                   | 说明                  |
+| -------------------- | ---- | ---------------------------------------- | --------------------- |
+| `/api/pipeline`      | GET  | `getPipelineView()` + KPI + scoreHistory | 管线结构 + KPI 指标   |
+| `/api/dashboard`     | GET  | `generateDashboardDetails()`             | 仪表板 9 张卡片详情   |
+| `/api/dashboard/:id` | GET  | `generateDashboardDetails()[id]`         | 单张卡片详情          |
+| `/api/issues`        | GET  | `parseMemoryIssues()`                    | 实时解析 memory 目录  |
+| `/api/status`        | GET  | 综合状态                                 | 服务器健康 + 缓存统计 |
+| `/api/modules`       | GET  | `getPipelineView()`                      | 扁平模块列表          |
 
 ### 2.3 解析层 (pipeline-parser.mjs)
 
 **职责**: 从 `.codebuddy/memory/*.md` 文件提取模块问题记录。
 
 **解析策略**:
+
 1. **显式标签优先**: `## [模块:F1] 标题` → 直接映射到模块 ID
 2. **关键词回退**: 对无标签的 Section，通过关键词匹配到模块
 3. **缓存加速**: 非今天的文件按 mtime 缓存，今天的文件每次都重新解析
 
 **输出格式**:
+
 ```json
 {
   "modules": {
@@ -159,6 +161,7 @@ export function getStatusMap() → { moduleId: status }
 **职责**: mtime + size 指纹缓存，避免每次请求都重新解析大量 MD 文件。
 
 **缓存策略**:
+
 - 今天的文件 (YYYY-MM-DD.md): **不缓存**，每次重新解析（可能还在追加内容）
 - 历史文件: mtime 和 size 都没变 → 直接复用缓存
 - 缓存文件: `docs/pipeline/.pipeline-cache.json`
@@ -172,23 +175,31 @@ async function init() {
   // Tier 1: HTTP API（最新实时数据）
   try {
     [pipelineRes, dashboardRes] = await Promise.all([
-      fetch('/api/pipeline'), fetch('/api/dashboard')
+      fetch('/api/pipeline'),
+      fetch('/api/dashboard'),
     ]);
-    if (ok) { dataSource = 'api'; applyDataAndRender(); return; }
-  } catch(e) {}
+    if (ok) {
+      dataSource = 'api';
+      applyDataAndRender();
+      return;
+    }
+  } catch (e) {}
 
   // Tier 2: 静态 JSON 快照（file:// 模式或 API 不可用）
   try {
     raw = await fetch('pipeline-data.json');
-    pipelineData = transformJSONData(raw);  // 格式转换
+    pipelineData = transformJSONData(raw); // 格式转换
     dashboardData = raw.dashboard;
-    dataSource = 'json'; applyDataAndRender(); return;
-  } catch(e) {}
+    dataSource = 'json';
+    applyDataAndRender();
+    return;
+  } catch (e) {}
 
   // Tier 3: 内嵌最小回退（离线/极端情况）
   pipelineData = EMBEDDED_PIPELINE;
   dashboardData = null;
-  dataSource = 'embedded'; applyDataAndRender();
+  dataSource = 'embedded';
+  applyDataAndRender();
 }
 ```
 
@@ -235,45 +246,45 @@ git commit
 
 ### 3.1 已完成 (✅)
 
-| 组件 | 状态 | 说明 |
-|------|------|------|
-| `pipeline-config.mjs` | ✅ | 单一配置源，29 模块 + 6 阶段 + 3 分支 + 9 卡片生成 |
-| `pipeline-api.mjs` | ✅ | 6 个 REST API 端点 |
-| `pipeline-parser.mjs` | ✅ | MD 文件解析 + 显式标签 + 关键词回退 |
-| `pipeline-cache.mjs` | ✅ | mtime+size 文件级缓存 |
-| `server.mjs` | ✅ | 113 行精简路由分发 |
-| `index.html` 数据加载层 | ✅ | 三级渐进式加载 (API→JSON→嵌入) |
-| `index.html` 渲染引擎 | ✅ | 纯函数化，L1→L4 渐进展开，9 张卡片 |
-| `pipeline-data.json` | ✅ | 含 pipeline + dashboard 完整快照 |
-| `update-progress.mjs` | ✅ | Git hook 自动检测更新 |
-| `memory-format-spec.md` | ✅ | Memory 记录格式规范 v1.0 |
-| Dashboard 四级展开 | ✅ | L4 具体用例名：209/209 L3 项 100% 覆盖（含 P5 管线运维） |
-| Dashboard 进度卡片 | ✅ | 分期进度（进度条）+ 模块完成状态 |
-| Tools 卡片 L3 参数 | ✅ | 30 个工具的参数签名可展开 |
-| **管线自测试** 🆕 | ✅ | 4 测试文件 × 58 用例，100% 通过 |
-| `pipeline-config.test.mjs` 🆕 | ✅ | 29 用例：MODULES/PHASES/KPI/Dashboard/Keywords |
-| `pipeline-cache.test.mjs` 🆕 | ✅ | 15+1 用例：读写/快照/有效性/压力 |
-| `pipeline-parser.test.mjs` 🆕 | ✅ | 8 用例：标签/关键词/去重/缓存/状态 |
-| `pipeline-api.test.mjs` 🆕 | ✅ | 14 用例：6端点/JSON/CORS/404 |
+| 组件                          | 状态 | 说明                                                     |
+| ----------------------------- | ---- | -------------------------------------------------------- |
+| `pipeline-config.mjs`         | ✅   | 单一配置源，29 模块 + 6 阶段 + 3 分支 + 9 卡片生成       |
+| `pipeline-api.mjs`            | ✅   | 6 个 REST API 端点                                       |
+| `pipeline-parser.mjs`         | ✅   | MD 文件解析 + 显式标签 + 关键词回退                      |
+| `pipeline-cache.mjs`          | ✅   | mtime+size 文件级缓存                                    |
+| `server.mjs`                  | ✅   | 113 行精简路由分发                                       |
+| `index.html` 数据加载层       | ✅   | 三级渐进式加载 (API→JSON→嵌入)                           |
+| `index.html` 渲染引擎         | ✅   | 纯函数化，L1→L4 渐进展开，9 张卡片                       |
+| `pipeline-data.json`          | ✅   | 含 pipeline + dashboard 完整快照                         |
+| `update-progress.mjs`         | ✅   | Git hook 自动检测更新                                    |
+| `memory-format-spec.md`       | ✅   | Memory 记录格式规范 v1.0                                 |
+| Dashboard 四级展开            | ✅   | L4 具体用例名：209/209 L3 项 100% 覆盖（含 P5 管线运维） |
+| Dashboard 进度卡片            | ✅   | 分期进度（进度条）+ 模块完成状态                         |
+| Tools 卡片 L3 参数            | ✅   | 30 个工具的参数签名可展开                                |
+| **管线自测试** 🆕             | ✅   | 4 测试文件 × 58 用例，100% 通过                          |
+| `pipeline-config.test.mjs` 🆕 | ✅   | 29 用例：MODULES/PHASES/KPI/Dashboard/Keywords           |
+| `pipeline-cache.test.mjs` 🆕  | ✅   | 15+1 用例：读写/快照/有效性/压力                         |
+| `pipeline-parser.test.mjs` 🆕 | ✅   | 8 用例：标签/关键词/去重/缓存/状态                       |
+| `pipeline-api.test.mjs` 🆕    | ✅   | 14 用例：6端点/JSON/CORS/404                             |
 
 ### 3.2 进行中 (⏳)
 
-| 项目 | 状态 | 说明 |
-|------|------|------|
-| `p5a` 管线数据看板 | ⏳ | 当前正在优化中（本次重构） |
-| `b1a` Web↔Desktop 前端合并 | ⏳ | packages/frontend 目录已创建 |
+| 项目                       | 状态 | 说明                         |
+| -------------------------- | ---- | ---------------------------- |
+| `p5a` 管线数据看板         | ⏳   | 当前正在优化中（本次重构）   |
+| `b1a` Web↔Desktop 前端合并 | ⏳   | packages/frontend 目录已创建 |
 
 ### 3.3 待启动 (⬜)
 
-| 项目 | 优先级 | 说明 |
-|------|--------|------|
-| `b1b` PluginManager 沙箱 | P1 | worker_threads 隔离 |
-| `b2c` 集成测试·端到端 | P1 | CLI→Server→Core 全链路 |
-| `b2d` 多模型评测排行榜 | P2 | 每版本模型适配报告 |
-| `b2e` 用户行为埋点 | P2 | FTSR/留存率/TTFV |
-| `b3a` 一键安装脚本 | P1 | curl\|bash 体验 |
-| `b3b` VS Code 插件 | P2 | IDE 深度集成 |
-| `b3c` Contributor 引导 | P2 | good-first-issue + 贡献指南 |
+| 项目                     | 优先级 | 说明                        |
+| ------------------------ | ------ | --------------------------- |
+| `b1b` PluginManager 沙箱 | P1     | worker_threads 隔离         |
+| `b2c` 集成测试·端到端    | P1     | CLI→Server→Core 全链路      |
+| `b2d` 多模型评测排行榜   | P2     | 每版本模型适配报告          |
+| `b2e` 用户行为埋点       | P2     | FTSR/留存率/TTFV            |
+| `b3a` 一键安装脚本       | P1     | curl\|bash 体验             |
+| `b3b` VS Code 插件       | P2     | IDE 深度集成                |
+| `b3c` Contributor 引导   | P2     | good-first-issue + 贡献指南 |
 
 ---
 
@@ -283,13 +294,15 @@ git commit
 
 **问题**: 原架构中 `index.html`(PIPELINE) + `pipeline-data.json`(mainLane) + `pipeline-config.mjs`(MODULES) 三处各有管线结构定义，任一模块变更需同步修改 3 个文件。
 
-**方案**: 
+**方案**:
+
 - `pipeline-config.mjs` 是**唯一配置源**（Node.js 模块，可用 JS 逻辑）
 - `/api/pipeline` 和 `/api/dashboard` 从配置源**动态生成** JSON
 - `pipeline-data.json` 是配置源的**文件系统快照**（供 file:// 模式使用）
 - `index.html` 通过三级加载**自动选择最佳数据源**
 
-**参考模式**: 
+**参考模式**:
+
 - GitOps 的 single source of truth + reconciliation loop
 - PWA 的 progressive enhancement 策略
 - D3.js 的 data-join 渲染模式（数据与视图分离）
@@ -303,6 +316,7 @@ Tier 3: 内嵌回退  ──── 离线或 JSON 损坏时的骨架渲染
 ```
 
 **决策依据**:
+
 - 项目需要同时支持 `http://localhost:8898/` (服务器模式) 和 `file:///.../index.html` (直接打开)
 - `file://` 协议下无法使用 fetch API 调用 localhost 端点（同源策略）
 - 需要确保任何情况下页面都能渲染（骨架模式），用户体验不中断
@@ -324,6 +338,7 @@ function render(pd) {
 ```
 
 **收益**:
+
 1. **可测试性**: 渲染函数可以用任意 mock 数据测试
 2. **数据源无关**: 同一套渲染逻辑支持 API/JSON/嵌入式三种数据源
 3. **热更新友好**: 数据变化后只需重新调用 `render(newData)`，无需重写渲染逻辑
@@ -334,9 +349,12 @@ pipeline-data.json 使用描述性 ID (如 `phase-foundation`)，渲染器使用
 
 ```js
 const PHASE_ID_MAP = {
-  'phase-foundation': 'P0', 'phase-interface': 'P1',
-  'phase-extend': 'P2', 'phase-platform': 'P3',
-  'phase-release': 'P4', 'phase-pipeline': 'P5'
+  'phase-foundation': 'P0',
+  'phase-interface': 'P1',
+  'phase-extend': 'P2',
+  'phase-platform': 'P3',
+  'phase-release': 'P4',
+  'phase-pipeline': 'P5',
 };
 ```
 
@@ -354,6 +372,7 @@ L1 大类 (工具组/模型类/测试分类/阶段)
 ```
 
 **数据注入机制**:
+
 - `TEST_LEVEL3_MAP`：为 L2 项注入 L3 数据（测试分类→测试点）
 - `TEST_LEVEL4_MAP`：为 L3 项注入 L4 数据（测试点→具体用例名），当前覆盖 209/209
 - `TOOL_PARAMS_MAP`：为工具的 L2 注入 L3 参数签名（30 个工具）
@@ -376,29 +395,29 @@ L1 大类 (工具组/模型类/测试分类/阶段)
 
 ### 5.1 高优先级 (P0)
 
-| # | 优化项 | 现状 | 方案 | 复杂度 |
-|---|--------|------|------|--------|
-| 1 | **节点 ID 统一** | pipeline-data.json 用 `opt-p1a`，配置用 `b1a` | 统一使用配置中的 ID，去掉 JSON 中的映射表 | 中 |
-| 2 | **监听文件变化自动刷新** | 手动刷新浏览器 | 添加 SSE 端点，文件变化时推送事件 | 低 |
-| 3 | **流水线数据看板的数据刷新按钮** | 无手动刷新 | 添加"刷新数据"按钮，调用 `/api/status` + 重新加载 | 低 |
+| #   | 优化项                           | 现状                                          | 方案                                              | 复杂度 |
+| --- | -------------------------------- | --------------------------------------------- | ------------------------------------------------- | ------ |
+| 1   | **节点 ID 统一**                 | pipeline-data.json 用 `opt-p1a`，配置用 `b1a` | 统一使用配置中的 ID，去掉 JSON 中的映射表         | 中     |
+| 2   | **监听文件变化自动刷新**         | 手动刷新浏览器                                | 添加 SSE 端点，文件变化时推送事件                 | 低     |
+| 3   | **流水线数据看板的数据刷新按钮** | 无手动刷新                                    | 添加"刷新数据"按钮，调用 `/api/status` + 重新加载 | 低     |
 
 ### 5.2 中优先级 (P1)
 
-| # | 优化项 | 现状 | 方案 | 复杂度 |
-|---|--------|------|------|--------|
-| 4 | **SVG 交互增强** | 仅点击打开面板 | 添加悬停 tooltip、节点拖拽重排 | 中 |
-| 5 | **移动端响应式** | media query 基础适配 | SVG 改用 `preserveAspectRatio` + 触摸交互 | 中 |
-| 6 | **导出功能** | 无 | 导出为 PNG/SVG 文件、JSON 报告 | 低 |
-| 7 | **多语言支持** | 仅中文 | i18n 键值对，仪表板文字国际化 | 中 |
+| #   | 优化项           | 现状                 | 方案                                      | 复杂度 |
+| --- | ---------------- | -------------------- | ----------------------------------------- | ------ |
+| 4   | **SVG 交互增强** | 仅点击打开面板       | 添加悬停 tooltip、节点拖拽重排            | 中     |
+| 5   | **移动端响应式** | media query 基础适配 | SVG 改用 `preserveAspectRatio` + 触摸交互 | 中     |
+| 6   | **导出功能**     | 无                   | 导出为 PNG/SVG 文件、JSON 报告            | 低     |
+| 7   | **多语言支持**   | 仅中文               | i18n 键值对，仪表板文字国际化             | 中     |
 
 ### 5.3 低优先级 (P2)
 
-| # | 优化项 | 现状 | 方案 | 复杂度 |
-|---|--------|------|------|--------|
-| 8 | **Dashboard 卡片自定义排序** | 固定顺序 | 拖拽排序 + localStorage 持久化 | 低 |
-| 9 | **时序数据对比** | 仅显示当前状态 | 历史快照对比，版本间差异高亮 | 高 |
-| 10 | **WebSocket 实时推送** | 轮询式 | WebSocket 双向通信，状态变化即时推送 | 中 |
-| 11 | **暗色/亮色主题切换** | 仅暗色 | CSS 变量切换 + localStorage 持久化 | 低 |
+| #   | 优化项                       | 现状           | 方案                                 | 复杂度 |
+| --- | ---------------------------- | -------------- | ------------------------------------ | ------ |
+| 8   | **Dashboard 卡片自定义排序** | 固定顺序       | 拖拽排序 + localStorage 持久化       | 低     |
+| 9   | **时序数据对比**             | 仅显示当前状态 | 历史快照对比，版本间差异高亮         | 高     |
+| 10  | **WebSocket 实时推送**       | 轮询式         | WebSocket 双向通信，状态变化即时推送 | 中     |
+| 11  | **暗色/亮色主题切换**        | 仅暗色         | CSS 变量切换 + localStorage 持久化   | 低     |
 
 ---
 
@@ -495,9 +514,9 @@ node scripts/install-git-hooks.mjs
 
 ### C. 数据格式对照
 
-| 格式 | 来源 | Phase ID | Node ID (主线) | Node ID (分支) |
-|------|------|----------|---------------|---------------|
-| 配置源 | pipeline-config.mjs | P0-P5 | f1-f16, p5a-p5c | b1a-b3c |
-| API 输出 | /api/pipeline | P0-P5 | f1-f16, p5a-p5c | b1a-b3c |
-| JSON 快照 | pipeline-data.json | phase-* | f1-f16, p5a-p5c | opt-p1a-opt-p3c |
-| 渲染器 | index.html (运行时) | P0-P5 | f1-f16, p5a-p5c | b1a-b3c |
+| 格式      | 来源                | Phase ID | Node ID (主线)  | Node ID (分支)  |
+| --------- | ------------------- | -------- | --------------- | --------------- |
+| 配置源    | pipeline-config.mjs | P0-P5    | f1-f16, p5a-p5c | b1a-b3c         |
+| API 输出  | /api/pipeline       | P0-P5    | f1-f16, p5a-p5c | b1a-b3c         |
+| JSON 快照 | pipeline-data.json  | phase-\* | f1-f16, p5a-p5c | opt-p1a-opt-p3c |
+| 渲染器    | index.html (运行时) | P0-P5    | f1-f16, p5a-p5c | b1a-b3c         |

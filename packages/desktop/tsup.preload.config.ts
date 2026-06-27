@@ -1,6 +1,6 @@
 /**
  * Preload 脚本专用构建配置
- * 
+ *
  * Electron 的 preload 脚本必须为 CommonJS（运行在独立的 Node.js 沙箱中，不支持 ESM require）
  * 将输出文件设为 .cjs 以强制 CJS 解释，即使在 "type": "module" 项目中
  */

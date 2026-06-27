@@ -4,12 +4,7 @@
  * 支持长轮询 (getUpdates) 和 Webhook 两种模式
  */
 import { BaseIMAdapter } from './BaseIMAdapter.js';
-import type {
-  TelegramConfig,
-  IMMessage,
-  IMSendOptions,
-  IMAttachment,
-} from './types.js';
+import type { TelegramConfig, IMMessage, IMSendOptions, IMAttachment } from './types.js';
 import { logger } from '../utils/logger.js';
 
 /** Telegram API 基础 URL */
@@ -50,15 +45,12 @@ export class TelegramAdapter extends BaseIMAdapter {
   protected async onStart(): Promise<void> {
     // 验证 Bot Token
     const me = await this.apiCall<{ ok: boolean; result?: { id: number; username: string } }>(
-      'getMe'
+      'getMe',
     );
     if (!me.ok || !me.result) {
       throw new Error('Telegram Bot Token 无效');
     }
-    logger.info(
-      { botId: me.result.id, botUsername: me.result.username },
-      'Telegram Bot 验证成功'
-    );
+    logger.info({ botId: me.result.id, botUsername: me.result.username }, 'Telegram Bot 验证成功');
 
     if (this.config.mode === 'polling' || !this.config.mode) {
       this.startPolling();
@@ -81,11 +73,7 @@ export class TelegramAdapter extends BaseIMAdapter {
 
   // ========== 消息发送 ==========
 
-  async sendMessage(
-    chatId: string,
-    text: string,
-    options?: IMSendOptions
-  ): Promise<string> {
+  async sendMessage(chatId: string, text: string, options?: IMSendOptions): Promise<string> {
     // 长度限制：Telegram 单条消息最多 4096 字符
     const maxLen = 4096;
     let content = text;
@@ -121,14 +109,14 @@ export class TelegramAdapter extends BaseIMAdapter {
             text: btn.text,
             ...(btn.callbackData ? { callback_data: btn.callbackData } : {}),
             ...(btn.url ? { url: btn.url } : {}),
-          }))
+          })),
         ),
       };
     }
 
     const result = await this.apiCall<{ ok: boolean; result?: { message_id: number } }>(
       'sendMessage',
-      params
+      params,
     );
     if (!result.ok || !result.result) {
       throw new Error(`Telegram sendMessage 失败: ${JSON.stringify(result)}`);
@@ -136,11 +124,7 @@ export class TelegramAdapter extends BaseIMAdapter {
     return String(result.result.message_id);
   }
 
-  async editMessage(
-    chatId: string,
-    messageId: string,
-    newText: string
-  ): Promise<boolean> {
+  async editMessage(chatId: string, messageId: string, newText: string): Promise<boolean> {
     const maxLen = 4096;
     let content = newText;
     if (newText.length > maxLen) {
@@ -175,11 +159,7 @@ export class TelegramAdapter extends BaseIMAdapter {
     }
   }
 
-  async sendPhoto(
-    chatId: string,
-    imageUrl: string,
-    caption?: string
-  ): Promise<string> {
+  async sendPhoto(chatId: string, imageUrl: string, caption?: string): Promise<string> {
     const params: Record<string, unknown> = {
       chat_id: chatId,
       photo: imageUrl,
@@ -188,16 +168,12 @@ export class TelegramAdapter extends BaseIMAdapter {
 
     const result = await this.apiCall<{ ok: boolean; result?: { message_id: number } }>(
       'sendPhoto',
-      params
+      params,
     );
     return result.ok && result.result ? String(result.result.message_id) : '';
   }
 
-  async sendDocument(
-    chatId: string,
-    fileUrl: string,
-    caption?: string
-  ): Promise<string> {
+  async sendDocument(chatId: string, fileUrl: string, caption?: string): Promise<string> {
     const params: Record<string, unknown> = {
       chat_id: chatId,
       document: fileUrl,
@@ -206,7 +182,7 @@ export class TelegramAdapter extends BaseIMAdapter {
 
     const result = await this.apiCall<{ ok: boolean; result?: { message_id: number } }>(
       'sendDocument',
-      params
+      params,
     );
     return result.ok && result.result ? String(result.result.message_id) : '';
   }
@@ -387,13 +363,10 @@ export class TelegramAdapter extends BaseIMAdapter {
     if (!this.config.webhookUrl) {
       throw new Error('Webhook 模式需要提供 webhookUrl');
     }
-    const result = await this.apiCall<{ ok: boolean; description?: string }>(
-      'setWebhook',
-      {
-        url: this.config.webhookUrl,
-        allowed_updates: ['message', 'callback_query'],
-      }
-    );
+    const result = await this.apiCall<{ ok: boolean; description?: string }>('setWebhook', {
+      url: this.config.webhookUrl,
+      allowed_updates: ['message', 'callback_query'],
+    });
     if (!result.ok) {
       throw new Error(`Telegram setWebhook 失败: ${result.description}`);
     }
@@ -451,7 +424,7 @@ export class TelegramAdapter extends BaseIMAdapter {
     try {
       const result = await this.apiCall<{ ok: boolean; result?: { file_path: string } }>(
         'getFile',
-        { file_id: fileId }
+        { file_id: fileId },
       );
       if (result.ok && result.result?.file_path) {
         return `${TG_API_BASE}/file/bot${this.botToken}/${result.result.file_path}`;
@@ -466,7 +439,26 @@ export class TelegramAdapter extends BaseIMAdapter {
    * 转义 Telegram MarkdownV2 特殊字符
    */
   private escapeMarkdownV2(text: string): string {
-    const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+    const specialChars = [
+      '_',
+      '*',
+      '[',
+      ']',
+      '(',
+      ')',
+      '~',
+      '`',
+      '>',
+      '#',
+      '+',
+      '-',
+      '=',
+      '|',
+      '{',
+      '}',
+      '.',
+      '!',
+    ];
     let escaped = text;
     for (const char of specialChars) {
       escaped = escaped.replaceAll(char, `\\${char}`);

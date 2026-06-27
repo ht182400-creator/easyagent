@@ -101,7 +101,7 @@ describe('企业微信 AES-256-CBC 加解密算法', () => {
       // 确保正好 43 字符（32字节 base64 编码 = 44字符含1 padding）
       // 去掉尾部 =
       const key = randomKey.slice(0, 43);
-      
+
       const plainText = `test_message_${i}`;
       const encrypted = wxEncrypt(plainText, key, `corp_${i}`);
       const decrypted = wxDecrypt(encrypted, key);
@@ -139,7 +139,8 @@ describe('企业微信 XML 解析', () => {
     // 此正则匹配 <TagName>...</TagName> 对，不处理嵌套
     // 在实际使用中，微信消息解密后 slice(20) 得到的是完整 <xml>...</xml> 体，
     // <xml> 标签会先被匹配并吞掉所有内部标签。此处测试平级标签场景。
-    const xml = '<ToUserName><![CDATA[wx12345]]></ToUserName><FromUserName><![CDATA[user_abc]]></FromUserName><CreateTime>1710000000</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[你好]]></Content><MsgId>1234567890</MsgId>';
+    const xml =
+      '<ToUserName><![CDATA[wx12345]]></ToUserName><FromUserName><![CDATA[user_abc]]></FromUserName><CreateTime>1710000000</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[你好]]></Content><MsgId>1234567890</MsgId>';
 
     const result = parseWeChatXML(xml);
     expect(result).not.toBeNull();
@@ -150,7 +151,8 @@ describe('企业微信 XML 解析', () => {
   });
 
   it('应处理无 CDATA 的标签', () => {
-    const xml = '<ToUserName>wx_simple</ToUserName><FromUserName>user_simple</FromUserName><MsgType>event</MsgType>';
+    const xml =
+      '<ToUserName>wx_simple</ToUserName><FromUserName>user_simple</FromUserName><MsgType>event</MsgType>';
 
     const result = parseWeChatXML(xml);
     expect(result).not.toBeNull();

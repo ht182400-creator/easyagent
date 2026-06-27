@@ -22,7 +22,7 @@ const PROJECT_DIR = resolve(__dirname, '..');
 // better-sqlite3 在 pnpm 中的实际位置
 const SQLITE_DIR = resolve(
   PROJECT_DIR,
-  'node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3'
+  'node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3',
 );
 
 const CURRENT = resolve(SQLITE_DIR, 'build/Release/better_sqlite3.node');

@@ -1,6 +1,6 @@
 /**
  * CI 数据回取脚本 —— wait for CI + download vitest artifacts + fetch failure logs
- * 
+ *
  * 流程:
  *   1. 找到当前 commit 对应的 CI workflow run
  *   2. 轮询等待 CI 所有 job 完成（超时可配）
@@ -8,9 +8,9 @@
  *   4. 下载 vitest 报告 artifacts 到 docs/pipeline/
  *   5. git pull 获取 CI-synced 管线数据
  *   6. 输出 CI 状态摘要 + 失败日志摘要
- * 
+ *
  * 用法: node scripts/fetch-ci-data.mjs [--timeout 600] [--no-wait] [--skip-download] [--no-logs]
- * 
+ *
  * 注意: 需要 GitHub Token（scripts/.release_token 或 GITHUB_TOKEN 环境变量）
  *       Token 需要 repo scope 才能访问 actions artifacts 和 logs API
  */
@@ -62,7 +62,9 @@ function loadToken() {
   if (existsSync(tokenPath)) {
     return readFileSync(tokenPath, 'utf-8').trim();
   }
-  throw new Error('未找到 GitHub Token。请设置 GITHUB_TOKEN 环境变量或创建 scripts/.release_token 文件');
+  throw new Error(
+    '未找到 GitHub Token。请设置 GITHUB_TOKEN 环境变量或创建 scripts/.release_token 文件',
+  );
 }
 
 /** GitHub API 请求 */
@@ -70,31 +72,34 @@ function githubRequest(path) {
   return new Promise((resolve, reject) => {
     const token = loadToken();
     const url = new URL(path, `https://api.github.com`);
-    const req = https.request({
-      hostname: 'api.github.com',
-      path: url.pathname + url.search,
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-        'User-Agent': 'EasyAgent-CI-Sync/1.0',
+    const req = https.request(
+      {
+        hostname: 'api.github.com',
+        path: url.pathname + url.search,
+        headers: {
+          Authorization: `token ${token}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'User-Agent': 'EasyAgent-CI-Sync/1.0',
+        },
       },
-    }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        const redirectUrl = res.headers.location;
-        resolve(githubRequest(redirectUrl));
-        return;
-      }
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(data));
-        } catch {
-          resolve(data);
+      (res) => {
+        if (res.statusCode === 301 || res.statusCode === 302) {
+          const redirectUrl = res.headers.location;
+          resolve(githubRequest(redirectUrl));
+          return;
         }
-      });
-    });
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch {
+            resolve(data);
+          }
+        });
+      },
+    );
     req.on('error', reject);
     req.end();
   });
@@ -130,35 +135,47 @@ function extractSingleFileZip(zipPath, destDir) {
 function fetchJobLog(jobId) {
   return new Promise((resolve, reject) => {
     const token = loadToken();
-    const req = https.request({
-      hostname: 'api.github.com',
-      path: `/repos/${CONFIG.owner}/${CONFIG.repo}/actions/jobs/${jobId}/logs`,
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'EasyAgent-CI-Sync/1.0',
+    const req = https.request(
+      {
+        hostname: 'api.github.com',
+        path: `/repos/${CONFIG.owner}/${CONFIG.repo}/actions/jobs/${jobId}/logs`,
+        headers: {
+          Authorization: `token ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'EasyAgent-CI-Sync/1.0',
+        },
       },
-    }, res => {
-      if (res.statusCode === 302 || res.statusCode === 301) {
-        const redirectUrl = res.headers.location;
-        https.get(redirectUrl, res2 => {
-          let data = '';
-          res2.on('data', c => { data += c; });
-          res2.on('end', () => resolve(data));
-          res2.on('error', reject);
-        }).on('error', reject);
-        return;
-      }
-      if (res.statusCode !== 200) {
-        reject(new Error(`HTTP ${res.statusCode}`));
-        return;
-      }
-      let data = '';
-      res.on('data', c => { data += c; });
-      res.on('end', () => resolve(data));
-    });
+      (res) => {
+        if (res.statusCode === 302 || res.statusCode === 301) {
+          const redirectUrl = res.headers.location;
+          https
+            .get(redirectUrl, (res2) => {
+              let data = '';
+              res2.on('data', (c) => {
+                data += c;
+              });
+              res2.on('end', () => resolve(data));
+              res2.on('error', reject);
+            })
+            .on('error', reject);
+          return;
+        }
+        if (res.statusCode !== 200) {
+          reject(new Error(`HTTP ${res.statusCode}`));
+          return;
+        }
+        let data = '';
+        res.on('data', (c) => {
+          data += c;
+        });
+        res.on('end', () => resolve(data));
+      },
+    );
     req.on('error', reject);
-    req.setTimeout(60000, () => { req.destroy(); reject(new Error('请求超时')); });
+    req.setTimeout(60000, () => {
+      req.destroy();
+      reject(new Error('请求超时'));
+    });
     req.end();
   });
 }
@@ -189,10 +206,15 @@ function extractFailureLines(logText) {
       inFailureBlock = true;
       continue;
     }
-    if (inFailureBlock && (clean.includes('AssertionError') || 
-        clean.includes('Expected') || clean.includes('Received') ||
-        clean.includes('× ') || clean.includes('✕ ') ||
-        clean.match(/^\s{2,}(Expected|Received|at\s)/))) {
+    if (
+      inFailureBlock &&
+      (clean.includes('AssertionError') ||
+        clean.includes('Expected') ||
+        clean.includes('Received') ||
+        clean.includes('× ') ||
+        clean.includes('✕ ') ||
+        clean.match(/^\s{2,}(Expected|Received|at\s)/))
+    ) {
       result.push(clean.trim());
       continue;
     }
@@ -217,7 +239,9 @@ async function main() {
   log.info('查找 CI workflow run...');
   let runs;
   try {
-    runs = await githubRequest(`/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs?branch=${CONFIG.branch}&event=push&per_page=10`);
+    runs = await githubRequest(
+      `/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs?branch=${CONFIG.branch}&event=push&per_page=10`,
+    );
   } catch (e) {
     log.error(`无法访问 GitHub API: ${e.message}`);
     process.exit(1);
@@ -252,7 +276,12 @@ async function main() {
   log.info(`  状态: ${targetRun.status} / ${targetRun.conclusion || '进行中...'}`);
 
   // 3. 等待 CI 完成
-  if (!options.noWait && (targetRun.status === 'in_progress' || targetRun.status === 'queued' || targetRun.status === 'pending')) {
+  if (
+    !options.noWait &&
+    (targetRun.status === 'in_progress' ||
+      targetRun.status === 'queued' ||
+      targetRun.status === 'pending')
+  ) {
     log.info(`等待 CI 完成 (超时: ${options.timeout}s, 轮询: ${CONFIG.pollInterval}s)...`);
     const startTime = Date.now();
     let pollCount = 0;
@@ -269,7 +298,9 @@ async function main() {
 
       let currentRun;
       try {
-        currentRun = await githubRequest(`/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}`);
+        currentRun = await githubRequest(
+          `/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}`,
+        );
       } catch (e) {
         log.debug(`[轮询 ${pollCount}] API 错误: ${e.message}, 继续等待...`);
         continue;
@@ -294,16 +325,23 @@ async function main() {
   // 4. 获取 job 状态摘要
   log.info('CI Job 摘要:');
   try {
-    const jobs = await githubRequest(`/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}/jobs`);
+    const jobs = await githubRequest(
+      `/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}/jobs`,
+    );
     if (jobs.jobs) {
       for (const job of jobs.jobs) {
-        const icon = job.conclusion === 'success' ? '✅' 
-                    : job.conclusion === 'failure' ? '❌'
-                    : job.conclusion === 'skipped' ? '⏭️'
-                    : '⏳';
-        const duration = job.completed_at && job.started_at
-          ? ` (${Math.round((new Date(job.completed_at) - new Date(job.started_at)) / 1000)}s)`
-          : '';
+        const icon =
+          job.conclusion === 'success'
+            ? '✅'
+            : job.conclusion === 'failure'
+              ? '❌'
+              : job.conclusion === 'skipped'
+                ? '⏭️'
+                : '⏳';
+        const duration =
+          job.completed_at && job.started_at
+            ? ` (${Math.round((new Date(job.completed_at) - new Date(job.started_at)) / 1000)}s)`
+            : '';
         log.info(`  ${icon} ${job.name}: ${job.conclusion || job.status}${duration}`);
       }
     }
@@ -315,9 +353,11 @@ async function main() {
   if (options.fetchLogs) {
     log.info('回取失败 job 的原始日志...');
     try {
-      const jobsData = await githubRequest(`/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}/jobs`);
+      const jobsData = await githubRequest(
+        `/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}/jobs`,
+      );
       const allJobs = jobsData.jobs || [];
-      const failedJobs = allJobs.filter(j => j.conclusion === 'failure');
+      const failedJobs = allJobs.filter((j) => j.conclusion === 'failure');
 
       if (failedJobs.length === 0) {
         log.ok('无失败 job，跳过日志回取');
@@ -332,12 +372,14 @@ async function main() {
             if (logText && logText.length > 0) {
               const logPath = resolve(logsDir, `${job.name.replace(/[^a-zA-Z0-9_-]/g, '_')}.log`);
               writeFileSync(logPath, logText, 'utf-8');
-              log.ok(`  已保存: ci-logs/${basename(logPath)} (${(logText.length / 1024).toFixed(0)} KB)`);
+              log.ok(
+                `  已保存: ci-logs/${basename(logPath)} (${(logText.length / 1024).toFixed(0)} KB)`,
+              );
 
               const failLines = extractFailureLines(logText);
               if (failLines.length > 0) {
                 log.warn(`  失败摘要 (${failLines.length} 行):`);
-                failLines.slice(0, 12).forEach(l => log.warn(`      ${l}`));
+                failLines.slice(0, 12).forEach((l) => log.warn(`      ${l}`));
                 if (failLines.length > 12) log.warn(`      ... 还有 ${failLines.length - 12} 行`);
               }
             }
@@ -355,7 +397,9 @@ async function main() {
   if (!options.skipDownload) {
     log.info('下载 CI vitest 报告...');
     try {
-      const artifacts = await githubRequest(`/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}/artifacts`);
+      const artifacts = await githubRequest(
+        `/repos/${CONFIG.owner}/${CONFIG.repo}/actions/runs/${runId}/artifacts`,
+      );
       const artifactList = artifacts.artifacts || [];
 
       if (!existsSync(CONFIG.pipelineDir)) {
@@ -364,7 +408,7 @@ async function main() {
 
       let downloadedCount = 0;
       for (const artName of CONFIG.artifactNames) {
-        const art = artifactList.find(a => a.name === artName);
+        const art = artifactList.find((a) => a.name === artName);
         if (!art) {
           log.warn(`  artifact "${artName}" 不在该 run 中（可能被 skip）`);
           continue;
@@ -376,7 +420,9 @@ async function main() {
 
         if (existsSync(zipPath)) {
           extractSingleFileZip(zipPath, CONFIG.pipelineDir);
-          try { require('fs').unlinkSync(zipPath); } catch {}
+          try {
+            require('fs').unlinkSync(zipPath);
+          } catch {}
           log.ok(`  ${artName} → docs/pipeline/`);
           downloadedCount++;
         }
@@ -391,8 +437,8 @@ async function main() {
   // 6. git pull 获取 CI-synced 管线数据
   log.info('git pull 获取 CI 同步的管线数据...');
   try {
-    const result = execSync('git pull --no-edit', { 
-      cwd: ROOT, 
+    const result = execSync('git pull --no-edit', {
+      cwd: ROOT,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
       timeout: 30000,
@@ -448,33 +494,39 @@ function downloadArtifact(url, destPath) {
 
     const makeRequest = (fullUrl) => {
       const urlObj2 = new URL(fullUrl);
-      https.get(urlObj2, {
-        headers: {
-          'Authorization': `token ${token}`,
-          'User-Agent': 'EasyAgent-CI-Sync/1.0',
-        },
-      }, (res) => {
-        if (res.statusCode === 302 || res.statusCode === 301) {
-          makeRequest(res.headers.location);
-          return;
-        }
-        if (res.statusCode !== 200) {
-          reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
-          return;
-        }
-        let stream = res;
-        const encoding = res.headers['content-encoding'];
-        if (encoding === 'gzip') {
-          stream = res.pipe(zlib.createGunzip());
-        } else if (encoding === 'deflate') {
-          stream = res.pipe(zlib.createInflate());
-        }
+      https
+        .get(
+          urlObj2,
+          {
+            headers: {
+              Authorization: `token ${token}`,
+              'User-Agent': 'EasyAgent-CI-Sync/1.0',
+            },
+          },
+          (res) => {
+            if (res.statusCode === 302 || res.statusCode === 301) {
+              makeRequest(res.headers.location);
+              return;
+            }
+            if (res.statusCode !== 200) {
+              reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+              return;
+            }
+            let stream = res;
+            const encoding = res.headers['content-encoding'];
+            if (encoding === 'gzip') {
+              stream = res.pipe(zlib.createGunzip());
+            } else if (encoding === 'deflate') {
+              stream = res.pipe(zlib.createInflate());
+            }
 
-        const fileStream = createWriteStream(destPath);
-        stream.pipe(fileStream);
-        fileStream.on('finish', () => resolve());
-        fileStream.on('error', reject);
-      }).on('error', reject);
+            const fileStream = createWriteStream(destPath);
+            stream.pipe(fileStream);
+            fileStream.on('finish', () => resolve());
+            fileStream.on('error', reject);
+          },
+        )
+        .on('error', reject);
     };
 
     makeRequest(url);
@@ -482,11 +534,11 @@ function downloadArtifact(url, destPath) {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ===== 执行 =====
-main().catch(e => {
+main().catch((e) => {
   log.error(`致命错误: ${e.message}`);
   log.debug('堆栈:', e.stack?.split('\n').slice(0, 3).join('\n'));
   process.exit(1);

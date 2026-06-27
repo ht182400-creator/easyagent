@@ -9,7 +9,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 // ==================== 类型定义（与 main.ts 保持一致） ====================
 
-type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'error' | 'installing';
+type UpdateStatus =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'downloading'
+  | 'downloaded'
+  | 'error'
+  | 'installing';
 
 interface UpdateInfoData {
   version?: string;
@@ -28,7 +35,13 @@ function decideCheckUpdateAction(
   currentStatus: UpdateStatus,
   currentInfo: UpdateInfoData,
 ): {
-  action: 'return-downloaded' | 'return-checking' | 'return-available' | 'return-downloading' | 'start-check' | 'retry';
+  action:
+    | 'return-downloaded'
+    | 'return-checking'
+    | 'return-available'
+    | 'return-downloading'
+    | 'start-check'
+    | 'retry';
   response: { status: UpdateStatus; message?: string; version?: string; percent?: number };
 } {
   // ----- 场景1: 已下载完成 -----
@@ -59,7 +72,11 @@ function decideCheckUpdateAction(
   if (currentStatus === 'downloading') {
     return {
       action: 'return-downloading',
-      response: { status: 'downloading', version: currentInfo?.version, percent: currentInfo?.percent ?? 0 },
+      response: {
+        status: 'downloading',
+        version: currentInfo?.version,
+        percent: currentInfo?.percent ?? 0,
+      },
     };
   }
 
@@ -96,13 +113,13 @@ function decideInstallAction(currentStatus: UpdateStatus): {
  */
 function isValidTransition(from: UpdateStatus, to: UpdateStatus): boolean {
   const validTransitions: Record<UpdateStatus, UpdateStatus[]> = {
-    idle:        ['checking'],
-    checking:    ['available', 'idle', 'error'],
-    available:   ['downloading', 'error'],
+    idle: ['checking'],
+    checking: ['available', 'idle', 'error'],
+    available: ['downloading', 'error'],
     downloading: ['downloaded', 'error', 'downloading'],
-    downloaded:  ['installing'],
-    error:       ['checking', 'idle'],
-    installing:  [],
+    downloaded: ['installing'],
+    error: ['checking', 'idle'],
+    installing: [],
   };
   return validTransitions[from]?.includes(to) ?? false;
 }
@@ -194,7 +211,14 @@ describe('自动更新状态机 - install-update IPC 决策', () => {
   });
 
   describe('拒绝安装', () => {
-    const notDownloadedStates: UpdateStatus[] = ['idle', 'checking', 'available', 'downloading', 'error', 'installing'];
+    const notDownloadedStates: UpdateStatus[] = [
+      'idle',
+      'checking',
+      'available',
+      'downloading',
+      'error',
+      'installing',
+    ];
 
     notDownloadedStates.forEach((state) => {
       it(`${state} 状态应拒绝安装`, () => {
@@ -234,14 +258,14 @@ describe('自动更新状态机 - 状态转移合法性', () => {
 
   describe('非法转移', () => {
     const invalidCases: [UpdateStatus, UpdateStatus][] = [
-      ['idle', 'downloaded'],       // 不能跳过下载
-      ['idle', 'error'],            // 不能直接到 error
-      ['checking', 'downloaded'],   // 不能跳过 available+downloading
-      ['downloaded', 'downloading'],// 下载完不能回到下载中
-      ['downloaded', 'idle'],       // 下载完不能重置为空闲
-      ['installing', 'checking'],   // 安装中不可逆
-      ['installing', 'idle'],       // 安装中不可逆
-      ['error', 'downloaded'],      // 错误不能直接到下载完成
+      ['idle', 'downloaded'], // 不能跳过下载
+      ['idle', 'error'], // 不能直接到 error
+      ['checking', 'downloaded'], // 不能跳过 available+downloading
+      ['downloaded', 'downloading'], // 下载完不能回到下载中
+      ['downloaded', 'idle'], // 下载完不能重置为空闲
+      ['installing', 'checking'], // 安装中不可逆
+      ['installing', 'idle'], // 安装中不可逆
+      ['error', 'downloaded'], // 错误不能直接到下载完成
     ];
 
     invalidCases.forEach(([from, to]) => {

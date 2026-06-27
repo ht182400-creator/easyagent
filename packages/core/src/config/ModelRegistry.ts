@@ -1,7 +1,7 @@
 /**
  * 模型目录注册中心
  * 负责从远程源下载最新模型信息并缓存到本地文件
- * 
+ *
  * 设计思路：
  * - 启动时从远程 URL 下载模型目录 JSON → 缓存到 ~/.easyagent/models-catalog.json
  * - 缓存有效期 24 小时，过期后重新下载
@@ -17,10 +17,12 @@ import type { ProviderConfig, ModelConfig, ProviderId } from '../types/index.js'
 import { logger } from '../utils/logger.js';
 
 /** 模型目录的远端 URL */
-const CATALOG_URL = 'https://raw.githubusercontent.com/ht182400-creator/easyagent/main/models-catalog.json';
+const CATALOG_URL =
+  'https://raw.githubusercontent.com/ht182400-creator/easyagent/main/models-catalog.json';
 
 /** 备用 URL（CDN） */
-const CATALOG_URL_FALLBACK = 'https://cdn.jsdelivr.net/gh/ht182400-creator/easyagent@main/models-catalog.json';
+const CATALOG_URL_FALLBACK =
+  'https://cdn.jsdelivr.net/gh/ht182400-creator/easyagent@main/models-catalog.json';
 
 /** 缓存文件路径 */
 const CACHE_DIR = join(homedir(), '.easyagent');
@@ -93,7 +95,7 @@ async function fetchWithTimeout(url: string): Promise<string | null> {
       signal: controller.signal,
       headers: {
         'User-Agent': 'EasyAgent/1.0',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
     });
     if (!res.ok) {
@@ -185,7 +187,7 @@ function readBundledCatalog(): ModelsCatalog | null {
     resolve(process.cwd(), '..', 'models-catalog.json'),
     resolve(process.cwd(), '..', '..', 'models-catalog.json'),
   ];
-  
+
   for (const filePath of searchPaths) {
     try {
       if (existsSync(filePath)) {
@@ -227,18 +229,21 @@ export class ModelRegistry {
     try {
       // 1. 读取本地缓存
       const localCache = readLocalCache();
-      
+
       // 2. 决定是否需要远程更新
       const needFetch = forceRefresh || !localCache || isCacheStale(localCache);
-      
+
       if (needFetch) {
         logger.info('正在从远程获取最新模型目录...');
         const catalog = await downloadCatalog();
-        
+
         if (catalog) {
           this.catalog = catalog;
           writeLocalCache(catalog, CATALOG_URL);
-          logger.info({ version: catalog.version, providers: catalog.providers.length }, '模型目录已更新');
+          logger.info(
+            { version: catalog.version, providers: catalog.providers.length },
+            '模型目录已更新',
+          );
         } else if (localCache) {
           // 远程获取失败，使用本地缓存
           this.catalog = localCache.catalog;
@@ -250,7 +255,10 @@ export class ModelRegistry {
             this.catalog = bundled;
             // 将内置目录写入缓存，下次启动可直接使用
             writeLocalCache(bundled, 'bundled:models-catalog.json');
-            logger.info({ version: bundled.version, providers: bundled.providers.length }, '使用内置模型目录(已写入缓存)');
+            logger.info(
+              { version: bundled.version, providers: bundled.providers.length },
+              '使用内置模型目录(已写入缓存)',
+            );
           }
         }
       } else {
@@ -258,7 +266,7 @@ export class ModelRegistry {
         this.catalog = localCache!.catalog;
         logger.info('使用本地缓存模型目录');
       }
-      
+
       this.initialized = true;
     } catch (error) {
       logger.error({ error: (error as Error).message }, '模型目录初始化失败');
@@ -286,7 +294,7 @@ export class ModelRegistry {
    */
   getModels(providerId: ProviderId): ModelConfig[] | null {
     if (!this.catalog) return null;
-    const entry = this.catalog.providers.find(p => p.provider === providerId);
+    const entry = this.catalog.providers.find((p) => p.provider === providerId);
     return entry?.models || null;
   }
 
@@ -297,7 +305,7 @@ export class ModelRegistry {
    */
   getProviderEntry(providerId: ProviderId): CatalogEntry | null {
     if (!this.catalog) return null;
-    return this.catalog.providers.find(p => p.provider === providerId) || null;
+    return this.catalog.providers.find((p) => p.provider === providerId) || null;
   }
 
   /**

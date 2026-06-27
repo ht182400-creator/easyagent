@@ -37,20 +37,14 @@ export class AdapterFactory {
   /**
    * 根据提供商ID创建自定义适配器
    */
-  private static createCustomAdapter(
-    config: ProviderConfig,
-    modelName?: string
-  ): BaseAdapter {
+  private static createCustomAdapter(config: ProviderConfig, modelName?: string): BaseAdapter {
     switch (config.id) {
       case 'ernie':
         return new ErnieAdapter(config, modelName);
       case 'hunyuan':
         return new HunyuanAdapter(config, modelName);
       default:
-        logger.warn(
-          { provider: config.id },
-          '未知的自定义提供商，回退到OpenAI兼容适配器'
-        );
+        logger.warn({ provider: config.id }, '未知的自定义提供商，回退到OpenAI兼容适配器');
         return new OpenAICompatibleAdapter(config, modelName);
     }
   }
@@ -74,10 +68,7 @@ export class AdapterFactory {
         const adapter = AdapterFactory.create(config);
         adapters.set(config.id, adapter);
       } catch (error) {
-        logger.error(
-          { error, provider: config.id },
-          '创建适配器失败'
-        );
+        logger.error({ error, provider: config.id }, '创建适配器失败');
       }
     }
     return adapters;

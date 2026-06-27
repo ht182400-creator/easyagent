@@ -104,7 +104,10 @@ describe('WebSocket — 错误处理', () => {
         });
       });
       // 超时也算通过 — 某些环境下聊天功能可能因配置问题而不响应
-      setTimeout(() => { ws.close(); resolve(); }, 5000);
+      setTimeout(() => {
+        ws.close();
+        resolve();
+      }, 5000);
     });
   });
 

@@ -20,10 +20,7 @@ export { AgentEngine } from './agent/AgentEngine.js';
 export type { AgentEventListener } from './agent/AgentEngine.js';
 
 // 多Agent协作协调器 🆕
-export {
-  MultiAgentCoordinator,
-  PREDEFINED_ROLES,
-} from './agent/MultiAgentCoordinator.js';
+export { MultiAgentCoordinator, PREDEFINED_ROLES } from './agent/MultiAgentCoordinator.js';
 export type {
   AgentRole,
   SubTask,
@@ -131,11 +128,7 @@ export type {
 } from './plugins/index.js';
 
 // Docker 沙箱系统 🆕
-export {
-  DockerSandbox,
-  SandboxManager,
-  checkDockerAvailability,
-} from './sandbox/index.js';
+export { DockerSandbox, SandboxManager, checkDockerAvailability } from './sandbox/index.js';
 export type {
   SandboxOptions,
   SandboxResult,
@@ -223,11 +216,7 @@ export {
 } from './tools/index.js';
 
 // 用户行为分析 🆕 P2
-export {
-  AnalyticsEngine,
-  getAnalyticsEngine,
-  setAnalyticsEngine,
-} from './analytics/index.js';
+export { AnalyticsEngine, getAnalyticsEngine, setAnalyticsEngine } from './analytics/index.js';
 export type {
   AnalyticsEventType,
   AnalyticsEvent,

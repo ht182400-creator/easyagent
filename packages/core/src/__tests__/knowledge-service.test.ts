@@ -10,7 +10,10 @@ import type { KnowledgeService as KS } from '../knowledge/KnowledgeService.js';
 
 /** 创建临时工作区目录 */
 function createTestWorkspace(): string {
-  const dir = resolve(tmpdir(), `ea-ks-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = resolve(
+    tmpdir(),
+    `ea-ks-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -129,13 +132,16 @@ describe('KnowledgeService - 文档 CRUD', () => {
       service.addDocument({ title: 'First', content: '1' });
       // 短暂等待确保时间戳不同
       const now = Date.now();
-      while (Date.now() === now) { /* wait */ }
+      while (Date.now() === now) {
+        /* wait */
+      }
       service.addDocument({ title: 'Second', content: '2' });
 
       const docs = service.listDocuments();
       expect(docs.length).toBe(2);
-      expect(new Date(docs[0].updatedAt).getTime())
-        .toBeGreaterThanOrEqual(new Date(docs[1].updatedAt).getTime());
+      expect(new Date(docs[0].updatedAt).getTime()).toBeGreaterThanOrEqual(
+        new Date(docs[1].updatedAt).getTime(),
+      );
     });
   });
 
@@ -223,13 +229,13 @@ describe('KnowledgeService - 文档 CRUD', () => {
     it('应按 category 过滤搜索结果', () => {
       const { results } = service.search({ query: '数据', category: 'data' });
       expect(results.length).toBeGreaterThanOrEqual(1);
-      expect(results.every(r => r.document.category === 'data')).toBe(true);
+      expect(results.every((r) => r.document.category === 'data')).toBe(true);
     });
 
     it('应按 tag 过滤搜索结果', () => {
       const { results } = service.search({ query: '', tag: 'frontend' });
       expect(results.length).toBeGreaterThanOrEqual(1);
-      expect(results.every(r => r.document.tags.includes('frontend'))).toBe(true);
+      expect(results.every((r) => r.document.tags.includes('frontend'))).toBe(true);
     });
 
     it('应限制最大结果数', () => {
@@ -344,7 +350,9 @@ describe('KnowledgeService - 文档 CRUD', () => {
   // ==================== 内容导入（无文件） ====================
   describe('importFromContent', () => {
     it('应成功从内容字符串导入并生成正确的 source 标签', () => {
-      const result = service.importFromContent('test-file.py', 'print("hello")', 'code', ['python']);
+      const result = service.importFromContent('test-file.py', 'print("hello")', 'code', [
+        'python',
+      ]);
       expect(result.success).toBe(true);
       expect(result.docId).toBeDefined();
 
@@ -414,11 +422,11 @@ describe('KnowledgeService - 文档 CRUD', () => {
 
       // 项目列表不包含全局文档
       const projectDocs = service.listDocuments();
-      expect(projectDocs.every(d => d.title !== '全局专用')).toBe(true);
+      expect(projectDocs.every((d) => d.title !== '全局专用')).toBe(true);
 
       // 全局列表不包含项目文档
       const globalDocs = gs.listDocuments();
-      expect(globalDocs.every(d => d.title !== '项目专用')).toBe(true);
+      expect(globalDocs.every((d) => d.title !== '项目专用')).toBe(true);
 
       // 清理
       gs.removeDocument(gr.docId!);

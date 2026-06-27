@@ -1,7 +1,7 @@
 /**
  * Git 工作流深度集成工具集
  * 提供自动提交、仓库地图、高级Git操作等功能
- * 
+ *
  * 工具列表:
  * - git_auto_commit: AI辅助自动提交 (分析变更+生成commit message+提交)
  * - git_repo_map: 生成仓库结构地图 (文件树+模块关系)
@@ -25,7 +25,10 @@ import { logger } from '../utils/logger.js';
 function isGitRepo(workspace: string): boolean {
   try {
     execSync('git rev-parse --git-dir', {
-      cwd: workspace, encoding: 'utf-8', timeout: 5000, windowsHide: true,
+      cwd: workspace,
+      encoding: 'utf-8',
+      timeout: 5000,
+      windowsHide: true,
     });
     return true;
   } catch (err) {
@@ -39,7 +42,10 @@ function isGitRepo(workspace: string): boolean {
 function getCurrentBranch(workspace: string): string {
   try {
     return execSync('git branch --show-current', {
-      cwd: workspace, encoding: 'utf-8', timeout: 5000, windowsHide: true,
+      cwd: workspace,
+      encoding: 'utf-8',
+      timeout: 5000,
+      windowsHide: true,
     }).trim();
   } catch (err) {
     return 'unknown';
@@ -51,8 +57,15 @@ function getCurrentBranch(workspace: string): string {
  */
 function generateRepoMap(workspace: string, maxDepth = 4, maxFiles = 200): string {
   const ignorePatterns = [
-    'node_modules', '.git', 'dist', '.next', '__pycache__',
-    '*.pyc', '.DS_Store', '*.map', '.tsbuildinfo',
+    'node_modules',
+    '.git',
+    'dist',
+    '.next',
+    '__pycache__',
+    '*.pyc',
+    '.DS_Store',
+    '*.map',
+    '.tsbuildinfo',
   ];
 
   const lines: string[] = [];
@@ -78,7 +91,7 @@ function generateRepoMap(workspace: string, maxDepth = 4, maxFiles = 200): strin
 
   function walk(dir: string, depth: number, prefix: string): number {
     if (depth > maxDepth || lines.length >= maxFiles * 2) return 0;
-    
+
     let entries: FileEntry[] = [];
     try {
       const names = readdirSync(dir);
@@ -92,7 +105,9 @@ function generateRepoMap(workspace: string, maxDepth = 4, maxFiles = 200): strin
             isDir: stat.isDirectory(),
             size: stat.isFile() ? stat.size : undefined,
           });
-        } catch (err) { /* 跳过无法访问的文件 */ }
+        } catch (err) {
+          /* 跳过无法访问的文件 */
+        }
       }
     } catch (err) {
       return 0;
@@ -134,13 +149,13 @@ function generateRepoMap(workspace: string, maxDepth = 4, maxFiles = 200): strin
 
   lines.push(`📁 ${rootName}/`);
   const fileCount = walk(workspace, 0, '');
-  
+
   // 统计信息
   lines.push('');
   lines.push(`--- 统计 ---`);
   lines.push(`文件数: ${fileCount}`);
   lines.push(`深度: ${maxDepth}`);
-  
+
   // Git 信息
   if (isGitRepo(workspace)) {
     const branch = getCurrentBranch(workspace);
@@ -187,7 +202,7 @@ export const GitAutoCommitTool: ITool = {
     try {
       const message = params.message as string | undefined;
       const scope = params.scope as string | undefined;
-      const dryRun = params.dryRun as boolean || false;
+      const dryRun = (params.dryRun as boolean) || false;
 
       if (!isGitRepo(context.workspace)) {
         return { success: false, content: '当前工作区不是 Git 仓库' };
@@ -195,7 +210,10 @@ export const GitAutoCommitTool: ITool = {
 
       // 获取 status
       const status = execSync('git status --porcelain', {
-        cwd: context.workspace, encoding: 'utf-8', timeout: 10000, windowsHide: true,
+        cwd: context.workspace,
+        encoding: 'utf-8',
+        timeout: 10000,
+        windowsHide: true,
       }).trim();
 
       if (!status) {
@@ -203,30 +221,36 @@ export const GitAutoCommitTool: ITool = {
       }
 
       // 统计变更
-      const staged = status.split('\n').filter(l => l.match(/^[MADRC]/));
-      const unstaged = status.split('\n').filter(l => l.match(/^.[MADRC?]/));
-      const untracked = status.split('\n').filter(l => l.startsWith('??'));
-      
+      const staged = status.split('\n').filter((l) => l.match(/^[MADRC]/));
+      const unstaged = status.split('\n').filter((l) => l.match(/^.[MADRC?]/));
+      const untracked = status.split('\n').filter((l) => l.startsWith('??'));
+
       const totalFiles = staged.length + (dryRun ? unstaged.length : 0);
 
       // 生成 commit message
       let commitMsg = message || '';
       if (!commitMsg) {
         // 自动生成: 基于文件变更类型
-        const fileNames = status.split('\n')
-          .map(l => l.slice(3).trim())
+        const fileNames = status
+          .split('\n')
+          .map((l) => l.slice(3).trim())
           .filter(Boolean)
           .slice(0, 5);
-        
+
         const actionMap: Record<string, string> = {
-          'M': '更新', 'A': '新增', 'D': '删除', 'R': '重命名', 'C': '复制', '?': '添加',
+          M: '更新',
+          A: '新增',
+          D: '删除',
+          R: '重命名',
+          C: '复制',
+          '?': '添加',
         };
 
         // 分析变更类型占比
-        const changes = staged.map(l => l[0]);
+        const changes = staged.map((l) => l[0]);
         const mainAction = changes[0] || 'M';
         const actionVerb = actionMap[mainAction] || '修改';
-        
+
         commitMsg = `${actionVerb}: ${fileNames.join(', ')}`;
         if (fileNames.length < totalFiles) {
           commitMsg += ` 等${totalFiles}个文件`;
@@ -238,7 +262,10 @@ export const GitAutoCommitTool: ITool = {
 
       if (dryRun) {
         const diff = execSync('git diff --stat --cached', {
-          cwd: context.workspace, encoding: 'utf-8', timeout: 10000, windowsHide: true,
+          cwd: context.workspace,
+          encoding: 'utf-8',
+          timeout: 10000,
+          windowsHide: true,
         }).trim();
 
         const lines = [
@@ -254,13 +281,20 @@ export const GitAutoCommitTool: ITool = {
           diff || '(无暂存变更)',
         ];
 
-        return { success: true, content: lines.join('\n'), metadata: { dryRun: true, staged, unstaged, untracked } };
+        return {
+          success: true,
+          content: lines.join('\n'),
+          metadata: { dryRun: true, staged, unstaged, untracked },
+        };
       }
 
       // 执行提交
       execSync('git add -A', { cwd: context.workspace, timeout: 10000, windowsHide: true });
       const output = execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, {
-        cwd: context.workspace, encoding: 'utf-8', timeout: 30000, windowsHide: true,
+        cwd: context.workspace,
+        encoding: 'utf-8',
+        timeout: 30000,
+        windowsHide: true,
       }).trim();
 
       const branch = getCurrentBranch(context.workspace);
@@ -349,7 +383,9 @@ export const GitRepoMapTool: ITool = {
           if (pkg.version) lines.push(`   版本: ${pkg.version}`);
           if (pkg.description) lines.push(`   描述: ${pkg.description}`);
           lines.push('');
-        } catch (err) { /* ignore */ }
+        } catch (err) {
+          /* ignore */
+        }
       }
 
       // Git 信息
@@ -357,13 +393,18 @@ export const GitRepoMapTool: ITool = {
         const branch = getCurrentBranch(repoPath);
         lines.push(`🌿 Git 信息:`);
         lines.push(`   分支: ${branch}`);
-        
+
         try {
           const lastCommit = execSync('git log -1 --format="%h %s (%an, %ar)"', {
-            cwd: repoPath, encoding: 'utf-8', timeout: 5000, windowsHide: true,
+            cwd: repoPath,
+            encoding: 'utf-8',
+            timeout: 5000,
+            windowsHide: true,
           }).trim();
           lines.push(`   最近提交: ${lastCommit}`);
-        } catch (err) { /* ignore */ }
+        } catch (err) {
+          /* ignore */
+        }
         lines.push('');
       }
 
@@ -428,7 +469,10 @@ export const GitStashTool: ITool = {
       switch (action) {
         case 'list': {
           const output = execSync('git stash list', {
-            cwd: context.workspace, encoding: 'utf-8', timeout: 10000, windowsHide: true,
+            cwd: context.workspace,
+            encoding: 'utf-8',
+            timeout: 10000,
+            windowsHide: true,
           }).trim();
           return { success: true, content: output || '(无暂存)', metadata: { action: 'list' } };
         }
@@ -436,34 +480,47 @@ export const GitStashTool: ITool = {
           const args = ['stash', 'push'];
           if (message) args.push('-m', `"${message}"`);
           const output = execSync(`git ${args.join(' ')}`, {
-            cwd: context.workspace, encoding: 'utf-8', timeout: 15000, windowsHide: true,
+            cwd: context.workspace,
+            encoding: 'utf-8',
+            timeout: 15000,
+            windowsHide: true,
           }).trim();
           return { success: true, content: output || `✅ 已暂存: ${message || '(无描述)'}` };
         }
         case 'pop': {
           const ref = stashIndex !== undefined ? `stash@{${stashIndex}}` : '';
           const output = execSync(`git stash pop ${ref}`, {
-            cwd: context.workspace, encoding: 'utf-8', timeout: 15000, windowsHide: true,
+            cwd: context.workspace,
+            encoding: 'utf-8',
+            timeout: 15000,
+            windowsHide: true,
           }).trim();
           return { success: true, content: output || '✅ 已弹出并应用暂存' };
         }
         case 'apply': {
           const ref = stashIndex !== undefined ? `stash@{${stashIndex}}` : '';
           const output = execSync(`git stash apply ${ref}`, {
-            cwd: context.workspace, encoding: 'utf-8', timeout: 15000, windowsHide: true,
+            cwd: context.workspace,
+            encoding: 'utf-8',
+            timeout: 15000,
+            windowsHide: true,
           }).trim();
           return { success: true, content: output || '✅ 已应用暂存' };
         }
         case 'drop': {
           const ref = stashIndex !== undefined ? `stash@{${stashIndex}}` : 'stash@{0}';
           execSync(`git stash drop ${ref}`, {
-            cwd: context.workspace, timeout: 10000, windowsHide: true,
+            cwd: context.workspace,
+            timeout: 10000,
+            windowsHide: true,
           });
           return { success: true, content: `✅ 已删除暂存: ${ref}` };
         }
         case 'clear': {
           execSync('git stash clear', {
-            cwd: context.workspace, timeout: 10000, windowsHide: true,
+            cwd: context.workspace,
+            timeout: 10000,
+            windowsHide: true,
           });
           return { success: true, content: '✅ 已清空所有暂存' };
         }
@@ -519,7 +576,10 @@ export const GitTagTool: ITool = {
       switch (action) {
         case 'list': {
           const output = execSync('git tag -l --sort=-version:refname', {
-            cwd: context.workspace, encoding: 'utf-8', timeout: 10000, windowsHide: true,
+            cwd: context.workspace,
+            encoding: 'utf-8',
+            timeout: 10000,
+            windowsHide: true,
           }).trim();
           return { success: true, content: output || '(无标签)' };
         }
@@ -529,20 +589,26 @@ export const GitTagTool: ITool = {
           if (params.message) args.push('-m', `"${params.message}"`);
           if (params.commitHash) args.push(params.commitHash as string);
           execSync(`git ${args.join(' ')}`, {
-            cwd: context.workspace, timeout: 10000, windowsHide: true,
+            cwd: context.workspace,
+            timeout: 10000,
+            windowsHide: true,
           });
           return { success: true, content: `✅ 已创建标签: ${tagName}` };
         }
         case 'delete': {
           if (!tagName) return { success: false, content: '请指定标签名称' };
           execSync(`git tag -d ${tagName}`, {
-            cwd: context.workspace, timeout: 10000, windowsHide: true,
+            cwd: context.workspace,
+            timeout: 10000,
+            windowsHide: true,
           });
           return { success: true, content: `✅ 已删除标签: ${tagName}` };
         }
         case 'push': {
           execSync('git push --tags', {
-            cwd: context.workspace, timeout: 30000, windowsHide: true,
+            cwd: context.workspace,
+            timeout: 30000,
+            windowsHide: true,
           });
           return { success: true, content: '✅ 已推送所有标签' };
         }
@@ -581,7 +647,7 @@ export const GitCherryPickTool: ITool = {
   async execute(params, context): Promise<ToolResult> {
     try {
       const commitHash = params.commitHash as string;
-      const noCommit = params.noCommit as boolean || false;
+      const noCommit = (params.noCommit as boolean) || false;
 
       if (!isGitRepo(context.workspace)) {
         return { success: false, content: '当前工作区不是 Git 仓库' };
@@ -592,7 +658,10 @@ export const GitCherryPickTool: ITool = {
       args.push(commitHash);
 
       const output = execSync(`git ${args.join(' ')}`, {
-        cwd: context.workspace, encoding: 'utf-8', timeout: 30000, windowsHide: true,
+        cwd: context.workspace,
+        encoding: 'utf-8',
+        timeout: 30000,
+        windowsHide: true,
       }).trim();
 
       return {
@@ -649,7 +718,10 @@ export const GitReflogTool: ITool = {
       if (branch) args.push(branch);
 
       const output = execSync(`git ${args.join(' ')}`, {
-        cwd: context.workspace, encoding: 'utf-8', timeout: 10000, windowsHide: true,
+        cwd: context.workspace,
+        encoding: 'utf-8',
+        timeout: 10000,
+        windowsHide: true,
       }).trim();
 
       return {

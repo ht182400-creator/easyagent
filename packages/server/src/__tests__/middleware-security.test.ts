@@ -40,9 +40,7 @@ describe('CORS 中间件', () => {
   });
 
   it('正常 GET 请求包含 CORS 头', async () => {
-    const res = await request(app)
-      .get('/api/health')
-      .set('Origin', 'http://localhost:5173');
+    const res = await request(app).get('/api/health').set('Origin', 'http://localhost:5173');
     expect(res.status).toBe(200);
     expect(res.headers['access-control-allow-origin']).toBeDefined();
   });
@@ -131,7 +129,9 @@ describe('CreateAppOptions.projectRoot', () => {
       await new Promise<void>((resolve) => custom.server.close(() => resolve()));
     } finally {
       // 清理
-      try { rmSync(testDir, { recursive: true }); } catch {}
+      try {
+        rmSync(testDir, { recursive: true });
+      } catch {}
     }
   });
 });
@@ -177,11 +177,9 @@ describe('404 与 SPA Fallback', () => {
 
 describe('并发请求', () => {
   it('同时发出多个 health 请求应全部成功', async () => {
-    const promises = Array.from({ length: 10 }, () =>
-      request(app).get('/api/health')
-    );
+    const promises = Array.from({ length: 10 }, () => request(app).get('/api/health'));
     const results = await Promise.all(promises);
-    results.forEach(res => {
+    results.forEach((res) => {
       expect(res.status).toBe(200);
       expect(res.body).toHaveProperty('status', 'ok');
     });
@@ -193,6 +191,6 @@ describe('并发请求', () => {
       request(app).get('/api/status'),
       request(app).get('/api/version'),
     ]);
-    results.forEach(res => expect(res.status).toBe(200));
+    results.forEach((res) => expect(res.status).toBe(200));
   });
 });

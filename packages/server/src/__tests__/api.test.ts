@@ -263,7 +263,9 @@ describe('知识库 API — 双作用域', () => {
   });
 
   it('POST /api/knowledge/import 不存在的文件应返回 400', async () => {
-    const res = await request(app).post('/api/knowledge/import').send({ filePath: 'nonexistent/doc.md', scope: 'project' });
+    const res = await request(app)
+      .post('/api/knowledge/import')
+      .send({ filePath: 'nonexistent/doc.md', scope: 'project' });
     expect(res.status).toBe(400);
     expect(res.body.error).toContain('文件不存在');
   });

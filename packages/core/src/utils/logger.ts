@@ -81,15 +81,11 @@ function resolvePinoPrettyPath(): string | null {
   return null;
 }
 
-/** 
+/**
  * 创建同步 pino-pretty stream (主线程 Transform)
  * 用于 Windows 和 Electron 生产环境，避免 worker 线程编码问题
  */
-function createPrettyTarget(opts: {
-  colorize: boolean;
-  translateTime: string;
-  ignore: string;
-}) {
+function createPrettyTarget(opts: { colorize: boolean; translateTime: string; ignore: string }) {
   const prettyPath = resolvePinoPrettyPath();
   if (!prettyPath) {
     return process.stdout;
@@ -109,9 +105,10 @@ function createPrettyTarget(opts: {
 export function createLogger(name: string, level?: LogLevel) {
   const effectiveLevel = level ?? resolveLogLevel();
   // Electron 生产环境或显式禁用 transport 时使用纯 JSON 输出
-  const disableTransport = isElectronProduction() 
-    || process.env.LOG_NO_TRANSPORT === '1'
-    || process.env.NODE_ENV === 'production';
+  const disableTransport =
+    isElectronProduction() ||
+    process.env.LOG_NO_TRANSPORT === '1' ||
+    process.env.NODE_ENV === 'production';
 
   const prettyOptions = {
     colorize: true,

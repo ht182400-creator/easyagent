@@ -23,11 +23,11 @@
 
 v0.6.1 发布后，Settings 页面的"更新日志"区域出现两个问题：
 
-| # | 现象 | 根因 |
-|---|------|------|
-| 1 | 页面显示 `🔧 v0.5.29 — 修复 CSP 字体加载...` 硬编码文本 | `Settings.tsx:516` 硬编码了旧版变更，无论版本如何都显示 |
-| 2 | v0.6.0 和 v0.6.1 的 CHANGELOG 条目为空（只有标题无内容） | `release.mjs` 在 git log 为空时不生成内容 |
-| 3 | `/api/version` 取前 2 个条目都是空的，`<pre>` 区域无内容 | 服务器未跳过空条目 |
+| #   | 现象                                                     | 根因                                                    |
+| --- | -------------------------------------------------------- | ------------------------------------------------------- |
+| 1   | 页面显示 `🔧 v0.5.29 — 修复 CSP 字体加载...` 硬编码文本  | `Settings.tsx:516` 硬编码了旧版变更，无论版本如何都显示 |
+| 2   | v0.6.0 和 v0.6.1 的 CHANGELOG 条目为空（只有标题无内容） | `release.mjs` 在 git log 为空时不生成内容               |
+| 3   | `/api/version` 取前 2 个条目都是空的，`<pre>` 区域无内容 | 服务器未跳过空条目                                      |
 
 ### 核心根因
 
@@ -45,14 +45,14 @@ release.mjs 运行流程:
 
 ## 2. 修改概览
 
-| 文件 | 改动内容 | 作用 |
-|------|---------|------|
-| `packages/frontend/src/pages/Settings.tsx:516` | 🔴 移除硬编码 v0.5.29 文本 | 修复显示 |
-| `packages/server/src/index.ts:500-511` | 🟡 提取逻辑跳过空条目 | 修复 API |
-| `scripts/release.mjs:94-167` | 🟢 新增 `extractFromMemory()` | 二级 fallback |
-| `scripts/release.mjs:130-136` | 🟢 空条目最终兜底 | 三级 fallback |
-| `scripts/release.mjs:220-248` | 🟢 commit message 嵌入变更摘要 | 增强 commit |
-| `scripts/changelog-from-memory.mjs` | 🆕 独立脚本 | 手动工具 |
+| 文件                                           | 改动内容                       | 作用          |
+| ---------------------------------------------- | ------------------------------ | ------------- |
+| `packages/frontend/src/pages/Settings.tsx:516` | 🔴 移除硬编码 v0.5.29 文本     | 修复显示      |
+| `packages/server/src/index.ts:500-511`         | 🟡 提取逻辑跳过空条目          | 修复 API      |
+| `scripts/release.mjs:94-167`                   | 🟢 新增 `extractFromMemory()`  | 二级 fallback |
+| `scripts/release.mjs:130-136`                  | 🟢 空条目最终兜底              | 三级 fallback |
+| `scripts/release.mjs:220-248`                  | 🟢 commit message 嵌入变更摘要 | 增强 commit   |
+| `scripts/changelog-from-memory.mjs`            | 🆕 独立脚本                    | 手动工具      |
 
 ---
 
@@ -122,14 +122,14 @@ function generateChangelogEntry(version) {
 
 #### 解析规则
 
-| 步骤 | 逻辑 |
-|------|------|
-| 确定日期范围 | 从上个 release tag 的日期 → 今天；无 tag 则取 7 天前 |
-| 读取文件 | 筛选 `YYYY-MM-DD.md` 格式的文件 |
-| 解析条目 | 按 `## 标题 (HH:MM)` 分割，提取结构化字段 |
-| 跳过未完成 | `**状态**: ...` 不含 `✅` 的条目被排除 |
-| 提取描述 | 优先级：`**问题**` > `**背景**` > `**需求**` > `**产物**` > 标题 |
-| 自动分类 | `fix/修复` → Fixed；`feat/新增` → Added；`移除` → Removed；默认 → Changed |
+| 步骤         | 逻辑                                                                      |
+| ------------ | ------------------------------------------------------------------------- |
+| 确定日期范围 | 从上个 release tag 的日期 → 今天；无 tag 则取 7 天前                      |
+| 读取文件     | 筛选 `YYYY-MM-DD.md` 格式的文件                                           |
+| 解析条目     | 按 `## 标题 (HH:MM)` 分割，提取结构化字段                                 |
+| 跳过未完成   | `**状态**: ...` 不含 `✅` 的条目被排除                                    |
+| 提取描述     | 优先级：`**问题**` > `**背景**` > `**需求**` > `**产物**` > 标题          |
+| 自动分类     | `fix/修复` → Fixed；`feat/新增` → Added；`移除` → Removed；默认 → Changed |
 
 #### Memory 记录格式要求
 
@@ -182,28 +182,32 @@ changelog = meaningful.join('\n').trim();
 
 ```tsx
 // packages/frontend/src/pages/Settings.tsx:645-652
-{versionInfo?.changelog && (
-  <div className="mt-2">
-    <h4 className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-      更新日志
-    </h4>
-    <pre className="text-xs text-gray-500 whitespace-pre-wrap font-mono 
+{
+  versionInfo?.changelog && (
+    <div className="mt-2">
+      <h4 className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+        更新日志
+      </h4>
+      <pre
+        className="text-xs text-gray-500 whitespace-pre-wrap font-mono 
                    leading-relaxed max-h-80 overflow-y-auto 
-                   bg-black/20 rounded-lg p-3">
-      {versionInfo.changelog}
-    </pre>
-  </div>
-)}
+                   bg-black/20 rounded-lg p-3"
+      >
+        {versionInfo.changelog}
+      </pre>
+    </div>
+  );
+}
 ```
 
 ### 显示特性
 
-| 样式 | 效果 |
-|------|------|
-| `max-h-80` | 最大高度 20rem（约 320px，18-20 行） |
-| `overflow-y-auto` | 超出时显示垂直滚动条，不会无限扩展撑破页面 |
+| 样式                  | 效果                                          |
+| --------------------- | --------------------------------------------- |
+| `max-h-80`            | 最大高度 20rem（约 320px，18-20 行）          |
+| `overflow-y-auto`     | 超出时显示垂直滚动条，不会无限扩展撑破页面    |
 | `whitespace-pre-wrap` | 保留 CHANGELOG 的换行和缩进，超出行宽自动换行 |
-| `font-mono` | 等宽字体，便于阅读格式化的 changelog |
+| `font-mono`           | 等宽字体，便于阅读格式化的 changelog          |
 
 ---
 
@@ -214,8 +218,8 @@ changelog = meaningful.join('\n').trim();
 ```js
 // scripts/release.mjs:220-248 (main 函数)
 const changelogSummary = changelogEntry
-  .replace(/^## \[.*\] - .*\n/gm, '')  // 去掉标题行
-  .replace(/^###\s/gm, '')              // 保留分类名但去 ### 前缀
+  .replace(/^## \[.*\] - .*\n/gm, '') // 去掉标题行
+  .replace(/^###\s/gm, '') // 保留分类名但去 ### 前缀
   .trim();
 
 const commitMsg = `release: v${targetVersion}\n\n${changelogSummary}`;
@@ -225,11 +229,11 @@ execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`);
 
 ### 效果对比
 
-| | 之前 | 之后 |
-|------|------|------|
-| commit message | `release: v0.6.1` | `release: v0.6.1`<br><br>`Added`<br>`- feat: 双通道发布`<br><br>`Fixed`<br>`- fix: Settings 硬编码文本` |
-| 空 git log 时 | 完全空白 | `Changed`<br>`- 新版本发布`（兜底） |
-| 有关键变更时 | 丢失信息 | 完整嵌入 commit body |
+|                | 之前              | 之后                                                                                                    |
+| -------------- | ----------------- | ------------------------------------------------------------------------------------------------------- |
+| commit message | `release: v0.6.6` | `release: v0.6.6`<br><br>`Added`<br>`- feat: 双通道发布`<br><br>`Fixed`<br>`- fix: Settings 硬编码文本` |
+| 空 git log 时  | 完全空白          | `Changed`<br>`- 新版本发布`（兜底）                                                                     |
+| 有关键变更时   | 丢失信息          | 完整嵌入 commit body                                                                                    |
 
 ---
 
@@ -268,11 +272,11 @@ node scripts/changelog-from-memory.mjs
 
 所有发布途径最终都调用 `release.mjs`，三级 fallback 全部生效：
 
-| 入口 | 调用方式 | 说明 |
-|------|---------|------|
-| `release-publish.bat` | `node scripts/release.mjs %RELEASE_TYPE%` | 本地构建发布 |
-| `release-server.bat` | `node scripts/release.mjs !NEW_VERSION!` | 服务器端发布 |
-| `scripts/changelog-from-memory.mjs` | 直接执行 | 手动补填 CHANGELOG |
+| 入口                                | 调用方式                                  | 说明               |
+| ----------------------------------- | ----------------------------------------- | ------------------ |
+| `release-publish.bat`               | `node scripts/release.mjs %RELEASE_TYPE%` | 本地构建发布       |
+| `release-server.bat`                | `node scripts/release.mjs !NEW_VERSION!`  | 服务器端发布       |
+| `scripts/changelog-from-memory.mjs` | 直接执行                                  | 手动补填 CHANGELOG |
 
 ---
 
@@ -301,7 +305,7 @@ release.mjs ── generateChangelogEntry(version)
     │     └─ 无记录 ──→ ③ 兜底
     │
     └─ ③ 兜底: "### Changed\n- 新版本发布\n"
-                   
+
                    ┌─────────────────────────────────┐
                    │  CHANGELOG.md 写入完成           │
                    │  git commit 含完整变更摘要        │
@@ -330,13 +334,13 @@ release.mjs ── generateChangelogEntry(version)
 
 ## 相关文件索引
 
-| 文件 | 说明 |
-|------|------|
-| `scripts/release.mjs` | 发布主脚本，含三级 fallback |
-| `scripts/changelog-from-memory.mjs` | 从 Memory 生成 CHANGELOG 的独立工具 |
-| `packages/server/src/index.ts` | `/api/version` 端点，changelog 提取逻辑 |
-| `packages/frontend/src/pages/Settings.tsx` | Settings 页面，changelog 显示组件 |
-| `CHANGELOG.md` | 变更日志文件 |
-| `.codebuddy/memory/YYYY-MM-DD.md` | Memory 工作日志，二级 fallback 数据源 |
-| `release-publish.bat` | 本地发布入口 |
-| `release-server.bat` | 服务器发布入口 |
+| 文件                                       | 说明                                    |
+| ------------------------------------------ | --------------------------------------- |
+| `scripts/release.mjs`                      | 发布主脚本，含三级 fallback             |
+| `scripts/changelog-from-memory.mjs`        | 从 Memory 生成 CHANGELOG 的独立工具     |
+| `packages/server/src/index.ts`             | `/api/version` 端点，changelog 提取逻辑 |
+| `packages/frontend/src/pages/Settings.tsx` | Settings 页面，changelog 显示组件       |
+| `CHANGELOG.md`                             | 变更日志文件                            |
+| `.codebuddy/memory/YYYY-MM-DD.md`          | Memory 工作日志，二级 fallback 数据源   |
+| `release-publish.bat`                      | 本地发布入口                            |
+| `release-server.bat`                       | 服务器发布入口                          |

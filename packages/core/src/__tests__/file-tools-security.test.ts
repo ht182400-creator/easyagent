@@ -14,7 +14,9 @@ function createTestWorkspace(): string {
 }
 
 function cleanupWorkspace(dir: string) {
-  try { rmSync(dir, { recursive: true, force: true }); } catch (_) {}
+  try {
+    rmSync(dir, { recursive: true, force: true });
+  } catch (_) {}
 }
 
 // ================================================================
@@ -22,12 +24,20 @@ function cleanupWorkspace(dir: string) {
 // ================================================================
 describe('FileTools — 路径遍历防护 (safePath)', () => {
   let ws: string;
-  beforeEach(() => { ws = createTestWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createTestWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   /** 尝试读取文件，验证路径被拒绝 */
-  async function expectPathBlocked(filePath: string, tool: 'read' | 'write' | 'delete' | 'list' | 'edit' = 'read') {
-    const { ReadFileTool, WriteFileTool, DeleteFileTool, ListDirTool, EditFileTool } = await import('../tools/FileTools.js');
+  async function expectPathBlocked(
+    filePath: string,
+    tool: 'read' | 'write' | 'delete' | 'list' | 'edit' = 'read',
+  ) {
+    const { ReadFileTool, WriteFileTool, DeleteFileTool, ListDirTool, EditFileTool } =
+      await import('../tools/FileTools.js');
     const tools: Record<string, any> = {
       read: ReadFileTool,
       write: WriteFileTool,
@@ -44,10 +54,7 @@ describe('FileTools — 路径遍历防护 (safePath)', () => {
       edit: { filePath, oldString: 'a', newString: 'b' },
     };
 
-    const result = await tools[tool].execute(
-      params[tool],
-      { workspace: ws, sessionId: 'test' }
-    );
+    const result = await tools[tool].execute(params[tool], { workspace: ws, sessionId: 'test' });
     expect(result.success).toBe(false);
     expect(result.content).toMatch(/安全限制|无法访问工作区外的路径/);
   }
@@ -58,14 +65,16 @@ describe('FileTools — 路径遍历防护 (safePath)', () => {
   it('../ 单层父目录遍历应被拒绝', () => expectPathBlocked('../secret.txt'));
 
   // ---- Windows 风格遍历 ----
-  it('..\\..\\Windows\\System32\\config\\SAM 应被拒绝', () => expectPathBlocked('..\\..\\Windows\\System32\\config\\SAM'));
+  it('..\\..\\Windows\\System32\\config\\SAM 应被拒绝', () =>
+    expectPathBlocked('..\\..\\Windows\\System32\\config\\SAM'));
 
   // ---- 绝对路径注入 ----
   it('/etc/passwd 绝对路径应被拒绝', () => expectPathBlocked('/etc/passwd'));
   it('C:\\Windows\\System32 绝对路径应被拒绝', () => expectPathBlocked('C:\\Windows\\System32'));
 
   // ---- 混合绕过 ----
-  it('./subdir/../../etc/passwd 混合遍历应被拒绝', () => expectPathBlocked('./subdir/../../etc/passwd'));
+  it('./subdir/../../etc/passwd 混合遍历应被拒绝', () =>
+    expectPathBlocked('./subdir/../../etc/passwd'));
   it('../subdir/../secret 来回遍历应被拒绝', () => expectPathBlocked('../subdir/../secret'));
 
   // ---- 合法路径（应被允许） ----
@@ -76,7 +85,7 @@ describe('FileTools — 路径遍历防护 (safePath)', () => {
 
     const result = await ReadFileTool.execute(
       { filePath: 'normal.txt' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
   });
@@ -90,7 +99,7 @@ describe('FileTools — 路径遍历防护 (safePath)', () => {
 
     const result = await ReadFileTool.execute(
       { filePath: 'subdir/deep.txt' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
   });
@@ -99,7 +108,7 @@ describe('FileTools — 路径遍历防护 (safePath)', () => {
     const { ListDirTool } = await import('../tools/FileTools.js');
     const result = await ListDirTool.execute(
       { targetDirectory: '.' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
   });
@@ -112,14 +121,18 @@ describe('FileTools — 各工具路径遍历交叉验证', () => {
   let ws: string;
   const TRAVERSAL_PATH = '../../../etc/passwd';
 
-  beforeEach(() => { ws = createTestWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createTestWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   it('WriteFileTool 应拒绝工作区外写入', async () => {
     const { WriteFileTool } = await import('../tools/FileTools.js');
     const result = await WriteFileTool.execute(
       { filePath: TRAVERSAL_PATH, content: 'evil content' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toMatch(/安全限制|无法访问工作区外的路径/);
@@ -129,7 +142,7 @@ describe('FileTools — 各工具路径遍历交叉验证', () => {
     const { DeleteFileTool } = await import('../tools/FileTools.js');
     const result = await DeleteFileTool.execute(
       { filePath: TRAVERSAL_PATH },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toMatch(/安全限制|无法访问工作区外的路径/);
@@ -139,7 +152,7 @@ describe('FileTools — 各工具路径遍历交叉验证', () => {
     const { ListDirTool } = await import('../tools/FileTools.js');
     const result = await ListDirTool.execute(
       { targetDirectory: TRAVERSAL_PATH },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toMatch(/安全限制|无法访问工作区外的路径/);
@@ -149,7 +162,7 @@ describe('FileTools — 各工具路径遍历交叉验证', () => {
     const { EditFileTool } = await import('../tools/FileTools.js');
     const result = await EditFileTool.execute(
       { filePath: TRAVERSAL_PATH, oldString: 'a', newString: 'b' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toMatch(/安全限制|无法访问工作区外的路径/);
@@ -161,8 +174,12 @@ describe('FileTools — 各工具路径遍历交叉验证', () => {
 // ================================================================
 describe('EditFileTool — 编辑功能', () => {
   let ws: string;
-  beforeEach(() => { ws = createTestWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createTestWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   it('应正确替换文件中的唯一匹配字符串', async () => {
     const { EditFileTool } = await import('../tools/FileTools.js');
@@ -171,7 +188,7 @@ describe('EditFileTool — 编辑功能', () => {
 
     const result = await EditFileTool.execute(
       { filePath: 'edit.txt', oldString: 'World', newString: 'Universe' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     const content = readFileSync(testFile, 'utf-8');
@@ -185,7 +202,7 @@ describe('EditFileTool — 编辑功能', () => {
 
     const result = await EditFileTool.execute(
       { filePath: 'nomatch.txt', oldString: 'Goodbye', newString: 'Farewell' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('NO_MATCH');
@@ -198,7 +215,7 @@ describe('EditFileTool — 编辑功能', () => {
 
     const result = await EditFileTool.execute(
       { filePath: 'multi.txt', oldString: 'dup', newString: 'replaced' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('MULTIPLE_MATCHES');
@@ -208,7 +225,7 @@ describe('EditFileTool — 编辑功能', () => {
     const { EditFileTool } = await import('../tools/FileTools.js');
     const result = await EditFileTool.execute(
       { filePath: 'nonexistent.txt', oldString: 'a', newString: 'b' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('FILE_NOT_FOUND');
@@ -220,8 +237,12 @@ describe('EditFileTool — 编辑功能', () => {
 // ================================================================
 describe('DeleteFileTool — 删除功能', () => {
   let ws: string;
-  beforeEach(() => { ws = createTestWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createTestWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   it('应成功删除存在的文件', async () => {
     const { DeleteFileTool } = await import('../tools/FileTools.js');
@@ -231,7 +252,7 @@ describe('DeleteFileTool — 删除功能', () => {
 
     const result = await DeleteFileTool.execute(
       { filePath: 'to-delete.txt' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(existsSync(testFile)).toBe(false);
@@ -241,7 +262,7 @@ describe('DeleteFileTool — 删除功能', () => {
     const { DeleteFileTool } = await import('../tools/FileTools.js');
     const result = await DeleteFileTool.execute(
       { filePath: 'ghost.txt' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('FILE_NOT_FOUND');
@@ -258,14 +279,18 @@ describe('DeleteFileTool — 删除功能', () => {
 // ================================================================
 describe('WriteFileTool — 安全写入', () => {
   let ws: string;
-  beforeEach(() => { ws = createTestWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createTestWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   it('应能写入文件并自动创建父目录', async () => {
     const { WriteFileTool } = await import('../tools/FileTools.js');
     const result = await WriteFileTool.execute(
       { filePath: 'deep/nested/file.txt', content: 'nested content' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     const created = join(ws, 'deep', 'nested', 'file.txt');
@@ -277,7 +302,7 @@ describe('WriteFileTool — 安全写入', () => {
     const { WriteFileTool } = await import('../tools/FileTools.js');
     const result = await WriteFileTool.execute(
       { filePath: '..\\..\\out-of-workspace.txt', content: 'escape' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });
@@ -288,8 +313,12 @@ describe('WriteFileTool — 安全写入', () => {
 // ================================================================
 describe('ListDirTool — 目录列表', () => {
   let ws: string;
-  beforeEach(() => { ws = createTestWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createTestWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   it('应过滤隐藏文件（以 . 开头）', async () => {
     const { ListDirTool } = await import('../tools/FileTools.js');
@@ -299,7 +328,7 @@ describe('ListDirTool — 目录列表', () => {
 
     const result = await ListDirTool.execute(
       { targetDirectory: '.' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('visible.txt');
@@ -311,7 +340,7 @@ describe('ListDirTool — 目录列表', () => {
     const { ListDirTool } = await import('../tools/FileTools.js');
     const result = await ListDirTool.execute(
       { targetDirectory: 'nonexistent-dir' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });
@@ -323,7 +352,7 @@ describe('ListDirTool — 目录列表', () => {
 
     const result = await ListDirTool.execute(
       { targetDirectory: 'empty' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('空目录');
@@ -335,8 +364,12 @@ describe('ListDirTool — 目录列表', () => {
 // ================================================================
 describe('ReadFileTool — 读取功能', () => {
   let ws: string;
-  beforeEach(() => { ws = createTestWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createTestWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   it('应正确读取文件内容', async () => {
     const { ReadFileTool } = await import('../tools/FileTools.js');
@@ -345,7 +378,7 @@ describe('ReadFileTool — 读取功能', () => {
 
     const result = await ReadFileTool.execute(
       { filePath: 'read-me.txt' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('Hello ReadFileTool');
@@ -355,7 +388,7 @@ describe('ReadFileTool — 读取功能', () => {
     const { ReadFileTool } = await import('../tools/FileTools.js');
     const result = await ReadFileTool.execute(
       { filePath: 'ghost-file.txt' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });

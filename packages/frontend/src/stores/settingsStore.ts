@@ -76,11 +76,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   ...defaults,
   saving: false,
 
-  setAgentSettings: (settings) =>
-    set((s) => ({ agent: { ...s.agent, ...settings } })),
+  setAgentSettings: (settings) => set((s) => ({ agent: { ...s.agent, ...settings } })),
 
-  setSecuritySettings: (settings) =>
-    set((s) => ({ security: { ...s.security, ...settings } })),
+  setSecuritySettings: (settings) => set((s) => ({ security: { ...s.security, ...settings } })),
 
   setPreferences: (prefs) =>
     set((s) => ({
@@ -126,7 +124,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       }>('/api/config');
       if (data.agent) set((s) => ({ agent: { ...s.agent, ...data.agent } }));
       if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
-      if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
+      if (data.preferences)
+        set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
     } catch (err) {
       // 从 localStorage 恢复
       const saved = localStorage.getItem('easyagent-settings');
@@ -135,8 +134,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           const data = JSON.parse(saved);
           if (data.agent) set((s) => ({ agent: { ...s.agent, ...data.agent } }));
           if (data.security) set((s) => ({ security: { ...s.security, ...data.security } }));
-          if (data.preferences) set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
-        } catch (err) { /* ignore */ }
+          if (data.preferences)
+            set((s) => ({ preferences: { ...s.preferences, ...data.preferences } }));
+        } catch (err) {
+          /* ignore */
+        }
       }
     }
   },

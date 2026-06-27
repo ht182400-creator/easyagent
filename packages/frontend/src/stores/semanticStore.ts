@@ -69,8 +69,18 @@ interface SemanticState {
   fileAnalysisLoading: boolean;
 
   // 操作
-  fetchSemanticMap: (path?: string, depth?: number, maxFiles?: number, refresh?: boolean) => Promise<void>;
-  searchSymbols: (query: string, path?: string, caseSensitive?: boolean, kind?: string) => Promise<void>;
+  fetchSemanticMap: (
+    path?: string,
+    depth?: number,
+    maxFiles?: number,
+    refresh?: boolean,
+  ) => Promise<void>;
+  searchSymbols: (
+    query: string,
+    path?: string,
+    caseSensitive?: boolean,
+    kind?: string,
+  ) => Promise<void>;
   findReferences: (symbol: string, path?: string) => Promise<void>;
   fetchOverview: (path?: string) => Promise<void>;
   analyzeSingleFile: (filePath: string) => Promise<void>;
@@ -180,7 +190,10 @@ export const useSemanticStore = create<SemanticState>((set) => ({
       const data = await apiRequest<any>(`/api/semantic/overview?${params}`);
 
       if (data.success) {
-        set({ overview: { root: data.root, fileTree: data.fileTree, stats: data.stats }, overviewLoading: false });
+        set({
+          overview: { root: data.root, fileTree: data.fileTree, stats: data.stats },
+          overviewLoading: false,
+        });
       } else {
         set({ overviewLoading: false });
       }

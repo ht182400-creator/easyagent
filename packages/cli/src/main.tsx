@@ -28,9 +28,11 @@ let initError: string | null = null;
 async function initialize(): Promise<{ model: string; tools: number } | null> {
   try {
     // 启动时后台更新模型目录
-    getModelRegistry().initialize().catch(() => {
-      // 静默处理，不阻塞 CLI
-    });
+    getModelRegistry()
+      .initialize()
+      .catch(() => {
+        // 静默处理，不阻塞 CLI
+      });
 
     // 加载配置
     const configManager = new ConfigManager();
@@ -39,7 +41,8 @@ async function initialize(): Promise<{ model: string; tools: number } | null> {
     // 检查提供商配置
     const provider = configManager.getCurrentProvider();
     if (!provider) {
-      initError = '未配置模型提供商。\n\n请设置API密钥:\n  > 编辑 ~/.easyagent/config.json\n  > 或使用 /token-key <provider> <key> 命令';
+      initError =
+        '未配置模型提供商。\n\n请设置API密钥:\n  > 编辑 ~/.easyagent/config.json\n  > 或使用 /token-key <provider> <key> 命令';
       return null;
     }
 
@@ -69,9 +72,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const { waitUntilExit } = render(
-    React.createElement(App, { initInfo: info }),
-  );
+  const { waitUntilExit } = render(React.createElement(App, { initInfo: info }));
 
   await waitUntilExit;
 

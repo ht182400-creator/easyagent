@@ -4,11 +4,7 @@
  * 支持 Webhook 事件订阅 + API 消息回复
  */
 import { BaseIMAdapter } from './BaseIMAdapter.js';
-import type {
-  FeishuConfig,
-  IMMessage,
-  IMSendOptions,
-} from './types.js';
+import type { FeishuConfig, IMMessage, IMSendOptions } from './types.js';
 import { logger } from '../utils/logger.js';
 
 /** 飞书 API 基础 URL */
@@ -43,11 +39,14 @@ export class FeishuAdapter extends BaseIMAdapter {
     await this.refreshToken();
 
     // 每隔 1.5 小时刷新 token (token 有效期 2 小时)
-    this.refreshTimer = setInterval(() => {
-      this.refreshToken().catch((err) => {
-        logger.error({ error: (err as Error).message }, '飞书 token 刷新失败');
-      });
-    }, 90 * 60 * 1000);
+    this.refreshTimer = setInterval(
+      () => {
+        this.refreshToken().catch((err) => {
+          logger.error({ error: (err as Error).message }, '飞书 token 刷新失败');
+        });
+      },
+      90 * 60 * 1000,
+    );
 
     logger.info({ appId: this.config.appId }, '飞书适配器已启动');
   }
@@ -62,11 +61,7 @@ export class FeishuAdapter extends BaseIMAdapter {
 
   // ========== 消息发送 ==========
 
-  async sendMessage(
-    chatId: string,
-    text: string,
-    options?: IMSendOptions
-  ): Promise<string> {
+  async sendMessage(chatId: string, text: string, options?: IMSendOptions): Promise<string> {
     const token = await this.ensureToken();
 
     const content = JSON.stringify({ text });
@@ -96,11 +91,7 @@ export class FeishuAdapter extends BaseIMAdapter {
     return result.data?.message_id || '';
   }
 
-  async editMessage(
-    chatId: string,
-    messageId: string,
-    newText: string
-  ): Promise<boolean> {
+  async editMessage(chatId: string, messageId: string, newText: string): Promise<boolean> {
     // 飞书不支持编辑已发送消息，采用删除+重发策略
     try {
       // 先删除旧消息
@@ -109,7 +100,9 @@ export class FeishuAdapter extends BaseIMAdapter {
         await this.fetchApi(`${this.apiBase}/im/v1/messages/${messageId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => { /* 忽略删除失败 */ });
+        }).catch(() => {
+          /* 忽略删除失败 */
+        });
       }
       // 再发新消息
       await this.sendMessage(chatId, newText);
@@ -124,11 +117,7 @@ export class FeishuAdapter extends BaseIMAdapter {
     // 此处留空，由上层决定是否发送状态文本
   }
 
-  async sendPhoto(
-    chatId: string,
-    imageUrl: string,
-    caption?: string
-  ): Promise<string> {
+  async sendPhoto(chatId: string, imageUrl: string, caption?: string): Promise<string> {
     const token = await this.ensureToken();
 
     // 飞书图片消息需先上传获取 image_key
@@ -158,11 +147,7 @@ export class FeishuAdapter extends BaseIMAdapter {
     return result.data?.message_id || '';
   }
 
-  async sendDocument(
-    chatId: string,
-    fileUrl: string,
-    caption?: string
-  ): Promise<string> {
+  async sendDocument(chatId: string, fileUrl: string, caption?: string): Promise<string> {
     // 飞书文件消息需先上传
     const token = await this.ensureToken();
     const fileKey = await this.uploadFile(fileUrl, caption || 'file', token);
@@ -305,14 +290,14 @@ export class FeishuAdapter extends BaseIMAdapter {
 
   // ========== 文件上传 ==========
 
-/**
+  /**
    * 上传图片到飞书，获取 image_key
    * 如果是 URL 则先下载，然后以 multipart/form-data 上传
    */
   private async uploadImage(imageUrl: string, token: string): Promise<string | null> {
     try {
       let imageData: Buffer;
-      
+
       if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         // 从 URL 下载图片
         const resp = await fetch(imageUrl);
@@ -337,12 +322,12 @@ export class FeishuAdapter extends BaseIMAdapter {
         }
         imageData = readFileSync(fullPath);
       }
-      
+
       // 构建 FormData (Node.js 18+ 原生支持)
       const formData = new FormData();
       formData.append('image_type', 'message');
       formData.append('image', new Blob([imageData]), 'image.png');
-      
+
       const result = await this.fetchApi<{
         code: number;
         msg: string;
@@ -369,10 +354,14 @@ export class FeishuAdapter extends BaseIMAdapter {
   /**
    * 上传文件到飞书，获取 file_key
    */
-  private async uploadFile(fileUrl: string, fileName: string, token: string): Promise<string | null> {
+  private async uploadFile(
+    fileUrl: string,
+    fileName: string,
+    token: string,
+  ): Promise<string | null> {
     try {
       let fileData: Buffer;
-      
+
       if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
         const resp = await fetch(fileUrl);
         if (!resp.ok) {
@@ -399,13 +388,13 @@ export class FeishuAdapter extends BaseIMAdapter {
           fileName = basename(fullPath);
         }
       }
-      
+
       // 构建 FormData
       const formData = new FormData();
       formData.append('file_type', 'stream');
       formData.append('file_name', fileName);
       formData.append('file', new Blob([fileData]), fileName);
-      
+
       const result = await this.fetchApi<{
         code: number;
         msg: string;

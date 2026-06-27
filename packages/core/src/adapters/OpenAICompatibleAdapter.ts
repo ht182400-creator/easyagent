@@ -83,7 +83,7 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
    * 将内部消息格式转换为OpenAI格式
    */
   private convertMessages(messages: Message[]): Array<Record<string, unknown>> {
-    return messages.map(msg => {
+    return messages.map((msg) => {
       const converted: Record<string, unknown> = {
         role: msg.role,
         content: msg.content,
@@ -108,7 +108,7 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
    */
   private convertTools(tools: ChatOptions['tools']) {
     if (!tools) return undefined;
-    return tools.map(t => ({
+    return tools.map((t) => ({
       type: 'function' as const,
       function: {
         name: t.name,
@@ -161,7 +161,7 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
         id: data.id,
         model: data.model,
         content: message.content || '',
-        toolCalls: message.tool_calls?.map(tc => ({
+        toolCalls: message.tool_calls?.map((tc) => ({
           id: tc.id,
           type: 'function' as const,
           function: {
@@ -190,10 +190,7 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
   /**
    * 流式聊天请求
    */
-  async *chatStream(
-    messages: Message[],
-    options?: ChatOptions
-  ): AsyncGenerator<ChatChunk> {
+  async *chatStream(messages: Message[], options?: ChatOptions): AsyncGenerator<ChatChunk> {
     const modelConfig = this.getModelConfig();
     const maxTokens = options?.maxTokens || modelConfig?.maxOutputTokens || 4096;
 
@@ -351,19 +348,24 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
         throw new Error('请求频率超限 (HTTP 429)，请稍后再试或检查API配额');
       }
       if (response.status >= 500) {
-        throw new Error(`服务器错误 (HTTP ${response.status})，${this.config.name} 服务端暂时不可用，请稍后重试`);
+        throw new Error(
+          `服务器错误 (HTTP ${response.status})，${this.config.name} 服务端暂时不可用，请稍后重试`,
+        );
       }
 
       // 某些提供商不支持/models端点，尝试简单聊天请求
       logger.info({ provider: this.config.name }, '/models 端点不可用，尝试聊天请求验证');
-      const testResponse = await this.chat([
-        { role: 'user', content: 'ping' },
-      ], { maxTokens: 5 });
+      const testResponse = await this.chat([{ role: 'user', content: 'ping' }], { maxTokens: 5 });
 
       return !!testResponse.content;
     } catch (error: unknown) {
       // 如果已经抛出了结构化错误，直接向上传递
-      if (error instanceof Error && error.message.includes('API密钥') || error instanceof Error && error.message.includes('认证失败') || error instanceof Error && error.message.includes('请求频率超限') || error instanceof Error && error.message.includes('服务器错误')) {
+      if (
+        (error instanceof Error && error.message.includes('API密钥')) ||
+        (error instanceof Error && error.message.includes('认证失败')) ||
+        (error instanceof Error && error.message.includes('请求频率超限')) ||
+        (error instanceof Error && error.message.includes('服务器错误'))
+      ) {
         throw error;
       }
 
@@ -373,13 +375,22 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
       if (errMsg.includes('ECONNREFUSED') || errMsg.includes('Connection refused')) {
         throw new Error(`无法连接到 ${this.baseURL}：连接被拒绝，请检查网络或代理设置`);
       }
-      if (errMsg.includes('ENOTFOUND') || errMsg.includes('getaddrinfo') || errMsg.includes('DNS')) {
+      if (
+        errMsg.includes('ENOTFOUND') ||
+        errMsg.includes('getaddrinfo') ||
+        errMsg.includes('DNS')
+      ) {
         throw new Error(`无法解析域名 ${this.baseURL}：DNS解析失败，请检查网络连接`);
       }
       if (errMsg.includes('ETIMEDOUT') || errMsg.includes('timeout')) {
         throw new Error(`连接 ${this.baseURL} 超时，请检查网络或防火墙设置`);
       }
-      if (errMsg.includes('self-signed') || errMsg.includes('SSL') || errMsg.includes('TLS') || errMsg.includes('certificate')) {
+      if (
+        errMsg.includes('self-signed') ||
+        errMsg.includes('SSL') ||
+        errMsg.includes('TLS') ||
+        errMsg.includes('certificate')
+      ) {
         throw new Error(`SSL/TLS证书验证失败：${errMsg}`);
       }
 

@@ -33,7 +33,8 @@ export function resetBenchmarkEngine(): void {
  */
 export const LoadBenchmarkTool: ITool = {
   name: 'benchmark_load',
-  description: '加载 SWE-Bench 评测数据集。SWE-Bench 包含来自真实 GitHub 仓库的编程问题，用于评估 AI 编程助手在代码修复任务上的表现。',
+  description:
+    '加载 SWE-Bench 评测数据集。SWE-Bench 包含来自真实 GitHub 仓库的编程问题，用于评估 AI 编程助手在代码修复任务上的表现。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
@@ -68,11 +69,7 @@ export const LoadBenchmarkTool: ITool = {
 
       const problems = engine.loadProblems(dataPath);
 
-      const lines: string[] = [
-        `📥 SWE-Bench 数据集加载完毕`,
-        `问题数: ${problems.length}`,
-        ``,
-      ];
+      const lines: string[] = [`📥 SWE-Bench 数据集加载完毕`, `问题数: ${problems.length}`, ``];
 
       if (problems.length === 0) {
         lines.push('⚠ 未找到 SWE-Bench 数据。请:');
@@ -128,7 +125,8 @@ export const LoadBenchmarkTool: ITool = {
  */
 export const RunBenchmarkTool: ITool = {
   name: 'benchmark_run',
-  description: '运行 SWE-Bench 评测，评估 AI 编程助手在真实问题修复任务上的表现。生成解决率、时间、Token 用量等指标的报告。',
+  description:
+    '运行 SWE-Bench 评测，评估 AI 编程助手在真实问题修复任务上的表现。生成解决率、时间、Token 用量等指标的报告。',
   requiresConfirm: true,
   parameters: {
     type: 'object',
@@ -158,7 +156,8 @@ export const RunBenchmarkTool: ITool = {
       }
 
       const maxProblems = (params.maxProblems as number) || problems.length;
-      const selectedIds = (params.problemIds as string[]) || problems.slice(0, maxProblems).map(p => p.id);
+      const selectedIds =
+        (params.problemIds as string[]) || problems.slice(0, maxProblems).map((p) => p.id);
 
       // 创建会话
       const session = engine.createSession(selectedIds.slice(0, maxProblems));
@@ -166,7 +165,7 @@ export const RunBenchmarkTool: ITool = {
       // 模拟评测结果（实际需要 Agent 执行修复）
       const results: ToolResult[] = [];
       for (const id of selectedIds.slice(0, maxProblems)) {
-        const problem = problems.find(p => p.id === id);
+        const problem = problems.find((p) => p.id === id);
         if (!problem) continue;
 
         // 记录评测结果（占位 — 实际评测需要 Agent 介入）
@@ -225,7 +224,8 @@ export const BenchmarkReportTool: ITool = {
       if (!session) {
         return {
           success: false,
-          content: '没有正在进行的评测会话。请先使用 benchmark_load 加载数据，再用 benchmark_run 运行评测。',
+          content:
+            '没有正在进行的评测会话。请先使用 benchmark_load 加载数据，再用 benchmark_run 运行评测。',
         };
       }
 

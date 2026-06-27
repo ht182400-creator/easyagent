@@ -17,8 +17,10 @@
 
 ## 项目概述
 - **项目**: EasyAgent - 集成中国主流大模型的开源 AI 编程助手
-- **版本**: v0.5.2 (1195 用例全通过/100%, 29/29 模块 + 6阶段3分支全完成, 综合评分 100, CI 6/6 jobs ✅, 531个问题记录)
-- **统一数据源**: `docs/pipeline/lib/module-registry.mjs` → `scripts/unified-sync.mjs` → `test-case-mapping.json` + `pipeline-data.json` → API → 前端
+- **版本**: v0.6.6 (1274 用例全通过/100%, 29/29 模块 + 6阶段4分支, 综合评分 100, CI 6/6 jobs ✅)
+- **优化完成度**: 17/18 (94%) — P0+P1+P2+P3 全部完成，仅 #16 Vite Library Mode 延期
+- **统一数据源**: `docs/pipeline/lib/module-registry.mjs` → `scripts/unified-sync.mjs` → `test-case-mapping.json` + `pipeline-data.json`(5.7KB) + `dashboard-data.json`(独立文件) → API → 前端
+- **管线模块添加**: 见 `docs/43_管线模块添加标准流程.md`（v1.1 补丁: 可操作性 60%→90%）
 - **测试报告**: `/api/test-detail` 端点提供四级树形测试详情 (包→文件→分组→用例+失败原因)
 - **仓库**: https://github.com/ht182400-creator/easyagent (SSH 推送)
 - **技术栈**: TypeScript 5.x + React 18 + Vite 5 + Tailwind CSS 3 + Zustand 4 + Express + WebSocket + Electron 30 + SQLite(better-sqlite3) + Vitest + tsup
@@ -249,21 +251,25 @@ EASYAGENT_DEBUG=1 ./build.sh
 | 35 | 🖥️ | **字节扫描 MODULE_VERSION 始终返回116 (假阳性)** | better-sqlite3 静态链接 sqlite3 c源码(~13万行), 字节扫描碰巧读到sqlite3常量116, 非真实NODE_MODULE_VERSION。导致每次排查都以为版本错误, 浪费数小时重复编译。 | (1) SHA256 比对 electron vs system 版本 → 不同=各自编译成功 (2) System 版本直接 `require('better-sqlite3')` → 加载成功=版本正确 (3) `node scripts/rebuild-sqlite3.mjs --verify` 一键验证 |
 | 36 | 🖥️ | **build.bat sqlite3 路径基于 CWD 而非项目根目录** | build.bat 在 `cd ..\desktop` 后使用相对路径 `node_modules\.pnpm\better-sqlite3@...` → pnpm workspace 中 `packages/desktop/` 下无此路径 → `better_sqlite3_electron.node` 始终"不存在" → 每次打包都触发不必要的 node-gyp rebuild → 可能失败。Phase 3.5 恢复路径同理错误。 | `_SQLITE_RELEASE` 路径加 `%~dp0` 前缀（强制基于 build.bat 所在目录=项目根目录）；`node scripts\rebuild-sqlite3.mjs` 也加 `%~dp0` 前缀 |
 | 37 | 🖥️ | **Desktop 有独立 renderer CSS，与 frontend CSS 是两个文件** | 修改 `packages/frontend/src/styles/index.css` 的 CSP 字体修复对 Desktop 不生效，因为 Desktop 的 `index.html` 引用 `/src/renderer/index.css`（指向 `packages/desktop/src/renderer/index.css`），而非 frontend 的 CSS。两个文件内容高度相似但独立维护。**前端合并(B1a)后 JS/组件已统一，CSS 也应统一**。 | ✅ 已删除 `packages/desktop/src/renderer/index.css`，移除 `index.html` 中的 `<link>` 标签。CSS 统一由 `frontend/main.tsx` → `import './styles/index.css'` 加载 |
+| 38 | 🔀 | **pnpm v11 isolated mode 下 `pnpm exec` 找不到 eslint/rimraf** | `pnpm exec eslint` → `[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command \"eslint\" not found`；node_modules 中只有 `.pnpm/` 和 `.vite/` 目录，无 `.bin/` 符号链 | 使用 `scripts/lint.bat` / `scripts/clean.bat` 包装器，直接 `node \"node_modules\\.pnpm\\eslint@<ver>\\node_modules\\eslint\\bin\\eslint.js\"` 调用；`eslint.config.cjs` 用 `createRequire` 从 .pnpm 路径加载 `@eslint/js` 和 `typescript-eslint` |
+| 39 | 🖥️ | **pnpm isolated + electron-builder: 传递依赖必须显式声明** | electron-builder 从 `packages/desktop/node_modules/` 打包；pnpm isolated 模式下该目录只有直接依赖的 symlink，无 `.pnpm/` 目录。Server 的 express 传递依赖（55 个）在根 `.pnpm/` 中，electron-builder 找不到 → 运行时 `Cannot find module` | 两种解法: 1) tsup `noExternal` 把 express/cors/ws/multer 内联进 main.js（不需要运行时解析）; 2) `node-linker=hoisted` 平坦化 node_modules。pino 例外：CJS `require('pino-pretty')` 不可内联，必须保持 external + 保留其 11 个传递依赖。Desktop deps: 119→36 项 |
 
 
 
-## ⚠️ Web ↔ Desktop 代码隔离约束
+## ⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)
 
-- **Web 和 Desktop 是两套独立的前端代码**，分别位于 `packages/web/src/` 和 `packages/desktop/src/renderer/`，各自拥有独立的 `pages/`、`components/`、`stores/`、`api.ts` 副本，**不共享任何前端代码**
-- **修改 Desktop 前端时必须确保不影响 Web 功能**，反之亦然。两者的关键差异：
+- **前端已统一为 `@easyagent/frontend` 共享包**，Web 和 Desktop 通过 `mountApp()` 复用同一套 UI/状态/路由
+- 各自入口文件（`web/src/main.tsx` / `desktop/src/renderer/main.tsx`）只负责注入平台配置
+- **关键差异仍存在**：
   | 差异点 | Web | Desktop |
   |--------|-----|---------|
   | 路由方案 | `BrowserRouter`（路径 `/sessions`） | `HashRouter`（路径 `/#/sessions`） |
-  | HTTP 库 | 原生 `fetch()`（需手动 `.json()`） | `apiFetch()` 封装（已内置 `.json()`） |
   | 协议 | HTTP/HTTPS | `file://` + `http://127.0.0.1:3456` |
-  | 环境检测 | 无 | `window.easyAgent` IPC 桥接 |
-- **判断要改哪个包**：如果功能与 Electron/IPC/本地文件系统相关 → Desktop；如果功能是纯 Web/Cookie/浏览器原生 → Web；如果两者都需要 → **两边独立修改，不要假设共享代码**
-- **修改同一功能时**：必须分别在两个包中做对应的修改，不能只改一个而遗漏另一个
+  | IPC 桥接 | 无 | `ipcBridge.ts` → `window.easyAgent` |
+  | 包名导入 | `@easyagent/frontend` | `@easyagent/frontend` |
+- **修改 UI/组件/状态** → 只改 `packages/frontend/src/`，两个平台自动生效
+- **修改入口逻辑/IPC** → 改对应平台的 `main.tsx` 或 `ipcBridge.ts`
+- **pnpm isolated mode**: 所有二进制工具（eslint, rimraf 等）通过 `scripts/lint.bat` / `scripts/clean.bat` 包装器直接调用 `.pnpm` 路径
 
 ### ⚠️ 陷阱自愈规则（每次修复 bug 后必须执行）
 - **每次发现并修复一个新 bug 后，必须同时更新两个文件，无需用户提醒**：

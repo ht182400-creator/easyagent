@@ -71,25 +71,45 @@ export function createLogger(name, level) {
 
   return {
     /** 追踪级别（最详细） */
-    trace(msg, extra) { write('TRACE', LEVELS.TRACE, msg, extra); },
+    trace(msg, extra) {
+      write('TRACE', LEVELS.TRACE, msg, extra);
+    },
     /** 调试信息（需要 EASYAGENT_DEBUG=1 才可见） */
-    debug(msg, extra) { write('DEBUG', LEVELS.DEBUG, msg, extra); },
+    debug(msg, extra) {
+      write('DEBUG', LEVELS.DEBUG, msg, extra);
+    },
     /** 常规信息 */
-    info(msg, extra) { write('INFO ', LEVELS.INFO, msg, extra); },
+    info(msg, extra) {
+      write('INFO ', LEVELS.INFO, msg, extra);
+    },
     /** 警告 */
-    warn(msg, extra) { write('WARN ', LEVELS.WARN, msg, extra); },
+    warn(msg, extra) {
+      write('WARN ', LEVELS.WARN, msg, extra);
+    },
     /** 错误 */
-    error(msg, extra) { write('ERROR', LEVELS.ERROR, msg, extra); },
+    error(msg, extra) {
+      write('ERROR', LEVELS.ERROR, msg, extra);
+    },
     /** 快捷：操作成功 */
-    ok(msg) { write('INFO ', LEVELS.INFO, `✅ ${msg}`); },
+    ok(msg) {
+      write('INFO ', LEVELS.INFO, `✅ ${msg}`);
+    },
     /** 快捷：操作失败 */
-    fail(msg) { write('ERROR', LEVELS.ERROR, `❌ ${msg}`); },
+    fail(msg) {
+      write('ERROR', LEVELS.ERROR, `❌ ${msg}`);
+    },
     /** 分隔线 */
-    hr() { if (minLevel <= LEVELS.INFO) console.log('─'.repeat(50)); },
+    hr() {
+      if (minLevel <= LEVELS.INFO) console.log('─'.repeat(50));
+    },
     /** 标题 */
-    title(msg) { if (minLevel <= LEVELS.INFO) console.log(`\n═══ ${msg} ═══`); },
+    title(msg) {
+      if (minLevel <= LEVELS.INFO) console.log(`\n═══ ${msg} ═══`);
+    },
     /** 获取当前最小日志级别 */
-    getLevel() { return minLevel; },
+    getLevel() {
+      return minLevel;
+    },
   };
 }
 

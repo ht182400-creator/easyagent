@@ -46,7 +46,8 @@ export const CodeStatsTool: ITool = {
         if (depth > 4) return;
         const entries = readdirSync(dir, { withFileTypes: true });
         for (const entry of entries) {
-          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue;
+          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist')
+            continue;
           const fullPath = join(dir, entry.name);
           if (entry.isDirectory() && depth < 4) {
             walk(fullPath, depth + 1);
@@ -61,7 +62,9 @@ export const CodeStatsTool: ITool = {
                 extMap[ext].files++;
                 extMap[ext].lines += lines;
               }
-            } catch (err) { /* skip binary files */ }
+            } catch (err) {
+              /* skip binary files */
+            }
           }
         }
       };
@@ -69,7 +72,10 @@ export const CodeStatsTool: ITool = {
 
       const langReport = Object.entries(extMap)
         .sort(([, a], [, b]) => b.lines - a.lines)
-        .map(([ext, { files, lines }]) => `  ${ext.padEnd(10)} ${String(files).padStart(5)} 文件  ${String(lines).padStart(7)} 行`)
+        .map(
+          ([ext, { files, lines }]) =>
+            `  ${ext.padEnd(10)} ${String(files).padStart(5)} 文件  ${String(lines).padStart(7)} 行`,
+        )
         .join('\n');
 
       return {
@@ -114,19 +120,35 @@ export const RunTestsTool: ITool = {
         command = `go test ./...`;
         if (params.testPath) command = `go test ${params.testPath}`;
         if (params.flags) command += ` -v ${params.flags}`;
-      } else if (existsSync(resolve(ws, 'requirements.txt')) || existsSync(resolve(ws, 'pyproject.toml'))) {
+      } else if (
+        existsSync(resolve(ws, 'requirements.txt')) ||
+        existsSync(resolve(ws, 'pyproject.toml'))
+      ) {
         command = 'python -m pytest';
         if (params.testPath) command += ` ${params.testPath}`;
         if (params.flags) command += ` ${params.flags}`;
       } else {
-        return { success: false, content: '未识别的项目类型。支持: Node.js (package.json), Go (go.mod), Python (requirements.txt/pyproject.toml)' };
+        return {
+          success: false,
+          content:
+            '未识别的项目类型。支持: Node.js (package.json), Go (go.mod), Python (requirements.txt/pyproject.toml)',
+        };
       }
 
-      const output = execSync(command, { cwd: ws, encoding: 'utf-8', timeout: 120000, maxBuffer: 1024 * 1024 });
+      const output = execSync(command, {
+        cwd: ws,
+        encoding: 'utf-8',
+        timeout: 120000,
+        maxBuffer: 1024 * 1024,
+      });
       return { success: true, content: output.slice(-4000), metadata: { command } };
     } catch (error: any) {
       const msg = error.stderr || error.stdout || error.message || String(error);
-      return { success: false, content: `测试运行失败:\n${msg.slice(-2000)}`, error: 'TEST_FAILED' };
+      return {
+        success: false,
+        content: `测试运行失败:\n${msg.slice(-2000)}`,
+        error: 'TEST_FAILED',
+      };
     }
   },
 };
@@ -143,7 +165,10 @@ export const FindImportsTool: ITool = {
     type: 'object',
     properties: {
       moduleOrSymbol: { type: 'string', description: '要搜索的模块名或导入符号' },
-      filePattern: { type: 'string', description: '文件匹配模式, 例如 "*.ts" 或 "*.py", 默认所有文本文件' },
+      filePattern: {
+        type: 'string',
+        description: '文件匹配模式, 例如 "*.ts" 或 "*.py", 默认所有文本文件',
+      },
     },
     required: ['moduleOrSymbol'],
   },
@@ -155,21 +180,30 @@ export const FindImportsTool: ITool = {
       // 优先使用 ripgrep
       let output: string;
       try {
-        output = execSync(`rg --no-heading -l "${query.replace(/"/g, '\\"')}" --iglob "${filePattern}" -g '!node_modules' -g '!dist' -g '!.git' --max-count=3 .`, {
-          cwd: context.workspace, encoding: 'utf-8', timeout: 15000,
-        });
+        output = execSync(
+          `rg --no-heading -l "${query.replace(/"/g, '\\"')}" --iglob "${filePattern}" -g '!node_modules' -g '!dist' -g '!.git' --max-count=3 .`,
+          {
+            cwd: context.workspace,
+            encoding: 'utf-8',
+            timeout: 15000,
+          },
+        );
       } catch (err) {
         // rg 不可用，fallback 到 grep
         const { GrepTool } = await import('./SearchTools.js');
-        const result = await GrepTool.execute({ pattern: `import.*${query}`, glob: filePattern }, context);
+        const result = await GrepTool.execute(
+          { pattern: `import.*${query}`, glob: filePattern },
+          context,
+        );
         return result;
       }
       const files = output.trim().split('\n').filter(Boolean);
       return {
         success: true,
-        content: files.length > 0
-          ? `找到 ${files.length} 个文件导入了 "${query}":\n${files.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}`
-          : `未找到导入 "${query}" 的文件`,
+        content:
+          files.length > 0
+            ? `找到 ${files.length} 个文件导入了 "${query}":\n${files.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}`
+            : `未找到导入 "${query}" 的文件`,
         metadata: { filesFound: files.length },
       };
     } catch (error) {
@@ -191,8 +225,14 @@ export const FindDefinitionsTool: ITool = {
     type: 'object',
     properties: {
       symbol: { type: 'string', description: '要搜索的符号名称' },
-      kind: { type: 'string', description: '可选: function/class/variable/interface/enum, 不指定则搜索所有' },
-      language: { type: 'string', description: '可选: typescript/javascript/python/go/rust, 帮助匹配语法' },
+      kind: {
+        type: 'string',
+        description: '可选: function/class/variable/interface/enum, 不指定则搜索所有',
+      },
+      language: {
+        type: 'string',
+        description: '可选: typescript/javascript/python/go/rust, 帮助匹配语法',
+      },
     },
     required: ['symbol'],
   },
@@ -203,7 +243,13 @@ export const FindDefinitionsTool: ITool = {
       const lang = (params.language as string) || 'typescript';
       // 根据语言和类型构造正则
       const patterns: Record<string, Record<string, string>> = {
-        typescript: { function: `function\\s+${symbol}`, class: `class\\s+${symbol}`, interface: `interface\\s+${symbol}`, type: `type\\s+${symbol}`, variable: `(const|let|var)\\s+${symbol}` },
+        typescript: {
+          function: `function\\s+${symbol}`,
+          class: `class\\s+${symbol}`,
+          interface: `interface\\s+${symbol}`,
+          type: `type\\s+${symbol}`,
+          variable: `(const|let|var)\\s+${symbol}`,
+        },
         python: { function: `def\\s+${symbol}`, class: `class\\s+${symbol}` },
         go: { function: `func\\s+${symbol}`, type: `type\\s+${symbol}` },
       };
@@ -215,9 +261,15 @@ export const FindDefinitionsTool: ITool = {
       const { execSync } = await import('node:child_process');
       let output: string;
       try {
-        output = execSync(`rg --no-heading -n "${pattern}" -g '!node_modules' -g '!dist' -g '!.git' .`, {
-          cwd: context.workspace, encoding: 'utf-8', timeout: 15000, maxBuffer: 1024 * 512,
-        });
+        output = execSync(
+          `rg --no-heading -n "${pattern}" -g '!node_modules' -g '!dist' -g '!.git' .`,
+          {
+            cwd: context.workspace,
+            encoding: 'utf-8',
+            timeout: 15000,
+            maxBuffer: 1024 * 512,
+          },
+        );
       } catch (err) {
         return { success: true, content: `未找到 "${symbol}" 的定义`, metadata: { found: 0 } };
       }

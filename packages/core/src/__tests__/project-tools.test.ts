@@ -8,7 +8,10 @@ import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 function createTestDir(): string {
-  const dir = resolve(tmpdir(), `ea-pm-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = resolve(
+    tmpdir(),
+    `ea-pm-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -30,11 +33,16 @@ describe('ReadConfigTool - 读取配置', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能读取指定配置文件', async () => {
-    writeFileSync(join(workspace, 'package.json'), JSON.stringify({ name: 'test-project', version: '1.0.0' }));
+    writeFileSync(
+      join(workspace, 'package.json'),
+      JSON.stringify({ name: 'test-project', version: '1.0.0' }),
+    );
     const result = await ReadConfigTool.execute({ configFile: 'package.json' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('test-project');
@@ -84,7 +92,9 @@ describe('NpmRunTool - 包管理命令', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('requiresConfirm应为true', () => {
@@ -92,10 +102,7 @@ describe('NpmRunTool - 包管理命令', () => {
   });
 
   it('危险命令sudo应被拒绝', async () => {
-    const result = await NpmRunTool.execute(
-      { command: 'sudo rm -rf /tmp' },
-      ctx(workspace)
-    );
+    const result = await NpmRunTool.execute({ command: 'sudo rm -rf /tmp' }, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.error).toBe('DANGEROUS_COMMAND');
   });
@@ -103,26 +110,20 @@ describe('NpmRunTool - 包管理命令', () => {
   it('危险命令rm -rf /应被拒绝', async () => {
     const result = await NpmRunTool.execute(
       { command: 'rm -rf / --no-preserve-root' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('DANGEROUS_COMMAND');
   });
 
   it('chmod 777应被拒绝', async () => {
-    const result = await NpmRunTool.execute(
-      { command: 'chmod 777 /etc/shadow' },
-      ctx(workspace)
-    );
+    const result = await NpmRunTool.execute({ command: 'chmod 777 /etc/shadow' }, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.error).toBe('DANGEROUS_COMMAND');
   });
 
   it('安全的npm命令应能执行', async () => {
-    const result = await NpmRunTool.execute(
-      { command: 'echo hello from npm' },
-      ctx(workspace)
-    );
+    const result = await NpmRunTool.execute({ command: 'echo hello from npm' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('hello from npm');
   });
@@ -131,16 +132,13 @@ describe('NpmRunTool - 包管理命令', () => {
     mkdirSync(join(workspace, 'subproject'), { recursive: true });
     const result = await NpmRunTool.execute(
       { command: 'echo "in subdir"', cwd: 'subproject' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
   });
 
   it('命令执行失败应返回错误', async () => {
-    const result = await NpmRunTool.execute(
-      { command: 'non_existent_cmd_xyz_42' },
-      ctx(workspace)
-    );
+    const result = await NpmRunTool.execute({ command: 'non_existent_cmd_xyz_42' }, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.error).toBe('PKG_CMD_FAILED');
   });
@@ -161,7 +159,9 @@ describe('EnvInfoTool - 环境信息', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应返回操作系统信息', async () => {
@@ -206,16 +206,21 @@ describe('ProjectStatsTool - 项目概览', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应检测Node.js+TypeScript技术栈', async () => {
-    writeFileSync(join(workspace, 'package.json'), JSON.stringify({
-      name: 'test',
-      type: 'module',
-      dependencies: { typescript: '^5.0', react: '^18.0' },
-      devDependencies: { vite: '^5.0' }
-    }));
+    writeFileSync(
+      join(workspace, 'package.json'),
+      JSON.stringify({
+        name: 'test',
+        type: 'module',
+        dependencies: { typescript: '^5.0', react: '^18.0' },
+        devDependencies: { vite: '^5.0' },
+      }),
+    );
     const result = await ProjectStatsTool.execute({}, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('Node.js');
@@ -250,7 +255,7 @@ describe('ProjectStatsTool - 项目概览', () => {
   });
 
   it('无package.json也能正常工作', async () => {
-    writeFileSync(join(workspace, 'README.md',), 'empty project');
+    writeFileSync(join(workspace, 'README.md'), 'empty project');
     const result = await ProjectStatsTool.execute({}, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('README.md');
@@ -272,13 +277,15 @@ describe('RememberTool - 存储记忆', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能存储记忆到文件系统', async () => {
     const result = await RememberTool.execute(
       { key: 'my-setting', content: 'Use tabs for indentation', category: 'convention' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('my-setting');
@@ -290,17 +297,17 @@ describe('RememberTool - 存储记忆', () => {
 
   it('应能存储多条记忆', async () => {
     await RememberTool.execute({ key: 'key1', content: 'content1' }, ctx(workspace));
-    await RememberTool.execute({ key: 'key2', content: 'content2', category: 'preference' }, ctx(workspace));
+    await RememberTool.execute(
+      { key: 'key2', content: 'content2', category: 'preference' },
+      ctx(workspace),
+    );
     const memDir = join(workspace, '.easyagent', 'memory');
     const files = require('fs').readdirSync(memDir);
     expect(files.length).toBeGreaterThanOrEqual(2);
   });
 
   it('键名中的特殊字符应被清理', async () => {
-    const result = await RememberTool.execute(
-      { key: 'key with spaces!@#$' },
-      ctx(workspace)
-    );
+    const result = await RememberTool.execute({ key: 'key with spaces!@#$' }, ctx(workspace));
     expect(result.success).toBe(true);
     // 特殊字符被替换为_
   });
@@ -308,7 +315,7 @@ describe('RememberTool - 存储记忆', () => {
   it('默认分类应为general', async () => {
     const result = await RememberTool.execute(
       { key: 'no-category', content: 'generic info' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     const memDir = join(workspace, '.easyagent', 'memory');
@@ -318,7 +325,10 @@ describe('RememberTool - 存储记忆', () => {
 
   it('应能覆盖已有记忆', async () => {
     await RememberTool.execute({ key: 'dup-key', content: 'version 1' }, ctx(workspace));
-    const result = await RememberTool.execute({ key: 'dup-key', content: 'version 2' }, ctx(workspace));
+    const result = await RememberTool.execute(
+      { key: 'dup-key', content: 'version 2' },
+      ctx(workspace),
+    );
     expect(result.success).toBe(true);
   });
 });
@@ -340,11 +350,16 @@ describe('RecallTool - 检索记忆', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能检索已存储的记忆', async () => {
-    await RememberTool.execute({ key: 'setting', content: 'Tab width: 2', category: 'convention' }, ctx(workspace));
+    await RememberTool.execute(
+      { key: 'setting', content: 'Tab width: 2', category: 'convention' },
+      ctx(workspace),
+    );
     const result = await RecallTool.execute({ key: 'setting' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('Tab width: 2');
@@ -372,7 +387,10 @@ describe('RecallTool - 检索记忆', () => {
   });
 
   it('应支持category筛选', async () => {
-    await RememberTool.execute({ key: 'pref1', content: 'p1', category: 'preference' }, ctx(workspace));
+    await RememberTool.execute(
+      { key: 'pref1', content: 'p1', category: 'preference' },
+      ctx(workspace),
+    );
     await RememberTool.execute({ key: 'fact1', content: 'f1', category: 'fact' }, ctx(workspace));
     const result = await RecallTool.execute({ key: 'pref1' }, ctx(workspace));
     expect(result.success).toBe(true);
@@ -397,7 +415,9 @@ describe('ForgetTool - 删除记忆', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能删除已存储的记忆', async () => {

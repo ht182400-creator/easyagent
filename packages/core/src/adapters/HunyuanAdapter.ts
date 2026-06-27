@@ -45,17 +45,11 @@ export class HunyuanAdapter extends BaseAdapter {
   private async signRequest(request: TC3Request): Promise<Record<string, string>> {
     const crypto = await import('node:crypto');
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const date = new Date(Number(timestamp) * 1000)
-      .toISOString()
-      .slice(0, 10)
-      .replace(/-/g, '');
+    const date = new Date(Number(timestamp) * 1000).toISOString().slice(0, 10).replace(/-/g, '');
     const service = 'hunyuan';
 
     const payload = JSON.stringify(request.payload);
-    const hashedPayload = crypto
-      .createHash('sha256')
-      .update(payload)
-      .digest('hex');
+    const hashedPayload = crypto.createHash('sha256').update(payload).digest('hex');
 
     const httpRequestMethod = 'POST';
     const canonicalUri = '/';
@@ -77,25 +71,12 @@ export class HunyuanAdapter extends BaseAdapter {
       .update(canonicalRequest)
       .digest('hex');
 
-    const stringToSign =
-      `${algorithm}\n${timestamp}\n${credentialScope}\n${hashedCanonicalRequest}`;
+    const stringToSign = `${algorithm}\n${timestamp}\n${credentialScope}\n${hashedCanonicalRequest}`;
 
-    const kDate = crypto
-      .createHmac('sha256', `TC3${this.secretKey}`)
-      .update(date)
-      .digest();
-    const kService = crypto
-      .createHmac('sha256', kDate)
-      .update(service)
-      .digest();
-    const kSigning = crypto
-      .createHmac('sha256', kService)
-      .update('tc3_request')
-      .digest();
-    const signature = crypto
-      .createHmac('sha256', kSigning)
-      .update(stringToSign)
-      .digest('hex');
+    const kDate = crypto.createHmac('sha256', `TC3${this.secretKey}`).update(date).digest();
+    const kService = crypto.createHmac('sha256', kDate).update(service).digest();
+    const kSigning = crypto.createHmac('sha256', kService).update('tc3_request').digest();
+    const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');
 
     const authorization =
       `${algorithm} Credential=${this.secretId}/${credentialScope}, ` +
@@ -116,14 +97,14 @@ export class HunyuanAdapter extends BaseAdapter {
    * 转换消息格式为混元格式
    */
   private convertMessages(messages: Message[]): Array<Record<string, unknown>> {
-    return messages.map(msg => {
+    return messages.map((msg) => {
       let content = '';
       if (typeof msg.content === 'string') {
         content = msg.content;
       } else if (Array.isArray(msg.content)) {
         content = msg.content
-          .filter(c => c.type === 'text')
-          .map(c => (c as { text: string }).text)
+          .filter((c) => c.type === 'text')
+          .map((c) => (c as { text: string }).text)
           .join('\n');
       }
 
@@ -164,7 +145,7 @@ export class HunyuanAdapter extends BaseAdapter {
         throw new Error(`混元API错误: ${response.status}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         Response: {
           Id: string;
           Choices: Array<{
@@ -207,10 +188,7 @@ export class HunyuanAdapter extends BaseAdapter {
    * 流式聊天
    * 混元流式API使用SSE格式
    */
-  async *chatStream(
-    messages: Message[],
-    options?: ChatOptions
-  ): AsyncGenerator<ChatChunk> {
+  async *chatStream(messages: Message[], options?: ChatOptions): AsyncGenerator<ChatChunk> {
     const payload: Record<string, unknown> = {
       Model: this.modelName,
       Messages: this.convertMessages(messages),

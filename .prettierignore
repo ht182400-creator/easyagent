@@ -1,0 +1,12 @@
+dist/
+node_modules/
+release/
+pnpm-lock.yaml
+*.png
+*.node
+*.exe
+*.dll
+temp/
+.nyc_output/
+coverage/
+generated-images/

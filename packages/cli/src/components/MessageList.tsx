@@ -38,7 +38,9 @@ export const MessageList: FC<MessageListProps> = ({ messages }) => {
         <Box key={msg.id} flexDirection="column" marginY={0}>
           {msg.role === 'user' && (
             <Box>
-              <Text color="cyan" bold>▶ </Text>
+              <Text color="cyan" bold>
+                ▶{' '}
+              </Text>
               <Text>{msg.content}</Text>
             </Box>
           )}
@@ -53,9 +55,13 @@ export const MessageList: FC<MessageListProps> = ({ messages }) => {
             <Box flexDirection="column">
               <Box>
                 <Text color="green">● </Text>
-                <Text>{msg.content || (
-                  <Text color="yellow" dimColor>思考中...</Text>
-                )}</Text>
+                <Text>
+                  {msg.content || (
+                    <Text color="yellow" dimColor>
+                      思考中...
+                    </Text>
+                  )}
+                </Text>
                 {msg.isStreaming && <Text color="yellow">▌</Text>}
               </Box>
               {msg.toolCall && (

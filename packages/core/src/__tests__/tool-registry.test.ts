@@ -73,11 +73,7 @@ describe('ToolRegistry - 注册与查询', () => {
   });
 
   it('应该能够批量注册工具', () => {
-    const tools = [
-      createEchoTool('tool_a'),
-      createEchoTool('tool_b'),
-      createEchoTool('tool_c'),
-    ];
+    const tools = [createEchoTool('tool_a'), createEchoTool('tool_b'), createEchoTool('tool_c')];
     registry.registerAll(tools);
     expect(registry.has('tool_a')).toBe(true);
     expect(registry.has('tool_b')).toBe(true);

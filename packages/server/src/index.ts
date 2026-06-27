@@ -6,7 +6,15 @@ import express from 'express';
 import cors from 'cors';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer } from 'node:http';
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  statSync,
+  rmSync,
+} from 'node:fs';
 import { dirname, join, resolve, relative, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
@@ -46,20 +54,52 @@ import {
   AutomationManager,
   logger,
 } from '@easyagent/core';
-import type {
-  AnyIMConfig,
-  IMPlatform,
-  IMMessage,
-} from '@easyagent/core';
+import type { AnyIMConfig, IMPlatform, IMMessage } from '@easyagent/core';
 
 /** 仪表盘默认模板列表 */
 const DEFAULT_TEMPLATES = [
-  { id: 'code', label: '代码生成', desc: '根据需求生成高质量代码', icon: 'Code2', prompt: '请帮我写一段代码：' },
-  { id: 'doc', label: '文档写作', desc: '撰写技术文档与报告', icon: 'FileText', prompt: '请帮我写一份文档：' },
-  { id: 'research', label: '深度研究', desc: '多源信息综合分析', icon: 'Search', prompt: '请帮我深入分析：' },
-  { id: 'data', label: '数据分析', desc: '解析数据生成洞察', icon: 'BarChart3', prompt: '请帮我分析以下数据：' },
-  { id: 'creative', label: '创意设计', desc: '头脑风暴与创意产出', icon: 'Palette', prompt: '请帮我想一些创意方案：' },
-  { id: 'debug', label: '代码调试', desc: '定位与修复 BUG', icon: 'Bug', prompt: '请帮我调试这段代码：' },
+  {
+    id: 'code',
+    label: '代码生成',
+    desc: '根据需求生成高质量代码',
+    icon: 'Code2',
+    prompt: '请帮我写一段代码：',
+  },
+  {
+    id: 'doc',
+    label: '文档写作',
+    desc: '撰写技术文档与报告',
+    icon: 'FileText',
+    prompt: '请帮我写一份文档：',
+  },
+  {
+    id: 'research',
+    label: '深度研究',
+    desc: '多源信息综合分析',
+    icon: 'Search',
+    prompt: '请帮我深入分析：',
+  },
+  {
+    id: 'data',
+    label: '数据分析',
+    desc: '解析数据生成洞察',
+    icon: 'BarChart3',
+    prompt: '请帮我分析以下数据：',
+  },
+  {
+    id: 'creative',
+    label: '创意设计',
+    desc: '头脑风暴与创意产出',
+    icon: 'Palette',
+    prompt: '请帮我想一些创意方案：',
+  },
+  {
+    id: 'debug',
+    label: '代码调试',
+    desc: '定位与修复 BUG',
+    icon: 'Bug',
+    prompt: '请帮我调试这段代码：',
+  },
 ];
 
 // ===================== 自定义技能存储 =====================
@@ -102,9 +142,9 @@ const HOST = process.env.HOST || '0.0.0.0';
  */
 function formatOllamaModelName(tag: string): string {
   return tag
-    .replace(/^([a-zA-Z]+)(\d)/, '$1 $2')  // qwen3 → Qwen 3
-    .replace(/(\d)\.(\d)/, '$1.$2')         // 保留小数点
-    .replace(/:(\d+)b$/i, ' $1B')           // :9b → 9B
+    .replace(/^([a-zA-Z]+)(\d)/, '$1 $2') // qwen3 → Qwen 3
+    .replace(/(\d)\.(\d)/, '$1.$2') // 保留小数点
+    .replace(/:(\d+)b$/i, ' $1B') // :9b → 9B
     .replace(/\b\w/g, (c) => c.toUpperCase()); // 首字母大写
 }
 
@@ -156,14 +196,27 @@ export async function createApp(options: CreateAppOptions = {}) {
   });
 
   /** 合并所有可用技能并标记激活状态 */
-  function getAllSkillsWithStatus(): Array<{ name: string; description: string; prompt?: string; tags?: string[]; requiresConfirm?: boolean; source: 'builtin' | 'plugin' | 'custom'; activated: boolean }> {
+  function getAllSkillsWithStatus(): Array<{
+    name: string;
+    description: string;
+    prompt?: string;
+    tags?: string[];
+    requiresConfirm?: boolean;
+    source: 'builtin' | 'plugin' | 'custom';
+    activated: boolean;
+  }> {
     const custom = loadCustomSkills();
     const activeNames = pluginManager.getActiveSkillNames();
-    
-    function getSkillWithStatus<T extends { name: string; description: string; prompt?: string; tags?: string[]; requiresConfirm?: boolean }>(
-      skill: T,
-      source: 'builtin' | 'plugin' | 'custom'
-    ) {
+
+    function getSkillWithStatus<
+      T extends {
+        name: string;
+        description: string;
+        prompt?: string;
+        tags?: string[];
+        requiresConfirm?: boolean;
+      },
+    >(skill: T, source: 'builtin' | 'plugin' | 'custom') {
       return {
         name: skill.name,
         description: skill.description,
@@ -174,7 +227,7 @@ export async function createApp(options: CreateAppOptions = {}) {
         activated: activeNames.includes(skill.name),
       };
     }
-    
+
     return [
       ...BUILTIN_SKILLS.map((s) => getSkillWithStatus(s, 'builtin')),
       ...pluginManager.getSkills().map((s) => getSkillWithStatus(s, 'plugin')),
@@ -220,16 +273,17 @@ export async function createApp(options: CreateAppOptions = {}) {
     // 优先使用任务指定的 provider/model，否则使用当前默认配置
     const taskProviderId = task.provider || config.currentModel.provider;
     const taskModel = task.model || config.currentModel.model;
-    
+
     const providerConfig = configManager.getProvider(taskProviderId);
     if (!providerConfig) {
       const allConfigured = configManager.getAvailableProviders();
-      const configuredNames = allConfigured.map((p: { name: string }) => p.name || p.id).join('、') || '无';
+      const configuredNames =
+        allConfigured.map((p: { name: string }) => p.name || p.id).join('、') || '无';
       throw new Error(
         `未找到模型提供商 ${taskProviderId}。` +
-        (task.provider 
-          ? `任务指定了 "${taskProviderId}"，但该提供商未配置 API 密钥，请在「设置 → 模型提供商」中配置。`
-          : `当前已配置的提供商: ${configuredNames}。请在「设置 → 模型提供商」中配置 API 密钥。`)
+          (task.provider
+            ? `任务指定了 "${taskProviderId}"，但该提供商未配置 API 密钥，请在「设置 → 模型提供商」中配置。`
+            : `当前已配置的提供商: ${configuredNames}。请在「设置 → 模型提供商」中配置 API 密钥。`),
       );
     }
 
@@ -258,7 +312,9 @@ export async function createApp(options: CreateAppOptions = {}) {
           message: `第 ${currentTurn} 轮推理中...`,
         });
       } else if (event.type === 'tool_call') {
-        const data = event.data as { toolCalls?: Array<{ function: { name: string; arguments: string } }> };
+        const data = event.data as {
+          toolCalls?: Array<{ function: { name: string; arguments: string } }>;
+        };
         if (data?.toolCalls) {
           for (const tc of data.toolCalls) {
             broadcastAutomationProgress({
@@ -271,7 +327,10 @@ export async function createApp(options: CreateAppOptions = {}) {
           }
         }
       } else if (event.type === 'tool_result') {
-        const data = event.data as { toolName: string; result: { success?: boolean; content?: string; error?: string } };
+        const data = event.data as {
+          toolName: string;
+          result: { success?: boolean; content?: string; error?: string };
+        };
         broadcastAutomationProgress({
           taskId: task.id,
           taskName: task.name,
@@ -282,7 +341,7 @@ export async function createApp(options: CreateAppOptions = {}) {
       }
     };
     agent.onEvent(agentListener);
-    
+
     let fullResponse = '';
     try {
       await agent.run(task.prompt, {
@@ -425,32 +484,37 @@ export async function createApp(options: CreateAppOptions = {}) {
   // CORS 配置：允许 Web 开发服务器 + Electron Desktop (file:// → Origin: null)
   // 关键：Desktop 版从 file:// 加载前端 → 渲染进程 fetch 的 Origin 为 "null" 字符串
   // 必须显式让 cors 中间件反射请求 Origin 到 Access-Control-Allow-Origin
-  app.use(cors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      const corsEnv = process.env.CORS_ORIGIN;
-      if (corsEnv) {
-        // 显式设置 CORS_ORIGIN 时精确匹配
-        if (origin === corsEnv) {
-          callback(null, true);
+  app.use(
+    cors({
+      origin: (
+        origin: string | undefined,
+        callback: (err: Error | null, allow?: boolean) => void,
+      ) => {
+        const corsEnv = process.env.CORS_ORIGIN;
+        if (corsEnv) {
+          // 显式设置 CORS_ORIGIN 时精确匹配
+          if (origin === corsEnv) {
+            callback(null, true);
+          } else {
+            console.log(`[CORS] 拒绝 origin="${origin}", 要求="${corsEnv}"`);
+            callback(new Error('Not allowed by CORS'));
+          }
+          return;
+        }
+        // 默认：允许 file://、本地开发服务器、桌面版自建
+        if (!origin || origin === 'null') {
+          callback(null, true); // Electron Desktop (file://)
+        } else if (origin.startsWith('http://127.0.0.1') || origin.startsWith('http://localhost')) {
+          callback(null, true); // Vite dev server / 桌面版自建
         } else {
-          console.log(`[CORS] 拒绝 origin="${origin}", 要求="${corsEnv}"`);
+          console.log(`[CORS] 拒绝未知 origin="${origin}"`);
           callback(new Error('Not allowed by CORS'));
         }
-        return;
-      }
-      // 默认：允许 file://、本地开发服务器、桌面版自建
-      if (!origin || origin === 'null') {
-        callback(null, true);  // Electron Desktop (file://) 
-      } else if (origin.startsWith('http://127.0.0.1') || origin.startsWith('http://localhost')) {
-        callback(null, true);  // Vite dev server / 桌面版自建
-      } else {
-        console.log(`[CORS] 拒绝未知 origin="${origin}"`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  }));
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    }),
+  );
   app.use(express.json({ limit: '10mb' }));
 
   /** 安全 HTTP 头中间件：防止常见 Web 攻击 */
@@ -475,7 +539,9 @@ export async function createApp(options: CreateAppOptions = {}) {
         APP_VERSION = versionData.version;
       }
     }
-  } catch (_err) { /* 读取失败则用默认值 */ }
+  } catch (_err) {
+    /* 读取失败则用默认值 */
+  }
 
   /** 健康检查 */
   app.get('/api/health', (_req, res) => {
@@ -511,7 +577,9 @@ export async function createApp(options: CreateAppOptions = {}) {
         }
         changelog = meaningful.join('\n').trim();
       }
-    } catch (err) { /* changelog 不可用 */ }
+    } catch (err) {
+      /* changelog 不可用 */
+    }
 
     // 从 version.json 读取 codename 和 releaseDate，Desktop 环境从 env 读取
     let codename = process.env.EASYAGENT_CODENAME || '';
@@ -523,7 +591,9 @@ export async function createApp(options: CreateAppOptions = {}) {
         if (versionData.codename) codename = versionData.codename;
         if (versionData.releaseDate) releaseDate = versionData.releaseDate;
       }
-    } catch (_err) { /* 读取失败用 env 兜底 */ }
+    } catch (_err) {
+      /* 读取失败用 env 兜底 */
+    }
 
     res.json({
       version: APP_VERSION,
@@ -537,34 +607,42 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.get('/api/version/check', async (_req, res) => {
     try {
       const https = await import('node:https');
-      
-      const githubRequest = (url: string): Promise<{ tag_name: string; published_at: string; body: string }> => {
+
+      const githubRequest = (
+        url: string,
+      ): Promise<{ tag_name: string; published_at: string; body: string }> => {
         return new Promise((resolve, reject) => {
           const opts = {
             hostname: 'api.github.com',
             path: url,
             headers: {
               'User-Agent': 'EasyAgent/' + APP_VERSION,
-              'Accept': 'application/vnd.github.v3+json',
+              Accept: 'application/vnd.github.v3+json',
             },
           };
-          https.get(opts, (resp) => {
-            let data = '';
-            resp.on('data', (chunk: string) => data += chunk);
-            resp.on('end', () => {
-              if (resp.statusCode === 200) {
-                try { resolve(JSON.parse(data)); } catch (err) { reject(new Error('JSON parse error')); }
-              } else {
-                reject(new Error(`GitHub API: ${resp.statusCode}`));
-              }
-            });
-          }).on('error', reject);
+          https
+            .get(opts, (resp) => {
+              let data = '';
+              resp.on('data', (chunk: string) => (data += chunk));
+              resp.on('end', () => {
+                if (resp.statusCode === 200) {
+                  try {
+                    resolve(JSON.parse(data));
+                  } catch (err) {
+                    reject(new Error('JSON parse error'));
+                  }
+                } else {
+                  reject(new Error(`GitHub API: ${resp.statusCode}`));
+                }
+              });
+            })
+            .on('error', reject);
         });
       };
 
       const release = await githubRequest('/repos/ht182400-creator/easyagent/releases/latest');
-      const latestVersion = release.tag_name.startsWith('v') 
-        ? release.tag_name.substring(1) 
+      const latestVersion = release.tag_name.startsWith('v')
+        ? release.tag_name.substring(1)
         : release.tag_name;
 
       const isNewer = (a: string, b: string): boolean => {
@@ -648,11 +726,33 @@ export async function createApp(options: CreateAppOptions = {}) {
       todayStart.setHours(0, 0, 0, 0);
 
       // 按模型聚合
-      const byModelMap = new Map<string, { model: string; provider: string; inputTokens: number; outputTokens: number; totalTokens: number; calls: number }>();
+      const byModelMap = new Map<
+        string,
+        {
+          model: string;
+          provider: string;
+          inputTokens: number;
+          outputTokens: number;
+          totalTokens: number;
+          calls: number;
+        }
+      >();
       // 按日期聚合 (最近30天)
-      const byDayMap = new Map<string, { date: string; inputTokens: number; outputTokens: number; totalTokens: number; calls: number }>();
+      const byDayMap = new Map<
+        string,
+        {
+          date: string;
+          inputTokens: number;
+          outputTokens: number;
+          totalTokens: number;
+          calls: number;
+        }
+      >();
       // 按提供商聚合
-      const byProviderMap = new Map<string, { provider: string; inputTokens: number; outputTokens: number; totalTokens: number }>();
+      const byProviderMap = new Map<
+        string,
+        { provider: string; inputTokens: number; outputTokens: number; totalTokens: number }
+      >();
       // 明细调用记录
       const allCalls: Array<{
         timestamp: string;
@@ -718,7 +818,14 @@ export async function createApp(options: CreateAppOptions = {}) {
         }
 
         // 按模型聚合
-        const modelEntry = byModelMap.get(modelKey) || { model, provider, inputTokens: 0, outputTokens: 0, totalTokens: 0, calls: 0 };
+        const modelEntry = byModelMap.get(modelKey) || {
+          model,
+          provider,
+          inputTokens: 0,
+          outputTokens: 0,
+          totalTokens: 0,
+          calls: 0,
+        };
         modelEntry.inputTokens += ts.inputTokens;
         modelEntry.outputTokens += ts.outputTokens;
         modelEntry.totalTokens += ts.totalTokens;
@@ -726,7 +833,13 @@ export async function createApp(options: CreateAppOptions = {}) {
         byModelMap.set(modelKey, modelEntry);
 
         // 按日期聚合
-        const dayEntry = byDayMap.get(dateStr) || { date: dateStr, inputTokens: 0, outputTokens: 0, totalTokens: 0, calls: 0 };
+        const dayEntry = byDayMap.get(dateStr) || {
+          date: dateStr,
+          inputTokens: 0,
+          outputTokens: 0,
+          totalTokens: 0,
+          calls: 0,
+        };
         dayEntry.inputTokens += ts.inputTokens;
         dayEntry.outputTokens += ts.outputTokens;
         dayEntry.totalTokens += ts.totalTokens;
@@ -734,7 +847,12 @@ export async function createApp(options: CreateAppOptions = {}) {
         byDayMap.set(dateStr, dayEntry);
 
         // 按提供商聚合
-        const provEntry = byProviderMap.get(provider) || { provider, inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+        const provEntry = byProviderMap.get(provider) || {
+          provider,
+          inputTokens: 0,
+          outputTokens: 0,
+          totalTokens: 0,
+        };
         provEntry.inputTokens += ts.inputTokens;
         provEntry.outputTokens += ts.outputTokens;
         provEntry.totalTokens += ts.totalTokens;
@@ -742,13 +860,15 @@ export async function createApp(options: CreateAppOptions = {}) {
 
         // 估算费用
         const price = estimateModelPrice(model);
-        const estimatedCost = (ts.inputTokens / 1000) * price.input + (ts.outputTokens / 1000) * price.output;
+        const estimatedCost =
+          (ts.inputTokens / 1000) * price.input + (ts.outputTokens / 1000) * price.output;
 
         // 明细记录
         allCalls.push({
-          timestamp: session.metadata.createdAt instanceof Date
-            ? session.metadata.createdAt.toISOString()
-            : String(session.metadata.createdAt),
+          timestamp:
+            session.metadata.createdAt instanceof Date
+              ? session.metadata.createdAt.toISOString()
+              : String(session.metadata.createdAt),
           sessionId: session.id,
           title: session.metadata.title,
           provider,
@@ -766,12 +886,12 @@ export async function createApp(options: CreateAppOptions = {}) {
         .sort((a, b) => a.date.localeCompare(b.date));
 
       // 按模型排序 (用量降序)
-      const byModel = Array.from(byModelMap.values())
-        .sort((a, b) => b.totalTokens - a.totalTokens);
+      const byModel = Array.from(byModelMap.values()).sort((a, b) => b.totalTokens - a.totalTokens);
 
       // 按提供商排序
-      const byProvider = Array.from(byProviderMap.values())
-        .sort((a, b) => b.totalTokens - a.totalTokens);
+      const byProvider = Array.from(byProviderMap.values()).sort(
+        (a, b) => b.totalTokens - a.totalTokens,
+      );
 
       // 明细按时间倒序 (最近20条)
       const recentCalls = allCalls
@@ -780,7 +900,8 @@ export async function createApp(options: CreateAppOptions = {}) {
 
       // 费用汇总
       let totalEstimatedCost = 0;
-      const costByModel: Array<{ model: string; provider: string; cost: number; tokens: number }> = [];
+      const costByModel: Array<{ model: string; provider: string; cost: number; tokens: number }> =
+        [];
       for (const m of byModel) {
         const price = estimateModelPrice(m.model);
         const cost = (m.inputTokens / 1000) * price.input + (m.outputTokens / 1000) * price.output;
@@ -799,7 +920,11 @@ export async function createApp(options: CreateAppOptions = {}) {
           total: { inputTokens: totalInput, outputTokens: totalOutput, totalTokens },
           today: { inputTokens: todayInput, outputTokens: todayOutput, totalTokens: todayTokens },
           thisWeek: { inputTokens: weekInput, outputTokens: weekOutput, totalTokens: weekTokens },
-          thisMonth: { inputTokens: monthInput, outputTokens: monthOutput, totalTokens: monthTokens },
+          thisMonth: {
+            inputTokens: monthInput,
+            outputTokens: monthOutput,
+            totalTokens: monthTokens,
+          },
         },
         byModel,
         byDay,
@@ -816,7 +941,12 @@ export async function createApp(options: CreateAppOptions = {}) {
       res.status(500).json({
         success: false,
         error: (error as Error).message,
-        summary: { total: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, today: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, thisWeek: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, thisMonth: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } },
+        summary: {
+          total: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+          today: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+          thisWeek: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+          thisMonth: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+        },
         byModel: [],
         byDay: [],
         byProvider: [],
@@ -915,7 +1045,7 @@ export async function createApp(options: CreateAppOptions = {}) {
       if (agent) updateData.agent = agent;
       if (security) updateData.security = security;
       if (preferences) updateData.preferences = preferences;
-      
+
       configManager.updateConfig(updateData);
       await configManager.save();
       res.json({ success: true });
@@ -969,22 +1099,28 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   /** 模型简要信息 */
   interface ModelInfo {
-    id: string; name: string; maxContextTokens: number;
-    maxOutputTokens: number; supportsTools: boolean;
-    supportsVision: boolean; pricing?: { input: number; output: number };
+    id: string;
+    name: string;
+    maxContextTokens: number;
+    maxOutputTokens: number;
+    supportsTools: boolean;
+    supportsVision: boolean;
+    pricing?: { input: number; output: number };
   }
 
   /**
    * 从 OpenAI 兼容 API 动态获取模型列表
    * 尝试 GET {baseURL}/models，失败则返回空
    */
-  async function fetchModelsFromProvider(preset: typeof PROVIDER_PRESETS[number]): Promise<ModelInfo[]> {
+  async function fetchModelsFromProvider(
+    preset: (typeof PROVIDER_PRESETS)[number],
+  ): Promise<ModelInfo[]> {
     // Ollama 使用特殊 API
     if (preset.id === 'ollama') {
       try {
         const res = await fetch('http://localhost:11434/api/tags');
         if (!res.ok) return [];
-        const data = await res.json() as { models?: Array<{ name: string; size: number }> };
+        const data = (await res.json()) as { models?: Array<{ name: string; size: number }> };
         return (data.models || []).map((m) => ({
           id: m.name,
           name: formatOllamaModelName(m.name),
@@ -1015,7 +1151,10 @@ export async function createApp(options: CreateAppOptions = {}) {
       const data = await res.json();
       const modelList: Array<{ id: string }> = data.data || data.models || [];
       return modelList
-        .filter((m) => !m.id.toLowerCase().includes('embedding') && !m.id.toLowerCase().includes('moderation'))
+        .filter(
+          (m) =>
+            !m.id.toLowerCase().includes('embedding') && !m.id.toLowerCase().includes('moderation'),
+        )
         .slice(0, 20) // 限制数量避免 UI 过长
         .map((m) => ({
           id: m.id,
@@ -1023,7 +1162,8 @@ export async function createApp(options: CreateAppOptions = {}) {
           maxContextTokens: inferContextSize(m.id),
           maxOutputTokens: 8192,
           supportsTools: true,
-          supportsVision: m.id.toLowerCase().includes('vision') || m.id.toLowerCase().includes('vl'),
+          supportsVision:
+            m.id.toLowerCase().includes('vision') || m.id.toLowerCase().includes('vl'),
           pricing: preset.models?.[0]?.pricing || { input: 0, output: 0 },
         }));
     } catch (err) {
@@ -1052,7 +1192,15 @@ export async function createApp(options: CreateAppOptions = {}) {
    * 格式化预设模型为动态模型接口统一格式
    * 作为 API 无法动态获取时的兜底数据
    */
-  function formatPresetModel(m: { id: string; name: string; maxContextTokens?: number; maxOutputTokens?: number; supportsTools?: boolean; supportsVision?: boolean; pricing?: { input: number; output: number } }): ModelInfo {
+  function formatPresetModel(m: {
+    id: string;
+    name: string;
+    maxContextTokens?: number;
+    maxOutputTokens?: number;
+    supportsTools?: boolean;
+    supportsVision?: boolean;
+    pricing?: { input: number; output: number };
+  }): ModelInfo {
     return {
       id: m.id,
       name: m.name,
@@ -1092,11 +1240,11 @@ export async function createApp(options: CreateAppOptions = {}) {
    * 为提供商获取合并后的模型列表
    * 优先从缓存读动态数据，然后与预设合并
    */
-  async function getMergedModels(p: typeof PROVIDER_PRESETS[number]): Promise<MergedModel[]> {
+  async function getMergedModels(p: (typeof PROVIDER_PRESETS)[number]): Promise<MergedModel[]> {
     const presetModels = (p.models || []).map(formatPresetModel);
     const cached = modelCache.get(p.id);
     let dynamicModels: ModelInfo[] = [];
-    
+
     if (cached && Date.now() - cached.timestamp < MODEL_CACHE_TTL) {
       dynamicModels = cached.models;
     } else if (p.apiKey) {
@@ -1106,9 +1254,9 @@ export async function createApp(options: CreateAppOptions = {}) {
         dynamicModels = fetched;
       }
     }
-    
+
     // 有动态数据时合并，否则仅用预设
-    return dynamicModels.length > 0 
+    return dynamicModels.length > 0
       ? mergeModels(dynamicModels, presetModels)
       : presetModels.map((m) => ({ ...m, fromDynamic: false }));
   }
@@ -1140,7 +1288,7 @@ export async function createApp(options: CreateAppOptions = {}) {
             fromDynamic: m.fromDynamic,
           })),
         };
-      })
+      }),
     );
     res.json(results);
   });
@@ -1150,9 +1298,9 @@ export async function createApp(options: CreateAppOptions = {}) {
     try {
       await modelRegistry.refresh();
       // 刷新后同步到 PROVIDER_PRESETS
-      configManager.load().catch(err => logger.error({ err }, '配置重新加载失败'));
-      res.json({ 
-        success: true, 
+      configManager.load().catch((err) => logger.error({ err }, '配置重新加载失败'));
+      res.json({
+        success: true,
         version: modelRegistry.getVersion(),
         generatedAt: modelRegistry.getGeneratedAt(),
       });
@@ -1182,18 +1330,19 @@ export async function createApp(options: CreateAppOptions = {}) {
       modelCache.delete(id);
       const presetModels = (preset.models || []).map(formatPresetModel);
       const dynamicModels = preset.apiKey ? await fetchModelsFromProvider(preset) : [];
-      
+
       if (dynamicModels.length > 0) {
         modelCache.set(id, { models: dynamicModels, timestamp: Date.now() });
       }
-      
+
       // 合并动态+预设
-      const merged = dynamicModels.length > 0
-        ? mergeModels(dynamicModels, presetModels)
-        : presetModels.map((m) => ({ ...m, fromDynamic: false }));
-      
-      res.json({ 
-        success: true, 
+      const merged =
+        dynamicModels.length > 0
+          ? mergeModels(dynamicModels, presetModels)
+          : presetModels.map((m) => ({ ...m, fromDynamic: false }));
+
+      res.json({
+        success: true,
         models: merged,
         fromDynamic: dynamicModels.length > 0,
       });
@@ -1205,13 +1354,16 @@ export async function createApp(options: CreateAppOptions = {}) {
   /** 获取所有可用模型(扁平列表，合并动态+预设，供 ChatInput 下拉框使用) */
   app.get('/api/providers/all-models', async (_req, res) => {
     try {
-      const allModels: Array<{ 
-        provider: string; providerName: string; 
-        modelId: string; modelName: string;
-        supportsTools: boolean; supportsVision: boolean;
+      const allModels: Array<{
+        provider: string;
+        providerName: string;
+        modelId: string;
+        modelName: string;
+        supportsTools: boolean;
+        supportsVision: boolean;
         fromDynamic: boolean;
       }> = [];
-      
+
       for (const p of PROVIDER_PRESETS) {
         const mergedModels = await getMergedModels(p);
         for (const m of mergedModels) {
@@ -1226,7 +1378,7 @@ export async function createApp(options: CreateAppOptions = {}) {
           });
         }
       }
-      
+
       res.json({ success: true, models: allModels });
     } catch (error) {
       res.status(500).json({ success: false, error: (error as Error).message });
@@ -1238,10 +1390,7 @@ export async function createApp(options: CreateAppOptions = {}) {
     try {
       const { id } = req.params;
       const { apiKey } = req.body;
-      configManager.setApiKey(
-        id as Parameters<typeof configManager.setApiKey>[0],
-        apiKey,
-      );
+      configManager.setApiKey(id as Parameters<typeof configManager.setApiKey>[0], apiKey);
       await configManager.save();
       res.json({ success: true });
     } catch (error) {
@@ -1259,7 +1408,7 @@ export async function createApp(options: CreateAppOptions = {}) {
       if (!providerConfig) {
         // 查找预设中的环境变量名称，给用户明确指引
         const preset = PROVIDER_PRESETS.find((p) => p.id === id);
-        const envHint = preset?.apiKeyEnv 
+        const envHint = preset?.apiKeyEnv
           ? `请先配置 API 密钥：设置环境变量 ${preset.apiKeyEnv} 或在页面中手动输入密钥`
           : '请先在提供商页面中设置 API 密钥';
         return res.status(404).json({ success: false, error: `${envHint}` });
@@ -1276,9 +1425,7 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   app.get('/api/sessions', (req, res) => {
     const status = req.query.status as string;
-    const sessions = sessionManager.list(
-      status as Parameters<typeof sessionManager.list>[0],
-    );
+    const sessions = sessionManager.list(status as Parameters<typeof sessionManager.list>[0]);
     // 格式化返回
     const formatted = sessions.map((s: Record<string, unknown>) => ({
       id: s.id || s.sessionId,
@@ -1337,21 +1484,16 @@ export async function createApp(options: CreateAppOptions = {}) {
       }
       // 如果请求指定了 provider，优先使用指定的提供商配置
       // 如果请求指定了 provider，优先使用指定的提供商配置
-      const providerConfig = provider 
+      const providerConfig = provider
         ? configManager.getProvider(provider as Parameters<typeof configManager.getProvider>[0])
         : configManager.getCurrentProvider();
       if (!providerConfig) {
         return res.status(500).json({ error: '未配置模型提供商' });
       }
-      const agent = new AgentEngine(
-        providerConfig,
-        toolRegistry,
-        sessionManager,
-        {
-          model: model || config.currentModel.model,
-          provider: provider || config.currentModel.provider,
-        },
-      );
+      const agent = new AgentEngine(providerConfig, toolRegistry, sessionManager, {
+        model: model || config.currentModel.model,
+        provider: provider || config.currentModel.provider,
+      });
       const response = await agent.run(message, {
         sessionId: sessionId || `web_${Date.now()}`,
       });
@@ -1554,7 +1696,10 @@ export async function createApp(options: CreateAppOptions = {}) {
     skills[index] = { ...skills[index], ...req.body, name: skills[index].name };
     saveCustomSkills(skills);
     logger.info({ skill: name }, '自定义技能已更新');
-    res.json({ success: true, skill: { ...skills[index], source: 'custom', activated: pluginManager.isSkillActive(name) } });
+    res.json({
+      success: true,
+      skill: { ...skills[index], source: 'custom', activated: pluginManager.isSkillActive(name) },
+    });
   });
 
   /** 获取工具列表（分组信息由工具自身定义，启用状态来自持久化配置） */
@@ -1704,7 +1849,7 @@ export async function createApp(options: CreateAppOptions = {}) {
       res.json({
         docker: dockerCheck,
         sandbox: overview,
-        mode: overview.localMode ? 'local' : (dockerCheck.available ? 'docker' : 'disabled'),
+        mode: overview.localMode ? 'local' : dockerCheck.available ? 'docker' : 'disabled',
       });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -1805,7 +1950,7 @@ export async function createApp(options: CreateAppOptions = {}) {
           .map(([name, syms]) => ({
             name,
             count: syms.length,
-            locations: syms.slice(0, 5).map(s => s.filePath + ':' + s.line),
+            locations: syms.slice(0, 5).map((s) => s.filePath + ':' + s.line),
           })),
       });
     } catch (error) {
@@ -1829,14 +1974,14 @@ export async function createApp(options: CreateAppOptions = {}) {
       let results = searchSymbol(map, query, caseSensitive);
 
       if (kind) {
-        results = results.filter(s => s.kind === kind);
+        results = results.filter((s) => s.kind === kind);
       }
 
       res.json({
         success: true,
         query,
         totalResults: results.length,
-        results: results.slice(0, 100).map(s => ({
+        results: results.slice(0, 100).map((s) => ({
           name: s.name,
           kind: s.kind,
           line: s.line,
@@ -1866,9 +2011,9 @@ export async function createApp(options: CreateAppOptions = {}) {
         success: true,
         symbol,
         totalReferences: refs.length,
-        definitions: refs.filter(r => r.kind === 'definition').length,
-        usages: refs.filter(r => r.kind === 'reference').length,
-        references: refs.slice(0, 200).map(r => ({
+        definitions: refs.filter((r) => r.kind === 'definition').length,
+        usages: refs.filter((r) => r.kind === 'reference').length,
+        references: refs.slice(0, 200).map((r) => ({
           filePath: r.filePath,
           line: r.line,
           kind: r.kind,
@@ -1931,18 +2076,57 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   /** 可导入的文件扩展名（文本类型） */
   const BROWSEABLE_EXTENSIONS = new Set([
-    '.md', '.txt', '.json', '.yaml', '.yml', '.toml', '.xml', '.csv', '.tsv',
-    '.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs',
-    '.py', '.rs', '.go', '.java', '.c', '.cpp', '.h', '.hpp',
-    '.css', '.scss', '.less', '.html', '.htm',
-    '.sh', '.bat', '.ps1', '.env', '.gitignore',
-    '.vue', '.svelte',
+    '.md',
+    '.txt',
+    '.json',
+    '.yaml',
+    '.yml',
+    '.toml',
+    '.xml',
+    '.csv',
+    '.tsv',
+    '.js',
+    '.jsx',
+    '.ts',
+    '.tsx',
+    '.mjs',
+    '.cjs',
+    '.py',
+    '.rs',
+    '.go',
+    '.java',
+    '.c',
+    '.cpp',
+    '.h',
+    '.hpp',
+    '.css',
+    '.scss',
+    '.less',
+    '.html',
+    '.htm',
+    '.sh',
+    '.bat',
+    '.ps1',
+    '.env',
+    '.gitignore',
+    '.vue',
+    '.svelte',
   ]);
 
   /** 忽略的目录名 */
   const IGNORED_DIRS = new Set([
-    'node_modules', '.git', '.codebuddy', 'dist', '.next', '.nuxt',
-    '__pycache__', '.venv', 'venv', 'target', '.svn', '.hg',
+    'node_modules',
+    '.git',
+    '.codebuddy',
+    'dist',
+    '.next',
+    '.nuxt',
+    '__pycache__',
+    '.venv',
+    'venv',
+    'target',
+    '.svn',
+    '.hg',
     '.easyagent',
   ]);
 
@@ -1974,14 +2158,16 @@ export async function createApp(options: CreateAppOptions = {}) {
           try {
             const subEntries = readdirSync(entryPath, { withFileTypes: true });
             const itemCount = subEntries.filter(
-              (e) => !e.name.startsWith('.') && !IGNORED_DIRS.has(e.name)
+              (e) => !e.name.startsWith('.') && !IGNORED_DIRS.has(e.name),
             ).length;
             dirs.push({ name: entry.name, itemCount });
           } catch (err) {
             dirs.push({ name: entry.name, itemCount: 0 });
           }
         } else if (entry.isFile()) {
-          const ext = entry.name.includes('.') ? entry.name.slice(entry.name.lastIndexOf('.')).toLowerCase() : '';
+          const ext = entry.name.includes('.')
+            ? entry.name.slice(entry.name.lastIndexOf('.')).toLowerCase()
+            : '';
           if (BROWSEABLE_EXTENSIONS.has(ext)) {
             try {
               const stats = statSync(entryPath);
@@ -2027,7 +2213,13 @@ export async function createApp(options: CreateAppOptions = {}) {
       });
       const stats = kbService.getStats();
       const allTags = kbService.getAllTags();
-      res.json({ success: true, documents: docs, stats, tags: allTags, scope: kbService.getScope() });
+      res.json({
+        success: true,
+        documents: docs,
+        stats,
+        tags: allTags,
+        scope: kbService.getScope(),
+      });
     } catch (error) {
       res.status(500).json({ success: false, error: (error as Error).message });
     }
@@ -2044,7 +2236,12 @@ export async function createApp(options: CreateAppOptions = {}) {
       const result = kbService.addDocument({ title, content, filePath, category, tags });
       if (result.success) {
         const doc = kbService.getDocument(result.docId!);
-        res.json({ success: true, document: doc.doc, content: doc.content, scope: kbService.getScope() });
+        res.json({
+          success: true,
+          document: doc.doc,
+          content: doc.content,
+          scope: kbService.getScope(),
+        });
       } else {
         res.status(400).json({ success: false, error: result.error });
       }
@@ -2100,7 +2297,12 @@ export async function createApp(options: CreateAppOptions = {}) {
       const result = kbService.importFromFile(filePath);
       if (result.success) {
         const doc = kbService.getDocument(result.docId!);
-        res.json({ success: true, document: doc.doc, content: doc.content, scope: kbService.getScope() });
+        res.json({
+          success: true,
+          document: doc.doc,
+          content: doc.content,
+          scope: kbService.getScope(),
+        });
       } else {
         res.status(400).json({ success: false, error: result.error });
       }
@@ -2130,7 +2332,9 @@ export async function createApp(options: CreateAppOptions = {}) {
           const urlDecoded = decodeURIComponent(fileName);
           if (urlDecoded !== fileName) fileName = urlDecoded;
         }
-      } catch (err) { /* 保持原始文件名 */ }
+      } catch (err) {
+        /* 保持原始文件名 */
+      }
       const filePath = req.file.path;
       // 读取文件内容，尝试 UTF-8 优先，降级 GBK
       const raw = readFileSync(filePath);
@@ -2140,18 +2344,34 @@ export async function createApp(options: CreateAppOptions = {}) {
         try {
           const { decode } = require('iconv-lite');
           content = decode(raw, 'gbk');
-        } catch (err) { /* 无 iconv-lite 则保留 UTF-8 结果 */ }
+        } catch (err) {
+          /* 无 iconv-lite 则保留 UTF-8 结果 */
+        }
       }
-      const tags = tagsStr ? tagsStr.split(',').map((t: string) => t.trim()).filter(Boolean) : [];
+      const tags = tagsStr
+        ? tagsStr
+            .split(',')
+            .map((t: string) => t.trim())
+            .filter(Boolean)
+        : [];
 
       const result = kbService.importFromContent(fileName, content, category, tags);
 
       // 清理临时上传文件
-      try { rmSync(filePath); } catch (err) { /* ignore */ }
+      try {
+        rmSync(filePath);
+      } catch (err) {
+        /* ignore */
+      }
 
       if (result.success) {
         const doc = kbService.getDocument(result.docId!);
-        res.json({ success: true, document: doc.doc, content: doc.content, scope: kbService.getScope() });
+        res.json({
+          success: true,
+          document: doc.doc,
+          content: doc.content,
+          scope: kbService.getScope(),
+        });
       } else {
         res.status(400).json({ success: false, error: result.error });
       }
@@ -2206,13 +2426,24 @@ export async function createApp(options: CreateAppOptions = {}) {
       const kbService = resolveKnowledgeService(scope as string);
       const result = kbService.getDocument(req.params.id);
       if (result.success) {
-        res.json({ success: true, document: result.doc, content: result.content, scope: kbService.getScope() });
+        res.json({
+          success: true,
+          document: result.doc,
+          content: result.content,
+          scope: kbService.getScope(),
+        });
       } else {
         // 如果当前作用域找不到，尝试另一个作用域
-        const altService = kbService === knowledgeService ? globalKnowledgeService : knowledgeService;
+        const altService =
+          kbService === knowledgeService ? globalKnowledgeService : knowledgeService;
         const altResult = altService.getDocument(req.params.id);
         if (altResult.success) {
-          res.json({ success: true, document: altResult.doc, content: altResult.content, scope: altService.getScope() });
+          res.json({
+            success: true,
+            document: altResult.doc,
+            content: altResult.content,
+            scope: altService.getScope(),
+          });
         } else {
           res.status(404).json({ success: false, error: result.error });
         }
@@ -2237,7 +2468,20 @@ export async function createApp(options: CreateAppOptions = {}) {
   /** 创建自动化任务 */
   app.post('/api/automations', (req, res) => {
     try {
-      const { id, name, prompt, scheduleType, rrule, scheduledAt, cwds, validFrom, validUntil, maxDurationMinutes, provider, model } = req.body;
+      const {
+        id,
+        name,
+        prompt,
+        scheduleType,
+        rrule,
+        scheduledAt,
+        cwds,
+        validFrom,
+        validUntil,
+        maxDurationMinutes,
+        provider,
+        model,
+      } = req.body;
       if (!name) {
         return res.status(400).json({ error: '缺少 name 参数' });
       }
@@ -2472,15 +2716,10 @@ export async function createApp(options: CreateAppOptions = {}) {
             const selectedModel = model || config.currentModel.model;
 
             // 创建 Agent 实例
-            const agent = new AgentEngine(
-              providerConfig,
-              toolRegistry,
-              sessionManager,
-              {
-                model: selectedModel,
-                provider: provider || config.currentModel.provider,
-              },
-            );
+            const agent = new AgentEngine(providerConfig, toolRegistry, sessionManager, {
+              model: selectedModel,
+              provider: provider || config.currentModel.provider,
+            });
 
             // 监听 Agent 事件并转发
             agent.onEvent((event) => {
@@ -2634,40 +2873,58 @@ export async function createApp(options: CreateAppOptions = {}) {
   });
 
   // 返回服务对象（不启动监听）
-  return { app, server, wss, configManager, sessionManager, toolRegistry, pluginManager, imManager, knowledgeService, automationManager };
+  return {
+    app,
+    server,
+    wss,
+    configManager,
+    sessionManager,
+    toolRegistry,
+    pluginManager,
+    imManager,
+    knowledgeService,
+    automationManager,
+  };
 }
 
 // ========== 入口：直接运行时启动服务 ==========
 const __filename = fileURLToPath(import.meta.url);
-const isMainModule = process.argv[1] === __filename || process.argv[1]?.endsWith('\\index.ts') || process.argv[1]?.endsWith('/index.ts');
+const isMainModule =
+  process.argv[1] === __filename ||
+  process.argv[1]?.endsWith('\\index.ts') ||
+  process.argv[1]?.endsWith('/index.ts');
 
 if (isMainModule) {
-  createApp().then(({ server, sessionManager, wss, automationManager }) => {
-    // 启动服务器
-    server.listen(PORT, HOST, () => {
-      console.log([
-        '╔══════════════════════════════════════════╗',
-        '║        EasyAgent Server v0.6.6           ║',
-        `║  HTTP:      http://localhost:${PORT}        ║`,
-        `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
-        '╚══════════════════════════════════════════╝',
-      ].join('\n'));
-      logger.info({ port: PORT, host: HOST }, '服务器已启动');
-    });
+  createApp()
+    .then(({ server, sessionManager, wss, automationManager }) => {
+      // 启动服务器
+      server.listen(PORT, HOST, () => {
+        console.log(
+          [
+            '╔══════════════════════════════════════════╗',
+            '║        EasyAgent Server v0.6.6           ║',
+            `║  HTTP:      http://localhost:${PORT}        ║`,
+            `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
+            '╚══════════════════════════════════════════╝',
+          ].join('\n'),
+        );
+        logger.info({ port: PORT, host: HOST }, '服务器已启动');
+      });
 
-    // 优雅关闭
-    const shutdown = () => {
-      logger.info('正在关闭服务器...');
-      automationManager.shutdown();
-      sessionManager.close();
-      wss.close();
-      server.close();
-      process.exit(0);
-    };
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
-  }).catch((error) => {
-    console.error('服务器启动失败:', error);
-    process.exit(1);
-  });
+      // 优雅关闭
+      const shutdown = () => {
+        logger.info('正在关闭服务器...');
+        automationManager.shutdown();
+        sessionManager.close();
+        wss.close();
+        server.close();
+        process.exit(0);
+      };
+      process.on('SIGINT', shutdown);
+      process.on('SIGTERM', shutdown);
+    })
+    .catch((error) => {
+      console.error('服务器启动失败:', error);
+      process.exit(1);
+    });
 }

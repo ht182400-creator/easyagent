@@ -47,7 +47,13 @@ export const ContentRouter: FC = () => {
         case 'chat':
           return <ChatView sessionId={activeTab.sessionId} />;
         case 'settings':
-          return <PlaceholderView title="设置" emoji="⚙️" desc="全局配置、代理设置、快捷键配置 (即将上线)" />;
+          return (
+            <PlaceholderView
+              title="设置"
+              emoji="⚙️"
+              desc="全局配置、代理设置、快捷键配置 (即将上线)"
+            />
+          );
         case 'providers':
           return (
             <Suspense fallback={<LoadingFallback />}>
@@ -55,9 +61,21 @@ export const ContentRouter: FC = () => {
             </Suspense>
           );
         case 'sessions':
-          return <PlaceholderView title="会话管理" emoji="📋" desc="浏览、搜索、归档历史会话 (即将上线)" />;
+          return (
+            <PlaceholderView
+              title="会话管理"
+              emoji="📋"
+              desc="浏览、搜索、归档历史会话 (即将上线)"
+            />
+          );
         case 'dashboard':
-          return <PlaceholderView title="监控面板" emoji="📊" desc="Token用量统计、性能监控 (即将上线)" />;
+          return (
+            <PlaceholderView
+              title="监控面板"
+              emoji="📊"
+              desc="Token用量统计、性能监控 (即将上线)"
+            />
+          );
       }
     }
   }
@@ -67,7 +85,9 @@ export const ContentRouter: FC = () => {
     case 'chat':
       return <ChatView />;
     case 'settings':
-      return <PlaceholderView title="设置" emoji="⚙️" desc="全局配置、代理设置、快捷键配置 (即将上线)" />;
+      return (
+        <PlaceholderView title="设置" emoji="⚙️" desc="全局配置、代理设置、快捷键配置 (即将上线)" />
+      );
     case 'providers':
       return (
         <Suspense fallback={<LoadingFallback />}>
@@ -75,9 +95,13 @@ export const ContentRouter: FC = () => {
         </Suspense>
       );
     case 'sessions':
-      return <PlaceholderView title="会话管理" emoji="📋" desc="浏览、搜索、归档历史会话 (即将上线)" />;
+      return (
+        <PlaceholderView title="会话管理" emoji="📋" desc="浏览、搜索、归档历史会话 (即将上线)" />
+      );
     case 'dashboard':
-      return <PlaceholderView title="监控面板" emoji="📊" desc="Token用量统计、性能监控 (即将上线)" />;
+      return (
+        <PlaceholderView title="监控面板" emoji="📊" desc="Token用量统计、性能监控 (即将上线)" />
+      );
     default:
       return <ChatView />;
   }

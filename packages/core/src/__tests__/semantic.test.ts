@@ -32,13 +32,18 @@ beforeAll(() => {
   fs.mkdirSync(path.join(testDir, '.git'), { recursive: true });
 
   // 创建 TypeScript 源文件
-  fs.writeFileSync(path.join(testDir, 'src', 'index.ts'), `
+  fs.writeFileSync(
+    path.join(testDir, 'src', 'index.ts'),
+    `
 export { App } from './App.js';
 export { ConfigManager, getConfig } from './config.js';
 export { logger } from './utils/logger.js';
-`);
+`,
+  );
 
-  fs.writeFileSync(path.join(testDir, 'src', 'App.ts'), `
+  fs.writeFileSync(
+    path.join(testDir, 'src', 'App.ts'),
+    `
 import React, { useState, useEffect } from 'react';
 import { ConfigManager } from './config';
 
@@ -71,9 +76,12 @@ export function App({ title, version }: AppProps) {
 }
 
 export const CONST_VERSION = 1;
-`);
+`,
+  );
 
-  fs.writeFileSync(path.join(testDir, 'src', 'config.ts'), `
+  fs.writeFileSync(
+    path.join(testDir, 'src', 'config.ts'),
+    `
 export class ConfigManager {
   private config: Record<string, unknown> = {};
 
@@ -107,9 +115,12 @@ export enum ThemeType {
   Light = 'light',
   Dark = 'dark',
 }
-`);
+`,
+  );
 
-  fs.writeFileSync(path.join(testDir, 'src', 'utils', 'logger.ts'), `
+  fs.writeFileSync(
+    path.join(testDir, 'src', 'utils', 'logger.ts'),
+    `
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -127,9 +138,12 @@ export function createLogger(name: string) {
 }
 
 export const logger = createLogger('test');
-`);
+`,
+  );
 
-  fs.writeFileSync(path.join(testDir, 'src', 'components', 'Button.tsx'), `
+  fs.writeFileSync(
+    path.join(testDir, 'src', 'components', 'Button.tsx'),
+    `
 import React from 'react';
 
 interface ButtonProps {
@@ -141,11 +155,14 @@ interface ButtonProps {
 export const Button: React.FC<ButtonProps> = ({ label, onClick, variant = 'primary' }) => {
   return <button onClick={onClick} className={variant}>{label}</button>;
 };
-`);
+`,
+  );
 
   // 创建 Python 文件
   fs.mkdirSync(path.join(testDir, 'python_app'), { recursive: true });
-  fs.writeFileSync(path.join(testDir, 'python_app', 'main.py'), `
+  fs.writeFileSync(
+    path.join(testDir, 'python_app', 'main.py'),
+    `
 import os
 from typing import List, Optional
 from dataclasses import dataclass
@@ -176,14 +193,22 @@ def main():
 
 if __name__ == "__main__":
     main()
-`);
+`,
+  );
 
   // 创建 JSON 文件
-  fs.writeFileSync(path.join(testDir, 'package.json'), JSON.stringify({
-    name: 'test-app',
-    version: '1.0.0',
-    dependencies: { react: '^18.0.0' },
-  }, null, 2));
+  fs.writeFileSync(
+    path.join(testDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: 'test-app',
+        version: '1.0.0',
+        dependencies: { react: '^18.0.0' },
+      },
+      null,
+      2,
+    ),
+  );
 });
 
 afterAll(() => {
@@ -220,25 +245,25 @@ describe('findRepoRoot', () => {
 describe('collectSourceFiles', () => {
   it('应收集 TypeScript 文件', () => {
     const files = collectSourceFiles(testDir, 4);
-    const tsFiles = files.filter(f => f.endsWith('.ts') || f.endsWith('.tsx'));
+    const tsFiles = files.filter((f) => f.endsWith('.ts') || f.endsWith('.tsx'));
     expect(tsFiles.length).toBeGreaterThanOrEqual(3); // index.ts, App.ts, config.ts
   });
 
   it('应收集 Python 文件', () => {
     const files = collectSourceFiles(testDir, 4);
-    const pyFiles = files.filter(f => f.endsWith('.py'));
+    const pyFiles = files.filter((f) => f.endsWith('.py'));
     expect(pyFiles.length).toBeGreaterThanOrEqual(1);
   });
 
   it('应忽略 node_modules 目录', () => {
     const files = collectSourceFiles(testDir, 4);
-    const nmFiles = files.filter(f => f.includes('node_modules'));
+    const nmFiles = files.filter((f) => f.includes('node_modules'));
     expect(nmFiles.length).toBe(0);
   });
 
   it('应忽略 .git 目录', () => {
     const files = collectSourceFiles(testDir, 4);
-    const gitFiles = files.filter(f => f.includes('.git/') && !f.endsWith('.git'));
+    const gitFiles = files.filter((f) => f.includes('.git/') && !f.endsWith('.git'));
     expect(gitFiles.length).toBe(0);
   });
 });
@@ -248,37 +273,37 @@ describe('extractSymbols', () => {
   it('应从 TypeScript 文件提取函数定义', () => {
     const filePath = path.join(testDir, 'src', 'App.ts');
     const symbols = extractSymbols(filePath, 'typescript');
-    const functions = symbols.filter(s => s.kind === 'function');
+    const functions = symbols.filter((s) => s.kind === 'function');
     expect(functions.length).toBeGreaterThanOrEqual(1);
-    expect(functions.some(s => s.name === 'App')).toBe(true);
+    expect(functions.some((s) => s.name === 'App')).toBe(true);
   });
 
   it('应从 TypeScript 文件提取类定义', () => {
     const filePath = path.join(testDir, 'src', 'config.ts');
     const symbols = extractSymbols(filePath, 'typescript');
-    const classes = symbols.filter(s => s.kind === 'class');
-    expect(classes.some(s => s.name === 'ConfigManager')).toBe(true);
+    const classes = symbols.filter((s) => s.kind === 'class');
+    expect(classes.some((s) => s.name === 'ConfigManager')).toBe(true);
   });
 
   it('应从 TypeScript 文件提取接口', () => {
     const filePath = path.join(testDir, 'src', 'App.ts');
     const symbols = extractSymbols(filePath, 'typescript');
-    const interfaces = symbols.filter(s => s.kind === 'interface');
-    expect(interfaces.some(s => s.name === 'AppProps')).toBe(true);
+    const interfaces = symbols.filter((s) => s.kind === 'interface');
+    expect(interfaces.some((s) => s.name === 'AppProps')).toBe(true);
   });
 
   it('应从 TypeScript 文件提取类型别名', () => {
     const filePath = path.join(testDir, 'src', 'App.ts');
     const symbols = extractSymbols(filePath, 'typescript');
-    const types = symbols.filter(s => s.kind === 'type');
-    expect(types.some(s => s.name === 'Theme')).toBe(true);
+    const types = symbols.filter((s) => s.kind === 'type');
+    expect(types.some((s) => s.name === 'Theme')).toBe(true);
   });
 
   it('应从 TypeScript 文件提取枚举', () => {
     const filePath = path.join(testDir, 'src', 'config.ts');
     const symbols = extractSymbols(filePath, 'typescript');
-    const enums = symbols.filter(s => s.kind === 'enum');
-    expect(enums.some(s => s.name === 'ThemeType')).toBe(true);
+    const enums = symbols.filter((s) => s.kind === 'enum');
+    expect(enums.some((s) => s.name === 'ThemeType')).toBe(true);
   });
 
   it('应能分析 index.ts 文件并提取符号', () => {
@@ -294,23 +319,23 @@ describe('extractSymbols', () => {
   it('应从 Python 文件提取函数', () => {
     const filePath = path.join(testDir, 'python_app', 'main.py');
     const symbols = extractSymbols(filePath, 'python');
-    const functions = symbols.filter(s => s.kind === 'function');
-    expect(functions.some(s => s.name === 'greet')).toBe(true);
-    expect(functions.some(s => s.name === 'main')).toBe(true);
+    const functions = symbols.filter((s) => s.kind === 'function');
+    expect(functions.some((s) => s.name === 'greet')).toBe(true);
+    expect(functions.some((s) => s.name === 'main')).toBe(true);
   });
 
   it('应从 Python 文件提取类', () => {
     const filePath = path.join(testDir, 'python_app', 'main.py');
     const symbols = extractSymbols(filePath, 'python');
-    const classes = symbols.filter(s => s.kind === 'class');
-    expect(classes.some(s => s.name === 'Calculator')).toBe(true);
-    expect(classes.some(s => s.name === 'Config')).toBe(true);
+    const classes = symbols.filter((s) => s.kind === 'class');
+    expect(classes.some((s) => s.name === 'Calculator')).toBe(true);
+    expect(classes.some((s) => s.name === 'Config')).toBe(true);
   });
 
   it('应从 Python 文件提取方法（def 视为 function）', () => {
     const filePath = path.join(testDir, 'python_app', 'main.py');
     const symbols = extractSymbols(filePath, 'python');
-    const functions = symbols.filter(s => s.kind === 'function');
+    const functions = symbols.filter((s) => s.kind === 'function');
     // Python 的 def 统一视为 function（包括 __init__, add, multiply 等方法）
     expect(functions.length).toBeGreaterThanOrEqual(1);
   });
@@ -318,7 +343,7 @@ describe('extractSymbols', () => {
   it('应从 Python 文件提取导入', () => {
     const filePath = path.join(testDir, 'python_app', 'main.py');
     const symbols = extractSymbols(filePath, 'python');
-    const imports = symbols.filter(s => s.kind === 'import');
+    const imports = symbols.filter((s) => s.kind === 'import');
     // os, typing 等
     expect(imports.length).toBeGreaterThanOrEqual(1);
   });
@@ -326,7 +351,7 @@ describe('extractSymbols', () => {
   it('应记录符号行号', () => {
     const filePath = path.join(testDir, 'src', 'config.ts');
     const symbols = extractSymbols(filePath, 'typescript');
-    const configClass = symbols.find(s => s.name === 'ConfigManager' && s.kind === 'class');
+    const configClass = symbols.find((s) => s.name === 'ConfigManager' && s.kind === 'class');
     expect(configClass).toBeDefined();
     expect(configClass!.line).toBeGreaterThan(0);
   });
@@ -397,19 +422,19 @@ describe('searchSymbol', () => {
     const map = buildSemanticMap(testDir, 4);
     const results = searchSymbol(map, 'Config');
     expect(results.length).toBeGreaterThan(0);
-    expect(results.some(r => r.name === 'ConfigManager')).toBe(true);
+    expect(results.some((r) => r.name === 'ConfigManager')).toBe(true);
   });
 
   it('应支持模糊搜索', () => {
     const map = buildSemanticMap(testDir, 4);
     const results = searchSymbol(map, 'ger');
-    expect(results.some(r => r.name === 'logger')).toBe(true);
+    expect(results.some((r) => r.name === 'logger')).toBe(true);
   });
 
   it('应支持大小写不敏感搜索', () => {
     const map = buildSemanticMap(testDir, 4);
     const results = searchSymbol(map, 'config');
-    expect(results.some(r => r.name === 'ConfigManager')).toBe(true);
+    expect(results.some((r) => r.name === 'ConfigManager')).toBe(true);
   });
 
   it('大小写敏感搜索应精确匹配', () => {
@@ -431,7 +456,7 @@ describe('findReferences', () => {
   it('应找到符号的定义和引用', () => {
     const map = buildSemanticMap(testDir, 4);
     const refs = findReferences(map, 'ConfigManager');
-    const definitions = refs.filter(r => r.kind === 'definition');
+    const definitions = refs.filter((r) => r.kind === 'definition');
     expect(definitions.length).toBeGreaterThan(0);
   });
 
@@ -485,8 +510,9 @@ describe('边界条件', () => {
 
   it('大文件应正常处理不崩溃', () => {
     const filePath = path.join(testDir, 'src', 'large.ts');
-    const largeContent = Array.from({ length: 5000 }, (_, i) => 
-      `const x${i} = ${i}; // line ${i}`
+    const largeContent = Array.from(
+      { length: 5000 },
+      (_, i) => `const x${i} = ${i}; // line ${i}`,
     ).join('\n');
     fs.writeFileSync(filePath, largeContent);
 
@@ -499,17 +525,20 @@ describe('边界条件', () => {
 
   it('应跳过注释行中的符号', () => {
     const filePath = path.join(testDir, 'src', 'comments.ts');
-    fs.writeFileSync(filePath, `
+    fs.writeFileSync(
+      filePath,
+      `
 // function commentedFunc() {}
 // class CommentedClass {}
 /* interface HiddenInterface {} */
 const realVar = 42;
-`);
+`,
+    );
     const symbols = extractSymbols(filePath, 'typescript');
     // 注释中的不应被提取
-    expect(symbols.filter(s => s.name === 'commentedFunc').length).toBe(0);
-    expect(symbols.filter(s => s.name === 'CommentedClass').length).toBe(0);
-    expect(symbols.some(s => s.name === 'realVar')).toBe(true);
+    expect(symbols.filter((s) => s.name === 'commentedFunc').length).toBe(0);
+    expect(symbols.filter((s) => s.name === 'CommentedClass').length).toBe(0);
+    expect(symbols.some((s) => s.name === 'realVar')).toBe(true);
 
     fs.unlinkSync(filePath);
   });
@@ -554,7 +583,7 @@ describe('SemanticTools 接口', () => {
   it('SemanticTools 应包含5个工具', async () => {
     const { SemanticTools } = await import('../tools/SemanticTools.js');
     expect(SemanticTools.length).toBe(5);
-    const names = SemanticTools.map(t => t.name);
+    const names = SemanticTools.map((t) => t.name);
     expect(names).toContain('code_semantic_map');
     expect(names).toContain('code_symbol_search');
     expect(names).toContain('code_find_references');
@@ -564,7 +593,9 @@ describe('SemanticTools 接口', () => {
 
   it('工具应能在测试目录上执行', async () => {
     const { CodebaseOverviewTool } = await import('../tools/SemanticTools.js');
-    const result = await CodebaseOverviewTool.execute({ path: testDir }, { workspace: testDir } as any);
+    const result = await CodebaseOverviewTool.execute({ path: testDir }, {
+      workspace: testDir,
+    } as any);
     expect(result.success).toBe(true);
     expect(result.content).toContain('代码库概览');
   });

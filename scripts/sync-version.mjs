@@ -1,7 +1,7 @@
 /**
  * 版本同步脚本
  * 从 version.json 读取版本号，同步到所有子包的 package.json
- * 
+ *
  * 用法: node scripts/sync-version.mjs [--dry-run]
  */
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -20,7 +20,7 @@ const version = versionJson.version;
 
 log.info(`EasyAgent 版本同步: v${version}${isDryRun ? ' (dry-run)' : ''}`);
 
-/** 需要同步的 package.json 列表 */
+/** 需要同步的 package.json 列表（共 7 个包，根 + 6 子包） */
 const packages = [
   { name: '根', path: join(root, 'package.json') },
   { name: '@easyagent/core', path: join(root, 'packages', 'core', 'package.json') },
@@ -28,6 +28,7 @@ const packages = [
   { name: '@easyagent/server', path: join(root, 'packages', 'server', 'package.json') },
   { name: '@easyagent/web', path: join(root, 'packages', 'web', 'package.json') },
   { name: '@easyagent/desktop', path: join(root, 'packages', 'desktop', 'package.json') },
+  { name: '@easyagent/frontend', path: join(root, 'packages', 'frontend', 'package.json') },
 ];
 
 /** 同步内部 workspace 依赖版本 */
@@ -59,7 +60,7 @@ for (const { name, path: pkgPath } of packages) {
   if (!isDryRun) {
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
   }
-  
+
   log.info(`  🔄 ${name}: v${oldVersion} → v${version}`);
   updatedCount++;
 }

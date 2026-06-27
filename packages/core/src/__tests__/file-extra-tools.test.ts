@@ -8,7 +8,10 @@ import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 function createTestDir(): string {
-  const dir = resolve(tmpdir(), `ea-fe-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = resolve(
+    tmpdir(),
+    `ea-fe-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -30,7 +33,9 @@ describe('FileInfoTool - 文件信息', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能获取文件基本信息', async () => {
@@ -94,7 +99,9 @@ describe('CreateDirTool - 创建目录', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能创建新目录', async () => {
@@ -146,14 +153,16 @@ describe('MoveFileTool - 移动文件', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能移动文件到新位置', async () => {
     writeFileSync(join(workspace, 'source.txt'), 'content');
     const result = await MoveFileTool.execute(
       { sourcePath: 'source.txt', destPath: 'dest.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(existsSync(join(workspace, 'dest.txt'))).toBe(true);
@@ -163,7 +172,7 @@ describe('MoveFileTool - 移动文件', () => {
   it('源文件不存在应返回错误', async () => {
     const result = await MoveFileTool.execute(
       { sourcePath: 'nonexistent.txt', destPath: 'dest.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('FILE_NOT_FOUND');
@@ -173,7 +182,7 @@ describe('MoveFileTool - 移动文件', () => {
     writeFileSync(join(workspace, 'old.txt'), 'rename me');
     const result = await MoveFileTool.execute(
       { sourcePath: 'old.txt', destPath: 'new.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(existsSync(join(workspace, 'new.txt'))).toBe(true);
@@ -185,7 +194,7 @@ describe('MoveFileTool - 移动文件', () => {
     mkdirSync(join(workspace, 'sub'));
     const result = await MoveFileTool.execute(
       { sourcePath: 'file.txt', destPath: 'sub/file.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(existsSync(join(workspace, 'sub/file.txt'))).toBe(true);
@@ -195,7 +204,7 @@ describe('MoveFileTool - 移动文件', () => {
     writeFileSync(join(workspace, 'item.txt'), 'content');
     const result = await MoveFileTool.execute(
       { sourcePath: 'item.txt', destPath: 'newdir/nested/item.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(existsSync(join(workspace, 'newdir/nested/item.txt'))).toBe(true);
@@ -205,7 +214,7 @@ describe('MoveFileTool - 移动文件', () => {
     writeFileSync(join(workspace, 'ok.txt'), 'ok');
     const result = await MoveFileTool.execute(
       { sourcePath: 'ok.txt', destPath: '../../../outside.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
   });
@@ -226,14 +235,16 @@ describe('BatchEditTool - 批量编辑', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应能执行全局替换', async () => {
     writeFileSync(join(workspace, 'code.ts'), 'const foo = 1;\nconst bar = foo + foo;');
     const result = await BatchEditTool.execute(
       { filePath: 'code.ts', pattern: 'foo', replacement: 'baz' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('3处替换');
@@ -246,7 +257,7 @@ describe('BatchEditTool - 批量编辑', () => {
     writeFileSync(join(workspace, 'data.txt'), 'hello world');
     const result = await BatchEditTool.execute(
       { filePath: 'data.txt', pattern: 'xyz_not_found', replacement: 'replaced' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('未找到匹配');
@@ -256,7 +267,7 @@ describe('BatchEditTool - 批量编辑', () => {
     writeFileSync(join(workspace, 'vars.ts'), 'const name = "Alice";\nconst city = "Beijing";');
     const result = await BatchEditTool.execute(
       { filePath: 'vars.ts', pattern: '"(.*?)"', replacement: "'$1'" },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     const content = readFileSync(join(workspace, 'vars.ts'), 'utf-8');
@@ -268,7 +279,7 @@ describe('BatchEditTool - 批量编辑', () => {
     writeFileSync(join(workspace, 'mixed.txt'), 'HELLO hello Hello');
     const result = await BatchEditTool.execute(
       { filePath: 'mixed.txt', pattern: 'hello', replacement: 'hey', flags: 'gi' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     const content = readFileSync(join(workspace, 'mixed.txt'), 'utf-8');
@@ -278,7 +289,7 @@ describe('BatchEditTool - 批量编辑', () => {
   it('文件不存在应返回错误', async () => {
     const result = await BatchEditTool.execute(
       { filePath: 'nonexistent.ts', pattern: 'x', replacement: 'y' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('FILE_NOT_FOUND');
@@ -291,7 +302,7 @@ describe('BatchEditTool - 批量编辑', () => {
   it('工作区外路径应被拦截', async () => {
     const result = await BatchEditTool.execute(
       { filePath: '../../../etc/hosts', pattern: 'x', replacement: 'y' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
   });

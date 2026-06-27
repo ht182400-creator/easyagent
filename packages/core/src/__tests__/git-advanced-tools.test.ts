@@ -1,7 +1,7 @@
 /**
  * GitAdvancedTools 单元测试 (UT-15)
  * 覆盖：6个高级Git工具 — AutoCommit, RepoMap, Stash, Tag, CherryPick, Reflog
- * 
+ *
  * 策略：利用项目自身为 Git 仓库，对只读工具进行真实验证；
  * 对修改性工具使用临时目录（非Git仓库）或无效参数验证错误处理路径
  */
@@ -25,7 +25,9 @@ function createNonGitDir(): string {
 }
 
 function cleanup(dir: string) {
-  try { rmSync(dir, { recursive: true, force: true }); } catch (_) {}
+  try {
+    rmSync(dir, { recursive: true, force: true });
+  } catch (_) {}
 }
 
 // ================================================================
@@ -34,14 +36,18 @@ function cleanup(dir: string) {
 describe('GitAutoCommitTool — 自动提交', () => {
   let nonGitDir: string;
 
-  beforeEach(() => { nonGitDir = createNonGitDir(); });
-  afterEach(() => { cleanup(nonGitDir); });
+  beforeEach(() => {
+    nonGitDir = createNonGitDir();
+  });
+  afterEach(() => {
+    cleanup(nonGitDir);
+  });
 
   it('非Git仓库应返回错误', async () => {
     const { GitAutoCommitTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitAutoCommitTool.execute(
       { message: 'test commit' },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不是 Git 仓库');
@@ -51,7 +57,7 @@ describe('GitAutoCommitTool — 自动提交', () => {
     const { GitAutoCommitTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitAutoCommitTool.execute(
       { dryRun: true },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     // 可能干净，也可能有未暂存变更
     expect(result.success).toBe(true);
@@ -64,7 +70,7 @@ describe('GitAutoCommitTool — 自动提交', () => {
     const { GitAutoCommitTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitAutoCommitTool.execute(
       { dryRun: true, message: 'should-not-persist' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     // dryRun 应包含预览信息
@@ -78,7 +84,7 @@ describe('GitAutoCommitTool — 自动提交', () => {
     // 不提供 message，让工具自动生成 → scope 应出现在生成的消息中
     const result = await GitAutoCommitTool.execute(
       { dryRun: true, scope: 'core' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     if (result.content && !result.content.includes('工作区干净')) {
@@ -101,7 +107,7 @@ describe('GitRepoMapTool — 仓库地图', () => {
     const { GitRepoMapTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitRepoMapTool.execute(
       { maxDepth: 2, maxFiles: 20 },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
 
     expect(result.success).toBe(true);
@@ -118,7 +124,7 @@ describe('GitRepoMapTool — 仓库地图', () => {
     const { GitRepoMapTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitRepoMapTool.execute(
       { maxDepth: 1, maxFiles: 10 },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
 
     expect(result.success).toBe(true);
@@ -131,7 +137,7 @@ describe('GitRepoMapTool — 仓库地图', () => {
     const { GitRepoMapTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitRepoMapTool.execute(
       { path: '/nonexistent/path/xyz' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('路径不存在');
@@ -141,7 +147,7 @@ describe('GitRepoMapTool — 仓库地图', () => {
     const { GitRepoMapTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitRepoMapTool.execute(
       { includeGitInfo: false, maxDepth: 1, maxFiles: 5 },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.content).not.toContain('🌿 Git 信息');
@@ -151,7 +157,7 @@ describe('GitRepoMapTool — 仓库地图', () => {
     const { GitRepoMapTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitRepoMapTool.execute(
       { maxDepth: 1, maxFiles: 5 },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.metadata).toBeDefined();
@@ -167,14 +173,18 @@ describe('GitRepoMapTool — 仓库地图', () => {
 describe('GitStashTool — 暂存管理', () => {
   let nonGitDir: string;
 
-  beforeEach(() => { nonGitDir = createNonGitDir(); });
-  afterEach(() => { cleanup(nonGitDir); });
+  beforeEach(() => {
+    nonGitDir = createNonGitDir();
+  });
+  afterEach(() => {
+    cleanup(nonGitDir);
+  });
 
   it('非Git仓库应返回错误', async () => {
     const { GitStashTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitStashTool.execute(
       { action: 'list' },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不是 Git 仓库');
@@ -184,7 +194,7 @@ describe('GitStashTool — 暂存管理', () => {
     const { GitStashTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitStashTool.execute(
       { action: 'list' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     // 可能为空或有内容
@@ -195,7 +205,7 @@ describe('GitStashTool — 暂存管理', () => {
     const { GitStashTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitStashTool.execute(
       { action: 'invalid_action_xyz' as any },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不支持的操作');
@@ -205,7 +215,7 @@ describe('GitStashTool — 暂存管理', () => {
     const { GitStashTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitStashTool.execute(
       { action: 'save', message: 'test stash' },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });
@@ -217,14 +227,18 @@ describe('GitStashTool — 暂存管理', () => {
 describe('GitTagTool — 标签管理', () => {
   let nonGitDir: string;
 
-  beforeEach(() => { nonGitDir = createNonGitDir(); });
-  afterEach(() => { cleanup(nonGitDir); });
+  beforeEach(() => {
+    nonGitDir = createNonGitDir();
+  });
+  afterEach(() => {
+    cleanup(nonGitDir);
+  });
 
   it('非Git仓库应返回错误', async () => {
     const { GitTagTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitTagTool.execute(
       { action: 'list' },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不是 Git 仓库');
@@ -234,7 +248,7 @@ describe('GitTagTool — 标签管理', () => {
     const { GitTagTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitTagTool.execute(
       { action: 'list' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
   });
@@ -243,7 +257,7 @@ describe('GitTagTool — 标签管理', () => {
     const { GitTagTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitTagTool.execute(
       { action: 'create' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('请指定标签名称');
@@ -253,7 +267,7 @@ describe('GitTagTool — 标签管理', () => {
     const { GitTagTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitTagTool.execute(
       { action: 'delete' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('请指定标签名称');
@@ -263,7 +277,7 @@ describe('GitTagTool — 标签管理', () => {
     const { GitTagTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitTagTool.execute(
       { action: 'create', tagName: 'v999.999.999-invalid', message: 'test' },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     // 非Git仓库中无法创建标签
     expect(result.success).toBe(false);
@@ -273,7 +287,7 @@ describe('GitTagTool — 标签管理', () => {
     const { GitTagTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitTagTool.execute(
       { action: 'unknown_op' as any },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不支持的操作');
@@ -286,14 +300,18 @@ describe('GitTagTool — 标签管理', () => {
 describe('GitCherryPickTool — 挑选提交', () => {
   let nonGitDir: string;
 
-  beforeEach(() => { nonGitDir = createNonGitDir(); });
-  afterEach(() => { cleanup(nonGitDir); });
+  beforeEach(() => {
+    nonGitDir = createNonGitDir();
+  });
+  afterEach(() => {
+    cleanup(nonGitDir);
+  });
 
   it('非Git仓库应返回错误', async () => {
     const { GitCherryPickTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitCherryPickTool.execute(
       { commitHash: 'abc123' },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不是 Git 仓库');
@@ -303,7 +321,7 @@ describe('GitCherryPickTool — 挑选提交', () => {
     const { GitCherryPickTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitCherryPickTool.execute(
       { commitHash: '0000000000000000000000000000000000000000' },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     // Git 会报 "bad revision" 或 cherry-pick 失败
@@ -315,7 +333,7 @@ describe('GitCherryPickTool — 挑选提交', () => {
     // 用无效hash测试，验证参数传递（--no-commit 会拼接到命令中）
     const result = await GitCherryPickTool.execute(
       { commitHash: 'deadbeef', noCommit: true },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });
@@ -332,14 +350,18 @@ describe('GitCherryPickTool — 挑选提交', () => {
 describe('GitReflogTool — 引用日志', () => {
   let nonGitDir: string;
 
-  beforeEach(() => { nonGitDir = createNonGitDir(); });
-  afterEach(() => { cleanup(nonGitDir); });
+  beforeEach(() => {
+    nonGitDir = createNonGitDir();
+  });
+  afterEach(() => {
+    cleanup(nonGitDir);
+  });
 
   it('非Git仓库应返回错误', async () => {
     const { GitReflogTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitReflogTool.execute(
       { count: 5 },
-      { workspace: nonGitDir, sessionId: 'test' }
+      { workspace: nonGitDir, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不是 Git 仓库');
@@ -349,7 +371,7 @@ describe('GitReflogTool — 引用日志', () => {
     const { GitReflogTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitReflogTool.execute(
       { count: 3 },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     // reflog 输出格式: <hash> HEAD@{N}: <action>: <message>
@@ -361,7 +383,7 @@ describe('GitReflogTool — 引用日志', () => {
     const { GitReflogTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitReflogTool.execute(
       { count: 1 },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
   });
@@ -370,7 +392,7 @@ describe('GitReflogTool — 引用日志', () => {
     const { GitReflogTool } = await import('../tools/GitAdvancedTools.js');
     const result = await GitReflogTool.execute(
       { count: 2 },
-      { workspace: PROJECT_ROOT, sessionId: 'test' }
+      { workspace: PROJECT_ROOT, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.metadata?.count).toBe(2);
@@ -400,7 +422,7 @@ describe('GitAdvancedTools — 工具集数组', () => {
 
   it('工具名应遵循 git_* 命名约定', async () => {
     const { GitAdvancedTools } = await import('../tools/GitAdvancedTools.js');
-    const names = GitAdvancedTools.map(t => t.name);
+    const names = GitAdvancedTools.map((t) => t.name);
     for (const name of names) {
       expect(name).toMatch(/^git_/);
     }
@@ -408,7 +430,7 @@ describe('GitAdvancedTools — 工具集数组', () => {
 
   it('应包含所有 6 个已知工具', async () => {
     const { GitAdvancedTools } = await import('../tools/GitAdvancedTools.js');
-    const names = GitAdvancedTools.map(t => t.name).sort();
+    const names = GitAdvancedTools.map((t) => t.name).sort();
     expect(names).toEqual([
       'git_auto_commit',
       'git_cherry_pick',

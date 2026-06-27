@@ -96,10 +96,14 @@ describe('ToolRegistry', () => {
       }),
     });
 
-    const result = await registry.execute('test_tool', { message: 'hello' }, {
-      workspace: '/tmp',
-      sessionId: 'test',
-    });
+    const result = await registry.execute(
+      'test_tool',
+      { message: 'hello' },
+      {
+        workspace: '/tmp',
+        sessionId: 'test',
+      },
+    );
 
     expect(result.success).toBe(true);
     expect(result.content).toBe('Echo: hello');
@@ -109,10 +113,14 @@ describe('ToolRegistry', () => {
     const { ToolRegistry } = await import('../tools/ToolRegistry.js');
 
     const registry = new ToolRegistry();
-    const result = await registry.execute('unknown', {}, {
-      workspace: '/tmp',
-      sessionId: 'test',
-    });
+    const result = await registry.execute(
+      'unknown',
+      {},
+      {
+        workspace: '/tmp',
+        sessionId: 'test',
+      },
+    );
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('not found');
@@ -180,14 +188,16 @@ describe('OpenAICompatibleAdapter', () => {
       baseURL: 'https://api.deepseek.com',
       apiKey: 'test-key',
       apiFormat: 'openai',
-      models: [{
-        id: 'deepseek-chat',
-        name: 'V3',
-        maxContextTokens: 65536,
-        maxOutputTokens: 8192,
-        supportsTools: true,
-        supportsVision: false,
-      }],
+      models: [
+        {
+          id: 'deepseek-chat',
+          name: 'V3',
+          maxContextTokens: 65536,
+          maxOutputTokens: 8192,
+          supportsTools: true,
+          supportsVision: false,
+        },
+      ],
     });
 
     expect(adapter.currentModel).toBe('deepseek-chat');

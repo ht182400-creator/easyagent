@@ -43,7 +43,7 @@ function createUnsafePlugin(
   dir: string,
   name: string,
   entryContent: string,
-  entryFile = 'index.js'
+  entryFile = 'index.js',
 ): string {
   const pluginDir = join(dir, name);
   mkdirSync(pluginDir, { recursive: true });
@@ -76,7 +76,10 @@ describe('PluginManager - unsafe模式加载', () => {
 
   it('直接加载 .js 文件（unsafe模式）应成功加载插件', async () => {
     const filePath = join(tmpDir, 'simple-plugin.js');
-    createFile(tmpDir, 'simple-plugin.js', `
+    createFile(
+      tmpDir,
+      'simple-plugin.js',
+      `
       module.exports = {
         name: 'simple-plugin',
         version: '1.0.0',
@@ -84,7 +87,8 @@ describe('PluginManager - unsafe模式加载', () => {
         getTools() { return []; },
         getSkills() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const plugin = await pm.loadPlugin(filePath);
@@ -107,7 +111,7 @@ describe('PluginManager - unsafe模式加载', () => {
           getSkills() { return []; },
         };
       `,
-      'plugin.js'
+      'plugin.js',
     );
 
     const pm = new PluginManager();
@@ -120,22 +124,30 @@ describe('PluginManager - unsafe模式加载', () => {
     const pluginDir = join(tmpDir, 'priority-test');
     mkdirSync(pluginDir, { recursive: true });
     // plugin.js 和 index.js 同时存在，应优先选择 plugin.js
-    createFile(pluginDir, 'plugin.js', `
+    createFile(
+      pluginDir,
+      'plugin.js',
+      `
       module.exports = {
         name: 'from-plugin-js',
         version: '1.0.0',
         description: 'From plugin.js',
         getTools() { return []; },
       };
-    `);
-    createFile(pluginDir, 'index.js', `
+    `,
+    );
+    createFile(
+      pluginDir,
+      'index.js',
+      `
       module.exports = {
         name: 'from-index-js',
         version: '1.0.0',
         description: 'From index.js',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const plugin = await pm.loadPlugin(pluginDir);
@@ -154,7 +166,7 @@ describe('PluginManager - unsafe模式加载', () => {
           getTools() { return []; },
         };
       `,
-      'index.js'
+      'index.js',
     );
 
     const pm = new PluginManager();
@@ -174,7 +186,7 @@ describe('PluginManager - unsafe模式加载', () => {
           getTools() { return []; },
         };
       `,
-      'plugin.mjs'
+      'plugin.mjs',
     );
 
     const pm = new PluginManager();
@@ -192,9 +204,13 @@ describe('PluginManager - unsafe模式加载', () => {
 
   it('模块不包含有效插件名应抛出异常', async () => {
     const filePath = join(tmpDir, 'bad-plugin.js');
-    createFile(tmpDir, 'bad-plugin.js', `
+    createFile(
+      tmpDir,
+      'bad-plugin.js',
+      `
       module.exports = { version: '1.0.0' };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await expect(pm.loadPlugin(filePath)).rejects.toThrow('name');
@@ -203,7 +219,10 @@ describe('PluginManager - unsafe模式加载', () => {
   it('unsafe模式插件应有 register 回调被调用', async () => {
     let registerCalled = false;
     const filePath = join(tmpDir, 'register-plugin.js');
-    createFile(tmpDir, 'register-plugin.js', `
+    createFile(
+      tmpDir,
+      'register-plugin.js',
+      `
       module.exports = {
         name: 'register-plugin',
         version: '1.0.0',
@@ -216,7 +235,8 @@ describe('PluginManager - unsafe模式加载', () => {
         },
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -225,7 +245,10 @@ describe('PluginManager - unsafe模式加载', () => {
 
   it('unsafe模式插件通过 register 上下文注册工具', async () => {
     const filePath = join(tmpDir, 'ctx-register-plugin.js');
-    createFile(tmpDir, 'ctx-register-plugin.js', `
+    createFile(
+      tmpDir,
+      'ctx-register-plugin.js',
+      `
       module.exports = {
         name: 'ctx-register-plugin',
         version: '1.0.0',
@@ -242,7 +265,8 @@ describe('PluginManager - unsafe模式加载', () => {
         },
         getSkills() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const registry = new ToolRegistry();
@@ -256,7 +280,10 @@ describe('PluginManager - unsafe模式加载', () => {
 
   it('unsafe模式插件通过 getSkills 注册技能', async () => {
     const filePath = join(tmpDir, 'skill-plugin.js');
-    createFile(tmpDir, 'skill-plugin.js', `
+    createFile(
+      tmpDir,
+      'skill-plugin.js',
+      `
       module.exports = {
         name: 'skill-provider',
         version: '1.0.0',
@@ -271,7 +298,8 @@ describe('PluginManager - unsafe模式加载', () => {
           }];
         },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -285,7 +313,10 @@ describe('PluginManager - unsafe模式加载', () => {
 
   it('unsafe模式插件通过 getHooks 注册钩子', async () => {
     const filePath = join(tmpDir, 'hook-plugin.js');
-    createFile(tmpDir, 'hook-plugin.js', `
+    createFile(
+      tmpDir,
+      'hook-plugin.js',
+      `
       module.exports = {
         name: 'hook-provider',
         version: '1.0.0',
@@ -302,7 +333,8 @@ describe('PluginManager - unsafe模式加载', () => {
           }];
         },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -351,14 +383,18 @@ describe('PluginManager - loadPluginsFromDir 批量加载', () => {
   it('应跳过以点开头的目录', async () => {
     const dotDir = join(tmpDir, '.hidden-plugin');
     mkdirSync(dotDir, { recursive: true });
-    createFile(dotDir, 'index.js', `
+    createFile(
+      dotDir,
+      'index.js',
+      `
       module.exports = {
         name: 'hidden-plugin',
         version: '1.0.0',
         description: 'Hidden',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const result = await pm.loadPluginsFromDir(tmpDir);
@@ -367,22 +403,30 @@ describe('PluginManager - loadPluginsFromDir 批量加载', () => {
   });
 
   it('应批量加载多个插件子目录', async () => {
-    createUnsafePlugin(tmpDir, 'batch-plugin-1', `
+    createUnsafePlugin(
+      tmpDir,
+      'batch-plugin-1',
+      `
       module.exports = {
         name: 'batch-1',
         version: '1.0.0',
         description: 'Batch 1',
         getTools() { return []; },
       };
-    `);
-    createUnsafePlugin(tmpDir, 'batch-plugin-2', `
+    `,
+    );
+    createUnsafePlugin(
+      tmpDir,
+      'batch-plugin-2',
+      `
       module.exports = {
         name: 'batch-2',
         version: '1.0.0',
         description: 'Batch 2',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const result = await pm.loadPluginsFromDir(tmpDir);
@@ -393,14 +437,18 @@ describe('PluginManager - loadPluginsFromDir 批量加载', () => {
 
   it('个别插件加载失败不应影响其他插件', async () => {
     // 创建正常插件
-    createUnsafePlugin(tmpDir, 'good-plugin', `
+    createUnsafePlugin(
+      tmpDir,
+      'good-plugin',
+      `
       module.exports = {
         name: 'good-plugin',
         version: '1.0.0',
         description: 'Good',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     // 创建缺失入口的坏插件
     const badDir = join(tmpDir, 'bad-plugin');
@@ -415,17 +463,25 @@ describe('PluginManager - loadPluginsFromDir 批量加载', () => {
   });
 
   it('应跳过非目录条目（如文件）', async () => {
-    createFile(tmpDir, 'not-a-plugin.js', `
+    createFile(
+      tmpDir,
+      'not-a-plugin.js',
+      `
       module.exports = { name: 'not-plugin', version: '1.0.0' };
-    `);
-    createUnsafePlugin(tmpDir, 'real-plugin', `
+    `,
+    );
+    createUnsafePlugin(
+      tmpDir,
+      'real-plugin',
+      `
       module.exports = {
         name: 'real-plugin',
         version: '1.0.0',
         description: 'Real',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const result = await pm.loadPluginsFromDir(tmpDir);
@@ -465,14 +521,18 @@ describe('PluginManager - initialize 初始化', () => {
   it('initialize应加载内置插件目录', async () => {
     const builtinDir = join(tmpDir, 'builtins');
     mkdirSync(builtinDir, { recursive: true });
-    createUnsafePlugin(builtinDir, 'builtin-skill', `
+    createUnsafePlugin(
+      builtinDir,
+      'builtin-skill',
+      `
       module.exports = {
         name: 'builtin-skill',
         version: '1.0.0',
         description: 'Builtin skill plugin',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager({
       builtinPluginsDir: builtinDir,
@@ -485,14 +545,18 @@ describe('PluginManager - initialize 初始化', () => {
   it('initialize应加载用户插件目录', async () => {
     const userDir = join(tmpDir, 'user-plugins');
     mkdirSync(userDir, { recursive: true });
-    createUnsafePlugin(userDir, 'user-plugin', `
+    createUnsafePlugin(
+      userDir,
+      'user-plugin',
+      `
       module.exports = {
         name: 'user-plugin',
         version: '1.0.0',
         description: 'User plugin',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager({
       userPluginsDir: userDir,
@@ -504,14 +568,18 @@ describe('PluginManager - initialize 初始化', () => {
 
   it('initialize应加载额外插件路径', async () => {
     const extraFile = join(tmpDir, 'extra-plugin.js');
-    createFile(tmpDir, 'extra-plugin.js', `
+    createFile(
+      tmpDir,
+      'extra-plugin.js',
+      `
       module.exports = {
         name: 'extra-plugin',
         version: '1.0.0',
         description: 'Extra path plugin',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager({
       extraPluginPaths: [extraFile],
@@ -524,22 +592,30 @@ describe('PluginManager - initialize 初始化', () => {
   it('initialize应禁用指定插件', async () => {
     const builtinDir = join(tmpDir, 'builtins');
     mkdirSync(builtinDir, { recursive: true });
-    createUnsafePlugin(builtinDir, 'keep-me', `
+    createUnsafePlugin(
+      builtinDir,
+      'keep-me',
+      `
       module.exports = {
         name: 'keep-me',
         version: '1.0.0',
         description: 'Keep',
         getTools() { return []; },
       };
-    `);
-    createUnsafePlugin(builtinDir, 'disable-me', `
+    `,
+    );
+    createUnsafePlugin(
+      builtinDir,
+      'disable-me',
+      `
       module.exports = {
         name: 'disable-me',
         version: '1.0.0',
         description: 'Disable',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager({
       builtinPluginsDir: builtinDir,
@@ -570,31 +646,43 @@ describe('PluginManager - initialize 初始化', () => {
     mkdirSync(builtinDir, { recursive: true });
     mkdirSync(userDir, { recursive: true });
 
-    createUnsafePlugin(builtinDir, 'core-plugin', `
+    createUnsafePlugin(
+      builtinDir,
+      'core-plugin',
+      `
       module.exports = {
         name: 'core-plugin',
         version: '1.0.0',
         description: 'Core',
         getTools() { return []; },
       };
-    `);
-    createUnsafePlugin(userDir, 'my-plugin', `
+    `,
+    );
+    createUnsafePlugin(
+      userDir,
+      'my-plugin',
+      `
       module.exports = {
         name: 'my-plugin',
         version: '1.0.0',
         description: 'My',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
     const extraFile = join(tmpDir, 'third-party.js');
-    createFile(tmpDir, 'third-party.js', `
+    createFile(
+      tmpDir,
+      'third-party.js',
+      `
       module.exports = {
         name: 'third-party',
         version: '1.0.0',
         description: 'Third party',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager({
       builtinPluginsDir: builtinDir,
@@ -712,7 +800,10 @@ describe('PluginManager - 依赖检查', () => {
 
   it('unsafe模式插件依赖不满足应抛出异常', async () => {
     const filePath = join(tmpDir, 'dep-plugin.js');
-    createFile(tmpDir, 'dep-plugin.js', `
+    createFile(
+      tmpDir,
+      'dep-plugin.js',
+      `
       module.exports = {
         name: 'dependent-plugin',
         version: '1.0.0',
@@ -720,7 +811,8 @@ describe('PluginManager - 依赖检查', () => {
         dependencies: ['non-existent-base'],
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await expect(pm.loadPlugin(filePath)).rejects.toThrow('依赖');
@@ -730,18 +822,25 @@ describe('PluginManager - 依赖检查', () => {
   it('unsafe模式插件依赖已加载的插件应成功', async () => {
     // 先加载基础插件
     const basePath = join(tmpDir, 'base-plugin.js');
-    createFile(tmpDir, 'base-plugin.js', `
+    createFile(
+      tmpDir,
+      'base-plugin.js',
+      `
       module.exports = {
         name: 'base-plugin',
         version: '1.0.0',
         description: 'Base',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     // 依赖基础插件的插件
     const depPath = join(tmpDir, 'child-plugin.js');
-    createFile(tmpDir, 'child-plugin.js', `
+    createFile(
+      tmpDir,
+      'child-plugin.js',
+      `
       module.exports = {
         name: 'child-plugin',
         version: '1.0.0',
@@ -749,7 +848,8 @@ describe('PluginManager - 依赖检查', () => {
         dependencies: ['base-plugin'],
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(basePath);
@@ -763,15 +863,22 @@ describe('PluginManager - 依赖检查', () => {
   it('沙箱模式插件依赖不满足应抛出异常', async () => {
     const pluginDir = join(tmpDir, 'sandbox-dep');
     mkdirSync(pluginDir, { recursive: true });
-    createFile(pluginDir, 'manifest.json', JSON.stringify({
-      name: 'sandbox-dep-plugin',
-      version: '1.0.0',
-      description: 'Sandbox dep test',
-      main: 'index.js',
-      dependencies: ['non-existent-base'],
-      permissions: { fs: { read: ['**/*'] } },
-    }));
-    createFile(pluginDir, 'index.js', `
+    createFile(
+      pluginDir,
+      'manifest.json',
+      JSON.stringify({
+        name: 'sandbox-dep-plugin',
+        version: '1.0.0',
+        description: 'Sandbox dep test',
+        main: 'index.js',
+        dependencies: ['non-existent-base'],
+        permissions: { fs: { read: ['**/*'] } },
+      }),
+    );
+    createFile(
+      pluginDir,
+      'index.js',
+      `
       export default {
         name: 'sandbox-dep-plugin',
         version: '1.0.0',
@@ -781,7 +888,8 @@ describe('PluginManager - 依赖检查', () => {
         getSkills() { return []; },
         getHooks() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await expect(pm.loadPlugin(pluginDir)).rejects.toThrow('依赖');
@@ -814,7 +922,10 @@ describe('PluginManager - 完整卸载', () => {
 
   it('卸载插件应同时清理工具注册', async () => {
     const filePath = join(tmpDir, 'tool-cleanup.js');
-    createFile(tmpDir, 'tool-cleanup.js', `
+    createFile(
+      tmpDir,
+      'tool-cleanup.js',
+      `
       module.exports = {
         name: 'tool-cleanup',
         version: '1.0.0',
@@ -831,7 +942,8 @@ describe('PluginManager - 完整卸载', () => {
         },
         getSkills() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const registry = new ToolRegistry();
@@ -847,7 +959,10 @@ describe('PluginManager - 完整卸载', () => {
 
   it('卸载插件应清理已注册的技能', async () => {
     const filePath = join(tmpDir, 'skill-cleanup.js');
-    createFile(tmpDir, 'skill-cleanup.js', `
+    createFile(
+      tmpDir,
+      'skill-cleanup.js',
+      `
       module.exports = {
         name: 'skill-cleanup',
         version: '1.0.0',
@@ -861,7 +976,8 @@ describe('PluginManager - 完整卸载', () => {
           }];
         },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -873,7 +989,10 @@ describe('PluginManager - 完整卸载', () => {
 
   it('卸载插件应清理已注册的钩子（通过内部hooks Map验证）', async () => {
     const filePath = join(tmpDir, 'hook-cleanup.js');
-    createFile(tmpDir, 'hook-cleanup.js', `
+    createFile(
+      tmpDir,
+      'hook-cleanup.js',
+      `
       module.exports = {
         name: 'hook-cleanup',
         version: '1.0.0',
@@ -888,7 +1007,8 @@ describe('PluginManager - 完整卸载', () => {
           }];
         },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -917,7 +1037,10 @@ describe('PluginManager - 完整卸载', () => {
 
   it('卸载含技能的插件应同时注销技能关联的工具', async () => {
     const filePath = join(tmpDir, 'skill-tool-cleanup.js');
-    createFile(tmpDir, 'skill-tool-cleanup.js', `
+    createFile(
+      tmpDir,
+      'skill-tool-cleanup.js',
+      `
       module.exports = {
         name: 'skill-tool-cleanup',
         version: '1.0.0',
@@ -938,7 +1061,8 @@ describe('PluginManager - 完整卸载', () => {
           }];
         },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     const registry = new ToolRegistry();
@@ -955,14 +1079,18 @@ describe('PluginManager - 完整卸载', () => {
 
   it('unloadPlugin应同时清理loadModeMap', async () => {
     const filePath = join(tmpDir, 'mode-cleanup.js');
-    createFile(tmpDir, 'mode-cleanup.js', `
+    createFile(
+      tmpDir,
+      'mode-cleanup.js',
+      `
       module.exports = {
         name: 'mode-cleanup',
         version: '1.0.0',
         description: 'Mode cleanup',
         getTools() { return []; },
       };
-    `);
+    `,
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -1005,14 +1133,18 @@ describe('PluginManager - getLoadMode', () => {
 
     const filePath = join(tmpDir, 'unsafe-only.js');
     const { writeFileSync: wf } = await import('fs');
-    wf(filePath, `
+    wf(
+      filePath,
+      `
       module.exports = {
         name: 'unsafe-only',
         version: '1.0.0',
         description: 'Only unsafe',
         getTools() { return []; },
       };
-    `, 'utf-8');
+    `,
+      'utf-8',
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -1045,14 +1177,18 @@ describe('PluginManager - 边界条件', () => {
 
     const filePath = join(tmpDir, 'reload-me.js');
     const { writeFileSync: wf } = await import('fs');
-    wf(filePath, `
+    wf(
+      filePath,
+      `
       module.exports = {
         name: 'reload-me',
         version: '1.0.0',
         description: 'Reload test',
         getTools() { return []; },
       };
-    `, 'utf-8');
+    `,
+      'utf-8',
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -1069,13 +1205,19 @@ describe('PluginManager - 边界条件', () => {
     mkdirSync(pluginDir, { recursive: true });
 
     const { writeFileSync: wf } = await import('fs');
-    wf(join(pluginDir, 'manifest.json'), JSON.stringify({
-      name: 'reload-sandbox',
-      version: '1.0.0',
-      description: 'Reload sandbox test',
-      main: 'index.js',
-    }), 'utf-8');
-    wf(join(pluginDir, 'index.js'), `
+    wf(
+      join(pluginDir, 'manifest.json'),
+      JSON.stringify({
+        name: 'reload-sandbox',
+        version: '1.0.0',
+        description: 'Reload sandbox test',
+        main: 'index.js',
+      }),
+      'utf-8',
+    );
+    wf(
+      join(pluginDir, 'index.js'),
+      `
       export default {
         name: 'reload-sandbox',
         version: '1.0.0',
@@ -1084,7 +1226,9 @@ describe('PluginManager - 边界条件', () => {
         getSkills() { return []; },
         getHooks() { return []; },
       };
-    `, 'utf-8');
+    `,
+      'utf-8',
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(pluginDir);
@@ -1105,14 +1249,18 @@ describe('PluginManager - 边界条件', () => {
 
     const filePath = join(tmpDir, 'toggle-me.js');
     const { writeFileSync: wf } = await import('fs');
-    wf(filePath, `
+    wf(
+      filePath,
+      `
       module.exports = {
         name: 'toggle-me',
         version: '1.0.0',
         description: 'Toggle test',
         getTools() { return []; },
       };
-    `, 'utf-8');
+    `,
+      'utf-8',
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -1134,7 +1282,9 @@ describe('PluginManager - 边界条件', () => {
 
     const filePath = join(tmpDir, 'fields-plugin.js');
     const { writeFileSync: wf } = await import('fs');
-    wf(filePath, `
+    wf(
+      filePath,
+      `
       module.exports = {
         name: 'fields-plugin',
         version: '2.3.4',
@@ -1142,7 +1292,9 @@ describe('PluginManager - 边界条件', () => {
         author: 'Test Author',
         getTools() { return []; },
       };
-    `, 'utf-8');
+    `,
+      'utf-8',
+    );
 
     const pm = new PluginManager();
     await pm.loadPlugin(filePath);
@@ -1167,14 +1319,18 @@ describe('PluginManager - 边界条件', () => {
 
     const { writeFileSync: wf } = await import('fs');
     for (let i = 1; i <= 3; i++) {
-      wf(join(tmpDir, `plugin-${i}.js`), `
+      wf(
+        join(tmpDir, `plugin-${i}.js`),
+        `
         module.exports = {
           name: 'destroy-${i}',
           version: '1.0.0',
           description: 'Destroy ${i}',
           getTools() { return []; },
         };
-      `, 'utf-8');
+      `,
+        'utf-8',
+      );
     }
 
     const pm = new PluginManager();

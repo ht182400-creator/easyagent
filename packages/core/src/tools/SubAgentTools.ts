@@ -6,10 +6,7 @@
 import type { ITool } from './ToolRegistry.js';
 import type { ToolResult } from '../types/index.js';
 import { logger } from '../utils/logger.js';
-import {
-  MultiAgentCoordinator,
-  PREDEFINED_ROLES,
-} from '../agent/MultiAgentCoordinator.js';
+import { MultiAgentCoordinator, PREDEFINED_ROLES } from '../agent/MultiAgentCoordinator.js';
 
 /** 全局协调器单例 */
 let _coordinator: MultiAgentCoordinator | null = null;
@@ -41,7 +38,8 @@ export const DelegateTaskTool: ITool = {
     properties: {
       agentType: {
         type: 'string',
-        description: '子Agent类型（可选，不指定则自动选择）: architect/coder/reviewer/tester/devops/docs',
+        description:
+          '子Agent类型（可选，不指定则自动选择）: architect/coder/reviewer/tester/devops/docs',
         enum: ['architect', 'coder', 'reviewer', 'tester', 'devops', 'docs'],
       },
       task: { type: 'string', description: '委派给子Agent的具体任务描述，越详细越好' },
@@ -59,11 +57,11 @@ export const DelegateTaskTool: ITool = {
 
       // 如果指定了agent type，直接分配给该agent
       if (agentType) {
-        const role = PREDEFINED_ROLES.find(r => r.id === agentType);
+        const role = PREDEFINED_ROLES.find((r) => r.id === agentType);
         if (!role) {
           return {
             success: false,
-            content: `未知的子Agent类型: "${agentType}"。可用类型: ${PREDEFINED_ROLES.map(r => r.id).join(', ')}`,
+            content: `未知的子Agent类型: "${agentType}"。可用类型: ${PREDEFINED_ROLES.map((r) => r.id).join(', ')}`,
           };
         }
 
@@ -78,7 +76,7 @@ export const DelegateTaskTool: ITool = {
             ``,
             `主Agent: ${role.name}`,
             `子任务数: ${collabTask.subTasks.length}`,
-            `参与Agent: ${collabTask.agents.map(id => coordinator.getAgentStatus().find(a => a.id === id)?.name || id).join(', ')}`,
+            `参与Agent: ${collabTask.agents.map((id) => coordinator.getAgentStatus().find((a) => a.id === id)?.name || id).join(', ')}`,
             ``,
             report,
             `📝 注意: 生产环境需要配置Agent引擎以执行实际推理。当前为协调器调度模拟。`,
@@ -103,7 +101,7 @@ export const DelegateTaskTool: ITool = {
           `🤖 任务已委派给多Agent协作系统`,
           ``,
           `自动任务分解: ${collabTask.subTasks.length} 个子任务`,
-          `参与Agent: ${collabTask.agents.map(id => coordinator.getAgentStatus().find(a => a.id === id)?.name || id).join(', ')}`,
+          `参与Agent: ${collabTask.agents.map((id) => coordinator.getAgentStatus().find((a) => a.id === id)?.name || id).join(', ')}`,
           ``,
           report,
           `📝 注意: 生产环境需要配置Agent引擎以执行实际推理。当前为协调器调度模拟。`,
@@ -128,7 +126,8 @@ export const DelegateTaskTool: ITool = {
  */
 export const ListSubAgentsTool: ITool = {
   name: 'list_subagents',
-  description: '列出所有可用的子Agent角色及其能力和描述。帮助选择最适合的子Agent来处理特定任务。现在支持6个专业角色：架构师、开发者、审查员、测试、DevOps、文档员。',
+  description:
+    '列出所有可用的子Agent角色及其能力和描述。帮助选择最适合的子Agent来处理特定任务。现在支持6个专业角色：架构师、开发者、审查员、测试、DevOps、文档员。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
@@ -139,9 +138,10 @@ export const ListSubAgentsTool: ITool = {
     const coordinator = getCoordinator();
     const agentStatus = coordinator.getAgentStatus();
 
-    const agentList = PREDEFINED_ROLES.map(role => {
-      const status = agentStatus.find(a => a.id === role.id);
-      const statusIcon = status?.status === 'idle' ? '⏳空闲' : status?.status === 'busy' ? '🔄忙碌' : '❌错误';
+    const agentList = PREDEFINED_ROLES.map((role) => {
+      const status = agentStatus.find((a) => a.id === role.id);
+      const statusIcon =
+        status?.status === 'idle' ? '⏳空闲' : status?.status === 'busy' ? '🔄忙碌' : '❌错误';
       return [
         `### ${role.name} (${role.id})`,
         role.description,
@@ -169,7 +169,7 @@ export const ListSubAgentsTool: ITool = {
       ].join('\n'),
       metadata: {
         count: PREDEFINED_ROLES.length,
-        types: PREDEFINED_ROLES.map(r => r.id),
+        types: PREDEFINED_ROLES.map((r) => r.id),
         agentStatus,
       },
     };
@@ -203,7 +203,10 @@ export const InstallRuntimeTool: ITool = {
 
       // 验证版本格式
       if (!/^\d+\.\d+\.\d+$/.test(version)) {
-        return { success: false, content: `无效的版本格式: "${version}"。格式应为 "主版本.次版本.修订版"，如 "20.19.0"。` };
+        return {
+          success: false,
+          content: `无效的版本格式: "${version}"。格式应为 "主版本.次版本.修订版"，如 "20.19.0"。`,
+        };
       }
 
       const names: Record<string, string> = { node: 'Node.js', python: 'Python' };
@@ -215,7 +218,9 @@ export const InstallRuntimeTool: ITool = {
         content: [
           `📦 ${name} ${version} 安装请求`,
           ``,
-          type === 'node' ? `当前Node.js版本: ${currentVersion}` : `当前Python: ${currentVersion || '(未检测)'}`,
+          type === 'node'
+            ? `当前Node.js版本: ${currentVersion}`
+            : `当前Python: ${currentVersion || '(未检测)'}`,
           `请求版本: ${version}`,
           ``,
           `⚠ 实际安装需要通过包管理器完成:`,

@@ -121,13 +121,13 @@ export interface ISkill {
  * 钩子事件类型
  */
 export type HookEvent =
-  | 'beforeMessage'    // 用户消息发送前
-  | 'afterMessage'     // AI 回复完成后
-  | 'beforeToolCall'   // 工具调用前
-  | 'afterToolCall'    // 工具调用后
-  | 'onError'          // 发生错误时
-  | 'onStartup'        // 系统启动时
-  | 'onShutdown';      // 系统关闭时
+  | 'beforeMessage' // 用户消息发送前
+  | 'afterMessage' // AI 回复完成后
+  | 'beforeToolCall' // 工具调用前
+  | 'afterToolCall' // 工具调用后
+  | 'onError' // 发生错误时
+  | 'onStartup' // 系统启动时
+  | 'onShutdown'; // 系统关闭时
 
 /**
  * 钩子上下文

@@ -1,7 +1,7 @@
 /**
  * ModelRegistry 单元测试
  * 覆盖：四级降级链、缓存机制、单例模式、查询API、强制刷新、并发初始化
- * 
+ *
  * 策略：通过 mock fs 操作阻断缓存持久化，确保测试间隔离
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -17,16 +17,18 @@ function createMockCatalog(providerId = 'openai', version = '1.0.0') {
   return {
     version,
     generatedAt: new Date().toISOString(),
-    providers: [{
-      provider: providerId,
-      providerName: 'TestProvider',
-      baseURL: 'https://api.test.com/v1',
-      apiKeyEnv: 'TEST_API_KEY',
-      apiFormat: 'openai' as const,
-      defaultModel: 'test-model',
-      models: [{ provider: providerId, model: 'test-model-1' }],
-      updatedAt: new Date().toISOString(),
-    }],
+    providers: [
+      {
+        provider: providerId,
+        providerName: 'TestProvider',
+        baseURL: 'https://api.test.com/v1',
+        apiKeyEnv: 'TEST_API_KEY',
+        apiFormat: 'openai' as const,
+        defaultModel: 'test-model',
+        models: [{ provider: providerId, model: 'test-model-1' }],
+        updatedAt: new Date().toISOString(),
+      },
+    ],
   };
 }
 
@@ -145,10 +147,13 @@ describe('ModelRegistry — 未初始化状态', () => {
 describe('ModelRegistry — 初始化和查询', () => {
   it('远程下载成功后应 ready + 数据可查询', async () => {
     const mockCatalog = createMockCatalog('deepseek', '2.0.0');
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify(mockCatalog),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => JSON.stringify(mockCatalog),
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -163,10 +168,13 @@ describe('ModelRegistry — 初始化和查询', () => {
   });
 
   it('getProviderEntry() 返回完整条目信息', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify(createMockCatalog('openai', '1.0.0')),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => JSON.stringify(createMockCatalog('openai', '1.0.0')),
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -179,10 +187,13 @@ describe('ModelRegistry — 初始化和查询', () => {
   });
 
   it('getAllEntries() 和 getCatalog() 返回完整数据', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify(createMockCatalog('qwen', '3.0.0')),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => JSON.stringify(createMockCatalog('qwen', '3.0.0')),
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -192,10 +203,13 @@ describe('ModelRegistry — 初始化和查询', () => {
   });
 
   it('getVersion() 和 getGeneratedAt() 返回正确值', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify(createMockCatalog('zhipu', '4.0.0')),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => JSON.stringify(createMockCatalog('zhipu', '4.0.0')),
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -212,19 +226,18 @@ describe('ModelRegistry — 初始化和查询', () => {
 describe('ModelRegistry — 并发初始化防护', () => {
   it('多次同时调用 initialize() 只触发一次下载链', async () => {
     let fetchCalls = 0;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(async () => {
-      fetchCalls++;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('deepseek')) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async () => {
+        fetchCalls++;
+        return { ok: true, text: async () => JSON.stringify(createMockCatalog('deepseek')) };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     const registry = getModelRegistry();
 
-    await Promise.all([
-      registry.initialize(),
-      registry.initialize(),
-      registry.initialize(),
-    ]);
+    await Promise.all([registry.initialize(), registry.initialize(), registry.initialize()]);
 
     // 主URL成功就不会尝试备用URL，所以只有1次
     expect(fetchCalls).toBe(1);
@@ -238,10 +251,13 @@ describe('ModelRegistry — 并发初始化防护', () => {
 describe('ModelRegistry — 强制刷新', () => {
   it('forceRefresh=true 应重新下载（跳过缓存检查）', async () => {
     let fetchCalls = 0;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(async () => {
-      fetchCalls++;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('qwen')) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async () => {
+        fetchCalls++;
+        return { ok: true, text: async () => JSON.stringify(createMockCatalog('qwen')) };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     const registry = getModelRegistry();
@@ -257,10 +273,16 @@ describe('ModelRegistry — 强制刷新', () => {
 
   it('refresh() 应重新下载并返回最新版本', async () => {
     let callNum = 0;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(async () => {
-      callNum++;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('qwen', `v${callNum}.0.0`)) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async () => {
+        callNum++;
+        return {
+          ok: true,
+          text: async () => JSON.stringify(createMockCatalog('qwen', `v${callNum}.0.0`)),
+        };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     const registry = getModelRegistry();
@@ -278,27 +300,40 @@ describe('ModelRegistry — 强制刷新', () => {
 // ================================================================
 describe('ModelRegistry — 下载容错', () => {
   it('HTTP 404 应不崩溃', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: false, status: 404, text: async () => 'not found',
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        text: async () => 'not found',
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await expect(getModelRegistry().initialize()).resolves.toBeUndefined();
   });
 
   it('JSON 解析失败应优雅处理', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true, text: async () => 'not valid {{{ json',
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => 'not valid {{{ json',
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await expect(getModelRegistry().initialize()).resolves.toBeUndefined();
   });
 
   it('缺少 providers 字段应优雅处理', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true, text: async () => JSON.stringify({ version: '1.0', providers: null }),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => JSON.stringify({ version: '1.0', providers: null }),
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -306,9 +341,10 @@ describe('ModelRegistry — 下载容错', () => {
   });
 
   it('AbortError 应被捕获', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(
-      new DOMException('The operation was aborted', 'AbortError')
-    ));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new DOMException('The operation was aborted', 'AbortError')),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await expect(getModelRegistry().initialize()).resolves.toBeUndefined();
@@ -329,17 +365,23 @@ describe('ModelRegistry — 缓存 TTL 边界', () => {
   it('缓存距今 23h 应直接使用，不发起网络请求', async () => {
     const catalog23h = createMockCatalog('openai', 'almost-expired');
     const meta23h = {
-      downloadedAt: Date.now() - 23 * 60 * 60 * 1000,  // 23小时前
+      downloadedAt: Date.now() - 23 * 60 * 60 * 1000, // 23小时前
       source: 'test',
       catalog: catalog23h,
     };
     mockCacheContent = JSON.stringify(meta23h);
 
     let fetchCalled = false;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      fetchCalled = true;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('openai', 'remote-new')) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        fetchCalled = true;
+        return {
+          ok: true,
+          text: async () => JSON.stringify(createMockCatalog('openai', 'remote-new')),
+        };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -351,18 +393,21 @@ describe('ModelRegistry — 缓存 TTL 边界', () => {
   it('缓存距今 25h 应重新下载', async () => {
     const catalog25h = createMockCatalog('openai', 'expired');
     const meta25h = {
-      downloadedAt: Date.now() - 25 * 60 * 60 * 1000,  // 25小时前
+      downloadedAt: Date.now() - 25 * 60 * 60 * 1000, // 25小时前
       source: 'test',
       catalog: catalog25h,
     };
     mockCacheContent = JSON.stringify(meta25h);
 
     let requestedVersion = '';
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      const catalog = createMockCatalog('openai', 'fresh-3.0');
-      requestedVersion = catalog.version;
-      return { ok: true, text: async () => JSON.stringify(catalog) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        const catalog = createMockCatalog('openai', 'fresh-3.0');
+        requestedVersion = catalog.version;
+        return { ok: true, text: async () => JSON.stringify(catalog) };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -381,10 +426,16 @@ describe('ModelRegistry — 缓存 TTL 边界', () => {
     mockCacheContent = JSON.stringify(meta24h);
 
     let fetchCalled = false;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      fetchCalled = true;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('openai', 'should-not-use')) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        fetchCalled = true;
+        return {
+          ok: true,
+          text: async () => JSON.stringify(createMockCatalog('openai', 'should-not-use')),
+        };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -396,17 +447,23 @@ describe('ModelRegistry — 缓存 TTL 边界', () => {
   it('缓存距今 24h+1ms 应过期重新下载', async () => {
     const catalog24h1ms = createMockCatalog('openai', 'just-expired');
     const meta24h1ms = {
-      downloadedAt: Date.now() - 24 * 60 * 60 * 1000 - 1,  // 24小时+1ms
+      downloadedAt: Date.now() - 24 * 60 * 60 * 1000 - 1, // 24小时+1ms
       source: 'test',
       catalog: catalog24h1ms,
     };
     mockCacheContent = JSON.stringify(meta24h1ms);
 
     let fetchCalled = false;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      fetchCalled = true;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('openai', 'refreshed')) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        fetchCalled = true;
+        return {
+          ok: true,
+          text: async () => JSON.stringify(createMockCatalog('openai', 'refreshed')),
+        };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -431,10 +488,16 @@ describe('ModelRegistry — 缓存读写', () => {
     mockCacheContent = JSON.stringify(cacheMeta);
 
     let fetchCalled = false;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      fetchCalled = true;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('openai', 'remote-2.0')) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        fetchCalled = true;
+        return {
+          ok: true,
+          text: async () => JSON.stringify(createMockCatalog('openai', 'remote-2.0')),
+        };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -455,10 +518,16 @@ describe('ModelRegistry — 缓存读写', () => {
     mockCacheContent = JSON.stringify(cacheMeta);
 
     let fetchCalled = false;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      fetchCalled = true;
-      return { ok: true, text: async () => JSON.stringify(createMockCatalog('openai', 'new-2.0')) };
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        fetchCalled = true;
+        return {
+          ok: true,
+          text: async () => JSON.stringify(createMockCatalog('openai', 'new-2.0')),
+        };
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -493,10 +562,13 @@ describe('ModelRegistry — 缓存读写', () => {
 // ================================================================
 describe('ModelRegistry — 类型安全', () => {
   it('getModels 返回正确的模型结构', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify(createMockCatalog('openai', '1.0')),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => JSON.stringify(createMockCatalog('openai', '1.0')),
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();
@@ -511,10 +583,13 @@ describe('ModelRegistry — 类型安全', () => {
   });
 
   it('ProviderEntry 结构完整', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => JSON.stringify(createMockCatalog('zhipu', '5.0')),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: async () => JSON.stringify(createMockCatalog('zhipu', '5.0')),
+      }),
+    );
 
     const { getModelRegistry } = await import('../config/ModelRegistry.js');
     await getModelRegistry().initialize();

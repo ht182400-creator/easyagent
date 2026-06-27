@@ -1,10 +1,10 @@
 import type { FC } from 'react';
 interface AppProps {
-    /** 初始化信息 */
-    initInfo: {
-        model: string;
-        tools: number;
-    };
+  /** 初始化信息 */
+  initInfo: {
+    model: string;
+    tools: number;
+  };
 }
 /**
  * 主应用 - CLI交互界面

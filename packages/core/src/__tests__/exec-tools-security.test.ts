@@ -15,7 +15,11 @@ function createSafeWorkspace(): string {
 }
 
 function cleanupWorkspace(dir: string) {
-  try { rmSync(dir, { recursive: true, force: true }); } catch (_) { /* 清理失败不阻塞测试 */ }
+  try {
+    rmSync(dir, { recursive: true, force: true });
+  } catch (_) {
+    /* 清理失败不阻塞测试 */
+  }
 }
 
 // ================================================================
@@ -23,14 +27,14 @@ function cleanupWorkspace(dir: string) {
 // ================================================================
 describe('ExecTool — 危险命令检测 (isDangerous)', () => {
   let ws: string;
-  beforeEach(() => { ws = createSafeWorkspace(); });
+  beforeEach(() => {
+    ws = createSafeWorkspace();
+  });
 
   /** 辅助：执行命令并验证被阻止 */
   async function expectBlocked(command: string) {
     const { ExecTool } = await import('../tools/ExecTools.js');
-    const result = await ExecTool.execute(
-      { command }, { workspace: ws, sessionId: 'test' }
-    );
+    const result = await ExecTool.execute({ command }, { workspace: ws, sessionId: 'test' });
     expect(result.success).toBe(false);
     expect(result.error).toBe('DANGEROUS_COMMAND');
   }
@@ -38,9 +42,7 @@ describe('ExecTool — 危险命令检测 (isDangerous)', () => {
   /** 辅助：执行命令并验证通过（非危险命令） */
   async function expectAllowed(command: string) {
     const { ExecTool } = await import('../tools/ExecTools.js');
-    const result = await ExecTool.execute(
-      { command }, { workspace: ws, sessionId: 'test' }
-    );
+    const result = await ExecTool.execute({ command }, { workspace: ws, sessionId: 'test' });
     expect(result.error).not.toBe('DANGEROUS_COMMAND');
   }
 
@@ -75,19 +77,23 @@ describe('ExecTool — 危险命令检测 (isDangerous)', () => {
 // ================================================================
 describe('ExecTool — 命令注入绕过', () => {
   let ws: string;
-  beforeEach(() => { ws = createSafeWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createSafeWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   /**
    * 验证危险命令在添加无害前缀后仍被阻止
-   * 攻击者可能尝试 echo safe; rm -rf / 
+   * 攻击者可能尝试 echo safe; rm -rf /
    */
   it('命令分隔符 ; 注入应被检测', async () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     // "echo hello; rm -rf /" — 包含了危险模式 rm -rf /
     const result = await ExecTool.execute(
       { command: 'echo hello; rm -rf /' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     // 只要正则匹配到危险模式就应该阻止
     expect(result.error).toBe('DANGEROUS_COMMAND');
@@ -97,7 +103,7 @@ describe('ExecTool — 命令注入绕过', () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const result = await ExecTool.execute(
       { command: 'cd /tmp && chmod 777 secret' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.error).toBe('DANGEROUS_COMMAND');
   });
@@ -106,7 +112,7 @@ describe('ExecTool — 命令注入绕过', () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const result = await ExecTool.execute(
       { command: 'echo data | sudo rm -rf /var/log' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.error).toBe('DANGEROUS_COMMAND');
   });
@@ -116,7 +122,7 @@ describe('ExecTool — 命令注入绕过', () => {
     // del /f /s C:\ 模式使用 /i 标志，大小写不敏感
     const result = await ExecTool.execute(
       { command: 'DEL /F /S C:\\Windows' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.error).toBe('DANGEROUS_COMMAND');
   });
@@ -125,7 +131,7 @@ describe('ExecTool — 命令注入绕过', () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const result = await ExecTool.execute(
       { command: 'FORMAT E: /Q' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.error).toBe('DANGEROUS_COMMAND');
   });
@@ -134,7 +140,7 @@ describe('ExecTool — 命令注入绕过', () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const result = await ExecTool.execute(
       { command: 'echo test-output-42', timeout: 5000 },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('test-output-42');
@@ -144,7 +150,7 @@ describe('ExecTool — 命令注入绕过', () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const result = await ExecTool.execute(
       { command: 'non_existent_cmd_xyz_42', timeout: 3000 },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('命令执行失败');
@@ -156,13 +162,17 @@ describe('ExecTool — 命令注入绕过', () => {
 // ================================================================
 describe('Git工具 — 参数注入漏洞', () => {
   let ws: string;
-  beforeEach(() => { ws = createSafeWorkspace(); });
-  afterEach(() => { cleanupWorkspace(ws); });
+  beforeEach(() => {
+    ws = createSafeWorkspace();
+  });
+  afterEach(() => {
+    cleanupWorkspace(ws);
+  });
 
   /**
    * GitBranchTool.create: branchName 直接拼接到 `git branch ${branchName}`
    * 在 PowerShell 中 `;` 是命令分隔符，可能导致命令注入
-   * 
+   *
    * 注意：这些测试验证的是安全性，而非 Git 操作本身
    * 如果注入被成功阻止（通过抛出错误），则安全
    */
@@ -171,7 +181,7 @@ describe('Git工具 — 参数注入漏洞', () => {
     // 尝试注入: branchName = "safe; echo injected"
     const result = await GitBranchTool.execute(
       { action: 'create', branchName: 'safe; echo injected' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     // 预期：要么被阻止(success=false)，要么注入的命令不在Git仓库中所以失败(success=false)
     // 关键是确保不会输出 "injected" 到 content
@@ -186,7 +196,7 @@ describe('Git工具 — 参数注入漏洞', () => {
     const { GitBranchTool } = await import('../tools/ExecTools.js');
     const result = await GitBranchTool.execute(
       { action: 'switch', branchName: 'main && echo pwned' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     // 不应成功切换到注入的分支
     if (result.success) {
@@ -203,7 +213,7 @@ describe('Git工具 — 参数注入漏洞', () => {
     const { GitBranchTool } = await import('../tools/ExecTools.js');
     const result = await GitBranchTool.execute(
       { action: 'delete', branchName: 'test | echo bad' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     // 期望：注入应被阻止
     // 实际：Windows/PowerShell下 exit code 取最后一个命令 → echo bad 成功 → 整体退出码0
@@ -218,7 +228,7 @@ describe('Git工具 — 参数注入漏洞', () => {
     // 当前：因非 git 仓库导致 git 命令失败，注入未实际执行
     const result = await GitBranchTool.execute(
       { action: 'create', branchName: 'x; sudo rm -rf /' },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     // 非git仓库中操作失败（被git命令错误阻断，而非安全检查）
     expect(result.success).toBe(false);
@@ -236,7 +246,7 @@ describe('Git工具 — 参数注入漏洞', () => {
     // 在 git 仓库中 `git add safe.txt ; echo injected` 将执行 echo 命令
     const result = await GitCommitTool.execute(
       { message: 'test', files: ['safe.txt', '; echo injected'] },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     // 非git仓库中操作失败（被git命令错误阻断，而非安全检查）
     expect(result.success).toBe(false);
@@ -250,7 +260,7 @@ describe('Git工具 — 参数注入漏洞', () => {
     // 但其他 shell 元字符没有处理
     const result = await GitCommitTool.execute(
       { message: 'test `rm -rf /` backtick', files: [] },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     // 在非Git仓库中会失败
     expect(result.success).toBe(false);
@@ -262,19 +272,21 @@ describe('Git工具 — 参数注入漏洞', () => {
 // ================================================================
 describe('ExecTool — 错误处理', () => {
   let ws: string;
-  beforeEach(() => { ws = createSafeWorkspace(); });
+  beforeEach(() => {
+    ws = createSafeWorkspace();
+  });
 
   it('超时应返回有意义错误', async () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     // 在Windows上尝试用 ping 做超时，Unix上用 sleep
     const isWindows = process.platform === 'win32';
     const cmd = isWindows
-      ? 'ping -n 10 127.0.0.1'  // Windows: 约10秒
-      : 'sleep 5';               // Unix: 5秒
+      ? 'ping -n 10 127.0.0.1' // Windows: 约10秒
+      : 'sleep 5'; // Unix: 5秒
 
     const result = await ExecTool.execute(
       { command: cmd, timeout: 1000 }, // 1秒超时
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });
@@ -282,13 +294,11 @@ describe('ExecTool — 错误处理', () => {
   it('退出码非零应返回失败', async () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const isWindows = process.platform === 'win32';
-    const cmd = isWindows
-      ? 'exit 1'
-      : 'bash -c "exit 1"';
+    const cmd = isWindows ? 'exit 1' : 'bash -c "exit 1"';
 
     const result = await ExecTool.execute(
       { command: cmd, timeout: 5000 },
-      { workspace: ws, sessionId: 'test' }
+      { workspace: ws, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });

@@ -34,7 +34,7 @@ export function useIsDesktop(): boolean {
 export async function apiFetch<T = unknown>(
   path: string,
   apiBase: string,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<T> {
   return performFetch<T>(path, apiBase, options, 0);
 }
@@ -44,7 +44,7 @@ async function performFetch<T = unknown>(
   path: string,
   apiBase: string,
   options?: RequestInit,
-  retryCount: number = 0
+  retryCount: number = 0,
 ): Promise<T> {
   const url = path.startsWith('http') ? path : `${apiBase}${path}`;
 

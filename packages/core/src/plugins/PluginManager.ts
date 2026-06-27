@@ -94,10 +94,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
    * @param options.forceMode 强制使用指定加载模式
    * @returns 插件实例（unsafe 模式返回真实实例，sandbox 模式返回包装对象）
    */
-  async loadPlugin(
-    pluginPath: string,
-    options?: { forceMode?: PluginLoadMode }
-  ): Promise<IPlugin> {
+  async loadPlugin(pluginPath: string, options?: { forceMode?: PluginLoadMode }): Promise<IPlugin> {
     const resolvedPath = resolve(pluginPath);
     logger.info({ path: resolvedPath }, '加载插件');
 
@@ -162,10 +159,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
     if (manifest.permissions) {
       const dangerous = getDangerousPermissions(manifest.permissions);
       for (const d of dangerous) {
-        logger.warn(
-          { plugin: manifest.name, permission: d.key },
-          `危险权限: ${d.warning}`
-        );
+        logger.warn({ plugin: manifest.name, permission: d.key }, `危险权限: ${d.warning}`);
       }
 
       // 如果没有声明权限，默认使用只读
@@ -246,7 +240,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
     this.emit('pluginLoaded', manifest.name);
     logger.info(
       { plugin: manifest.name, version: manifest.version, mode: 'sandbox' },
-      '插件(沙箱)加载成功'
+      '插件(沙箱)加载成功',
     );
 
     return pluginWrapper;
@@ -319,10 +313,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
     this.loadModeMap.set(plugin.name, 'unsafe');
 
     this.emit('pluginLoaded', plugin.name);
-    logger.info(
-      { plugin: plugin.name, version: plugin.version },
-      '插件加载成功'
-    );
+    logger.info({ plugin: plugin.name, version: plugin.version }, '插件加载成功');
 
     return plugin;
   }
@@ -614,9 +605,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
     const hooks = this.hooks.get(event) || [];
 
     // 按优先级排序
-    const sorted = [...hooks].sort(
-      (a, b) => (a.priority ?? 100) - (b.priority ?? 100)
-    );
+    const sorted = [...hooks].sort((a, b) => (a.priority ?? 100) - (b.priority ?? 100));
 
     let currentContext = { ...context };
     for (const hook of sorted) {
@@ -627,10 +616,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
         currentContext = await hook.handler(currentContext);
         if (currentContext.preventDefault) break;
       } catch (error) {
-        logger.error(
-          { event, error: (error as Error).message },
-          '钩子执行失败'
-        );
+        logger.error({ event, error: (error as Error).message }, '钩子执行失败');
       }
     }
 
@@ -679,7 +665,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
     const existing = this.hooks.get(hook.event) || [];
     this.hooks.set(
       hook.event,
-      existing.filter((h) => h !== hook)
+      existing.filter((h) => h !== hook),
     );
   }
 
@@ -711,10 +697,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
       registerTools(tools: ITool[]): void {
         if (registry) {
           registry.registerAll(tools);
-          logger.info(
-            { plugin: pluginName, count: tools.length },
-            '插件批量注册工具'
-          );
+          logger.info({ plugin: pluginName, count: tools.length }, '插件批量注册工具');
         }
       },
       getConfig(): Record<string, unknown> {

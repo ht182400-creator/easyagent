@@ -196,9 +196,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
 
       set((s) => ({
         installed: [...s.installed, newPlugin],
-        marketplace: s.marketplace.map((p) =>
-          p.name === name ? { ...p, installed: true } : p
-        ),
+        marketplace: s.marketplace.map((p) => (p.name === name ? { ...p, installed: true } : p)),
         loading: false,
       }));
 
@@ -218,9 +216,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
   uninstallPlugin: async (name) => {
     set((s) => ({
       installed: s.installed.filter((p) => p.name !== name),
-      marketplace: s.marketplace.map((p) =>
-        p.name === name ? { ...p, installed: false } : p
-      ),
+      marketplace: s.marketplace.map((p) => (p.name === name ? { ...p, installed: false } : p)),
     }));
 
     useAppStore.getState().addNotification({
@@ -231,9 +227,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
 
   togglePlugin: async (name, enabled) => {
     set((s) => ({
-      installed: s.installed.map((p) =>
-        p.name === name ? { ...p, enabled } : p
-      ),
+      installed: s.installed.map((p) => (p.name === name ? { ...p, enabled } : p)),
     }));
 
     useAppStore.getState().addNotification({
@@ -249,9 +243,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
 
   addPluginDir: (dir) =>
     set((s) => ({
-      pluginDirs: s.pluginDirs.includes(dir)
-        ? s.pluginDirs
-        : [...s.pluginDirs, dir],
+      pluginDirs: s.pluginDirs.includes(dir) ? s.pluginDirs : [...s.pluginDirs, dir],
     })),
 
   removePluginDir: (dir) =>

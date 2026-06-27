@@ -121,7 +121,9 @@ describe('主进程 - IPC Handlers', () => {
 
 describe('主进程 - 版本格式验证', () => {
   function isValidSemver(version: string): boolean {
-    return /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[a-zA-Z\d]+(\.[a-zA-Z\d]+)*)?(\+[a-zA-Z\d]+(\.[a-zA-Z\d]+)*)?$/.test(version);
+    return /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[a-zA-Z\d]+(\.[a-zA-Z\d]+)*)?(\+[a-zA-Z\d]+(\.[a-zA-Z\d]+)*)?$/.test(
+      version,
+    );
   }
 
   it('0.3.0 是有效的 semver 版本', () => {

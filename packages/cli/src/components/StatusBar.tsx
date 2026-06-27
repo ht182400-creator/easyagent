@@ -34,12 +34,7 @@ const STATE_MAP: Record<AgentState, { color: string; text: string; icon: string 
  * 状态栏 - 底部信息栏
  * 显示模型/工具/状态/Token信息
  */
-export const StatusBar: FC<StatusBarProps> = ({
-  state,
-  model,
-  toolCount,
-  tokenUsage,
-}) => {
+export const StatusBar: FC<StatusBarProps> = ({ state, model, toolCount, tokenUsage }) => {
   const st = STATE_MAP[state];
 
   return (
@@ -64,7 +59,9 @@ export const StatusBar: FC<StatusBarProps> = ({
         )}
       </Box>
       <Box gap={2}>
-        <Text color={st.color}>{st.icon} {st.text}</Text>
+        <Text color={st.color}>
+          {st.icon} {st.text}
+        </Text>
         <Text dimColor>/help 帮助 · /exit 退出</Text>
       </Box>
     </Box>

@@ -38,7 +38,7 @@ echo ============================================
 ::::::: Phase 0: Cleanup
 ::::::: ============================================================
 echo.
-echo [0/4] Cleanup...
+echo [0/3] Cleanup...
 
 rem 清理 web dist 目录
 if exist "packages\web\dist" (
@@ -61,43 +61,24 @@ if /i "%MODE%"=="clean" (
 ::::::: Phase 1: Build Core (共享代码，Server API 依赖)
 ::::::: ============================================================
 echo.
-echo [1/4] Building core...
-cd packages\core
-
-call pnpm exec tsup
+echo [1/3] Building core + server (shared)...
+call "%~dp0build-shared.bat"
 if %errorlevel% neq 0 (
-    echo [FAIL] core build failed
-    cd ..\..
+    echo [FAIL] Shared build failed
     goto :END_FAIL
 )
-if %_DBG%==1 echo [DEBUG] core build OK
+if %_DBG%==1 echo [DEBUG] core+server build OK
 
 ::::::: ============================================================
-::::::: Phase 2: Build Server (后端 API)
+::::::: Phase 2: Build Web Frontend
 ::::::: ============================================================
-echo [2/4] Building server...
-cd ..\server
-
-call pnpm exec tsup
-if %errorlevel% neq 0 (
-    echo [FAIL] server build failed
-    cd ..\..
-    goto :END_FAIL
-)
-if %_DBG%==1 echo [DEBUG] server build OK
-
-::::::: ============================================================
-::::::: Phase 3: Build Web Frontend
-::::::: ============================================================
-echo [3/4] Building web frontend...
-cd ..\web
+echo [2/3] Building web frontend...
 
 if /i "%MODE%"=="check" (
     echo   - tsc type check...
-    call npx tsc --noEmit
+    call pnpm --filter @easyagent/web exec tsc -- --noEmit
     if %errorlevel% neq 0 (
         echo [FAIL] TypeScript type check failed
-        cd ..\..
         goto :END_FAIL
     )
 )
@@ -105,23 +86,21 @@ if /i "%MODE%"=="check" (
 echo   - vite build...
 rem 暂时关闭延迟扩展避免 Vite 输出中的 ! 符号被 CMD 解析
 setlocal disabledelayedexpansion
-call npx vite build
+call pnpm --filter @easyagent/web exec vite build
 if errorlevel 1 (
     endlocal
     echo [FAIL] vite build failed
-    cd ..\..
     goto :END_FAIL
 )
 endlocal
 
 echo   All modules built.
-cd ..\..
 
 ::::::: ============================================================
-::::::: Phase 4: Verify Output
+::::::: Phase 3: Verify Output
 ::::::: ============================================================
 echo.
-echo [4/4] Verifying output...
+echo [3/3] Verifying output...
 echo ============================================
 echo   VERIFYING OUTPUT
 echo ============================================

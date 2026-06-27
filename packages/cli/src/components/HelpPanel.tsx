@@ -38,7 +38,9 @@ const COMMANDS: CommandItem[] = [
  */
 export const HelpPanel: FC = () => (
   <Box flexDirection="column" borderStyle="round" borderColor="blue" paddingX={1} marginY={1}>
-    <Text bold color="blue">命令列表</Text>
+    <Text bold color="blue">
+      命令列表
+    </Text>
     <Text dimColor>━━━━━━━━━━━━━━━━━━━━━━━━</Text>
     <Box flexDirection="column">
       {COMMANDS.map((cmd) => (

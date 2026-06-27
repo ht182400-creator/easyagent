@@ -106,6 +106,5 @@ export const useUIStore = create<UIState>((set, get) => ({
       setTimeout(() => get().removeToast(id), duration);
     }
   },
-  removeToast: (id) =>
-    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+  removeToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 }));

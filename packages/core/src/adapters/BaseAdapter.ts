@@ -48,17 +48,14 @@ export abstract class BaseAdapter {
    * @param options - 聊天选项
    * @returns 异步生成器，产出聊天块
    */
-  abstract chatStream(
-    messages: Message[],
-    options?: ChatOptions
-  ): AsyncGenerator<ChatChunk>;
+  abstract chatStream(messages: Message[], options?: ChatOptions): AsyncGenerator<ChatChunk>;
 
   /**
    * 获取可用模型列表
    * @returns 模型信息列表
    */
   getModels(): ModelInfo[] {
-    return this.config.models.map(m => ({
+    return this.config.models.map((m) => ({
       id: m.id,
       name: m.name,
       provider: this.config.id,
@@ -81,7 +78,7 @@ export abstract class BaseAdapter {
    * @param modelName - 模型名称
    */
   switchModel(modelName: string): void {
-    const model = this.config.models.find(m => m.id === modelName);
+    const model = this.config.models.find((m) => m.id === modelName);
     if (!model) {
       throw new Error(`模型 ${modelName} 在提供商 ${this.config.name} 中不存在`);
     }
@@ -93,7 +90,7 @@ export abstract class BaseAdapter {
    * 获取模型配置
    */
   protected getModelConfig() {
-    return this.config.models.find(m => m.id === this.modelName);
+    return this.config.models.find((m) => m.id === this.modelName);
   }
 
   /**

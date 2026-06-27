@@ -37,15 +37,34 @@ function parseArgs() {
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--provider':   opts.provider = args[++i] || opts.provider; break;
-      case '--model':      opts.model = args[++i] || opts.model; break;
-      case '--k':          opts.k = parseInt(args[++i]) || opts.k; break;
-      case '--dry-run':    opts.dryRun = true; break;
-      case '--generate-readme': opts.generateReadme = true; break;
-      case '--dataset':    opts.datasetPath = args[++i] || ''; break;
-      case '--max-problems': opts.maxProblems = parseInt(args[++i]) || 0; break;
-      case '--difficulty': opts.difficulty = args[++i] || ''; break;
-      case '--help': case '-h': opts.help = true; break;
+      case '--provider':
+        opts.provider = args[++i] || opts.provider;
+        break;
+      case '--model':
+        opts.model = args[++i] || opts.model;
+        break;
+      case '--k':
+        opts.k = parseInt(args[++i]) || opts.k;
+        break;
+      case '--dry-run':
+        opts.dryRun = true;
+        break;
+      case '--generate-readme':
+        opts.generateReadme = true;
+        break;
+      case '--dataset':
+        opts.datasetPath = args[++i] || '';
+        break;
+      case '--max-problems':
+        opts.maxProblems = parseInt(args[++i]) || 0;
+        break;
+      case '--difficulty':
+        opts.difficulty = args[++i] || '';
+        break;
+      case '--help':
+      case '-h':
+        opts.help = true;
+        break;
     }
   }
 
@@ -99,17 +118,27 @@ function loadDatasetStats(datasetPath) {
   try {
     const stat = fs.statSync(datasetPath);
     if (stat.isDirectory()) {
-      const files = fs.readdirSync(datasetPath).filter(f => f.endsWith('.jsonl') || f.endsWith('.json'));
+      const files = fs
+        .readdirSync(datasetPath)
+        .filter((f) => f.endsWith('.jsonl') || f.endsWith('.json'));
       for (const file of files) {
         const content = fs.readFileSync(path.join(datasetPath, file), 'utf-8');
-        for (const line of content.split('\n').filter(l => l.trim())) {
-          try { problems.push(JSON.parse(line)); } catch { /* skip */ }
+        for (const line of content.split('\n').filter((l) => l.trim())) {
+          try {
+            problems.push(JSON.parse(line));
+          } catch {
+            /* skip */
+          }
         }
       }
     } else if (datasetPath.endsWith('.jsonl')) {
       const content = fs.readFileSync(datasetPath, 'utf-8');
-      for (const line of content.split('\n').filter(l => l.trim())) {
-        try { problems.push(JSON.parse(line)); } catch { /* skip */ }
+      for (const line of content.split('\n').filter((l) => l.trim())) {
+        try {
+          problems.push(JSON.parse(line));
+        } catch {
+          /* skip */
+        }
       }
     } else if (datasetPath.endsWith('.json')) {
       const data = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
@@ -147,7 +176,9 @@ async function doDryRun(datasetPath) {
   }
 
   // 2. 检查数据集
-  const dataPath = datasetPath || path.join(PROJECT_ROOT, 'packages', 'core', 'src', 'benchmark', 'benchmark-tasks.json');
+  const dataPath =
+    datasetPath ||
+    path.join(PROJECT_ROOT, 'packages', 'core', 'src', 'benchmark', 'benchmark-tasks.json');
   console.log(`  数据集:   ${path.basename(dataPath)}`);
 
   const stats = loadDatasetStats(dataPath);
@@ -207,7 +238,9 @@ function generateReadmeBadge() {
   if (summary.byDifficulty) {
     console.log('  按难度:');
     for (const [diff, stats] of Object.entries(summary.byDifficulty)) {
-      console.log(`    - ${diff}: ${stats.passed}/${stats.total} (${(stats.rate * 100).toFixed(1)}%)`);
+      console.log(
+        `    - ${diff}: ${stats.passed}/${stats.total} (${(stats.rate * 100).toFixed(1)}%)`,
+      );
     }
   }
   console.log('');
@@ -218,7 +251,14 @@ function generateReadmeBadge() {
  */
 async function runActualBenchmark(opts) {
   // 延迟加载：只在需要时导入编译产物
-  const distPath = path.join(PROJECT_ROOT, 'packages', 'core', 'dist', 'benchmark', 'BenchmarkRunner.js');
+  const distPath = path.join(
+    PROJECT_ROOT,
+    'packages',
+    'core',
+    'dist',
+    'benchmark',
+    'BenchmarkRunner.js',
+  );
   if (!fs.existsSync(distPath)) {
     console.error('X 错误: 核心包未编译。请先运行: pnpm build:core');
     process.exit(1);
@@ -226,9 +266,9 @@ async function runActualBenchmark(opts) {
 
   const { BenchmarkRunner } = await import(distPath);
 
-  const datasetPath = opts.datasetPath || path.join(
-    PROJECT_ROOT, 'packages', 'core', 'src', 'benchmark', 'benchmark-tasks.json'
-  );
+  const datasetPath =
+    opts.datasetPath ||
+    path.join(PROJECT_ROOT, 'packages', 'core', 'src', 'benchmark', 'benchmark-tasks.json');
 
   const config = {
     provider: opts.provider,
@@ -238,7 +278,7 @@ async function runActualBenchmark(opts) {
     datasetPath,
     outputDir: OUTPUT_DIR,
     maxProblems: opts.maxProblems || undefined,
-    filterDifficulty: (opts.difficulty || undefined),
+    filterDifficulty: opts.difficulty || undefined,
     verbose: true,
   };
 

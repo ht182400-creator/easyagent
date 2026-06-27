@@ -45,11 +45,16 @@ function detectDatabase(workspace: string): {
               return { type: 'mysql', config: url };
             }
             if (url.includes('.db') || url.includes('.sqlite')) {
-              return { type: 'sqlite', path: url.replace('sqlite:', '').replace('file:', '').trim() };
+              return {
+                type: 'sqlite',
+                path: url.replace('sqlite:', '').replace('file:', '').trim(),
+              };
             }
           }
         }
-      } catch (err) { /* ignore */ }
+      } catch (err) {
+        /* ignore */
+      }
     }
   }
 
@@ -58,10 +63,16 @@ function detectDatabase(workspace: string): {
   if (existsSync(composeFile)) {
     try {
       const content = readFileSync(composeFile, 'utf-8');
-      if (content.includes('postgres') || content.includes('mysql') || content.includes('mariadb')) {
+      if (
+        content.includes('postgres') ||
+        content.includes('mysql') ||
+        content.includes('mariadb')
+      ) {
         return { type: 'docker', config: composeFile };
       }
-    } catch (err) { /* ignore */ }
+    } catch (err) {
+      /* ignore */
+    }
   }
 
   return null;
@@ -73,14 +84,21 @@ function detectDatabase(workspace: string): {
  */
 export const QueryDBTool: ITool = {
   name: 'query_db',
-  description: '对项目中的数据库执行只读SQL查询。支持SQLite/PostgreSQL/MySQL。自动检测数据库连接信息。',
+  description:
+    '对项目中的数据库执行只读SQL查询。支持SQLite/PostgreSQL/MySQL。自动检测数据库连接信息。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
     properties: {
       query: { type: 'string', description: 'SQL查询语句(仅支持SELECT等只读操作)' },
-      dbType: { type: 'string', description: '可选: 数据库类型(sqlite/postgresql/mysql), 不指定则自动检测' },
-      connection: { type: 'string', description: '可选: 数据库文件路径或连接字符串, 不指定则自动检测' },
+      dbType: {
+        type: 'string',
+        description: '可选: 数据库类型(sqlite/postgresql/mysql), 不指定则自动检测',
+      },
+      connection: {
+        type: 'string',
+        description: '可选: 数据库文件路径或连接字符串, 不指定则自动检测',
+      },
     },
     required: ['query'],
   },
@@ -156,9 +174,11 @@ export const QueryDBTool: ITool = {
           const header = columns.join(' | ');
 
           const maxRows = 100;
-          const dataLines = rows.slice(0, maxRows).map((row: any) =>
-            columns.map((col: string) => String(row[col] ?? 'NULL').slice(0, 200)).join(' | ')
-          );
+          const dataLines = rows
+            .slice(0, maxRows)
+            .map((row: any) =>
+              columns.map((col: string) => String(row[col] ?? 'NULL').slice(0, 200)).join(' | '),
+            );
 
           let result = [
             `📊 查询结果 (${rows.length}行, ${columns.length}列)`,
@@ -251,16 +271,19 @@ export const DBSchemaTool: ITool = {
     type: 'object',
     properties: {
       table: { type: 'string', description: '可选: 指定表名查看详细结构, 不指定则列出所有表' },
-      dbType: { type: 'string', description: '可选: 数据库类型(sqlite/postgresql/mysql), 不指定则自动检测' },
+      dbType: {
+        type: 'string',
+        description: '可选: 数据库类型(sqlite/postgresql/mysql), 不指定则自动检测',
+      },
       connection: { type: 'string', description: '可选: 数据库文件路径或连接字符串' },
     },
     required: [],
   },
   async execute(params, context): Promise<ToolResult> {
     try {
-      const dbType = params.dbType as string || '';
-      const connection = params.connection as string || '';
-      const table = params.table as string || '';
+      const dbType = (params.dbType as string) || '';
+      const connection = (params.connection as string) || '';
+      const table = (params.table as string) || '';
       const workspace = context.workspace;
 
       // 检测数据库
@@ -301,9 +324,12 @@ export const DBSchemaTool: ITool = {
               return { success: false, content: `表 "${table}" 不存在` };
             }
 
-            const colInfo = columns.map((col: any) =>
-              `  ${col.name.padEnd(25)} ${col.type.padEnd(12)} ${col.notnull ? 'NOT NULL' : 'NULLABLE'} ${col.pk ? 'PRIMARY KEY' : ''} ${col.dflt_value ? `DEFAULT ${col.dflt_value}` : ''}`
-            ).join('\n');
+            const colInfo = columns
+              .map(
+                (col: any) =>
+                  `  ${col.name.padEnd(25)} ${col.type.padEnd(12)} ${col.notnull ? 'NOT NULL' : 'NULLABLE'} ${col.pk ? 'PRIMARY KEY' : ''} ${col.dflt_value ? `DEFAULT ${col.dflt_value}` : ''}`,
+              )
+              .join('\n');
 
             let result = `📊 表: ${table}\n\n列:\n${colInfo}`;
 
@@ -323,19 +349,31 @@ export const DBSchemaTool: ITool = {
             }
 
             db.close();
-            return { success: true, content: result, metadata: { table, columns: columns.length, indexes: indexes.length } };
+            return {
+              success: true,
+              content: result,
+              metadata: { table, columns: columns.length, indexes: indexes.length },
+            };
           }
 
           // 列出所有表
-          const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all();
-          const views = db.prepare("SELECT name FROM sqlite_master WHERE type='view' ORDER BY name").all();
+          const tables = db
+            .prepare(
+              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+            )
+            .all();
+          const views = db
+            .prepare("SELECT name FROM sqlite_master WHERE type='view' ORDER BY name")
+            .all();
 
           let result = `📊 SQLite 数据库: ${relative(workspace, detected.path)}\n\n`;
 
           if (tables.length > 0) {
             result += `表 (${tables.length}):\n`;
             for (const t of tables) {
-              const rowCount = db.prepare(`SELECT COUNT(*) as cnt FROM "${t.name}"`).get() as { cnt: number };
+              const rowCount = db.prepare(`SELECT COUNT(*) as cnt FROM "${t.name}"`).get() as {
+                cnt: number;
+              };
               result += `  📄 ${t.name}  (${rowCount.cnt} 行)\n`;
             }
           }
@@ -356,7 +394,11 @@ export const DBSchemaTool: ITool = {
             metadata: { tableCount: tables.length, viewCount: views.length, dbType: 'sqlite' },
           };
         } catch (error: any) {
-          return { success: false, content: `读取Schema失败: ${error.message}`, error: 'SCHEMA_READ_FAILED' };
+          return {
+            success: false,
+            content: `读取Schema失败: ${error.message}`,
+            error: 'SCHEMA_READ_FAILED',
+          };
         }
       }
 

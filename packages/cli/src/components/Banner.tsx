@@ -44,7 +44,7 @@ export const Banner: FC<BannerProps> = ({
       {titleLines.map((line, i) => (
         <Text key={i}>{line}</Text>
       ))}
-      <Text dimColor>   {subtitle}</Text>
+      <Text dimColor> {subtitle}</Text>
     </Box>
   );
 };

@@ -82,7 +82,9 @@ export const StartServerTool: ITool = {
       // 自动检测
       if (!command) {
         if (existsSync(resolve(cwd, 'package.json'))) {
-          const pkg = JSON.parse(require('node:fs').readFileSync(resolve(cwd, 'package.json'), 'utf-8'));
+          const pkg = JSON.parse(
+            require('node:fs').readFileSync(resolve(cwd, 'package.json'), 'utf-8'),
+          );
           if (pkg.scripts?.dev) {
             command = `npm run dev -- --port ${port}`;
           } else if (pkg.scripts?.start) {
@@ -92,7 +94,10 @@ export const StartServerTool: ITool = {
         if (!command && existsSync(resolve(cwd, 'index.html'))) {
           command = `npx serve . -l ${port} --no-clipboard`;
         }
-        if (!command && existsSync(resolve(cwd, 'main.py')) || existsSync(resolve(cwd, 'app.py'))) {
+        if (
+          (!command && existsSync(resolve(cwd, 'main.py'))) ||
+          existsSync(resolve(cwd, 'app.py'))
+        ) {
           command = `python -m http.server ${port}`;
         }
         if (!command) {
@@ -187,7 +192,10 @@ export const PreviewURLTool: ITool = {
       try {
         const parsed = new URL(url);
         if (!['http:', 'https:'].includes(parsed.protocol)) {
-          return { success: false, content: `不支持的协议: ${parsed.protocol}。仅支持 HTTP/HTTPS。` };
+          return {
+            success: false,
+            content: `不支持的协议: ${parsed.protocol}。仅支持 HTTP/HTTPS。`,
+          };
         }
       } catch (err) {
         return { success: false, content: `无效的URL: ${url}。请提供完整的HTTP/HTTPS URL。` };
@@ -265,7 +273,9 @@ export const DiffFilesTool: ITool = {
           if (lines1[i] !== lines2[i]) {
             // 找到差异块的开始
             const blockStart = Math.max(0, i - 2);
-            diffLines.push(`@@ -${blockStart + 1},${Math.min(10, lines1.length - blockStart)} +${blockStart + 1},${Math.min(10, lines2.length - blockStart)} @@`);
+            diffLines.push(
+              `@@ -${blockStart + 1},${Math.min(10, lines1.length - blockStart)} +${blockStart + 1},${Math.min(10, lines2.length - blockStart)} @@`,
+            );
             for (let j = blockStart; j < Math.min(i + 5, maxLen); j++) {
               if (j >= lines1.length && j >= lines2.length) break;
               if (j >= lines1.length) {
@@ -352,12 +362,7 @@ export const AskUserTool: ITool = {
 
     return {
       success: true,
-      content: [
-        '❓ 请确认:',
-        question,
-        '',
-        '(回复 "是/确认/yes" 或 "否/取消/no")',
-      ].join('\n'),
+      content: ['❓ 请确认:', question, '', '(回复 "是/确认/yes" 或 "否/取消/no")'].join('\n'),
       metadata: { question, type: 'confirm' },
     };
   },

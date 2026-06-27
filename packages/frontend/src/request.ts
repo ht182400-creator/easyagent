@@ -77,10 +77,7 @@ export function getIsDesktop(): boolean {
  * @param options - fetch 选项
  * @returns 响应数据
  */
-export async function apiRequest<T = unknown>(
-  path: string,
-  options?: RequestInit
-): Promise<T> {
+export async function apiRequest<T = unknown>(path: string, options?: RequestInit): Promise<T> {
   return performRequest<T>(path, options, 0);
 }
 
@@ -91,7 +88,7 @@ export async function apiRequest<T = unknown>(
 async function performRequest<T = unknown>(
   path: string,
   options?: RequestInit,
-  retryCount: number = 0
+  retryCount: number = 0,
 ): Promise<T> {
   const url = path.startsWith('http') ? path : `${_apiBase}${path}`;
 

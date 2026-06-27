@@ -5,10 +5,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  MessageSquare, Cpu, Wrench, History, Activity,
-  Sparkles, Code2, FileText, Search, BarChart3,
-  Palette, Bug, Send, Paperclip, Mic, Star,
-  ArrowRight, TrendingUp, Zap
+  MessageSquare,
+  Cpu,
+  Wrench,
+  History,
+  Activity,
+  Sparkles,
+  Code2,
+  FileText,
+  Search,
+  BarChart3,
+  Palette,
+  Bug,
+  Send,
+  Paperclip,
+  Mic,
+  Star,
+  ArrowRight,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { useConfig } from '@/config';
@@ -26,25 +41,82 @@ interface SystemStatus {
 
 /** 快捷操作入口 */
 const quickActions = [
-  { path: '/chat', label: '新建对话', desc: '与 AI 开始新对话', icon: MessageSquare, gradient: 'from-blue-500 to-cyan-400', shadow: 'shadow-blue-500/20' },
-  { path: '/tools', label: '浏览工具', desc: '查看全部可用工具', icon: Wrench, gradient: 'from-purple-500 to-pink-400', shadow: 'shadow-purple-500/20' },
-  { path: '/knowledge', label: '知识库', desc: '管理你的知识资产', icon: FileText, gradient: 'from-emerald-500 to-teal-400', shadow: 'shadow-emerald-500/20' },
-  { path: '/settings', label: '系统设置', desc: '配置模型与偏好', icon: Cpu, gradient: 'from-amber-500 to-orange-400', shadow: 'shadow-amber-500/20' },
+  {
+    path: '/chat',
+    label: '新建对话',
+    desc: '与 AI 开始新对话',
+    icon: MessageSquare,
+    gradient: 'from-blue-500 to-cyan-400',
+    shadow: 'shadow-blue-500/20',
+  },
+  {
+    path: '/tools',
+    label: '浏览工具',
+    desc: '查看全部可用工具',
+    icon: Wrench,
+    gradient: 'from-purple-500 to-pink-400',
+    shadow: 'shadow-purple-500/20',
+  },
+  {
+    path: '/knowledge',
+    label: '知识库',
+    desc: '管理你的知识资产',
+    icon: FileText,
+    gradient: 'from-emerald-500 to-teal-400',
+    shadow: 'shadow-emerald-500/20',
+  },
+  {
+    path: '/settings',
+    label: '系统设置',
+    desc: '配置模型与偏好',
+    icon: Cpu,
+    gradient: 'from-amber-500 to-orange-400',
+    shadow: 'shadow-amber-500/20',
+  },
 ];
 
 /** 模板图标映射 */
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Code2, FileText, Search, BarChart3, Palette, Bug,
+  Code2,
+  FileText,
+  Search,
+  BarChart3,
+  Palette,
+  Bug,
 };
 
 /** 模板渐变色映射 */
 const gradientMap: Record<string, { gradient: string; border: string; text: string }> = {
-  Code2: { gradient: 'from-blue-500/20 to-blue-600/10', border: 'border-blue-500/20', text: 'text-blue-400' },
-  FileText: { gradient: 'from-green-500/20 to-green-600/10', border: 'border-green-500/20', text: 'text-green-400' },
-  Search: { gradient: 'from-purple-500/20 to-purple-600/10', border: 'border-purple-500/20', text: 'text-purple-400' },
-  BarChart3: { gradient: 'from-amber-500/20 to-amber-600/10', border: 'border-amber-500/20', text: 'text-amber-400' },
-  Palette: { gradient: 'from-pink-500/20 to-pink-600/10', border: 'border-pink-500/20', text: 'text-pink-400' },
-  Bug: { gradient: 'from-red-500/20 to-red-600/10', border: 'border-red-500/20', text: 'text-red-400' },
+  Code2: {
+    gradient: 'from-blue-500/20 to-blue-600/10',
+    border: 'border-blue-500/20',
+    text: 'text-blue-400',
+  },
+  FileText: {
+    gradient: 'from-green-500/20 to-green-600/10',
+    border: 'border-green-500/20',
+    text: 'text-green-400',
+  },
+  Search: {
+    gradient: 'from-purple-500/20 to-purple-600/10',
+    border: 'border-purple-500/20',
+    text: 'text-purple-400',
+  },
+  BarChart3: {
+    gradient: 'from-amber-500/20 to-amber-600/10',
+    border: 'border-amber-500/20',
+    text: 'text-amber-400',
+  },
+  Palette: {
+    gradient: 'from-pink-500/20 to-pink-600/10',
+    border: 'border-pink-500/20',
+    text: 'text-pink-400',
+  },
+  Bug: {
+    gradient: 'from-red-500/20 to-red-600/10',
+    border: 'border-red-500/20',
+    text: 'text-red-400',
+  },
 };
 
 /** 服务端模板数据结构 */
@@ -101,7 +173,9 @@ export default function Dashboard() {
   // 点击模板发起对话
   const handleTemplate = (tpl: TemplateConfig) => {
     const queryText = tpl.prompt ? `${tpl.prompt}` : '';
-    navigate(`/chat?template=${encodeURIComponent(tpl.id)}&label=${encodeURIComponent(tpl.label)}&message=${encodeURIComponent(queryText)}`);
+    navigate(
+      `/chat?template=${encodeURIComponent(tpl.id)}&label=${encodeURIComponent(tpl.label)}&message=${encodeURIComponent(queryText)}`,
+    );
   };
 
   /** 获取模板的 UI 配置(图标+样式)，根据 icon 字段映射 */
@@ -133,19 +207,25 @@ export default function Dashboard() {
 
         {/* 状态指示器 */}
         <div className="mt-5 flex items-center justify-center gap-4">
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${
-            serverConnected
-              ? 'bg-green-500/10 border-green-500/20'
-              : 'bg-yellow-500/10 border-yellow-500/20'
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${
               serverConnected
-                ? 'bg-green-400 shadow-[0_0_6px_rgba(34,197,94,0.4)] animate-pulse-dot'
-                : 'bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.4)]'
-            }`} />
-            <span className={`text-xs font-medium ${
-              serverConnected ? 'text-green-400' : 'text-yellow-400'
-            }`}>
+                ? 'bg-green-500/10 border-green-500/20'
+                : 'bg-yellow-500/10 border-yellow-500/20'
+            }`}
+          >
+            <div
+              className={`w-2 h-2 rounded-full ${
+                serverConnected
+                  ? 'bg-green-400 shadow-[0_0_6px_rgba(34,197,94,0.4)] animate-pulse-dot'
+                  : 'bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.4)]'
+              }`}
+            />
+            <span
+              className={`text-xs font-medium ${
+                serverConnected ? 'text-green-400' : 'text-yellow-400'
+              }`}
+            >
               {serverConnected ? '服务运行中' : '正在连接服务...'}
             </span>
           </div>
@@ -170,8 +250,12 @@ export default function Dashboard() {
               className="group relative overflow-hidden rounded-2xl border border-gray-800/60 bg-gray-900/60 backdrop-blur-sm p-5 transition-all duration-300 hover:border-gray-700/60 hover:bg-gray-800/60 hover:-translate-y-0.5 hover:shadow-lg"
             >
               {/* 图标背景光晕 */}
-              <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full bg-gradient-to-br ${action.gradient} opacity-10 group-hover:opacity-20 transition-opacity duration-500 blur-xl`} />
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mb-3 ${action.shadow}`}>
+              <div
+                className={`absolute -top-4 -right-4 w-20 h-20 rounded-full bg-gradient-to-br ${action.gradient} opacity-10 group-hover:opacity-20 transition-opacity duration-500 blur-xl`}
+              />
+              <div
+                className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mb-3 ${action.shadow}`}
+              >
                 <action.icon className="w-5 h-5 text-white" />
               </div>
               <h3 className="font-semibold text-sm group-hover:text-white transition-colors">
@@ -196,11 +280,16 @@ export default function Dashboard() {
               if (loading) return '—';
               if (!status) return '—';
               switch (card.label) {
-                case '已配置模型': return status.providerCount;
-                case '活跃会话': return status.sessionCount;
-                case '可用工具': return status.toolCount;
-                case 'Token 用量': return `${(status.tokenUsage.totalTokens / 1000).toFixed(1)}K`;
-                default: return '—';
+                case '已配置模型':
+                  return status.providerCount;
+                case '活跃会话':
+                  return status.sessionCount;
+                case '可用工具':
+                  return status.toolCount;
+                case 'Token 用量':
+                  return `${(status.tokenUsage.totalTokens / 1000).toFixed(1)}K`;
+                default:
+                  return '—';
               }
             })();
             return (
@@ -230,7 +319,9 @@ export default function Dashboard() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {templates.length === 0 ? (
-            <div className="col-span-full text-center py-4 text-xs text-gray-600">模板加载中...</div>
+            <div className="col-span-full text-center py-4 text-xs text-gray-600">
+              模板加载中...
+            </div>
           ) : (
             templates.map((tpl) => {
               const { Icon, gradient, border, text } = getTemplateStyle(tpl);
@@ -242,7 +333,9 @@ export default function Dashboard() {
                   className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${gradient} ${border} border p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`w-9 h-9 rounded-lg bg-gray-800/80 flex items-center justify-center ${text}`}>
+                    <div
+                      className={`w-9 h-9 rounded-lg bg-gray-800/80 flex items-center justify-center ${text}`}
+                    >
                       <Icon className="w-4.5 h-4.5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -313,15 +406,49 @@ export default function Dashboard() {
 
 /** 统计卡片配置 */
 const STAT_CARDS = [
-  { label: '已配置模型', path: '/providers', icon: Cpu, gradient: 'from-blue-500/15 to-blue-600/5', border: 'border-blue-500/15', textColor: 'text-blue-400' },
-  { label: '活跃会话', path: '/sessions', icon: History, gradient: 'from-emerald-500/15 to-emerald-600/5', border: 'border-emerald-500/15', textColor: 'text-emerald-400' },
-  { label: '可用工具', path: '/tools', icon: Wrench, gradient: 'from-purple-500/15 to-purple-600/5', border: 'border-purple-500/15', textColor: 'text-purple-400' },
-  { label: 'Token 用量', path: '/token-usage', icon: Activity, gradient: 'from-amber-500/15 to-amber-600/5', border: 'border-amber-500/15', textColor: 'text-amber-400' },
+  {
+    label: '已配置模型',
+    path: '/providers',
+    icon: Cpu,
+    gradient: 'from-blue-500/15 to-blue-600/5',
+    border: 'border-blue-500/15',
+    textColor: 'text-blue-400',
+  },
+  {
+    label: '活跃会话',
+    path: '/sessions',
+    icon: History,
+    gradient: 'from-emerald-500/15 to-emerald-600/5',
+    border: 'border-emerald-500/15',
+    textColor: 'text-emerald-400',
+  },
+  {
+    label: '可用工具',
+    path: '/tools',
+    icon: Wrench,
+    gradient: 'from-purple-500/15 to-purple-600/5',
+    border: 'border-purple-500/15',
+    textColor: 'text-purple-400',
+  },
+  {
+    label: 'Token 用量',
+    path: '/token-usage',
+    icon: Activity,
+    gradient: 'from-amber-500/15 to-amber-600/5',
+    border: 'border-amber-500/15',
+    textColor: 'text-amber-400',
+  },
 ];
 
 /** 统计卡片组件 */
 function StatCard({
-  label, value, icon: Icon, gradient, border, textColor, onClick,
+  label,
+  value,
+  icon: Icon,
+  gradient,
+  border,
+  textColor,
+  onClick,
 }: {
   label: string;
   value: string | number;
@@ -339,7 +466,9 @@ function StatCard({
       title={`点击跳转到${label}`}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-gray-500 font-medium group-hover:text-gray-400 transition-colors">{label}</span>
+        <span className="text-xs text-gray-500 font-medium group-hover:text-gray-400 transition-colors">
+          {label}
+        </span>
         <Icon className={`w-4 h-4 ${textColor} group-hover:scale-110 transition-transform`} />
       </div>
       <div className={`text-2xl font-bold ${textColor} tabular-nums`}>

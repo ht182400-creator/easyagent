@@ -12,14 +12,16 @@ function makeProviderConfig(overrides: Record<string, unknown> = {}) {
     baseURL: 'https://api.deepseek.com',
     apiKey: 'test-key',
     apiFormat: 'openai' as const,
-    models: [{
-      id: 'deepseek-chat',
-      name: 'DeepSeek V3',
-      maxContextTokens: 65536,
-      maxOutputTokens: 8192,
-      supportsTools: true,
-      supportsVision: false,
-    }],
+    models: [
+      {
+        id: 'deepseek-chat',
+        name: 'DeepSeek V3',
+        maxContextTokens: 65536,
+        maxOutputTokens: 8192,
+        supportsTools: true,
+        supportsVision: false,
+      },
+    ],
     ...overrides,
   };
 }
@@ -35,9 +37,15 @@ describe('BaseAdapter - 基础功能', () => {
   it('应正确设置providerName', () => {
     const config = makeProviderConfig();
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config);
     expect(adapter.providerName).toBe('DeepSeek');
   });
@@ -45,9 +53,15 @@ describe('BaseAdapter - 基础功能', () => {
   it('应正确设置currentModel', () => {
     const config = makeProviderConfig();
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config);
     expect(adapter.currentModel).toBe('deepseek-chat');
   });
@@ -55,14 +69,34 @@ describe('BaseAdapter - 基础功能', () => {
   it('应使用指定的modelName参数', () => {
     const config = makeProviderConfig({
       models: [
-        { id: 'model-a', name: 'A', maxContextTokens: 4096, maxOutputTokens: 1024, supportsTools: true, supportsVision: false },
-        { id: 'model-b', name: 'B', maxContextTokens: 8192, maxOutputTokens: 2048, supportsTools: true, supportsVision: false },
+        {
+          id: 'model-a',
+          name: 'A',
+          maxContextTokens: 4096,
+          maxOutputTokens: 1024,
+          supportsTools: true,
+          supportsVision: false,
+        },
+        {
+          id: 'model-b',
+          name: 'B',
+          maxContextTokens: 8192,
+          maxOutputTokens: 2048,
+          supportsTools: true,
+          supportsVision: false,
+        },
       ],
     });
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config, 'model-b');
     expect(adapter.currentModel).toBe('model-b');
   });
@@ -70,9 +104,15 @@ describe('BaseAdapter - 基础功能', () => {
   it('getModels应返回正确的ModelInfo格式', () => {
     const config = makeProviderConfig();
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config);
     const models = adapter.getModels();
     expect(models).toHaveLength(1);
@@ -85,14 +125,34 @@ describe('BaseAdapter - 基础功能', () => {
   it('switchModel应切换模型', () => {
     const config = makeProviderConfig({
       models: [
-        { id: 'model-a', name: 'A', maxContextTokens: 4096, maxOutputTokens: 1024, supportsTools: true, supportsVision: false },
-        { id: 'model-b', name: 'B', maxContextTokens: 8192, maxOutputTokens: 2048, supportsTools: true, supportsVision: false },
+        {
+          id: 'model-a',
+          name: 'A',
+          maxContextTokens: 4096,
+          maxOutputTokens: 1024,
+          supportsTools: true,
+          supportsVision: false,
+        },
+        {
+          id: 'model-b',
+          name: 'B',
+          maxContextTokens: 8192,
+          maxOutputTokens: 2048,
+          supportsTools: true,
+          supportsVision: false,
+        },
       ],
     });
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config);
     adapter.switchModel('model-b');
     expect(adapter.currentModel).toBe('model-b');
@@ -101,9 +161,15 @@ describe('BaseAdapter - 基础功能', () => {
   it('switchModel到不存在的模型应抛出异常', () => {
     const config = makeProviderConfig();
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config);
     expect(() => adapter.switchModel('nonexistent')).toThrow('不存在');
   });
@@ -111,9 +177,15 @@ describe('BaseAdapter - 基础功能', () => {
   it('getModelInfo应返回当前模型信息', () => {
     const config = makeProviderConfig();
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config);
     const info = adapter.getModelInfo();
     expect(info).toBeDefined();
@@ -124,9 +196,15 @@ describe('BaseAdapter - 基础功能', () => {
   it('getModelInfo对空模型列表应返回undefined', () => {
     const config = makeProviderConfig({ models: [] });
     const adapter = new (class extends BaseAdapter {
-      async chat() { return { id: '', model: '', content: '', finishReason: 'stop' }; }
-      async *chatStream() { yield { delta: '' }; }
-      async validateConnection() { return true; }
+      async chat() {
+        return { id: '', model: '', content: '', finishReason: 'stop' };
+      }
+      async *chatStream() {
+        yield { delta: '' };
+      }
+      async validateConnection() {
+        return true;
+      }
     })(config);
     expect(adapter.getModelInfo()).toBeUndefined();
   });
@@ -156,8 +234,22 @@ describe('OpenAICompatibleAdapter - 构造与配置', () => {
   it('应正确继承BaseAdapter的getModels', () => {
     const config = makeProviderConfig({
       models: [
-        { id: 'm1', name: 'M1', maxContextTokens: 4096, maxOutputTokens: 1024, supportsTools: true, supportsVision: false },
-        { id: 'm2', name: 'M2', maxContextTokens: 8192, maxOutputTokens: 2048, supportsTools: true, supportsVision: true },
+        {
+          id: 'm1',
+          name: 'M1',
+          maxContextTokens: 4096,
+          maxOutputTokens: 1024,
+          supportsTools: true,
+          supportsVision: false,
+        },
+        {
+          id: 'm2',
+          name: 'M2',
+          maxContextTokens: 8192,
+          maxOutputTokens: 2048,
+          supportsTools: true,
+          supportsVision: true,
+        },
       ],
     });
     const adapter = new OpenAICompatibleAdapter(config);
@@ -227,8 +319,22 @@ describe('AdapterFactory - 创建适配器', () => {
   it('应支持指定modelName参数', () => {
     const config = makeProviderConfig({
       models: [
-        { id: 'm1', name: 'M1', maxContextTokens: 4096, maxOutputTokens: 1024, supportsTools: true, supportsVision: false },
-        { id: 'm2', name: 'M2', maxContextTokens: 8192, maxOutputTokens: 2048, supportsTools: true, supportsVision: false },
+        {
+          id: 'm1',
+          name: 'M1',
+          maxContextTokens: 4096,
+          maxOutputTokens: 1024,
+          supportsTools: true,
+          supportsVision: false,
+        },
+        {
+          id: 'm2',
+          name: 'M2',
+          maxContextTokens: 8192,
+          maxOutputTokens: 2048,
+          supportsTools: true,
+          supportsVision: false,
+        },
       ],
     });
     const adapter = AdapterFactory.create(config, 'm2');
@@ -239,8 +345,11 @@ describe('AdapterFactory - 创建适配器', () => {
     const configs = [
       makeProviderConfig({ id: 'deepseek', name: 'DeepSeek' }),
       makeProviderConfig({
-        id: 'ernie', name: '文心一言', baseURL: 'https://aip.baidubce.com',
-        apiKey: 'key:secret', apiFormat: 'custom',
+        id: 'ernie',
+        name: '文心一言',
+        baseURL: 'https://aip.baidubce.com',
+        apiKey: 'key:secret',
+        apiFormat: 'custom',
       }),
     ];
     const adapters = AdapterFactory.createAll(configs);
@@ -277,8 +386,22 @@ describe('AdapterFactory - 边界条件', () => {
     const config = makeProviderConfig({
       defaultModel: 'deepseek-r1',
       models: [
-        { id: 'deepseek-chat', name: 'V3', maxContextTokens: 65536, maxOutputTokens: 8192, supportsTools: true, supportsVision: false },
-        { id: 'deepseek-r1', name: 'R1', maxContextTokens: 65536, maxOutputTokens: 8192, supportsTools: true, supportsVision: false },
+        {
+          id: 'deepseek-chat',
+          name: 'V3',
+          maxContextTokens: 65536,
+          maxOutputTokens: 8192,
+          supportsTools: true,
+          supportsVision: false,
+        },
+        {
+          id: 'deepseek-r1',
+          name: 'R1',
+          maxContextTokens: 65536,
+          maxOutputTokens: 8192,
+          supportsTools: true,
+          supportsVision: false,
+        },
       ],
     });
     const adapter = AdapterFactory.create(config);

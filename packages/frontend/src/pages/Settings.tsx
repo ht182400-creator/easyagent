@@ -2,7 +2,22 @@
  * 升级版设置页面 - 使用 settingsStore 持久化
  * 支持: Agent配置、安全设置、主题选择、快捷键偏好
  */
-import { Sliders, Shield, Monitor, Keyboard, Save, Loader2, RefreshCw, ExternalLink, Download, CheckCircle, AlertCircle, RotateCw, ArrowUpCircle, ArrowDownToLine } from 'lucide-react';
+import {
+  Sliders,
+  Shield,
+  Monitor,
+  Keyboard,
+  Save,
+  Loader2,
+  RefreshCw,
+  ExternalLink,
+  Download,
+  CheckCircle,
+  AlertCircle,
+  RotateCw,
+  ArrowUpCircle,
+  ArrowDownToLine,
+} from 'lucide-react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useAppStore } from '../stores/appStore';
 import { getApiBase } from '../request';
@@ -48,9 +63,14 @@ interface UpdateStatus {
 
 export default function SettingsPage() {
   const {
-    agent, security, preferences,
-    setAgentSettings, setSecuritySettings, setPreferences,
-    saveSettings, saving,
+    agent,
+    security,
+    preferences,
+    setAgentSettings,
+    setSecuritySettings,
+    setPreferences,
+    saveSettings,
+    saving,
   } = useSettingsStore();
 
   const { setTheme, theme, addNotification } = useAppStore();
@@ -72,9 +92,11 @@ export default function SettingsPage() {
   useEffect(() => {
     const apiBase = getApiBase();
     fetch(`${apiBase}/api/version`)
-      .then(r => r.json())
+      .then((r) => r.json())
       .then((data: VersionInfo) => setVersionInfo(data))
-      .catch(() => { /* 忽略 */ });
+      .catch(() => {
+        /* 忽略 */
+      });
   }, []);
 
   /** [Desktop] 初始化和监听 electron-updater — 挂载时查询状态 + 注册事件 */
@@ -87,40 +109,46 @@ export default function SettingsPage() {
 
     // 1. 查询当前状态（处理页面挂载时更新已发生的情况）
     if (ea.getUpdateStatus) {
-      ea.getUpdateStatus().then((s: any) => {
-        console.log('[Settings] 初始更新状态:', JSON.stringify(s));
-        const st = s?.lastUpdateStatus;
-        const info = s?.lastUpdateInfo || {};
+      ea.getUpdateStatus()
+        .then((s: any) => {
+          console.log('[Settings] 初始更新状态:', JSON.stringify(s));
+          const st = s?.lastUpdateStatus;
+          const info = s?.lastUpdateInfo || {};
 
-        switch (st) {
-          case 'downloaded':
-            setUpdaterStatus({ status: 'downloaded', version: info.version });
-            break;
-          case 'downloading':
-            setUpdaterStatus({ status: 'downloading', percent: info.percent ?? 0, version: info.version });
-            break;
-          case 'available':
-            setUpdaterStatus({ status: 'available', version: info.version });
-            break;
-          case 'checking':
-            setUpdaterStatus({ status: 'checking' });
-            break;
-          case 'error':
-            setUpdaterStatus({ status: 'error', message: info.error || '更新出错' });
-            break;
-          case 'installing':
-            setUpdaterStatus({ status: 'installing', version: info.version });
-            break;
-          // idle 无需设置卡片
-        }
-      }).catch((err: any) => console.log('[Settings] 查询更新状态失败:', err));
+          switch (st) {
+            case 'downloaded':
+              setUpdaterStatus({ status: 'downloaded', version: info.version });
+              break;
+            case 'downloading':
+              setUpdaterStatus({
+                status: 'downloading',
+                percent: info.percent ?? 0,
+                version: info.version,
+              });
+              break;
+            case 'available':
+              setUpdaterStatus({ status: 'available', version: info.version });
+              break;
+            case 'checking':
+              setUpdaterStatus({ status: 'checking' });
+              break;
+            case 'error':
+              setUpdaterStatus({ status: 'error', message: info.error || '更新出错' });
+              break;
+            case 'installing':
+              setUpdaterStatus({ status: 'installing', version: info.version });
+              break;
+            // idle 无需设置卡片
+          }
+        })
+        .catch((err: any) => console.log('[Settings] 查询更新状态失败:', err));
     }
 
     // 2. 注册后续事件监听
     if (ea?.onUpdateStatus) {
       const cleanup = ea.onUpdateStatus((status: UpdateStatus) => {
         console.log('[Settings] 收到更新事件:', status.status, 'percent:', status.percent ?? 'N/A');
-        setUpdaterStatus(prev => {
+        setUpdaterStatus((prev) => {
           // [v0.5.23] 防止 available 事件覆盖已推进的 downloading/downloaded 状态
           // 原因: checkForUpdates() 返回 downloading 后，update-available 事件可能异步到达
           // 如果不用 prev 判断，available 会覆盖 downloading，导致 UI 卡住
@@ -201,7 +229,10 @@ export default function SettingsPage() {
             if (!upResult?.success) {
               setUpdaterStatus({ status: 'error', message: upResult?.error || '检查更新失败' });
             } else if (st === 'downloaded') {
-              setUpdaterStatus({ status: 'downloaded', version: upResult.lastUpdateInfo?.version || upResult.version });
+              setUpdaterStatus({
+                status: 'downloaded',
+                version: upResult.lastUpdateInfo?.version || upResult.version,
+              });
             } else if (st === 'downloading') {
               setUpdaterStatus({
                 status: 'downloading',
@@ -211,7 +242,7 @@ export default function SettingsPage() {
             } else if (st === 'checking') {
               setUpdaterStatus({ status: 'checking', message: upResult.message });
             } else if (st === 'available') {
-              setUpdaterStatus(prev => {
+              setUpdaterStatus((prev) => {
                 if (prev && (prev.status === 'downloading' || prev.status === 'downloaded')) {
                   return prev; // 竞态防御
                 }
@@ -235,8 +266,12 @@ export default function SettingsPage() {
     } catch (err) {
       console.error('[Settings] 检查更新异常:', err);
       setUpdateInfo({
-        currentVersion: '', latestVersion: '', hasUpdate: false,
-        releaseUrl: '', publishedAt: '', body: '',
+        currentVersion: '',
+        latestVersion: '',
+        hasUpdate: false,
+        releaseUrl: '',
+        publishedAt: '',
+        body: '',
         error: '检查失败',
       });
       if (isDesktop) {
@@ -259,11 +294,13 @@ export default function SettingsPage() {
       return;
     }
     console.log('[Settings] 用户确认安装更新...');
-    setUpdaterStatus(prev => prev ? { ...prev, status: 'installing' } : null);
+    setUpdaterStatus((prev) => (prev ? { ...prev, status: 'installing' } : null));
     const result = await ea.installUpdate();
     if (!result?.success) {
       console.error('[Settings] 安装失败:', result?.error);
-      setUpdaterStatus(prev => prev ? { ...prev, status: 'downloaded', message: result?.error } : null);
+      setUpdaterStatus((prev) =>
+        prev ? { ...prev, status: 'downloaded', message: result?.error } : null,
+      );
     }
   };
 
@@ -276,16 +313,8 @@ export default function SettingsPage() {
           <h1 className="text-2xl font-bold">设置</h1>
           <p className="text-gray-500 mt-1 text-sm">配置 Agent 行为和系统参数</p>
         </div>
-        <button
-          onClick={handleSave}
-          className="btn btn-primary gap-2"
-          disabled={saving}
-        >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
+        <button onClick={handleSave} className="btn btn-primary gap-2" disabled={saving}>
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? '保存中...' : '保存设置'}
         </button>
       </div>
@@ -377,9 +406,7 @@ export default function SettingsPage() {
           </label>
 
           <div>
-            <label className="block text-sm text-gray-300 mb-2">
-              每日 Token 上限
-            </label>
+            <label className="block text-sm text-gray-300 mb-2">每日 Token 上限</label>
             <input
               type="number"
               value={security.dailyTokenLimit}
@@ -392,9 +419,7 @@ export default function SettingsPage() {
               min={0}
               step={100000}
             />
-            <p className="text-xs text-gray-600 mt-1.5">
-              达到上限后暂停 API 调用，防止意外费用
-            </p>
+            <p className="text-xs text-gray-600 mt-1.5">达到上限后暂停 API 调用，防止意外费用</p>
           </div>
         </div>
       </div>
@@ -471,11 +496,7 @@ export default function SettingsPage() {
 
       {/* 保存按钮 */}
       <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          className="btn btn-primary gap-2 btn-lg"
-          disabled={saving}
-        >
+        <button onClick={handleSave} className="btn btn-primary gap-2 btn-lg" disabled={saving}>
           {saving ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" /> 保存中...
@@ -501,20 +522,27 @@ export default function SettingsPage() {
               <RefreshCw className={`w-3.5 h-3.5 ${checkingUpdate ? 'animate-spin' : ''}`} />
               {checkingUpdate ? '检查中...' : '检查更新'}
             </button>
-{/* [v0.5.21] 模拟更新按钮已移除 */}
+            {/* [v0.5.21] 模拟更新按钮已移除 */}
           </div>
         </div>
 
         {/* 版本信息 */}
         <div className="text-xs text-gray-500 space-y-1 mb-3">
-          <p>当前版本: <span className="text-blue-400 font-medium">{versionInfo ? `v${versionInfo.version}` : 'v0.3.0'}</span>
-            {versionInfo?.codename && <span className="text-gray-600 ml-1">({versionInfo.codename})</span>}
+          <p>
+            当前版本:{' '}
+            <span className="text-blue-400 font-medium">
+              {versionInfo ? `v${versionInfo.version}` : 'v0.3.0'}
+            </span>
+            {versionInfo?.codename && (
+              <span className="text-gray-600 ml-1">({versionInfo.codename})</span>
+            )}
           </p>
-          {versionInfo?.releaseDate && (
-            <p>发布日期: {versionInfo.releaseDate}</p>
-          )}
+          {versionInfo?.releaseDate && <p>发布日期: {versionInfo.releaseDate}</p>}
           <p>技术栈: TypeScript + React + Zustand + Tailwind CSS + Express + WebSocket</p>
-          <p>支持模型: DeepSeek · 智谱GLM · 通义千问 · Kimi · 文心一言 · 豆包 · 混元 · MiniMax · OpenAI · Ollama</p>
+          <p>
+            支持模型: DeepSeek · 智谱GLM · 通义千问 · Kimi · 文心一言 · 豆包 · 混元 · MiniMax ·
+            OpenAI · Ollama
+          </p>
         </div>
 
         {/* ═══════════════════════════════════════════
@@ -590,7 +618,10 @@ export default function SettingsPage() {
               🎉 发现新版本 v{updateInfo.latestVersion}
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              发布时间: {updateInfo.publishedAt ? new Date(updateInfo.publishedAt).toLocaleDateString('zh-CN') : '未知'}
+              发布时间:{' '}
+              {updateInfo.publishedAt
+                ? new Date(updateInfo.publishedAt).toLocaleDateString('zh-CN')
+                : '未知'}
               {!isDesktop && <span className="ml-2 text-amber-400">（Web 版本需手动更新）</span>}
             </p>
 
@@ -621,7 +652,10 @@ export default function SettingsPage() {
               <div className="mt-2 p-2 rounded bg-black/20 text-xs text-gray-400">
                 <p className="mb-1 text-gray-300 font-medium">💡 Web 环境升级方式：</p>
                 <div className="space-y-1">
-                  <p><code className="text-yellow-400/80">git pull && pnpm install</code> → 重新构建并重启服务</p>
+                  <p>
+                    <code className="text-yellow-400/80">git pull && pnpm install</code> →
+                    重新构建并重启服务
+                  </p>
                   <p className="text-gray-500">
                     或参考 GitHub Releases 页面中的安装说明，更新后重启后端服务即可生效。
                   </p>
@@ -644,7 +678,9 @@ export default function SettingsPage() {
         {/* 更新日志 */}
         {versionInfo?.changelog && (
           <div className="mt-2">
-            <h4 className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">更新日志</h4>
+            <h4 className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+              更新日志
+            </h4>
             <pre className="text-xs text-gray-500 whitespace-pre-wrap font-mono leading-relaxed max-h-80 overflow-y-auto bg-black/20 rounded-lg p-3">
               {versionInfo.changelog}
             </pre>

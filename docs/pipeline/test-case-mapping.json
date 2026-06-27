@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "generatedAt": "2026-06-27T08:52:15.342Z",
+    "generatedAt": "2026-06-27T08:47:29.332Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1232,
-    "unmappedCases": 37,
-    "projectRoot": "/home/runner/work/easyagent/easyagent",
+    "totalTestCases": 1269,
+    "unmappedCases": 74,
+    "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
   "modules": {
@@ -396,7 +396,9 @@
     "b1a": {
       "moduleId": "b1a",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B1"
     },
     "b1b": {
       "moduleId": "b1b",
@@ -412,17 +414,23 @@
             }
           ]
         }
-      }
+      },
+      "phase": "P4",
+      "branch": "B1"
     },
     "b2a": {
       "moduleId": "b2a",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B2"
     },
     "b2b": {
       "moduleId": "b2b",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B2"
     },
     "b2c": {
       "moduleId": "b2c",
@@ -442,44 +450,108 @@
             }
           ]
         }
-      }
+      },
+      "phase": "P4",
+      "branch": "B2"
     },
     "b2d": {
       "moduleId": "b2d",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B2"
     },
     "b2e": {
       "moduleId": "b2e",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B2"
     },
     "b3a": {
       "moduleId": "b3a",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B3"
     },
     "b3b": {
       "moduleId": "b3b",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B3"
     },
     "b3c": {
       "moduleId": "b3c",
       "totalCases": 0,
-      "subModules": {}
+      "subModules": {},
+      "phase": "P4",
+      "branch": "B3"
+    },
+    "b4a": {
+      "moduleId": "b4a",
+      "totalCases": 0,
+      "phase": "P6",
+      "branch": "B4",
+      "subModules": {
+        "P0-紧急修复": {
+          "name": "P0 exports修复 + ESLint + 跨平台",
+          "cases": 0,
+          "files": []
+        }
+      }
+    },
+    "b4b": {
+      "moduleId": "b4b",
+      "totalCases": 0,
+      "phase": "P6",
+      "branch": "B4",
+      "subModules": {
+        "P1-平台适配器": {
+          "name": "P1 包名导入 + tsconfig修复 + 依赖清理",
+          "cases": 0,
+          "files": []
+        }
+      }
+    },
+    "b4c": {
+      "moduleId": "b4c",
+      "totalCases": 0,
+      "phase": "P6",
+      "branch": "B4",
+      "subModules": {
+        "P2-工程效率": {
+          "name": "P2 构建现代化 + 根目录清理 + Library Mode",
+          "cases": 0,
+          "files": []
+        }
+      }
+    },
+    "b4d": {
+      "moduleId": "b4d",
+      "totalCases": 0,
+      "phase": "P6",
+      "branch": "B4",
+      "subModules": {
+        "P3-长期质量": {
+          "name": "P3 Prettier + CI增强",
+          "cases": 0,
+          "files": []
+        }
+      }
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 37,
+      "totalCases": 74,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 37,
+          "cases": 74,
           "files": [
             {
               "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",
-              "cases": 0
+              "cases": 37
             },
             {
               "path": "packages/desktop/src/__tests__/main/auto-updater-state.test.ts",

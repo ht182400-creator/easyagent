@@ -1,7 +1,7 @@
 /**
  * Docker沙箱隔离执行模块
  * 提供安全的容器化代码执行环境，支持资源限制、网络隔离、超时控制
- * 
+ *
  * 特性:
  * - Docker 容器隔离执行
  * - CPU/内存/磁盘/网络资源限制
@@ -99,11 +99,15 @@ export function resetDockerCache(): void {
 /**
  * 检测 Docker 是否可用
  */
-export async function checkDockerAvailability(): Promise<{ available: boolean; version?: string; error?: string }> {
+export async function checkDockerAvailability(): Promise<{
+  available: boolean;
+  version?: string;
+  error?: string;
+}> {
   if (dockerChecked) {
     return { available: !!dockerVersion, version: dockerVersion || undefined };
   }
-  
+
   try {
     const output = execSync('docker version --format "{{.Server.Version}}"', {
       encoding: 'utf-8',
@@ -156,18 +160,18 @@ export class DockerSandbox {
     }
 
     this.status = 'starting';
-    
+
     try {
       // 1. 检查/拉取镜像
       await this.ensureImage();
-      
+
       // 2. 构建 docker run 参数
       const args = this.buildRunArgs();
-      
+
       // 3. 启动容器
       this.containerId = await this.runContainer(args);
       this.status = 'running';
-      
+
       logger.info({ sandboxId: this.id, containerId: this.containerId }, 'Docker 沙箱已启动');
     } catch (error) {
       this.status = 'error';
@@ -196,52 +200,53 @@ export class DockerSandbox {
     let timedOut = false;
 
     try {
-      const result = await new Promise<{ stdout: string; stderr: string; exitCode: number }>((resolve, reject) => {
-        const proc = spawn('docker', [
-          'exec', '-i', this.containerId!,
-          'sh', '-c', command,
-        ], {
-          stdio: ['ignore', 'pipe', 'pipe'],
-          windowsHide: true,
-        });
+      const result = await new Promise<{ stdout: string; stderr: string; exitCode: number }>(
+        (resolve, reject) => {
+          const proc = spawn('docker', ['exec', '-i', this.containerId!, 'sh', '-c', command], {
+            stdio: ['ignore', 'pipe', 'pipe'],
+            windowsHide: true,
+          });
 
-        let stdout = '';
-        let stderr = '';
+          let stdout = '';
+          let stderr = '';
 
-        proc.stdout.on('data', (data: Buffer) => {
-          stdout += data.toString('utf-8');
-          // 限制输出大小 10MB
-          if (stdout.length > 10 * 1024 * 1024) {
-            proc.kill();
-            reject(new Error('输出超过限制(10MB)'));
-          }
-        });
+          proc.stdout.on('data', (data: Buffer) => {
+            stdout += data.toString('utf-8');
+            // 限制输出大小 10MB
+            if (stdout.length > 10 * 1024 * 1024) {
+              proc.kill();
+              reject(new Error('输出超过限制(10MB)'));
+            }
+          });
 
-        proc.stderr.on('data', (data: Buffer) => {
-          stderr += data.toString('utf-8');
-          if (stderr.length > 5 * 1024 * 1024) {
-            proc.kill();
-            reject(new Error('错误输出超过限制(5MB)'));
-          }
-        });
+          proc.stderr.on('data', (data: Buffer) => {
+            stderr += data.toString('utf-8');
+            if (stderr.length > 5 * 1024 * 1024) {
+              proc.kill();
+              reject(new Error('错误输出超过限制(5MB)'));
+            }
+          });
 
-        const timer = setTimeout(() => {
-          timedOut = true;
-          proc.kill('SIGKILL');
-          // 也杀掉容器内的进程
-          spawn('docker', ['exec', this.containerId!, 'pkill', '-9', '-P', '1'], { windowsHide: true });
-        }, execTimeout);
+          const timer = setTimeout(() => {
+            timedOut = true;
+            proc.kill('SIGKILL');
+            // 也杀掉容器内的进程
+            spawn('docker', ['exec', this.containerId!, 'pkill', '-9', '-P', '1'], {
+              windowsHide: true,
+            });
+          }, execTimeout);
 
-        proc.on('close', (code) => {
-          clearTimeout(timer);
-          resolve({ stdout: stdout.trim(), stderr: stderr.trim(), exitCode: code ?? -1 });
-        });
+          proc.on('close', (code) => {
+            clearTimeout(timer);
+            resolve({ stdout: stdout.trim(), stderr: stderr.trim(), exitCode: code ?? -1 });
+          });
 
-        proc.on('error', (err) => {
-          clearTimeout(timer);
-          reject(err);
-        });
-      });
+          proc.on('error', (err) => {
+            clearTimeout(timer);
+            reject(err);
+          });
+        },
+      );
 
       return {
         success: result.exitCode === 0,
@@ -286,17 +291,23 @@ export class DockerSandbox {
     if (this.containerId) {
       try {
         // 优雅停止 -> 强制停止 -> 删除
-        execSync(`docker stop --time 10 ${this.containerId}`, { 
-          timeout: 15000, windowsHide: true 
+        execSync(`docker stop --time 10 ${this.containerId}`, {
+          timeout: 15000,
+          windowsHide: true,
         });
-      } catch (err) { /* 容器可能已停止 */ }
-      
+      } catch (err) {
+        /* 容器可能已停止 */
+      }
+
       try {
-        execSync(`docker rm -f ${this.containerId}`, { 
-          timeout: 10000, windowsHide: true 
+        execSync(`docker rm -f ${this.containerId}`, {
+          timeout: 10000,
+          windowsHide: true,
         });
-      } catch (err) { /* 容器可能已被删除 */ }
-      
+      } catch (err) {
+        /* 容器可能已被删除 */
+      }
+
       this.containerId = null;
     }
     this.status = 'stopped';
@@ -314,8 +325,8 @@ export class DockerSandbox {
     if (this.containsShellMetacharacters(command)) {
       throw new Error(
         `命令包含不安全的 shell 元字符，已被拒绝执行。` +
-        `允许的字符: 字母数字、空格、路径字符(/ \\ . : - _)、引号(用于路径)和常见参数标识符。` +
-        `命令: ${command.slice(0, 200)}`
+          `允许的字符: 字母数字、空格、路径字符(/ \\ . : - _)、引号(用于路径)和常见参数标识符。` +
+          `命令: ${command.slice(0, 200)}`,
       );
     }
   }
@@ -338,11 +349,11 @@ export class DockerSandbox {
     // \n \r - 换行注入
     // # - 注释（可用于截断命令）
     const dangerousPatterns = [
-      /[;&|`$()><#\x00-\x08\x0B\x0C\x0E-\x1F]/,  // 单个危险字符 + 控制字符
-      /&&/,   // 逻辑与
+      /[;&|`$()><#\x00-\x08\x0B\x0C\x0E-\x1F]/, // 单个危险字符 + 控制字符
+      /&&/, // 逻辑与
       /\|\|/, // 逻辑或
-      /\n/,   // 换行符
-      /\r/,   // 回车符
+      /\n/, // 换行符
+      /\r/, // 回车符
     ];
 
     for (const pattern of dangerousPatterns) {
@@ -359,13 +370,16 @@ export class DockerSandbox {
    */
   private async ensureImage(): Promise<void> {
     try {
-      execSync(`docker image inspect ${this.image}`, { 
-        encoding: 'utf-8', timeout: 5000, windowsHide: true 
+      execSync(`docker image inspect ${this.image}`, {
+        encoding: 'utf-8',
+        timeout: 5000,
+        windowsHide: true,
       });
     } catch (err) {
       logger.info({ image: this.image }, '拉取 Docker 镜像...');
-      execSync(`docker pull ${this.image}`, { 
-        stdio: 'inherit', timeout: 120000 
+      execSync(`docker pull ${this.image}`, {
+        stdio: 'inherit',
+        timeout: 120000,
       });
       logger.info({ image: this.image }, 'Docker 镜像拉取完成');
     }
@@ -405,7 +419,7 @@ export class DockerSandbox {
     const absWorkspace = resolve(workspace);
     const roFlag = this.options.readOnly ? ':ro' : '';
     args.push('-v', `${absWorkspace}:/workspace${roFlag}`);
-    
+
     // 额外卷挂载
     if (this.options.volumes) {
       for (const vol of this.options.volumes) {
@@ -428,13 +442,13 @@ export class DockerSandbox {
     args.push('-e', `SANDBOX_MODE=${this.options.readOnly ? 'readonly' : 'readwrite'}`);
 
     // 安全选项
-    args.push('--cap-drop=ALL');           // 移除所有能力
-    args.push('--cap-add=DAC_OVERRIDE');   // 允许基本文件权限
+    args.push('--cap-drop=ALL'); // 移除所有能力
+    args.push('--cap-add=DAC_OVERRIDE'); // 允许基本文件权限
     args.push('--security-opt=no-new-privileges');
 
     // 镜像 + 保持运行的命令
     args.push(this.image);
-    args.push('tail', '-f', '/dev/null');  // 保持容器运行
+    args.push('tail', '-f', '/dev/null'); // 保持容器运行
 
     return args;
   }
@@ -445,9 +459,9 @@ export class DockerSandbox {
   private async runContainer(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
       const proc = spawn('docker', args, { windowsHide: true });
-      
+
       let output = '';
-      
+
       proc.stdout.on('data', (data: Buffer) => {
         output += data.toString('utf-8');
       });

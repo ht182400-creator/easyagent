@@ -3,7 +3,15 @@
  * 提供知识库文档管理、语义检索、RAG查询等功能
  * 支持文档存储、分块检索、连接外部知识库
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, unlinkSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  unlinkSync,
+  statSync,
+} from 'node:fs';
 import { resolve, relative, join, extname } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { ITool } from './ToolRegistry.js';
@@ -66,8 +74,15 @@ export const KnowledgeAddTool: ITool = {
       title: { type: 'string', description: '文档标题' },
       content: { type: 'string', description: '文档内容(直接提供文本)' },
       filePath: { type: 'string', description: '或者从文件导入: 文件路径(相对于工作区)' },
-      category: { type: 'string', description: '文档分类, 如 "api"/"guide"/"note"/"reference", 默认 "general"' },
-      tags: { type: 'array', items: { type: 'string', description: '标签' }, description: '文档标签列表' },
+      category: {
+        type: 'string',
+        description: '文档分类, 如 "api"/"guide"/"note"/"reference", 默认 "general"',
+      },
+      tags: {
+        type: 'array',
+        items: { type: 'string', description: '标签' },
+        description: '文档标签列表',
+      },
     },
     required: ['title'],
   },
@@ -147,7 +162,13 @@ export const KnowledgeAddTool: ITool = {
           ``,
           `知识库共 ${index.length} 篇文档`,
         ].join('\n'),
-        metadata: { docId, title, size: content.length, chunkCount: chunks.length, totalDocs: index.length },
+        metadata: {
+          docId,
+          title,
+          size: content.length,
+          chunkCount: chunks.length,
+          totalDocs: index.length,
+        },
       };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -163,7 +184,8 @@ export const KnowledgeAddTool: ITool = {
  */
 export const KnowledgeSearchTool: ITool = {
   name: 'knowledge_search',
-  description: '在工作区知识库中搜索文档。支持关键词匹配、分类筛选、标签过滤。返回相关文档内容和摘要。',
+  description:
+    '在工作区知识库中搜索文档。支持关键词匹配、分类筛选、标签过滤。返回相关文档内容和摘要。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
@@ -214,7 +236,9 @@ export const KnowledgeSearchTool: ITool = {
                   break;
                 }
               }
-            } catch (err) { /* ignore */ }
+            } catch (err) {
+              /* ignore */
+            }
           }
 
           return titleMatch || tagMatch || categoryMatch || sourceMatch || contentMatch;
@@ -251,16 +275,20 @@ export const KnowledgeSearchTool: ITool = {
             if (chunkFiles.length > 0) {
               preview = readFileSync(join(chunkDir, chunkFiles[0]), 'utf-8').slice(0, 300);
             }
-          } catch (err) { preview = '(无法读取内容)'; }
+          } catch (err) {
+            preview = '(无法读取内容)';
+          }
         }
 
-        results.push([
-          `📄 ${doc.title}`,
-          `   分类: ${doc.category} | 标签: ${doc.tags.join(', ') || '(无)'}`,
-          `   大小: ${doc.size} 字符 | ${doc.chunkCount} 分块 | 更新: ${doc.updatedAt.slice(0, 10)}`,
-          `   预览: ${preview || '(空)'}...`,
-          `   ID: ${doc.id}`,
-        ].join('\n'));
+        results.push(
+          [
+            `📄 ${doc.title}`,
+            `   分类: ${doc.category} | 标签: ${doc.tags.join(', ') || '(无)'}`,
+            `   大小: ${doc.size} 字符 | ${doc.chunkCount} 分块 | 更新: ${doc.updatedAt.slice(0, 10)}`,
+            `   预览: ${preview || '(空)'}...`,
+            `   ID: ${doc.id}`,
+          ].join('\n'),
+        );
       }
 
       return {
@@ -302,7 +330,10 @@ export const KnowledgeGetTool: ITool = {
       const doc = index.find((d) => d.id === docId);
 
       if (!doc) {
-        return { success: false, content: `未找到ID为 "${docId}" 的文档。使用 knowledge_list 查看所有文档。` };
+        return {
+          success: false,
+          content: `未找到ID为 "${docId}" 的文档。使用 knowledge_list 查看所有文档。`,
+        };
       }
 
       const kbDir = getKnowledgeDir(context.workspace);
@@ -333,9 +364,10 @@ export const KnowledgeGetTool: ITool = {
 
       const maxContent = 20000;
       const content = fullContent.slice(0, maxContent);
-      const truncated = fullContent.length > maxContent
-        ? `\n\n... (内容已截断，共 ${fullContent.length} 字符，显示前 ${maxContent} 字符)`
-        : '';
+      const truncated =
+        fullContent.length > maxContent
+          ? `\n\n... (内容已截断，共 ${fullContent.length} 字符，显示前 ${maxContent} 字符)`
+          : '';
 
       return {
         success: true,
@@ -386,10 +418,7 @@ export const KnowledgeListTool: ITool = {
         grouped[doc.category].push(doc);
       }
 
-      const lines: string[] = [
-        `📚 知识库 (${index.length} 篇文档)`,
-        ``,
-      ];
+      const lines: string[] = [`📚 知识库 (${index.length} 篇文档)`, ``];
 
       for (const [cat, docs] of Object.entries(grouped).sort()) {
         lines.push(`[${cat}] (${docs.length}篇)`);
@@ -466,4 +495,10 @@ export const KnowledgeRemoveTool: ITool = {
 };
 
 /** 知识库工具集 */
-export const KnowledgeTools = [KnowledgeAddTool, KnowledgeSearchTool, KnowledgeGetTool, KnowledgeListTool, KnowledgeRemoveTool];
+export const KnowledgeTools = [
+  KnowledgeAddTool,
+  KnowledgeSearchTool,
+  KnowledgeGetTool,
+  KnowledgeListTool,
+  KnowledgeRemoveTool,
+];

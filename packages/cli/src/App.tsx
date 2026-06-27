@@ -26,7 +26,9 @@ function getCLIVersion(): string {
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
       return `v${pkg.version || '0.3.0'}`;
     }
-  } catch (err) { /* fallback */ }
+  } catch (err) {
+    /* fallback */
+  }
   return 'v0.3.0';
 }
 const CLI_VERSION = getCLIVersion();
@@ -190,7 +192,10 @@ export const App: FC<AppProps> = ({ initInfo }) => {
         case 'model': {
           const configManager = new ConfigManager();
           await configManager.load();
-          addMsg('system', `当前模型: ${configManager.getConfig().currentModel.provider}/${configManager.getConfig().currentModel.model}`);
+          addMsg(
+            'system',
+            `当前模型: ${configManager.getConfig().currentModel.provider}/${configManager.getConfig().currentModel.model}`,
+          );
           break;
         }
 
@@ -202,7 +207,9 @@ export const App: FC<AppProps> = ({ initInfo }) => {
               .flatMap((p: any) => (p.models || []).map((m: any) => `  ${p.name}: ${m.id}`))
               .join('\n');
             addMsg('system', `可用模型:\n${modelList || '  无'}`);
-          } catch (err) { addMsg('system', '无法获取模型列表'); }
+          } catch (err) {
+            addMsg('system', '无法获取模型列表');
+          }
           break;
         }
 
@@ -211,10 +218,15 @@ export const App: FC<AppProps> = ({ initInfo }) => {
             const configManager = new ConfigManager();
             const config = await configManager.load();
             const pList = config.providers
-              .map((p: any) => `  [${p.hasKey ? '✓' : '✗'}] ${p.name} (${p.id}) - ${p.models?.length || 0} 模型`)
+              .map(
+                (p: any) =>
+                  `  [${p.hasKey ? '✓' : '✗'}] ${p.name} (${p.id}) - ${p.models?.length || 0} 模型`,
+              )
               .join('\n');
             addMsg('system', `提供商:\n${pList}`);
-          } catch (err) { addMsg('system', '无法获取提供商列表'); }
+          } catch (err) {
+            addMsg('system', '无法获取提供商列表');
+          }
           break;
         }
 
@@ -236,13 +248,16 @@ export const App: FC<AppProps> = ({ initInfo }) => {
         }
 
         case 'status': {
-          addMsg('system', [
-            `状态: ${agentState}`,
-            `模型: ${initInfo.model}`,
-            `工具数: ${initInfo.tools}`,
-            `Tokens: 输入${tokenUsage.input} | 输出${tokenUsage.output} | 总计${tokenUsage.total}`,
-            `消息数: ${messages.length}`,
-          ].join('\n'));
+          addMsg(
+            'system',
+            [
+              `状态: ${agentState}`,
+              `模型: ${initInfo.model}`,
+              `工具数: ${initInfo.tools}`,
+              `Tokens: 输入${tokenUsage.input} | 输出${tokenUsage.output} | 总计${tokenUsage.total}`,
+              `消息数: ${messages.length}`,
+            ].join('\n'),
+          );
           break;
         }
 
@@ -251,10 +266,15 @@ export const App: FC<AppProps> = ({ initInfo }) => {
             const sessionManager = new SessionManager();
             const sessions = sessionManager.list();
             const sList = sessions
-              .map((s: any) => `  ${s.id?.slice(-12)} - ${s.title || '未命名'} [${s.status || 'active'}]`)
+              .map(
+                (s: any) =>
+                  `  ${s.id?.slice(-12)} - ${s.title || '未命名'} [${s.status || 'active'}]`,
+              )
               .join('\n');
             addMsg('system', `会话 (${sessions.length}):\n${sList || '  无会话'}`);
-          } catch (err) { addMsg('system', '无法获取会话列表'); }
+          } catch (err) {
+            addMsg('system', '无法获取会话列表');
+          }
           break;
         }
 
@@ -262,7 +282,10 @@ export const App: FC<AppProps> = ({ initInfo }) => {
           const toolRegistry = new ToolRegistry();
           toolRegistry.registerAll(getAllBuiltinTools());
           const tools = toolRegistry.list();
-          addMsg('system', `工具 (${tools.length}):\n${tools.map((t: any) => `  ${t.name.padEnd(24)} ${t.description?.slice(0, 50)}`).join('\n')}`);
+          addMsg(
+            'system',
+            `工具 (${tools.length}):\n${tools.map((t: any) => `  ${t.name.padEnd(24)} ${t.description?.slice(0, 50)}`).join('\n')}`,
+          );
           break;
         }
 
@@ -314,9 +337,7 @@ export const App: FC<AppProps> = ({ initInfo }) => {
   return (
     <Box flexDirection="column" padding={1} height="100%">
       {/* 欢迎 Banner */}
-      {showBanner && messages.length <= 1 && (
-        <Banner version={CLI_VERSION} />
-      )}
+      {showBanner && messages.length <= 1 && <Banner version={CLI_VERSION} />}
 
       {/* 帮助面板 */}
       {showHelp && <HelpPanel />}

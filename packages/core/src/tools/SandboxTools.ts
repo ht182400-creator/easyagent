@@ -1,7 +1,7 @@
 /**
  * 沙箱执行工具集
  * 提供安全的容器化代码执行能力
- * 
+ *
  * 工具列表:
  * - sandbox_exec: 在Docker沙箱中安全执行代码
  * - sandbox_status: 查看沙箱状态和资源使用
@@ -10,7 +10,11 @@
 import type { ITool } from './ToolRegistry.js';
 import type { ToolResult } from '../types/index.js';
 import { SandboxManager } from '../sandbox/SandboxManager.js';
-import { checkDockerAvailability, type SandboxOptions, type SandboxResult } from '../sandbox/DockerSandbox.js';
+import {
+  checkDockerAvailability,
+  type SandboxOptions,
+  type SandboxResult,
+} from '../sandbox/DockerSandbox.js';
 import { logger } from '../utils/logger.js';
 
 /** 获取或创建沙箱管理器单例 */
@@ -109,7 +113,7 @@ export const SandboxExecTool: ITool = {
       // 初始化沙箱管理器（Docker不可用时自动降级为本地模式）
       const manager = getManager();
       const initResult = await manager.init();
-      
+
       if (!initResult.available && initResult.mode === 'disabled') {
         return {
           success: false,
@@ -138,7 +142,7 @@ export const SandboxExecTool: ITool = {
 
       // 构建输出
       const lines: string[] = [];
-      
+
       if (result.success) {
         lines.push(`✓ 沙箱执行成功 (${result.duration}ms)`);
       } else if (result.timedOut) {
@@ -146,9 +150,9 @@ export const SandboxExecTool: ITool = {
       } else {
         lines.push(`✗ 执行失败 (退出码: ${result.exitCode}, ${result.duration}ms)`);
       }
-      
+
       lines.push(``);
-      
+
       if (result.stdout) {
         lines.push(`--- stdout ---`);
         lines.push(result.stdout.slice(0, 5000));
@@ -156,12 +160,12 @@ export const SandboxExecTool: ITool = {
           lines.push(`... (已截断，总长度 ${result.stdout.length} 字符)`);
         }
       }
-      
+
       if (result.stderr) {
         lines.push(`--- stderr ---`);
         lines.push(result.stderr.slice(0, 2000));
       }
-      
+
       if (!result.stdout && !result.stderr) {
         lines.push(`(无输出)`);
       }

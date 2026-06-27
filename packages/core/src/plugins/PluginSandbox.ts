@@ -94,7 +94,10 @@ export class PluginSandbox {
   /** Worker 实例 */
   private worker: Worker | null = null;
   /** Pending RPC 请求 Map<requestId, { resolve, reject }> */
-  private pending: Map<string, { resolve: (value: unknown) => void; reject: (err: Error) => void }> = new Map();
+  private pending: Map<
+    string,
+    { resolve: (value: unknown) => void; reject: (err: Error) => void }
+  > = new Map();
   /** 请求计数器 */
   private requestCounter = 0;
   /** 沙箱配置 */
@@ -184,9 +187,9 @@ export class PluginSandbox {
 
       // 发送 init 消息
       const entryPath = resolve(this.config.pluginDir, this.config.manifest.main);
-      const result = await this.sendRpc('init', {
+      const result = (await this.sendRpc('init', {
         pluginPath: entryPath,
-      }) as SandboxInitResult;
+      })) as SandboxInitResult;
 
       this.pluginInfo = result;
       this._status = 'ready';

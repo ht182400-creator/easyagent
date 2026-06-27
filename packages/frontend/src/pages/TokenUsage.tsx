@@ -4,9 +4,21 @@
  */
 import { useEffect, useState, useCallback } from 'react';
 import {
-  TrendingUp, Zap, BarChart3, PieChart, DollarSign,
-  Activity, Cpu, Clock, ArrowUpRight, ArrowDownRight,
-  Calendar, Filter, RefreshCw, Download, Database,
+  TrendingUp,
+  Zap,
+  BarChart3,
+  PieChart,
+  DollarSign,
+  Activity,
+  Cpu,
+  Clock,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Filter,
+  RefreshCw,
+  Download,
+  Database,
   ChevronRight,
 } from 'lucide-react';
 import { getApiBase } from '../request';
@@ -97,15 +109,29 @@ function formatCost(n: number): string {
 /** 格式化日期 */
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 /** 提供商显示名映射 */
 const PROVIDER_LABELS: Record<string, string> = {
-  openai: 'OpenAI', anthropic: 'Anthropic', deepseek: 'DeepSeek',
-  google: 'Google', alibaba: '阿里云', moonshot: 'Moonshot', zhipu: '智谱',
-  baidu: '百度', tencent: '腾讯', ollama: 'Ollama', siliconflow: '硅基流动',
-  volc: '火山引擎', groq: 'Groq',
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  deepseek: 'DeepSeek',
+  google: 'Google',
+  alibaba: '阿里云',
+  moonshot: 'Moonshot',
+  zhipu: '智谱',
+  baidu: '百度',
+  tencent: '腾讯',
+  ollama: 'Ollama',
+  siliconflow: '硅基流动',
+  volc: '火山引擎',
+  groq: 'Groq',
 };
 
 function getProviderLabel(id: string): string {
@@ -115,7 +141,11 @@ function getProviderLabel(id: string): string {
 // ======================= 组件 =======================
 
 /** SVG 环形图 */
-function DonutChart({ data, size = 180, thickness = 32 }: {
+function DonutChart({
+  data,
+  size = 180,
+  thickness = 32,
+}: {
   data: Array<{ label: string; value: number; color: string }>;
   size?: number;
   thickness?: number;
@@ -156,17 +186,42 @@ function DonutChart({ data, size = 180, thickness = 32 }: {
     <div className="flex items-center gap-4">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
         {slices.map((s, i) => (
-          <path key={i} d={s.d} fill="none" stroke={s.color} strokeWidth={sw} strokeLinecap="round" opacity={0.9} />
+          <path
+            key={i}
+            d={s.d}
+            fill="none"
+            stroke={s.color}
+            strokeWidth={sw}
+            strokeLinecap="round"
+            opacity={0.9}
+          />
         ))}
-        <text x={cx} y={cy - 8} textAnchor="middle" className="fill-gray-300" style={{ fontSize: '13px', fontWeight: 600 }}>
+        <text
+          x={cx}
+          y={cy - 8}
+          textAnchor="middle"
+          className="fill-gray-300"
+          style={{ fontSize: '13px', fontWeight: 600 }}
+        >
           {formatTokens(total)}
         </text>
-        <text x={cx} y={cy + 12} textAnchor="middle" className="fill-gray-500" style={{ fontSize: '10px' }}>Total</text>
+        <text
+          x={cx}
+          y={cy + 12}
+          textAnchor="middle"
+          className="fill-gray-500"
+          style={{ fontSize: '10px' }}
+        >
+          Total
+        </text>
       </svg>
       <div className="flex flex-col gap-1.5 text-xs">
         {data.map((d) => (
           <div key={d.label} className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
+            <span
+              className="w-2.5 h-2.5 rounded-sm shrink-0"
+              style={{ backgroundColor: d.color }}
+            />
             <span className="text-gray-400 truncate max-w-[100px]">{d.label}</span>
             <span className="text-gray-500 ml-auto">{((d.value / total) * 100).toFixed(1)}%</span>
           </div>
@@ -177,22 +232,45 @@ function DonutChart({ data, size = 180, thickness = 32 }: {
 }
 
 /** SVG 柱状趋势图 */
-function BarChart({ data, height = 140 }: {
+function BarChart({
+  data,
+  height = 140,
+}: {
   data: Array<{ label: string; value: number }>;
   height?: number;
 }) {
   const maxVal = Math.max(1, ...data.map((d) => d.value));
-  const barW = Math.max(6, Math.min(16, Math.floor((data.length > 0 ? 600 : 200) / data.length) - 2));
+  const barW = Math.max(
+    6,
+    Math.min(16, Math.floor((data.length > 0 ? 600 : 200) / data.length) - 2),
+  );
 
   return (
     <div className="overflow-x-auto">
-      <svg width={Math.max(200, data.length * (barW + 4) + 30)} height={height + 30} className="mx-auto">
+      <svg
+        width={Math.max(200, data.length * (barW + 4) + 30)}
+        height={height + 30}
+        className="mx-auto"
+      >
         {/* 网格线 */}
         {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
           <g key={pct}>
-            <line x1="24" y1={height - pct * height + 10} x2={data.length * (barW + 4) + 24} y2={height - pct * height + 10}
-              stroke="#374151" strokeWidth="0.5" strokeDasharray="3 3" />
-            <text x="20" y={height - pct * height + 14} textAnchor="end" className="fill-gray-600" style={{ fontSize: '8px' }}>
+            <line
+              x1="24"
+              y1={height - pct * height + 10}
+              x2={data.length * (barW + 4) + 24}
+              y2={height - pct * height + 10}
+              stroke="#374151"
+              strokeWidth="0.5"
+              strokeDasharray="3 3"
+            />
+            <text
+              x="20"
+              y={height - pct * height + 14}
+              textAnchor="end"
+              className="fill-gray-600"
+              style={{ fontSize: '8px' }}
+            >
               {formatTokens(Math.round(maxVal * pct))}
             </text>
           </g>
@@ -264,26 +342,46 @@ export default function TokenUsage() {
   const summary = (() => {
     if (!data) return null;
     switch (timeRange) {
-      case 'today': return data.summary.today;
-      case 'week': return data.summary.thisWeek;
-      case 'month': return data.summary.thisMonth;
-      default: return data.summary.total;
+      case 'today':
+        return data.summary.today;
+      case 'week':
+        return data.summary.thisWeek;
+      case 'month':
+        return data.summary.thisMonth;
+      default:
+        return data.summary.total;
     }
   })();
 
   // 模型分布颜色映射
-  const MODEL_COLORS = ['#a78bfa', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#818cf8', '#fb923c', '#2dd4bf'];
-  const donutData = data?.byModel.map((m, i) => ({
-    label: m.model,
-    value: m.totalTokens,
-    color: MODEL_COLORS[i % MODEL_COLORS.length],
-  })) ?? [];
+  const MODEL_COLORS = [
+    '#a78bfa',
+    '#60a5fa',
+    '#34d399',
+    '#fbbf24',
+    '#f87171',
+    '#818cf8',
+    '#fb923c',
+    '#2dd4bf',
+  ];
+  const donutData =
+    data?.byModel.map((m, i) => ({
+      label: m.model,
+      value: m.totalTokens,
+      color: MODEL_COLORS[i % MODEL_COLORS.length],
+    })) ?? [];
 
   // 按提供商颜色
   const PROVIDER_COLORS: Record<string, string> = {
-    openai: '#10a37f', anthropic: '#d97706', deepseek: '#4f46e5',
-    google: '#4285f4', alibaba: '#ff6a00', zhipu: '#1677ff',
-    ollama: '#6366f1', groq: '#f97316', moonshot: '#ec4899',
+    openai: '#10a37f',
+    anthropic: '#d97706',
+    deepseek: '#4f46e5',
+    google: '#4285f4',
+    alibaba: '#ff6a00',
+    zhipu: '#1677ff',
+    ollama: '#6366f1',
+    groq: '#f97316',
+    moonshot: '#ec4899',
   };
 
   // 柱状图数据
@@ -291,8 +389,8 @@ export default function TokenUsage() {
 
   // 筛选后的明细
   const filteredCalls = modelFilter
-    ? data?.recentCalls.filter((c) => `${c.provider}/${c.model}` === modelFilter) ?? []
-    : data?.recentCalls ?? [];
+    ? (data?.recentCalls.filter((c) => `${c.provider}/${c.model}` === modelFilter) ?? [])
+    : (data?.recentCalls ?? []);
 
   if (loading) {
     return (
@@ -315,7 +413,9 @@ export default function TokenUsage() {
             <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
             <h2 className="text-lg font-semibold text-gray-300 mb-2">数据加载失败</h2>
             <p className="text-sm text-gray-500 mb-4">{error}</p>
-            <button onClick={fetchData} className="btn btn-primary text-sm">重试</button>
+            <button onClick={fetchData} className="btn btn-primary text-sm">
+              重试
+            </button>
           </div>
         </div>
       </div>
@@ -336,7 +436,10 @@ export default function TokenUsage() {
           <p className="text-sm text-gray-500 mt-1">多维度分析模型调用消耗、趋势变化与费用估算</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={fetchData} className="btn-ghost text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+          <button
+            onClick={fetchData}
+            className="btn-ghost text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+          >
             <RefreshCw className="w-3.5 h-3.5" />
             刷新
           </button>
@@ -367,7 +470,15 @@ export default function TokenUsage() {
       {/* ======== 统计概览卡片 ======== */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard
-          label={timeRange === 'today' ? '今日用量' : timeRange === 'week' ? '本周用量' : timeRange === 'month' ? '本月用量' : '总用量'}
+          label={
+            timeRange === 'today'
+              ? '今日用量'
+              : timeRange === 'week'
+                ? '本周用量'
+                : timeRange === 'month'
+                  ? '本月用量'
+                  : '总用量'
+          }
           value={summary ? formatTokens(summary.totalTokens) : '—'}
           sub={`输入 ${summary ? formatTokens(summary.inputTokens) : '—'} · 输出 ${summary ? formatTokens(summary.outputTokens) : '—'}`}
           icon={Activity}
@@ -429,7 +540,7 @@ export default function TokenUsage() {
             <DollarSign className="w-4 h-4 text-emerald-400" />
             费用估算明细
           </h3>
-          {(!data || data.cost.byModel.length === 0) ? (
+          {!data || data.cost.byModel.length === 0 ? (
             <div className="text-gray-600 text-xs text-center py-8">暂无数据</div>
           ) : (
             <div className="space-y-3">
@@ -440,22 +551,32 @@ export default function TokenUsage() {
                   <div key={i} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: MODEL_COLORS[i % MODEL_COLORS.length] }} />
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: MODEL_COLORS[i % MODEL_COLORS.length] }}
+                        />
                         <span className="text-gray-300">{m.model}</span>
                         <span className="text-gray-600">({getProviderLabel(m.provider)})</span>
                       </div>
                       <span className="text-emerald-400 font-medium">{formatCost(m.cost)}</span>
                     </div>
                     <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500/40 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      <div
+                        className="h-full bg-emerald-500/40 rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
-                    <div className="text-gray-600" style={{ fontSize: '10px' }}>{formatTokens(m.tokens)} tokens</div>
+                    <div className="text-gray-600" style={{ fontSize: '10px' }}>
+                      {formatTokens(m.tokens)} tokens
+                    </div>
                   </div>
                 );
               })}
               <div className="border-t border-gray-800/60 pt-2 mt-2 flex justify-between text-xs">
                 <span className="text-gray-400 font-medium">总计</span>
-                <span className="text-emerald-400 font-bold">{formatCost(data.cost.totalEstimatedCost)}</span>
+                <span className="text-emerald-400 font-bold">
+                  {formatCost(data.cost.totalEstimatedCost)}
+                </span>
               </div>
             </div>
           )}
@@ -513,22 +634,43 @@ export default function TokenUsage() {
               </thead>
               <tbody>
                 {filteredCalls.map((call, i) => (
-                  <tr key={i} className="border-b border-gray-800/30 hover:bg-gray-800/40 transition-colors">
-                    <td className="py-2.5 pr-4 text-gray-400 whitespace-nowrap">{formatDate(call.timestamp)}</td>
-                    <td className="py-2.5 pr-4 text-gray-300 max-w-[180px] truncate" title={call.title}>{call.title}</td>
+                  <tr
+                    key={i}
+                    className="border-b border-gray-800/30 hover:bg-gray-800/40 transition-colors"
+                  >
+                    <td className="py-2.5 pr-4 text-gray-400 whitespace-nowrap">
+                      {formatDate(call.timestamp)}
+                    </td>
+                    <td
+                      className="py-2.5 pr-4 text-gray-300 max-w-[180px] truncate"
+                      title={call.title}
+                    >
+                      {call.title}
+                    </td>
                     <td className="py-2.5 pr-4">
                       <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full" style={{
-                          backgroundColor: PROVIDER_COLORS[call.provider] || '#6b7280',
-                        }} />
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{
+                            backgroundColor: PROVIDER_COLORS[call.provider] || '#6b7280',
+                          }}
+                        />
                         <span className="text-gray-300">{call.model}</span>
                         <span className="text-gray-600">({getProviderLabel(call.provider)})</span>
                       </div>
                     </td>
-                    <td className="py-2.5 pr-4 text-right text-blue-400 tabular-nums">{formatTokens(call.inputTokens)}</td>
-                    <td className="py-2.5 pr-4 text-right text-purple-400 tabular-nums">{formatTokens(call.outputTokens)}</td>
-                    <td className="py-2.5 pr-4 text-right text-gray-300 font-medium tabular-nums">{formatTokens(call.totalTokens)}</td>
-                    <td className="py-2.5 text-right text-emerald-400 tabular-nums">{formatCost(call.estimatedCost)}</td>
+                    <td className="py-2.5 pr-4 text-right text-blue-400 tabular-nums">
+                      {formatTokens(call.inputTokens)}
+                    </td>
+                    <td className="py-2.5 pr-4 text-right text-purple-400 tabular-nums">
+                      {formatTokens(call.outputTokens)}
+                    </td>
+                    <td className="py-2.5 pr-4 text-right text-gray-300 font-medium tabular-nums">
+                      {formatTokens(call.totalTokens)}
+                    </td>
+                    <td className="py-2.5 text-right text-emerald-400 tabular-nums">
+                      {formatCost(call.estimatedCost)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -544,7 +686,14 @@ export default function TokenUsage() {
 
 /** 统计概览卡片 */
 function SummaryCard({
-  label, value, sub, icon: Icon, gradient, border, textColor, accentClass,
+  label,
+  value,
+  sub,
+  icon: Icon,
+  gradient,
+  border,
+  textColor,
+  accentClass,
 }: {
   label: string;
   value: string | number;
@@ -556,15 +705,15 @@ function SummaryCard({
   accentClass: string;
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} ${border} border p-5`}>
+    <div
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} ${border} border p-5`}
+    >
       <div className={`absolute -top-6 -right-6 w-16 h-16 rounded-full ${accentClass} blur-xl`} />
       <div className="flex items-center justify-between mb-3 relative">
         <span className="text-xs text-gray-500 font-medium">{label}</span>
         <Icon className={`w-4 h-4 ${textColor}`} />
       </div>
-      <div className={`text-2xl font-bold ${textColor} tabular-nums mb-1 relative`}>
-        {value}
-      </div>
+      <div className={`text-2xl font-bold ${textColor} tabular-nums mb-1 relative`}>{value}</div>
       <div className="text-xs text-gray-600 relative">{sub}</div>
     </div>
   );

@@ -63,9 +63,5 @@ export const ConfigProvider: FC<ConfigProviderProps> = ({ config, children }) =>
     setIsDesktop(merged.isDesktop);
   }, [merged.apiBase, merged.wsBase, merged.isDesktop]);
 
-  return (
-    <ConfigContext.Provider value={merged}>
-      {children}
-    </ConfigContext.Provider>
-  );
+  return <ConfigContext.Provider value={merged}>{children}</ConfigContext.Provider>;
 };

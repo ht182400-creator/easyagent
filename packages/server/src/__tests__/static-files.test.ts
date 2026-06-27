@@ -30,7 +30,9 @@ describe('静态文件服务 — 前端资源', () => {
   it('index.html 应存在并被提供 (200)', async () => {
     // 这个测试需要 web/dist 已构建
     if (!existsSync(join(webDistPath, 'index.html'))) {
-      console.warn('⚠ web/dist 不存在，跳过静态文件测试。请先运行: cd packages/web && npx vite build');
+      console.warn(
+        '⚠ web/dist 不存在，跳过静态文件测试。请先运行: cd packages/web && npx vite build',
+      );
       return;
     }
     const res = await request(app).get('/');

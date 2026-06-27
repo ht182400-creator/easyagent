@@ -9,6 +9,7 @@
 ## 1. 问题现象
 
 启动 `EasyAgent.exe` 后，页面显示"无法连接到后端服务"：
+
 - 侧边栏显示红色断开图标
 - Dashboard 显示"正在连接服务..."
 - 实际后端 API 可正常响应（`curl http://127.0.0.1:3456/api/health` → 200 OK）
@@ -19,40 +20,41 @@
 
 ### 阶段 1：怀疑后端未启动（⏱ 约 30 分钟）
 
-| 检查项 | 结果 |
-|--------|------|
-| 端口 3456 是否监听 | ✅ `netstat` 确认 LISTENING |
-| `/api/health` 响应 | ✅ `curl` 返回 200 OK |
-| `/api/config` 响应 | ✅ `curl` 返回 200 OK |
+| 检查项             | 结果                         |
+| ------------------ | ---------------------------- |
+| 端口 3456 是否监听 | ✅ `netstat` 确认 LISTENING  |
+| `/api/health` 响应 | ✅ `curl` 返回 200 OK        |
+| `/api/config` 响应 | ✅ `curl` 返回 200 OK        |
 | `/api/status` 响应 | ✅ `curl` 返回完整 JSON 数据 |
 
 → **后端完全正常，问题在前端渲染层**。
 
 ### 阶段 2：怀疑 asar 打包遗漏（⏱ 约 50 分钟）
 
-| 检查项 | 结果 |
-|--------|------|
-| asar 中是否包含 `@easyagent/server` | ✅ 正常 |
-| asar 中是否包含 `@easyagent/frontend` | ✅ 正常 |
-| `better-sqlite3.node` 原生模块 | ✅ unpacked 中正常 |
-| dist renderer JS 与 asar 中 JS 一致 | ✅ MD5 匹配 |
+| 检查项                                | 结果               |
+| ------------------------------------- | ------------------ |
+| asar 中是否包含 `@easyagent/server`   | ✅ 正常            |
+| asar 中是否包含 `@easyagent/frontend` | ✅ 正常            |
+| `better-sqlite3.node` 原生模块        | ✅ unpacked 中正常 |
+| dist renderer JS 与 asar 中 JS 一致   | ✅ MD5 匹配        |
 
 → **打包产物完整，非打包问题**。
 
 ### 阶段 3：修复 4 个疑似问题（⏱ 约 40 分钟）
 
-| # | 修改 | 位置 | 假设 |
-|---|------|------|------|
-| 1 | `server.listen()` Promise 化 | `main.ts:67` | 后端异步启动，`startBackendServer()` 返回时未就绪 |
-| 2 | `apiRequest()` 添加 5 次重试 | `request.ts:82` | 前端请求早于后端就绪 |
-| 3 | `apiFetch()` 添加重试 | `api.ts` | WebSocket 连接同问题 |
-| 4 | Dashboard 真实连接状态 | `Dashboard.tsx` | 一直显示"已连接"（假阳性） |
+| #   | 修改                         | 位置            | 假设                                              |
+| --- | ---------------------------- | --------------- | ------------------------------------------------- |
+| 1   | `server.listen()` Promise 化 | `main.ts:67`    | 后端异步启动，`startBackendServer()` 返回时未就绪 |
+| 2   | `apiRequest()` 添加 5 次重试 | `request.ts:82` | 前端请求早于后端就绪                              |
+| 3   | `apiFetch()` 添加重试        | `api.ts`        | WebSocket 连接同问题                              |
+| 4   | Dashboard 真实连接状态       | `Dashboard.tsx` | 一直显示"已连接"（假阳性）                        |
 
 → 修复后重新编译打包，问题**依旧**。
 
 ### 阶段 4：定位真正根因（⏱ 约 30 分钟）
 
 关键发现：
+
 1. 启动 EXE → `curl` 所有 API 返回 200 OK（后端正常）
 2. 前端渲染的 page 却报 "无法连接到后端服务"
 3. 错误来自 `request.ts` 的 `TypeError: Failed to fetch` 分支
@@ -81,11 +83,11 @@ setApiBase(merged.apiBase);  // 设置 _apiBase = 'http://127.0.0.1:3456'
 
 ## 3. 为何 v0.5.3 (6/24) 没有这个问题？
 
-| 对比维度 | v0.5.3 | v0.5.4 (修复前) |
-|---------|--------|-----------------|
-| `config.tsx` 源码 | `useEffect` | **完全相同** |
-| `App.tsx` 源码 | `useEffect` 调用 `loadSettings()` | **完全相同** |
-| `request.ts` 源码 | `_apiBase = ''` 初始值 | **完全相同** |
+| 对比维度          | v0.5.3                            | v0.5.4 (修复前) |
+| ----------------- | --------------------------------- | --------------- |
+| `config.tsx` 源码 | `useEffect`                       | **完全相同**    |
+| `App.tsx` 源码    | `useEffect` 调用 `loadSettings()` | **完全相同**    |
+| `request.ts` 源码 | `_apiBase = ''` 初始值            | **完全相同**    |
 
 **源码完全一致**。这是 React 18 `useEffect` 的**不确定行为**：
 
@@ -151,10 +153,10 @@ setApiBase(merged.apiBase);  // 设置 _apiBase = 'http://127.0.0.1:3456'
 
 **不会影响 Web 版功能。** 分析如下：
 
-| 运行环境 | `_apiBase` 空字符串时的 URL | 浏览器解析 | 结果 |
-|---------|--------------------------|-----------|------|
-| Web (http://localhost:5173) | `/api/config` | `http://localhost:5173/api/config` | ✅ Vite 代理正常 |
-| Desktop (file://) | `/api/config` | `file:///api/config` | ❌ 文件系统路径，不存在 |
+| 运行环境                    | `_apiBase` 空字符串时的 URL | 浏览器解析                         | 结果                    |
+| --------------------------- | --------------------------- | ---------------------------------- | ----------------------- |
+| Web (http://localhost:5173) | `/api/config`               | `http://localhost:5173/api/config` | ✅ Vite 代理正常        |
+| Desktop (file://)           | `/api/config`               | `file:///api/config`               | ❌ 文件系统路径，不存在 |
 
 Web 版默认 `apiBase=''`，空字符串 + 相对路径在浏览器中天然正确。只有 Electron `file://` 协议才会将相对路径解析到本地文件系统。
 
@@ -164,14 +166,14 @@ Web 版默认 `apiBase=''`，空字符串 + 相对路径在浏览器中天然正
 
 ## 6. 完整修复清单
 
-| 文件 | 修改内容 | 修复类型 |
-|------|---------|---------|
-| `config.tsx:8,59` | `useEffect` → `useLayoutEffect` | 🔴 **根因修复** |
-| `Dashboard.tsx:14-15` | 新增 import `useConfig`, `apiRequest` | 依赖修复 |
-| `Dashboard.tsx:66-74` | 裸 `fetch('/api/status')` → `apiRequest('/api/status')` | 🟡 防御修复 |
-| `Dashboard.tsx:77-84` | 裸 `fetch('/api/config/templates')` → `apiRequest(...)` | 🟡 防御修复 |
-| `main.ts:67` | `server.listen()` Promise 化 | 🟡 后端竞态修复 |
-| `request.ts:82-124` | `apiRequest()` 5 次重试 + performRequest | 🟡 防御修复 |
+| 文件                  | 修改内容                                                | 修复类型        |
+| --------------------- | ------------------------------------------------------- | --------------- |
+| `config.tsx:8,59`     | `useEffect` → `useLayoutEffect`                         | 🔴 **根因修复** |
+| `Dashboard.tsx:14-15` | 新增 import `useConfig`, `apiRequest`                   | 依赖修复        |
+| `Dashboard.tsx:66-74` | 裸 `fetch('/api/status')` → `apiRequest('/api/status')` | 🟡 防御修复     |
+| `Dashboard.tsx:77-84` | 裸 `fetch('/api/config/templates')` → `apiRequest(...)` | 🟡 防御修复     |
+| `main.ts:67`          | `server.listen()` Promise 化                            | 🟡 后端竞态修复 |
+| `request.ts:82-124`   | `apiRequest()` 5 次重试 + performRequest                | 🟡 防御修复     |
 
 ---
 

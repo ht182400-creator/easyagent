@@ -1,7 +1,7 @@
 /**
  * 知识库服务层
  * 封装 KnowledgeTools 的存储逻辑，提供简洁的 CRUD 接口供 HTTP API 使用
- * 
+ *
  * 支持两种作用域:
  * - project: 项目级知识库，存储在 {workspace}/.easyagent/knowledge/
  * - global:  全局知识库，存储在 ~/.easyagent/knowledge/，跨项目共享
@@ -47,7 +47,7 @@ export interface KBSearchResult {
 
 /**
  * 知识库服务 - 管理工作区知识库文档的存储与检索
- * 
+ *
  * 两种模式:
  * - project: 数据存储在 {workspace}/.easyagent/knowledge/ 目录下
  * - global:  数据存储在 ~/.easyagent/knowledge/ 目录下，跨项目共享
@@ -71,7 +71,7 @@ export class KnowledgeService {
     if (!KnowledgeService.globalInstance) {
       KnowledgeService.globalInstance = new KnowledgeService(
         resolve(homedir(), '.easyagent'),
-        'global'
+        'global',
       );
     }
     return KnowledgeService.globalInstance;
@@ -196,12 +196,10 @@ export class KnowledgeService {
   /**
    * 搜索知识库
    */
-  search(params: {
-    query: string;
-    category?: string;
-    tag?: string;
-    maxResults?: number;
-  }): { results: KBSearchResult[]; totalDocs: number } {
+  search(params: { query: string; category?: string; tag?: string; maxResults?: number }): {
+    results: KBSearchResult[];
+    totalDocs: number;
+  } {
     const query = params.query.toLowerCase();
     const category = params.category;
     const tag = params.tag;
@@ -231,7 +229,9 @@ export class KnowledgeService {
                 break;
               }
             }
-          } catch (err) { /* ignore */ }
+          } catch (err) {
+            /* ignore */
+          }
         }
 
         return titleMatch || tagMatch || categoryMatch || sourceMatch || contentMatch;
@@ -262,12 +262,17 @@ export class KnowledgeService {
               score += 0.3;
               const start = Math.max(0, idx - 40);
               const end = Math.min(firstChunk.length, idx + query.length + 80);
-              snippet = (start > 0 ? '...' : '') + firstChunk.slice(start, end) + (end < firstChunk.length ? '...' : '');
+              snippet =
+                (start > 0 ? '...' : '') +
+                firstChunk.slice(start, end) +
+                (end < firstChunk.length ? '...' : '');
             } else {
               snippet = firstChunk.slice(0, 150);
             }
           }
-        } catch (err) { /* ignore */ }
+        } catch (err) {
+          /* ignore */
+        }
       }
 
       return { document: doc, score, snippet };
@@ -283,7 +288,12 @@ export class KnowledgeService {
   /**
    * 获取文档完整内容
    */
-  getDocument(docId: string): { success: boolean; doc?: DocIndex; content?: string; error?: string } {
+  getDocument(docId: string): {
+    success: boolean;
+    doc?: DocIndex;
+    content?: string;
+    error?: string;
+  } {
     const index = this.loadIndex();
     const doc = index.find((d) => d.id === docId);
 
@@ -410,7 +420,11 @@ export class KnowledgeService {
    * 从绝对路径导入文档（支持项目外任意文件）
    * 用于文件上传场景或导入系统任意位置的文件
    */
-  importFromAbsolutePath(absolutePath: string): { success: boolean; docId?: string; error?: string } {
+  importFromAbsolutePath(absolutePath: string): {
+    success: boolean;
+    docId?: string;
+    error?: string;
+  } {
     try {
       // 安全白名单检查：只允许从工作区、上传目录或系统临时目录导入文件
       const allowedDirs = [
@@ -458,7 +472,7 @@ export class KnowledgeService {
     fileName: string,
     content: string,
     category?: string,
-    tags?: string[]
+    tags?: string[],
   ): { success: boolean; docId?: string; error?: string } {
     try {
       const baseName = fileName.replace(/\.[^.]+$/, '');

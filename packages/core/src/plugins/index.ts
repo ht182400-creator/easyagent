@@ -38,15 +38,9 @@ export {
 } from './PluginPermission.js';
 
 // Manifest 系统
-export type {
-  PluginManifest,
-  ManifestValidationResult,
-} from './PluginManifest.js';
+export type { PluginManifest, ManifestValidationResult } from './PluginManifest.js';
 
-export {
-  loadManifest,
-  getManifestPath,
-} from './PluginManifest.js';
+export { loadManifest, getManifestPath } from './PluginManifest.js';
 
 // 沙箱系统
 export { PluginSandbox, createSandbox } from './PluginSandbox.js';

@@ -110,9 +110,7 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
   toggleTool: async (toolName, enabled) => {
     // 先乐观更新 UI（即时响应）
     set((s) => ({
-      tools: s.tools.map((t) =>
-        t.name === toolName ? { ...t, enabled } : t
-      ),
+      tools: s.tools.map((t) => (t.name === toolName ? { ...t, enabled } : t)),
     }));
     // 调用后端 API 持久化状态
     try {
@@ -124,9 +122,7 @@ export const useToolsStore = create<ToolsState>((set, get) => ({
       console.error(`[toolsStore] 切换工具状态失败:`, err);
       // 回滚 UI 状态
       set((s) => ({
-        tools: s.tools.map((t) =>
-          t.name === toolName ? { ...t, enabled: !enabled } : t
-        ),
+        tools: s.tools.map((t) => (t.name === toolName ? { ...t, enabled: !enabled } : t)),
       }));
     }
   },

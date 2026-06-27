@@ -26,7 +26,10 @@ const PROVIDERS_FILE = join(CONFIG_DIR, 'providers.json');
 function parseAllowedCommandsFromEnv(): string[] {
   const envVal = process.env.EASYAGENT_ALLOWED_COMMANDS;
   if (envVal) {
-    return envVal.split(',').map((c) => c.trim()).filter(Boolean);
+    return envVal
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
   }
   return [];
 }
@@ -34,20 +37,62 @@ function parseAllowedCommandsFromEnv(): string[] {
 /** 默认允许的命令(如无环境变量则使用此列表) */
 const DEFAULT_ALLOWED_COMMANDS = [
   // 版本控制
-  'git', 'svn',
+  'git',
+  'svn',
   // 包管理
-  'npm', 'pnpm', 'yarn', 'pip', 'pip3', 'cargo', 'go', 'gem', 'conda',
+  'npm',
+  'pnpm',
+  'yarn',
+  'pip',
+  'pip3',
+  'cargo',
+  'go',
+  'gem',
+  'conda',
   // 运行时
-  'node', 'python', 'python3', 'ruby', 'perl', 'php',
+  'node',
+  'python',
+  'python3',
+  'ruby',
+  'perl',
+  'php',
   // 编译工具
-  'tsc', 'make', 'cmake', 'gcc', 'g++', 'clang',
+  'tsc',
+  'make',
+  'cmake',
+  'gcc',
+  'g++',
+  'clang',
   // 文件操作
-  'ls', 'dir', 'cat', 'echo', 'mkdir', 'cp', 'mv', 'touch', 'find',
-  'grep', 'head', 'tail', 'wc', 'sort', 'uniq', 'sed', 'awk',
+  'ls',
+  'dir',
+  'cat',
+  'echo',
+  'mkdir',
+  'cp',
+  'mv',
+  'touch',
+  'find',
+  'grep',
+  'head',
+  'tail',
+  'wc',
+  'sort',
+  'uniq',
+  'sed',
+  'awk',
   // 系统信息
-  'whoami', 'hostname', 'uname', 'ps', 'top',
+  'whoami',
+  'hostname',
+  'uname',
+  'ps',
+  'top',
   // 压缩
-  'tar', 'zip', 'unzip', 'gzip', 'gunzip',
+  'tar',
+  'zip',
+  'unzip',
+  'gzip',
+  'gunzip',
 ];
 
 /** 默认应用配置 */
@@ -118,7 +163,11 @@ export class ConfigManager {
    */
   saveDisabledToolNames(names: string[]): void {
     try {
-      writeFileSync(this.toolSettingsPath, JSON.stringify({ disabledTools: names }, null, 2), 'utf-8');
+      writeFileSync(
+        this.toolSettingsPath,
+        JSON.stringify({ disabledTools: names }, null, 2),
+        'utf-8',
+      );
       logger.info({ count: names.length }, '工具禁用列表已保存');
     } catch (error) {
       logger.error({ error }, '工具设置保存失败');
@@ -148,7 +197,7 @@ export class ConfigManager {
         const raw = readFileSync(this.providersPath, 'utf-8');
         const encrypted = JSON.parse(raw);
         for (const [providerId, encryptedKey] of Object.entries(encrypted)) {
-          const preset = PROVIDER_PRESETS.find(p => p.id === providerId);
+          const preset = PROVIDER_PRESETS.find((p) => p.id === providerId);
           if (preset && typeof encryptedKey === 'string') {
             try {
               const apiKey = decrypt(encryptedKey);
@@ -174,8 +223,8 @@ export class ConfigManager {
       // 合并远程模型目录到预设中
       this.mergeRemoteModels();
 
-      this.config.providers = PROVIDER_PRESETS.filter(p => p.apiKey);
-      
+      this.config.providers = PROVIDER_PRESETS.filter((p) => p.apiKey);
+
       // 环境变量覆盖当前模型
       const envModel = process.env.EASYAGENT_MODEL;
       if (envModel) {
@@ -201,7 +250,7 @@ export class ConfigManager {
     } catch (error) {
       logger.error({ error }, '配置加载失败，使用默认配置');
       this.config = { ...DEFAULT_CONFIG };
-      this.config.providers = PROVIDER_PRESETS.filter(p => p.apiKey);
+      this.config.providers = PROVIDER_PRESETS.filter((p) => p.apiKey);
       return this.config;
     }
   }
@@ -217,7 +266,7 @@ export class ConfigManager {
       // 注册中心就绪后，刷新预设中的模型列表
       this.mergeRemoteModels();
       // 重新过滤可用提供商
-      this.config.providers = PROVIDER_PRESETS.filter(p => p.apiKey);
+      this.config.providers = PROVIDER_PRESETS.filter((p) => p.apiKey);
     }
   }
 
@@ -233,12 +282,12 @@ export class ConfigManager {
       const remoteEntry = registry.getProviderEntry(preset.id);
       if (remoteEntry?.models && remoteEntry.models.length > 0) {
         // 合并策略：远程模型覆盖预设中的同名模型，保留预设中独有的模型
-        const remoteIds = new Set(remoteEntry.models.map(m => m.id));
+        const remoteIds = new Set(remoteEntry.models.map((m) => m.id));
         const merged: ModelConfig[] = [
           // 远程模型（最新）
           ...remoteEntry.models,
           // 预设中独有模型（如旧版本）
-          ...preset.models.filter(m => !remoteIds.has(m.id)),
+          ...preset.models.filter((m) => !remoteIds.has(m.id)),
         ];
         preset.models = merged;
         // 如果远程指定了默认模型，更新它
@@ -293,15 +342,11 @@ export class ConfigManager {
    * 优先从已保存的提供商查找，其次从预设中回退（如 Ollama 无需 API Key）
    */
   getCurrentProvider(): ProviderConfig | undefined {
-    const saved = this.config.providers.find(
-      p => p.id === this.config.currentModel.provider
-    );
+    const saved = this.config.providers.find((p) => p.id === this.config.currentModel.provider);
     if (saved) return saved;
 
     // 回退到预设（适用于无需 API Key 的本地提供商如 Ollama）
-    const preset = PROVIDER_PRESETS.find(
-      p => p.id === this.config.currentModel.provider
-    );
+    const preset = PROVIDER_PRESETS.find((p) => p.id === this.config.currentModel.provider);
     return preset;
   }
 
@@ -317,7 +362,7 @@ export class ConfigManager {
    * 获取提供商配置
    */
   getProvider(id: ProviderId): ProviderConfig | undefined {
-    return this.config.providers.find(p => p.id === id);
+    return this.config.providers.find((p) => p.id === id);
   }
 
   /**
@@ -332,12 +377,12 @@ export class ConfigManager {
    * 如果提供商不在可用列表中，从 PROVIDER_PRESETS 查找完整配置后加入
    */
   setApiKey(providerId: ProviderId, apiKey: string): void {
-    const provider = this.config.providers.find(p => p.id === providerId);
+    const provider = this.config.providers.find((p) => p.id === providerId);
     if (provider) {
       provider.apiKey = apiKey;
     } else {
       // 从预设中查找完整配置（baseURL、name、apiFormat、models），避免空 URL 导致连接失败
-      const preset = PROVIDER_PRESETS.find(p => p.id === providerId);
+      const preset = PROVIDER_PRESETS.find((p) => p.id === providerId);
       if (preset) {
         // 使用预设的完整配置，仅替换 apiKey
         const cloned: ProviderConfig = {
@@ -363,7 +408,7 @@ export class ConfigManager {
    * 获取所有提供商预设(用于UI展示)
    */
   getProviderPresets(): ProviderConfig[] {
-    return PROVIDER_PRESETS.map(p => ({
+    return PROVIDER_PRESETS.map((p) => ({
       ...p,
       apiKey: p.apiKey ? '••••••••' : '', // 不暴露实际密钥
     }));

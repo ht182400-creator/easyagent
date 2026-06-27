@@ -6,7 +6,12 @@
  * - 自动清理超时沙箱
  * - 全局资源配额控制
  */
-import { DockerSandbox, type SandboxOptions, type SandboxInfo, checkDockerAvailability } from './DockerSandbox.js';
+import {
+  DockerSandbox,
+  type SandboxOptions,
+  type SandboxInfo,
+  checkDockerAvailability,
+} from './DockerSandbox.js';
 import { LocalSandbox } from './LocalSandbox.js';
 import { logger } from '../utils/logger.js';
 
@@ -66,8 +71,8 @@ export class SandboxManager {
   private constructor(config?: SandboxManagerConfig) {
     this.config = {
       maxSandboxes: config?.maxSandboxes ?? 10,
-      defaultTimeout: config?.defaultTimeout ?? 300000,  // 5分钟
-      idleTimeout: config?.idleTimeout ?? 600000,         // 10分钟
+      defaultTimeout: config?.defaultTimeout ?? 300000, // 5分钟
+      idleTimeout: config?.idleTimeout ?? 600000, // 10分钟
       enabled: config?.enabled ?? true,
       defaultImage: config?.defaultImage ?? 'node:20-alpine',
     };
@@ -76,27 +81,33 @@ export class SandboxManager {
   /**
    * 初始化沙箱管理器 - 检测Docker可用性，不可用时自动降级为本地进程模式
    */
-  async init(): Promise<{ available: boolean; version?: string; mode: 'docker' | 'local' | 'disabled' }> {
+  async init(): Promise<{
+    available: boolean;
+    version?: string;
+    mode: 'docker' | 'local' | 'disabled';
+  }> {
     const result = await checkDockerAvailability();
     this.dockerAvailable = result.available;
-    
+
     if (result.available) {
       // 启动定期清理 (每30秒)
       this.cleanupTimer = setInterval(() => this.cleanup(), 30000);
       logger.info({ version: result.version }, 'Docker 沙箱系统就绪');
       return { available: true, version: result.version, mode: 'docker' };
     }
-    
+
     // Docker 不可用，尝试启用本地进程模式
     if (this.config.enabled) {
       this.localMode = true;
       this.cleanupTimer = setInterval(() => this.cleanup(), 30000);
       const localCheck = LocalSandbox.checkAvailability();
-      logger.warn({ reason: result.error, fallback: localCheck.version }, 
-        'Docker 不可用，已降级为本地进程模式');
+      logger.warn(
+        { reason: result.error, fallback: localCheck.version },
+        'Docker 不可用，已降级为本地进程模式',
+      );
       return { available: true, version: localCheck.version, mode: 'local' };
     }
-    
+
     logger.warn('Docker 不可用且沙箱已禁用');
     return { available: false, mode: 'disabled' };
   }
@@ -112,7 +123,7 @@ export class SandboxManager {
     if (!this.config.enabled) {
       throw new Error('沙箱功能已被禁用');
     }
-    
+
     // 检查并发限制
     if (this.sandboxes.size >= this.config.maxSandboxes) {
       // 尝试清理超时的沙箱
@@ -141,17 +152,20 @@ export class SandboxManager {
 
     try {
       await sandbox.start();
-      
+
       const record: SandboxRecord = {
         sandbox,
         createdAt: new Date(),
         lastUsedAt: new Date(),
         timeout: options.timeout || this.config.defaultTimeout,
       };
-      
+
       this.sandboxes.set(sandbox.id, record);
-      logger.info({ sandboxId: sandbox.id, total: this.sandboxes.size, mode: 'docker' }, 'Docker 沙箱已创建');
-      
+      logger.info(
+        { sandboxId: sandbox.id, total: this.sandboxes.size, mode: 'docker' },
+        'Docker 沙箱已创建',
+      );
+
       return sandbox;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -173,17 +187,20 @@ export class SandboxManager {
 
     try {
       await sandbox.start();
-      
+
       const record: SandboxRecord = {
         sandbox,
         createdAt: new Date(),
         lastUsedAt: new Date(),
         timeout: options.timeout || this.config.defaultTimeout,
       };
-      
+
       this.sandboxes.set(sandbox.id, record);
-      logger.info({ sandboxId: sandbox.id, total: this.sandboxes.size, mode: 'local' }, '本地沙箱已创建');
-      
+      logger.info(
+        { sandboxId: sandbox.id, total: this.sandboxes.size, mode: 'local' },
+        '本地沙箱已创建',
+      );
+
       return sandbox;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -209,7 +226,7 @@ export class SandboxManager {
    * 列出所有活跃沙箱
    */
   listSandboxes(): SandboxInfo[] {
-    return Array.from(this.sandboxes.values()).map(r => r.sandbox.getStatus());
+    return Array.from(this.sandboxes.values()).map((r) => r.sandbox.getStatus());
   }
 
   /**
@@ -229,7 +246,7 @@ export class SandboxManager {
    */
   async destroyAll(): Promise<void> {
     const ids = Array.from(this.sandboxes.keys());
-    await Promise.all(ids.map(id => this.destroySandbox(id)));
+    await Promise.all(ids.map((id) => this.destroySandbox(id)));
     logger.info('所有沙箱已销毁');
   }
 
@@ -277,7 +294,7 @@ export class SandboxManager {
     for (const [id, record] of this.sandboxes) {
       const age = now - record.createdAt.getTime();
       const idle = now - record.lastUsedAt.getTime();
-      
+
       // 超时清理
       if (age > record.timeout) {
         logger.info({ sandboxId: id, age }, '沙箱超时，将被清理');
@@ -291,7 +308,7 @@ export class SandboxManager {
     }
 
     if (toRemove.length > 0) {
-      await Promise.all(toRemove.map(id => this.destroySandbox(id)));
+      await Promise.all(toRemove.map((id) => this.destroySandbox(id)));
       logger.info({ cleaned: toRemove.length }, '已清理超时/空闲沙箱');
     }
   }

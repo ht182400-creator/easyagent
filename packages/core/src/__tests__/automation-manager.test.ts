@@ -11,7 +11,10 @@ import type { AutomationTask, AutomationRun } from '../automation/AutomationMana
 
 /** 创建临时存储目录 */
 function createTestStorageDir(): { dir: string; storagePath: string } {
-  const dir = resolve(tmpdir(), `ea-am-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = resolve(
+    tmpdir(),
+    `ea-am-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return { dir, storagePath: join(dir, 'automations.json') };
 }
@@ -375,7 +378,12 @@ describe('AutomationManager - 任务执行', () => {
     });
 
     it('应限制返回数量', async () => {
-      const task = manager.createTask({ name: '批量', prompt: 'x', scheduleType: 'once', cwds: [] });
+      const task = manager.createTask({
+        name: '批量',
+        prompt: 'x',
+        scheduleType: 'once',
+        cwds: [],
+      });
       // 手动插入多条
       for (let i = 0; i < 5; i++) {
         manager.runTaskNow(task.id);

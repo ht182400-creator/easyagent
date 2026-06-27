@@ -11,13 +11,27 @@ import { describe, it, expect, beforeEach, beforeAll, afterEach } from 'vitest';
  */
 function createTestAdapter(BaseIMAdapter: any, platform: string, name: string) {
   return new (class extends BaseIMAdapter {
-    async onStart(): Promise<void> { /* 模拟启动 */ }
-    async onStop(): Promise<void> { /* 模拟停止 */ }
-    async sendMessage(chatId: string, text: string): Promise<string> { return `msg_${Date.now()}`; }
-    async editMessage(chatId: string, messageId: string, newText: string): Promise<boolean> { return true; }
-    async sendTyping(chatId: string): Promise<void> { /* 模拟 */ }
-    async sendPhoto(chatId: string, imageUrl: string, caption?: string): Promise<string> { return `photo_${Date.now()}`; }
-    async sendDocument(chatId: string, fileUrl: string, caption?: string): Promise<string> { return `doc_${Date.now()}`; }
+    async onStart(): Promise<void> {
+      /* 模拟启动 */
+    }
+    async onStop(): Promise<void> {
+      /* 模拟停止 */
+    }
+    async sendMessage(chatId: string, text: string): Promise<string> {
+      return `msg_${Date.now()}`;
+    }
+    async editMessage(chatId: string, messageId: string, newText: string): Promise<boolean> {
+      return true;
+    }
+    async sendTyping(chatId: string): Promise<void> {
+      /* 模拟 */
+    }
+    async sendPhoto(chatId: string, imageUrl: string, caption?: string): Promise<string> {
+      return `photo_${Date.now()}`;
+    }
+    async sendDocument(chatId: string, fileUrl: string, caption?: string): Promise<string> {
+      return `doc_${Date.now()}`;
+    }
   })(platform, name);
 }
 
@@ -183,7 +197,9 @@ describe('BaseIMAdapter - 流式消息', () => {
 
   it('sendStreamingMessage编辑失败不应崩溃', async () => {
     const originalEdit = adapter.editMessage;
-    adapter.editMessage = async () => { throw new Error('Edit failed'); };
+    adapter.editMessage = async () => {
+      throw new Error('Edit failed');
+    };
 
     async function* generator() {
       yield 'Hello';
@@ -197,7 +213,9 @@ describe('BaseIMAdapter - 流式消息', () => {
 
   it('sendStreamingMessage初始消息send失败也要继续', async () => {
     const originalSend = adapter.sendMessage;
-    adapter.sendMessage = async () => { throw new Error('Send failed'); };
+    adapter.sendMessage = async () => {
+      throw new Error('Send failed');
+    };
 
     async function* generator() {
       yield 'Recovered';

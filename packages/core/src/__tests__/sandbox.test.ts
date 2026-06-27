@@ -3,7 +3,11 @@
  * 覆盖: Docker可用性检测、沙箱生命周期、管理器功能
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { checkDockerAvailability, DockerSandbox, resetDockerCache } from '../sandbox/DockerSandbox.js';
+import {
+  checkDockerAvailability,
+  DockerSandbox,
+  resetDockerCache,
+} from '../sandbox/DockerSandbox.js';
 import { SandboxManager } from '../sandbox/SandboxManager.js';
 import { execSync } from 'node:child_process';
 
@@ -11,7 +15,7 @@ import { execSync } from 'node:child_process';
 vi.mock('node:child_process', async () => {
   const actual = await vi.importActual<typeof import('node:child_process')>('node:child_process');
   const EventEmitter = (await import('node:events')).EventEmitter;
-  
+
   return {
     ...actual,
     execSync: vi.fn(),
@@ -27,7 +31,6 @@ const mockSpawn = vi.mocked((await import('node:child_process')).spawn);
 // ==================== Sandbox 模块测试 ====================
 
 describe('DockerSandbox - 沙箱生命周期', () => {
-  
   beforeEach(() => {
     vi.clearAllMocks();
     // 重置 docker 检测缓存 (必须，因为 checkDockerAvailability 有模块级缓存)
@@ -40,9 +43,9 @@ describe('DockerSandbox - 沙箱生命周期', () => {
   describe('checkDockerAvailability - Docker可用性检测', () => {
     it('应检测到Docker可用', async () => {
       mockExecSync.mockReturnValueOnce('24.0.7');
-      
+
       const result = await checkDockerAvailability();
-      
+
       expect(result.available).toBe(true);
       expect(result.version).toBe('24.0.7');
     });
@@ -51,21 +54,21 @@ describe('DockerSandbox - 沙箱生命周期', () => {
       mockExecSync.mockImplementationOnce(() => {
         throw new Error('docker: command not found');
       });
-      
+
       const result = await checkDockerAvailability();
-      
+
       expect(result.available).toBe(false);
       expect(result.error).toBeDefined();
     });
 
     it('应缓存检测结果', async () => {
       mockExecSync.mockReturnValueOnce('24.0.7');
-      
+
       await checkDockerAvailability();
       // 第二次调用应使用缓存，不再调用 execSync
       mockExecSync.mockClear();
       const result = await checkDockerAvailability();
-      
+
       expect(result.available).toBe(true);
       expect(mockExecSync).not.toHaveBeenCalled();
     });
@@ -76,9 +79,9 @@ describe('DockerSandbox - 沙箱生命周期', () => {
         (err as any).code = 'ETIMEDOUT';
         throw err;
       });
-      
+
       const result = await checkDockerAvailability();
-      
+
       expect(result.available).toBe(false);
       expect(result.error).toContain('ETIMEDOUT');
     });
@@ -87,7 +90,7 @@ describe('DockerSandbox - 沙箱生命周期', () => {
   describe('DockerSandbox 构造函数', () => {
     it('应创建默认配置的沙箱实例', () => {
       const sandbox = new DockerSandbox();
-      
+
       expect(sandbox.id).toContain('easyagent-sandbox-');
       expect(sandbox.getStatus().status).toBe('idle');
       expect(sandbox.getStatus().image).toBe('node:20-alpine');
@@ -95,7 +98,7 @@ describe('DockerSandbox - 沙箱生命周期', () => {
 
     it('应使用自定义镜像', () => {
       const sandbox = new DockerSandbox({ image: 'python:3.12-alpine' });
-      
+
       expect(sandbox.getStatus().image).toBe('python:3.12-alpine');
     });
 
@@ -103,7 +106,7 @@ describe('DockerSandbox - 沙箱生命周期', () => {
       const sandbox = new DockerSandbox({
         limits: { cpuCores: 2, memory: '1g', maxPids: 100 },
       });
-      
+
       expect(sandbox.getStatus().limits.cpuCores).toBe(2);
       expect(sandbox.getStatus().limits.memory).toBe('1g');
       expect(sandbox.getStatus().limits.maxPids).toBe(100);
@@ -117,9 +120,9 @@ describe('DockerSandbox - 沙箱生命周期', () => {
         workspace: '/test/workspace',
         readOnly: true,
       });
-      
+
       const status = sandbox.getStatus();
-      
+
       expect(status.id).toBeDefined();
       expect(status.containerId).toBeNull();
       expect(status.status).toBe('idle');
@@ -131,7 +134,6 @@ describe('DockerSandbox - 沙箱生命周期', () => {
 // ==================== SandboxManager 测试 ====================
 
 describe('SandboxManager - 沙箱管理器', () => {
-  
   beforeEach(() => {
     vi.clearAllMocks();
     resetDockerCache();
@@ -143,7 +145,7 @@ describe('SandboxManager - 沙箱管理器', () => {
     it('应返回同一个实例', () => {
       const mgr1 = SandboxManager.getInstance();
       const mgr2 = SandboxManager.getInstance();
-      
+
       expect(mgr1).toBe(mgr2);
     });
 
@@ -151,7 +153,7 @@ describe('SandboxManager - 沙箱管理器', () => {
       const mgr1 = SandboxManager.getInstance();
       SandboxManager.resetInstance();
       const mgr2 = SandboxManager.getInstance();
-      
+
       expect(mgr1).not.toBe(mgr2);
     });
   });
@@ -160,7 +162,7 @@ describe('SandboxManager - 沙箱管理器', () => {
     it('应成功初始化 (Docker可用)', async () => {
       const mgr = SandboxManager.getInstance();
       const result = await mgr.init();
-      
+
       expect(result.available).toBe(true);
       expect(result.version).toBe('24.0.7');
     });
@@ -171,10 +173,10 @@ describe('SandboxManager - 沙箱管理器', () => {
       mockExecSync.mockImplementation(() => {
         throw new Error('docker not found');
       });
-      
+
       const mgr = SandboxManager.getInstance();
       const result = await mgr.init();
-      
+
       // Docker 不可用时自动降级为本地进程模式
       expect(result.available).toBe(true);
       expect(result.mode).toBe('local');
@@ -187,9 +189,9 @@ describe('SandboxManager - 沙箱管理器', () => {
     it('应返回默认概览信息', () => {
       const mgr = SandboxManager.getInstance();
       const overview = mgr.getOverview();
-      
+
       expect(overview.enabled).toBe(true);
-      expect(overview.dockerAvailable).toBe(false);  // 未 init
+      expect(overview.dockerAvailable).toBe(false); // 未 init
       expect(overview.activeCount).toBe(0);
       expect(overview.maxSandboxes).toBe(10);
       expect(overview.sandboxes).toEqual([]);
@@ -198,7 +200,7 @@ describe('SandboxManager - 沙箱管理器', () => {
     it('init后dockerAvailable应为true', async () => {
       const mgr = SandboxManager.getInstance();
       await mgr.init();
-      
+
       const overview = mgr.getOverview();
       expect(overview.dockerAvailable).toBe(true);
     });
@@ -208,7 +210,7 @@ describe('SandboxManager - 沙箱管理器', () => {
     it('不存在的沙箱应返回undefined', () => {
       const mgr = SandboxManager.getInstance();
       const result = mgr.getSandbox('nonexistent');
-      
+
       expect(result).toBeUndefined();
     });
   });
@@ -217,7 +219,7 @@ describe('SandboxManager - 沙箱管理器', () => {
     it('初始时应返回空列表', () => {
       const mgr = SandboxManager.getInstance();
       const list = mgr.listSandboxes();
-      
+
       expect(list).toEqual([]);
     });
   });
@@ -241,7 +243,7 @@ describe('SandboxManager - 沙箱管理器', () => {
       // 由于需要实际Docker环境来创建沙箱，此测试验证逻辑
       // 实际并发测试需要 mock createSandbox
       const mgr = SandboxManager.getInstance({ maxSandboxes: 1 });
-      
+
       // 验证配置已应用
       expect(mgr.getOverview().maxSandboxes).toBe(1);
     });
@@ -257,28 +259,28 @@ describe('DockerSandbox - 边界条件', () => {
 
   it('未启动时调用exec应抛出错误', async () => {
     const sandbox = new DockerSandbox();
-    
+
     await expect(sandbox.exec('echo hello')).rejects.toThrow('沙箱未启动');
   });
 
   it('应处理极长命令', () => {
     const sandbox = new DockerSandbox();
     const longCmd = 'echo ' + 'a'.repeat(10000);
-    
+
     // 构造函数应正确处理超长参数
     expect(sandbox.getStatus().status).toBe('idle');
   });
 
   it('应处理空配置', () => {
     const sandbox = new DockerSandbox({});
-    
+
     expect(sandbox.getStatus().limits).toEqual({});
     expect(sandbox.getStatus().image).toBe('node:20-alpine');
   });
 
   it('workspace默认为当前目录', () => {
     const sandbox = new DockerSandbox();
-    
+
     expect(sandbox.getStatus().workspace).toBe(process.cwd());
   });
 });

@@ -30,8 +30,8 @@ export default function Sessions() {
   const fetchSessions = () => {
     setLoading(true);
     fetch(`${apiBase}/api/sessions`)
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         setSessions(Array.isArray(data) ? data : []);
         setLoading(false);
       })
@@ -48,9 +48,10 @@ export default function Sessions() {
     fetchSessions();
   };
 
-  const filtered = sessions.filter(s =>
-    s.metadata.title.toLowerCase().includes(search.toLowerCase()) ||
-    s.id.toLowerCase().includes(search.toLowerCase())
+  const filtered = sessions.filter(
+    (s) =>
+      s.metadata.title.toLowerCase().includes(search.toLowerCase()) ||
+      s.id.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -65,7 +66,7 @@ export default function Sessions() {
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="搜索会话..."
             className="input pl-10 w-64"
           />
@@ -82,7 +83,7 @@ export default function Sessions() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map(session => (
+          {filtered.map((session) => (
             <div key={session.id} className="card flex items-center justify-between">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center mt-1">
@@ -97,11 +98,13 @@ export default function Sessions() {
                       {new Date(session.metadata.updatedAt).toLocaleString('zh-CN')}
                     </span>
                     <span>
-                      Token: {((session.metadata.tokenUsage?.totalTokens) || 0).toLocaleString()}
+                      Token: {(session.metadata.tokenUsage?.totalTokens || 0).toLocaleString()}
                     </span>
-                    <span className={`${
-                      session.metadata.status === 'active' ? 'badge-green' : 'badge-yellow'
-                    }`}>
+                    <span
+                      className={`${
+                        session.metadata.status === 'active' ? 'badge-green' : 'badge-yellow'
+                      }`}
+                    >
                       {session.metadata.status}
                     </span>
                   </div>

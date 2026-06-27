@@ -16,8 +16,8 @@ export interface SWEBenchProblem {
   issue_title: string;
   issue_body: string;
   hint_text?: string;
-  patch?: string;       // 标准答案 patch (gold patch)
-  test_patch?: string;  // 测试补丁
+  patch?: string; // 标准答案 patch (gold patch)
+  test_patch?: string; // 测试补丁
   fail_to_pass: string[];
   pass_to_pass: string[];
   created_at: string;
@@ -79,13 +79,13 @@ export interface EvaluationSummary {
 
 /** 框架配置 */
 export interface BenchmarkConfig {
-  dataDir: string;          // SWE-Bench 数据集路径
-  resultsDir: string;       // 评测结果保存路径
-  maxProblems?: number;     // 最大评测问题数
+  dataDir: string; // SWE-Bench 数据集路径
+  resultsDir: string; // 评测结果保存路径
+  maxProblems?: number; // 最大评测问题数
   filterDifficulty?: 'easy' | 'medium' | 'hard';
-  filterRepos?: string[];   // 只评测特定仓库
+  filterRepos?: string[]; // 只评测特定仓库
   timeoutPerProblem?: number; // 每题超时毫秒
-  parallel?: number;        // 并行评测数
+  parallel?: number; // 并行评测数
 }
 
 /**
@@ -113,7 +113,9 @@ export class SWEBenchEngine {
     try {
       if (fs.statSync(filePath).isDirectory()) {
         // 从目录加载所有 JSONL 文件
-        const files = fs.readdirSync(filePath).filter(f => f.endsWith('.jsonl') || f.endsWith('.json'));
+        const files = fs
+          .readdirSync(filePath)
+          .filter((f) => f.endsWith('.jsonl') || f.endsWith('.json'));
         for (const file of files) {
           this.loadFromFile(path.join(filePath, file));
         }
@@ -142,7 +144,7 @@ export class SWEBenchEngine {
     }
 
     const content = fs.readFileSync(filePath, 'utf-8');
-    const lines = content.split('\n').filter(l => l.trim());
+    const lines = content.split('\n').filter((l) => l.trim());
 
     for (const line of lines) {
       try {
@@ -187,11 +189,11 @@ export class SWEBenchEngine {
    */
   private applyFilters(): void {
     if (this.config.filterDifficulty) {
-      this.problems = this.problems.filter(p => p.difficulty === this.config.filterDifficulty);
+      this.problems = this.problems.filter((p) => p.difficulty === this.config.filterDifficulty);
     }
     if (this.config.filterRepos?.length) {
-      this.problems = this.problems.filter(p =>
-        this.config.filterRepos!.some(r => p.repo.includes(r))
+      this.problems = this.problems.filter((p) =>
+        this.config.filterRepos!.some((r) => p.repo.includes(r)),
       );
     }
     if (this.config.maxProblems) {
@@ -211,7 +213,7 @@ export class SWEBenchEngine {
    */
   createSession(problemIds?: string[]): EvaluationSession {
     const sessionId = `swebench_${Date.now()}`;
-    const problems = problemIds || this.problems.map(p => p.id);
+    const problems = problemIds || this.problems.map((p) => p.id);
 
     this.session = {
       id: sessionId,
@@ -240,8 +242,11 @@ export class SWEBenchEngine {
 
     this.session!.results.set(problemId, result);
     this.session!.progress.completed = this.session!.results.size;
-    this.session!.progress.passed = [...this.session!.results.values()].filter(r => r.passed).length;
-    this.session!.progress.failed = this.session!.progress.completed - this.session!.progress.passed;
+    this.session!.progress.passed = [...this.session!.results.values()].filter(
+      (r) => r.passed,
+    ).length;
+    this.session!.progress.failed =
+      this.session!.progress.completed - this.session!.progress.passed;
   }
 
   /**
@@ -250,31 +255,39 @@ export class SWEBenchEngine {
   generateSummary(): EvaluationSummary {
     if (!this.session) {
       return {
-        totalProblems: 0, resolved: 0, unresolved: 0,
-        resolutionRate: 0, averageTime: 0,
+        totalProblems: 0,
+        resolved: 0,
+        unresolved: 0,
+        resolutionRate: 0,
+        averageTime: 0,
         averageTokens: { input: 0, output: 0 },
-        byDifficulty: {}, topErrors: [],
+        byDifficulty: {},
+        topErrors: [],
       };
     }
 
     const results = [...this.session.results.values()];
-    const resolved = results.filter(r => r.passed).length;
+    const resolved = results.filter((r) => r.passed).length;
     const total = results.length || 1;
 
-    const times = results.map(r => r.details.timeElapsed).filter(t => t > 0);
+    const times = results.map((r) => r.details.timeElapsed).filter((t) => t > 0);
     const avgTime = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
 
     const tokenUsages = results
-      .filter(r => r.details.tokenUsage)
-      .map(r => r.details.tokenUsage!);
-    const avgInput = tokenUsages.length > 0
-      ? tokenUsages.reduce((s, t) => s + t.inputTokens, 0) / tokenUsages.length : 0;
-    const avgOutput = tokenUsages.length > 0
-      ? tokenUsages.reduce((s, t) => s + t.outputTokens, 0) / tokenUsages.length : 0;
+      .filter((r) => r.details.tokenUsage)
+      .map((r) => r.details.tokenUsage!);
+    const avgInput =
+      tokenUsages.length > 0
+        ? tokenUsages.reduce((s, t) => s + t.inputTokens, 0) / tokenUsages.length
+        : 0;
+    const avgOutput =
+      tokenUsages.length > 0
+        ? tokenUsages.reduce((s, t) => s + t.outputTokens, 0) / tokenUsages.length
+        : 0;
 
     // 按难度统计
     const byDifficulty: Record<string, { total: number; resolved: number }> = {};
-    const problemMap = new Map(this.problems.map(p => [p.id, p]));
+    const problemMap = new Map(this.problems.map((p) => [p.id, p]));
     for (const r of results) {
       const problem = problemMap.get(r.problemId);
       const diff = problem?.difficulty || 'unknown';
@@ -317,10 +330,8 @@ export class SWEBenchEngine {
    * 保存评测结果到文件
    */
   saveResults(outputPath?: string): string {
-    const filePath = outputPath || path.join(
-      this.config.resultsDir,
-      `swebench_result_${Date.now()}.json`
-    );
+    const filePath =
+      outputPath || path.join(this.config.resultsDir, `swebench_result_${Date.now()}.json`);
 
     const dir = path.dirname(filePath);
     if (!fs.existsSync(dir)) {
@@ -331,7 +342,7 @@ export class SWEBenchEngine {
       sessionId: this.session?.id,
       timestamp: new Date().toISOString(),
       summary: this.generateSummary(),
-      results: [...(this.session?.results.values() || [])].map(r => ({
+      results: [...(this.session?.results.values() || [])].map((r) => ({
         ...r,
         details: { ...r.details, patchGenerated: r.details.patchGenerated?.substring(0, 500) },
       })),
@@ -426,7 +437,7 @@ export function scanSWEBenchData(dataDir: string): { files: string[]; problemCou
   for (const file of files) {
     try {
       const content = fs.readFileSync(path.join(dataDir, file), 'utf-8');
-      problemCount += content.split('\n').filter(l => l.trim()).length;
+      problemCount += content.split('\n').filter((l) => l.trim()).length;
     } catch (err) {
       // 跳过
     }

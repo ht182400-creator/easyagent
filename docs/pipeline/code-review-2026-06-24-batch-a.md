@@ -3,7 +3,7 @@
 **评审范围**：`6e9f422..1f5bf7f`（14 个 commits，111 个文件，+1756/-371 行）  
 **评审日期**：2026-06-24  
 **变更性质**：项目初始化 + Desktop 打包体系 + build.bat CMD 兼容性修复（9 commits）+ release-publish.bat  
-**评审结论**：🟢 **Approved（所有阻塞级问题已修复）**  修复日期：2026-06-24  修复人：AI Assistant
+**评审结论**：🟢 **Approved（所有阻塞级问题已修复）** 修复日期：2026-06-24 修复人：AI Assistant
 
 > ⚠️ **重要前提**：批次 A 覆盖了从 init 到 build 系统稳定化的完整阶段，包含产品代码、打包体系、构建脚本。所有硬性约束（PluginManager 安全、Web/Desktop 同步、ModelRegistry、IM 适配器、沙箱隔离、better-sqlite3）均适用。
 
@@ -12,41 +12,46 @@
 ## 变更文件清单
 
 ### 构建系统（11 files）
-| 文件 | 变更量 | 类型 |
-|------|--------|------|
-| `build.bat` | +67/-49 | 核心构建脚本 |
-| `release-publish.bat` | +11/-5 | 发布脚本 |
-| `repack.bat` | +17 | 新增：快速重打包 |
-| `scripts/check-encoding.mjs` | +46 | 新增：编码检查 |
+
+| 文件                         | 变更量  | 类型             |
+| ---------------------------- | ------- | ---------------- |
+| `build.bat`                  | +67/-49 | 核心构建脚本     |
+| `release-publish.bat`        | +11/-5  | 发布脚本         |
+| `repack.bat`                 | +17     | 新增：快速重打包 |
+| `scripts/check-encoding.mjs` | +46     | 新增：编码检查   |
 
 ### Desktop 打包体系（11 files）
-| 文件 | 变更量 | 类型 |
-|------|--------|------|
-| `packages/desktop/scripts/verify-build.cjs` | +316/-1 | 核心：预检查脚本 |
-| `packages/desktop/scripts/postinstall.cjs` | +68 | 新增：postinstall |
-| `packages/desktop/check-module-ver.cjs` | +100 | 新增：模块版本检查 |
-| `packages/desktop/package.json` | +45/-16 | 依赖声明 |
-| `packages/desktop/src/main.ts` | +25/-4 | 主进程入口 |
-| `packages/desktop/check-*.cjs/mjs` (6 files) | +125 | 新增：诊断脚本 |
+
+| 文件                                         | 变更量  | 类型               |
+| -------------------------------------------- | ------- | ------------------ |
+| `packages/desktop/scripts/verify-build.cjs`  | +316/-1 | 核心：预检查脚本   |
+| `packages/desktop/scripts/postinstall.cjs`   | +68     | 新增：postinstall  |
+| `packages/desktop/check-module-ver.cjs`      | +100    | 新增：模块版本检查 |
+| `packages/desktop/package.json`              | +45/-16 | 依赖声明           |
+| `packages/desktop/src/main.ts`               | +25/-4  | 主进程入口         |
+| `packages/desktop/check-*.cjs/mjs` (6 files) | +125    | 新增：诊断脚本     |
 
 ### Server（1 file）
-| 文件 | 变更量 | 类型 |
-|------|--------|------|
+
+| 文件                           | 变更量  | 类型     |
+| ------------------------------ | ------- | -------- |
 | `packages/server/src/index.ts` | +26/-14 | 服务入口 |
 
 ### Core 源码（~50 files）
-| 分类 | 文件数 | 典型变更 |
-|------|--------|---------|
-| 模型适配器 | 3 | Ernie/Hunyuan/OpenAI 适配器 |
-| Agent 引擎 | 1 | AgentEngine.ts |
-| 沙箱执行 | 2 | DockerSandbox / LocalSandbox |
-| 知识库 | 1 | KnowledgeService.ts |
-| 工具系统 | 7 | Code/Git/Knowledge/Search 等工具 |
-| IM 适配器 | 4 | Base/Feishu/Telegram/WeChat |
-| 配置管理 | 2 | ConfigManager / ModelRegistry |
-| 其他 | ~20 | 语义分析/Automation/MCP/日志等 |
+
+| 分类       | 文件数 | 典型变更                         |
+| ---------- | ------ | -------------------------------- |
+| 模型适配器 | 3      | Ernie/Hunyuan/OpenAI 适配器      |
+| Agent 引擎 | 1      | AgentEngine.ts                   |
+| 沙箱执行   | 2      | DockerSandbox / LocalSandbox     |
+| 知识库     | 1      | KnowledgeService.ts              |
+| 工具系统   | 7      | Code/Git/Knowledge/Search 等工具 |
+| IM 适配器  | 4      | Base/Feishu/Telegram/WeChat      |
+| 配置管理   | 2      | ConfigManager / ModelRegistry    |
+| 其他       | ~20    | 语义分析/Automation/MCP/日志等   |
 
 ### Web & Desktop UI（~30 files）
+
 - Desktop 前端：pages (Chat/Automation/Tools 等 8 页) + stores (10 个)
 - Web 前端：pages (6 页) + stores (10 个)
 
@@ -112,6 +117,7 @@ return crypto.createHash('sha256').update(machineId).digest('hex');
 ```
 
 **问题**：当 `EASYAGENT_MASTER_KEY` 未设置时，加密密钥从 `COMPUTERNAME + USER + HOME` 派生。这些信息：
+
 - 对同一台机器上所有进程完全一致
 - 可被任何本地进程通过 `process.env` 读取
 - 不具备真正的随机熵
@@ -166,7 +172,7 @@ importFromAbsolutePath(absolutePath: string) {
 
 ```javascript
 const subPackages = [
-  path.join(ROOT, '..', '..', '..', 'core', 'src'),   // ← 错误：多了一层 ..
+  path.join(ROOT, '..', '..', '..', 'core', 'src'), // ← 错误：多了一层 ..
   path.join(ROOT, '..', '..', '..', 'desktop', 'src'), // ROOT 已是 packages/desktop/
 ];
 ```
@@ -210,6 +216,7 @@ if errorlevel 1 goto :BUILD_FAILED    ← echo 成功后 errorlevel=0！
 **问题**：`echo` 命令成功后会将 errorlevel 设为 0，导致后续 `if errorlevel 1` 永远为 false。即使 `build.bat` 返回失败，也会错误进入 `:BUILD_OK` 分支。
 
 **修复**：先保存 errorlevel 到变量，再 echo：
+
 ```batch
 call build.bat --release
 set _BUILD_ERR=%errorlevel%
@@ -247,9 +254,11 @@ case 'stop': {
 
 ```typescript
 // L351: IM 管理器初始化，messageHandler 闭包引用 sessionManager
-const imManager = new IMManager({ messageHandler: (msg) => {
-    return sessionManager.processMessage(msg);  // ← 此时 sessionManager 未初始化！
-}});
+const imManager = new IMManager({
+  messageHandler: (msg) => {
+    return sessionManager.processMessage(msg); // ← 此时 sessionManager 未初始化！
+  },
+});
 // L420: 会话管理器初始化（晚 70 行）
 const sessionManager = new SessionManager();
 ```
@@ -283,7 +292,7 @@ app.post('/api/chat', async (req, res) => {
 **位置**：`packages/core/src/config/ConfigManager.ts` L68-70
 
 ```typescript
-allowedCommands: parseAllowedCommandsFromEnv().length > 0 
+allowedCommands: parseAllowedCommandsFromEnv().length > 0
     ? parseAllowedCommandsFromEnv()   // ← 调用了两次
     : DEFAULT_ALLOWED_COMMANDS,       // ← 包含 rm/curl/wget
 ```
@@ -348,7 +357,7 @@ logger.info({ tool: toolName, input: toolInput }, '执行工具');
 **位置**：`packages/server/src/index.ts` L764-774
 
 ```typescript
-const safeConfig = { ...cfg, providers: cfg.providers.map(p => ({ ...p, apiKey: '••••••••' })) };
+const safeConfig = { ...cfg, providers: cfg.providers.map((p) => ({ ...p, apiKey: '••••••••' })) };
 ```
 
 **问题**：`...cfg` 会暴露配置对象中所有现有和未来的敏感字段。应改为白名单方式，显式列出可返回字段。
@@ -426,36 +435,36 @@ global: { totalDocs: globalStats.totalSize, totalSize: globalStats.totalSize },
 
 ### 本次变更与现有模块的重叠度
 
-| 领域 | 重叠度 | 说明 |
-|------|--------|------|
-| 沙箱安全 | 🔴 高 | LocalSandbox/DockerSandbox 命令注入风险影响 F6 |
-| API 安全 | 🔴 高 | CORS/路径遍历/RCE 影响 F2/F5/F8 |
-| 加密存储 | 🔴 中 | 密钥派生影响 F1 适配器 API 密钥安全 |
-| 知识库 | 🔴 中 | 路径遍历影响 F4 数据安全 |
-| 构建系统 | 🟡 高 | build.bat/verify-build 影响 B1a-B3c 交付 |
+| 领域     | 重叠度 | 说明                                           |
+| -------- | ------ | ---------------------------------------------- |
+| 沙箱安全 | 🔴 高  | LocalSandbox/DockerSandbox 命令注入风险影响 F6 |
+| API 安全 | 🔴 高  | CORS/路径遍历/RCE 影响 F2/F5/F8                |
+| 加密存储 | 🔴 中  | 密钥派生影响 F1 适配器 API 密钥安全            |
+| 知识库   | 🔴 中  | 路径遍历影响 F4 数据安全                       |
+| 构建系统 | 🟡 高  | build.bat/verify-build 影响 B1a-B3c 交付       |
 
 ---
 
 ## 检查清单逐项核对
 
-| 检查项 | 结果 | 说明 |
-|--------|------|------|
-| monorepo 包边界 | 🟡 | desktop 依赖使用相对路径而非 workspace:* |
-| API 注册 / WebSocket | 🔴 | CORS 完全开放、无认证、stop 无效、provider 参数忽略 |
-| Desktop 自动更新 | ✅ | electron-updater 已正确引入 |
-| ModelRegistry 目录合并 | ✅ | 配置结构合理 |
-| 国际化 `t()` | 🟡 | 部分页面未见国际化调用 |
-| CHANGELOG 记录 | ✅ | v0.3.3 + v0.4.0 已记录 |
-| Node 版本兼容 | 🟡 | 参见 B7、H6、H7 |
-| better-sqlite3 封装 | 🟡 | postinstall 使用 npx 风险 |
-| Web/Desktop 同步 | ✅ | 本批次两端 store 均有对应修改 |
-| 版本号来源 | 🔴 | 多处硬编码不一致（B8、C9） |
-| 插件安全（worker_threads/vm 隔离） | 🔴 | 插件加载路径可导致 RCE（B3） |
-| KnowledgeService scope 区分 | 🔴 | 任意文件读取风险（B6） |
-| 沙箱命令执行安全 | 🔴 | 命令注入风险（B5） |
-| 加密密钥安全 | 🔴 | 可预测的机器标识派生（B4） |
-| 循环中同步 I/O | ✅ | 未发现相关问题 |
-| 数据库直连 | ✅ | better-sqlite3 封装正确 |
+| 检查项                             | 结果 | 说明                                                |
+| ---------------------------------- | ---- | --------------------------------------------------- |
+| monorepo 包边界                    | 🟡   | desktop 依赖使用相对路径而非 workspace:\*           |
+| API 注册 / WebSocket               | 🔴   | CORS 完全开放、无认证、stop 无效、provider 参数忽略 |
+| Desktop 自动更新                   | ✅   | electron-updater 已正确引入                         |
+| ModelRegistry 目录合并             | ✅   | 配置结构合理                                        |
+| 国际化 `t()`                       | 🟡   | 部分页面未见国际化调用                              |
+| CHANGELOG 记录                     | ✅   | v0.3.3 + v0.4.0 已记录                              |
+| Node 版本兼容                      | 🟡   | 参见 B7、H6、H7                                     |
+| better-sqlite3 封装                | 🟡   | postinstall 使用 npx 风险                           |
+| Web/Desktop 同步                   | ✅   | 本批次两端 store 均有对应修改                       |
+| 版本号来源                         | 🔴   | 多处硬编码不一致（B8、C9）                          |
+| 插件安全（worker_threads/vm 隔离） | 🔴   | 插件加载路径可导致 RCE（B3）                        |
+| KnowledgeService scope 区分        | 🔴   | 任意文件读取风险（B6）                              |
+| 沙箱命令执行安全                   | 🔴   | 命令注入风险（B5）                                  |
+| 加密密钥安全                       | 🔴   | 可预测的机器标识派生（B4）                          |
+| 循环中同步 I/O                     | ✅   | 未发现相关问题                                      |
+| 数据库直连                         | ✅   | better-sqlite3 封装正确                             |
 
 ---
 
@@ -465,33 +474,34 @@ global: { totalDocs: globalStats.totalSize, totalSize: globalStats.totalSize },
 
 **修复统计**：
 
-| 级别 | 数量 | 已修复 | 状态 |
-|------|------|--------|------|
-| 🔴 阻塞 | 8 | 8 | ✅ 全部修复 |
-| 🟠 高危 | 7 | 7 | ✅ 全部修复 |
-| 🟡 建议 | 10 | 0 | ⏸ 可选后续优化 |
+| 级别    | 数量 | 已修复 | 状态           |
+| ------- | ---- | ------ | -------------- |
+| 🔴 阻塞 | 8    | 8      | ✅ 全部修复    |
+| 🟠 高危 | 7    | 7      | ✅ 全部修复    |
+| 🟡 建议 | 10   | 0      | ⏸ 可选后续优化 |
 
 **修复详情**：
 
-| 编号 | 问题 | 修复文件 | 修复方式 |
-|------|------|---------|---------|
-| B1 | CORS 完全开放 | `index.ts` | 添加 origin/credentials/methods 白名单 |
-| B2 | 语义文件 API 路径遍历 | `index.ts` | 添加 `resolve + startsWith(PROJECT_ROOT)` 检查 |
-| B3 | 插件加载 RCE | `index.ts` | 限制插件路径在 `.easyagent/plugins/` 内 |
-| B4 | 加密密钥可预测 | `encryption.ts` | 生成 `randomBytes(32)` 持久化到 `~/.easyagent/secret.key` |
-| B5 | 沙箱命令注入 | `LocalSandbox.ts`/`DockerSandbox.ts` | 添加 `validateCommand()` 检测 shell 元字符 |
-| B6 | 知识库路径遍历 | `KnowledgeService.ts` | addDocument/importFromAbsolutePath 添加路径校验 |
-| B7 | verify-build 子包路径 | `verify-build.cjs` | 修正 `ROOT/../..` 路径 |
-| B8 | verify-build api.ts 假检查 | `verify-build.cjs` | 从 requiredFiles 删除 |
-| H1 | release-publish errorlevel | `release-publish.bat` | 先保存 errorlevel 再 echo |
-| H2 | WebSocket stop 无效 | `index.ts` | 引入 AbortController 机制 |
-| H3 | SessionManager 初始化顺序 | `index.ts` | 移至 imManager 之前 |
-| H4 | /api/chat 忽略 provider | `index.ts` | 检查并使用请求中的 provider 参数 |
-| H5 | 危险命令白名单 | `ConfigManager.ts` | 移除 rm/curl/wget，修复双重调用 |
-| H6 | verify-build 版本过期 | `verify-build.cjs` | CURRENT_VERSION 更新为 0.4.1 |
-| H7 | MODULE_VERSION 死代码 | `verify-build.cjs` | 删除未使用的 checkScript 变量 |
+| 编号 | 问题                       | 修复文件                             | 修复方式                                                  |
+| ---- | -------------------------- | ------------------------------------ | --------------------------------------------------------- |
+| B1   | CORS 完全开放              | `index.ts`                           | 添加 origin/credentials/methods 白名单                    |
+| B2   | 语义文件 API 路径遍历      | `index.ts`                           | 添加 `resolve + startsWith(PROJECT_ROOT)` 检查            |
+| B3   | 插件加载 RCE               | `index.ts`                           | 限制插件路径在 `.easyagent/plugins/` 内                   |
+| B4   | 加密密钥可预测             | `encryption.ts`                      | 生成 `randomBytes(32)` 持久化到 `~/.easyagent/secret.key` |
+| B5   | 沙箱命令注入               | `LocalSandbox.ts`/`DockerSandbox.ts` | 添加 `validateCommand()` 检测 shell 元字符                |
+| B6   | 知识库路径遍历             | `KnowledgeService.ts`                | addDocument/importFromAbsolutePath 添加路径校验           |
+| B7   | verify-build 子包路径      | `verify-build.cjs`                   | 修正 `ROOT/../..` 路径                                    |
+| B8   | verify-build api.ts 假检查 | `verify-build.cjs`                   | 从 requiredFiles 删除                                     |
+| H1   | release-publish errorlevel | `release-publish.bat`                | 先保存 errorlevel 再 echo                                 |
+| H2   | WebSocket stop 无效        | `index.ts`                           | 引入 AbortController 机制                                 |
+| H3   | SessionManager 初始化顺序  | `index.ts`                           | 移至 imManager 之前                                       |
+| H4   | /api/chat 忽略 provider    | `index.ts`                           | 检查并使用请求中的 provider 参数                          |
+| H5   | 危险命令白名单             | `ConfigManager.ts`                   | 移除 rm/curl/wget，修复双重调用                           |
+| H6   | verify-build 版本过期      | `verify-build.cjs`                   | CURRENT_VERSION 更新为 0.4.1                              |
+| H7   | MODULE_VERSION 死代码      | `verify-build.cjs`                   | 删除未使用的 checkScript 变量                             |
 
 **正面评价**：
+
 - ✅ pnpm workspace 结构设计合理（5 个独立包）
 - ✅ verify-build.cjs 检查逻辑全面（10 大类 20+ 项），路径已修正
 - ✅ Desktop/Web 代码隔离概念正确，两端独立修改
@@ -501,4 +511,4 @@ global: { totalDocs: globalStats.totalSize, totalSize: globalStats.totalSize },
 
 ---
 
-*本报告基于 EasyAgent 代码评审专家（兼产品架构视角）角色生成。评审依据：PRD v5.3、ADD v5.4、MEMORY.md 陷阱清单、verify-build.cjs。*
+_本报告基于 EasyAgent 代码评审专家（兼产品架构视角）角色生成。评审依据：PRD v5.3、ADD v5.4、MEMORY.md 陷阱清单、verify-build.cjs。_

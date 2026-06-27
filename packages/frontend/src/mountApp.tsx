@@ -19,7 +19,7 @@ import './styles/index.css';
 export function mountApp(
   config: { apiBase?: string; wsBase?: string; isDesktop?: boolean } = {},
   useHashRouter = false,
-  containerId = 'root'
+  containerId = 'root',
 ): void {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -35,6 +35,6 @@ export function mountApp(
           <App />
         </Router>
       </ConfigProvider>
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 }

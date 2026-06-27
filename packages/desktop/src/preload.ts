@@ -15,7 +15,8 @@ contextBridge.exposeInMainWorld('easyAgent', {
   chat: (message: string) => ipcRenderer.invoke('agent-chat', message),
 
   /** 切换模型 */
-  switchModel: (provider: string, model: string) => ipcRenderer.invoke('switch-model', provider, model),
+  switchModel: (provider: string, model: string) =>
+    ipcRenderer.invoke('switch-model', provider, model),
 
   /** 中止 Agent 执行 */
   abort: () => ipcRenderer.invoke('abort-agent'),
@@ -94,7 +95,8 @@ contextBridge.exposeInMainWorld('easyAgent', {
 
   /** 监听工作区变化 */
   onWorkspaceChanged: (callback: (workspacePath: string) => void) => {
-    const handler = (_event: Electron.IpcRendererEvent, workspacePath: string) => callback(workspacePath);
+    const handler = (_event: Electron.IpcRendererEvent, workspacePath: string) =>
+      callback(workspacePath);
     ipcRenderer.on('workspace-changed', handler);
     return () => ipcRenderer.removeListener('workspace-changed', handler);
   },
@@ -123,4 +125,3 @@ contextBridge.exposeInMainWorld('easyAgent', {
     ipcRenderer.removeAllListeners('navigate');
   },
 });
-

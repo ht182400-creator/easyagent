@@ -1,11 +1,11 @@
 import type { FC } from 'react';
 interface InputBoxProps {
-    /** 提交回调 - 用户按回车触发 */
-    onSubmit: (text: string) => void;
-    /** 是否禁用输入(Agent运行时) */
-    disabled?: boolean;
-    /** 输入提示符 */
-    prompt?: string;
+  /** 提交回调 - 用户按回车触发 */
+  onSubmit: (text: string) => void;
+  /** 是否禁用输入(Agent运行时) */
+  disabled?: boolean;
+  /** 输入提示符 */
+  prompt?: string;
 }
 /**
  * 输入框 - 处理键盘输入

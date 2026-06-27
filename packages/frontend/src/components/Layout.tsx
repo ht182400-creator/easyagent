@@ -6,9 +6,25 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, MessageSquare, Cpu, History, Wrench,
-  BookOpen, Clock, Settings, ChevronLeft, ChevronRight,
-  Sparkles, Sun, Moon, X, Box, Map, Send, Activity,
+  LayoutDashboard,
+  MessageSquare,
+  Cpu,
+  History,
+  Wrench,
+  BookOpen,
+  Clock,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Sun,
+  Moon,
+  X,
+  Box,
+  Map,
+  Send,
+  Activity,
+  FileText,
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { getApiBase } from '../request';
@@ -19,6 +35,7 @@ const navGroups = [
     label: '核心',
     items: [
       { path: '/', icon: LayoutDashboard, label: '首页' },
+      { path: '/docs-guide', icon: FileText, label: '文档导读' },
       { path: '/chat', icon: MessageSquare, label: '对话' },
     ],
   },
@@ -44,17 +61,19 @@ const navGroups = [
   },
   {
     label: '系统',
-    items: [
-      { path: '/settings', icon: Settings, label: '设置' },
-    ],
+    items: [{ path: '/settings', icon: Settings, label: '设置' }],
   },
 ];
 
 export default function Layout({ children }: { children: ReactNode }) {
   const {
-    sidebarCollapsed, toggleSidebar,
-    theme, setTheme, serverConnected,
-    notifications, removeNotification,
+    sidebarCollapsed,
+    toggleSidebar,
+    theme,
+    setTheme,
+    serverConnected,
+    notifications,
+    removeNotification,
   } = useAppStore();
   const location = useLocation();
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
@@ -64,11 +83,13 @@ export default function Layout({ children }: { children: ReactNode }) {
   useEffect(() => {
     const apiBase = getApiBase();
     fetch(`${apiBase}/api/version`)
-      .then(r => r.json())
+      .then((r) => r.json())
       .then((data: { version: string }) => {
         if (data?.version) setAppVersion(`v${data.version}`);
       })
-      .catch(() => { /* 使用默认版本号 */ });
+      .catch(() => {
+        /* 使用默认版本号 */
+      });
   }, []);
 
   return (
@@ -122,7 +143,9 @@ export default function Layout({ children }: { children: ReactNode }) {
               )}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+                  const isActive =
+                    location.pathname === item.path ||
+                    (item.path !== '/' && location.pathname.startsWith(item.path));
                   return (
                     <NavLink
                       key={item.path}
@@ -144,7 +167,9 @@ export default function Layout({ children }: { children: ReactNode }) {
                         }`}
                       />
                       {!sidebarCollapsed && (
-                        <span className="text-[13px] font-medium whitespace-nowrap">{item.label}</span>
+                        <span className="text-[13px] font-medium whitespace-nowrap">
+                          {item.label}
+                        </span>
                       )}
                       {/* 激活指示器 */}
                       {isActive && sidebarCollapsed && (
@@ -186,9 +211,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               }`}
             />
             {!sidebarCollapsed && (
-              <span className="text-xs text-gray-600">
-                {serverConnected ? '已连接' : '未连接'}
-              </span>
+              <span className="text-xs text-gray-600">{serverConnected ? '已连接' : '未连接'}</span>
             )}
           </div>
 
@@ -204,9 +227,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* ======== 主内容区 ======== */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#0d1117]">
         <main className="flex-1 overflow-auto">
-          <div className="p-6 lg:p-8">
-            {children}
-          </div>
+          <div className="p-6 lg:p-8">{children}</div>
         </main>
       </div>
 
@@ -220,10 +241,10 @@ export default function Layout({ children }: { children: ReactNode }) {
                 notif.type === 'error'
                   ? 'bg-red-500/10 border-red-500/20 text-red-400'
                   : notif.type === 'warning'
-                  ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
-                  : notif.type === 'success'
-                  ? 'bg-green-500/10 border-green-500/20 text-green-400'
-                  : 'bg-blue-500/10 border-blue-500/20 text-blue-400'
+                    ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+                    : notif.type === 'success'
+                      ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                      : 'bg-blue-500/10 border-blue-500/20 text-blue-400'
               }`}
             >
               <span className="text-sm flex-1">{notif.message}</span>

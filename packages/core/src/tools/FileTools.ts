@@ -2,7 +2,14 @@
  * 文件操作工具集
  * 提供文件读取、写入、编辑、删除等操作
  */
-import { readFileSync, writeFileSync, unlinkSync, existsSync, statSync, readdirSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  unlinkSync,
+  existsSync,
+  statSync,
+  readdirSync,
+} from 'node:fs';
 import { join, resolve, relative, dirname } from 'node:path';
 import type { ITool } from './ToolRegistry.js';
 import type { ToolResult, ToolContext } from '../types/index.js';
@@ -52,17 +59,28 @@ export const ReadFileTool: ITool = {
       const filePath = safePath(context.workspace, params.filePath as string);
 
       if (!existsSync(filePath)) {
-        return { success: false, content: `文件不存在: ${params.filePath}`, error: 'FILE_NOT_FOUND' };
+        return {
+          success: false,
+          content: `文件不存在: ${params.filePath}`,
+          error: 'FILE_NOT_FOUND',
+        };
       }
 
       const stat = statSync(filePath);
       if (stat.isDirectory()) {
-        return { success: false, content: `${params.filePath} 是目录，不是文件`, error: 'IS_DIRECTORY' };
+        return {
+          success: false,
+          content: `${params.filePath} 是目录，不是文件`,
+          error: 'IS_DIRECTORY',
+        };
       }
 
       // 文件大小限制 (最大10MB)
       if (stat.size > 10 * 1024 * 1024) {
-        return { success: false, content: `文件过大 (${(stat.size / 1024 / 1024).toFixed(1)}MB)，限制10MB` };
+        return {
+          success: false,
+          content: `文件过大 (${(stat.size / 1024 / 1024).toFixed(1)}MB)，限制10MB`,
+        };
       }
 
       const content = readFileSync(filePath, 'utf-8');
@@ -178,7 +196,11 @@ export const EditFileTool: ITool = {
       const newStr = params.newString as string;
 
       if (!existsSync(filePath)) {
-        return { success: false, content: `文件不存在: ${params.filePath}`, error: 'FILE_NOT_FOUND' };
+        return {
+          success: false,
+          content: `文件不存在: ${params.filePath}`,
+          error: 'FILE_NOT_FOUND',
+        };
       }
 
       const content = readFileSync(filePath, 'utf-8');
@@ -240,7 +262,11 @@ export const DeleteFileTool: ITool = {
       const filePath = safePath(context.workspace, params.filePath as string);
 
       if (!existsSync(filePath)) {
-        return { success: false, content: `文件不存在: ${params.filePath}`, error: 'FILE_NOT_FOUND' };
+        return {
+          success: false,
+          content: `文件不存在: ${params.filePath}`,
+          error: 'FILE_NOT_FOUND',
+        };
       }
 
       unlinkSync(filePath);
@@ -288,8 +314,8 @@ export const ListDirTool: ITool = {
 
       const entries = readdirSync(dirPath, { withFileTypes: true });
       const result = entries
-        .filter(e => !e.name.startsWith('.'))
-        .map(e => `${e.isDirectory() ? '📁' : '📄'} ${e.name}`)
+        .filter((e) => !e.name.startsWith('.'))
+        .map((e) => `${e.isDirectory() ? '📁' : '📄'} ${e.name}`)
         .join('\n');
 
       return {

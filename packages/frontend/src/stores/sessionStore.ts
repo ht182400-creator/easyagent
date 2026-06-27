@@ -94,7 +94,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       sessions: s.sessions.map((sess) =>
         sess.id === id
           ? { ...sess, metadata: { ...sess.metadata, status: 'archived' as const } }
-          : sess
+          : sess,
       ),
     }));
     try {

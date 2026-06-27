@@ -30,17 +30,13 @@ afterAll(async () => {
 
 describe('POST /api/providers/:id/test', () => {
   it('测试提供商连接返回结果（deepseek 可能未配置）', async () => {
-    const res = await request(app)
-      .post('/api/providers/deepseek/test')
-      .send({});
+    const res = await request(app).post('/api/providers/deepseek/test').send({});
     // 根据是否有 API Key 配置返回不同状态
     expect([200, 404, 500]).toContain(res.status);
   });
 
   it('不存在的提供商返回 404 或 500', async () => {
-    const res = await request(app)
-      .post('/api/providers/nonexistent-provider-xyz/test')
-      .send({});
+    const res = await request(app).post('/api/providers/nonexistent-provider-xyz/test').send({});
     expect([404, 500]).toContain(res.status);
   });
 });
@@ -54,13 +50,13 @@ describe('GET /api/providers/all-models', () => {
     // 可能是 { models: [...] } 或直接是数组
     const body = res.body;
     expect(typeof body).toBe('object');
-    const models = Array.isArray(body) ? body : (body.models || []);
+    const models = Array.isArray(body) ? body : body.models || [];
     expect(Array.isArray(models)).toBe(true);
   });
 
   it('每个模型至少包含 provider 字段', async () => {
     const res = await request(app).get('/api/providers/all-models');
-    const models = Array.isArray(res.body) ? res.body : (res.body.models || []);
+    const models = Array.isArray(res.body) ? res.body : res.body.models || [];
     if (models.length > 0) {
       const model = models[0];
       expect(model).toHaveProperty('provider');
@@ -86,7 +82,7 @@ describe('POST /api/providers/catalog/refresh', () => {
     const res = await request(app).post('/api/providers/catalog/refresh');
     // 网络不可达时降级处理，可能超时或返回错误
     expect([200, 500, 503, 504]).toContain(res.status);
-  }, 30000);  // 30s timeout for network test
+  }, 30000); // 30s timeout for network test
 });
 
 describe('POST /api/providers/:id/models/refresh', () => {
@@ -112,9 +108,7 @@ describe('PUT /api/providers/:id/key', () => {
   });
 
   it('设置空 apiKey 也能处理', async () => {
-    const res = await request(app)
-      .put('/api/providers/anthropic/key')
-      .send({});
+    const res = await request(app).put('/api/providers/anthropic/key').send({});
     // 可能返回 200（成功清空）或 400（缺少字段）
     expect([200, 400, 500]).toContain(res.status);
   });
@@ -134,9 +128,7 @@ describe('PUT /api/config', () => {
   });
 
   it('请求体为空也能处理', async () => {
-    const res = await request(app)
-      .put('/api/config')
-      .send({});
+    const res = await request(app).put('/api/config').send({});
     expect([200, 500]).toContain(res.status);
   });
 });
@@ -193,17 +185,13 @@ describe('PUT /api/config/allowed-commands', () => {
 
 describe('POST /api/plugins/load', () => {
   it('缺少 path 参数返回 400', async () => {
-    const res = await request(app)
-      .post('/api/plugins/load')
-      .send({});
+    const res = await request(app).post('/api/plugins/load').send({});
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty('error');
   });
 
   it('路径不符合安全限制返回 403', async () => {
-    const res = await request(app)
-      .post('/api/plugins/load')
-      .send({ path: '/etc/passwd' });
+    const res = await request(app).post('/api/plugins/load').send({ path: '/etc/passwd' });
     expect(res.status).toBe(403);
     expect(res.body).toHaveProperty('error');
   });
@@ -257,12 +245,10 @@ describe('POST /api/skills/custom', () => {
   });
 
   it('重复名称返回 409', async () => {
-    const res = await request(app)
-      .post('/api/skills/custom')
-      .send({
-        name: 'test-custom-skill-int',
-        description: '重复技能',
-      });
+    const res = await request(app).post('/api/skills/custom').send({
+      name: 'test-custom-skill-int',
+      description: '重复技能',
+    });
     expect(res.status).toBe(409);
   });
 });

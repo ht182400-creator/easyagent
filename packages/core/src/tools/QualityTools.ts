@@ -23,12 +23,16 @@ function safePath(workspace: string, targetPath: string): string {
  */
 export const LintCodeTool: ITool = {
   name: 'lint_code',
-  description: '对指定文件或整个项目运行Lint检查。自动检测项目类型并使用对应工具(ESLint/Pylint/golangci-lint等)。',
+  description:
+    '对指定文件或整个项目运行Lint检查。自动检测项目类型并使用对应工具(ESLint/Pylint/golangci-lint等)。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
     properties: {
-      filePath: { type: 'string', description: '可选: 指定要检查的文件路径(相对于工作区), 不指定则检查整个项目' },
+      filePath: {
+        type: 'string',
+        description: '可选: 指定要检查的文件路径(相对于工作区), 不指定则检查整个项目',
+      },
       fix: { type: 'boolean', description: '是否自动修复可修复的问题, 默认false' },
     },
     required: [],
@@ -44,17 +48,28 @@ export const LintCodeTool: ITool = {
       if (existsSync(resolve(ws, 'package.json'))) {
         // 检查是否配置了 lint 脚本
         try {
-          const pkg = JSON.parse(require('node:fs').readFileSync(resolve(ws, 'package.json'), 'utf-8'));
+          const pkg = JSON.parse(
+            require('node:fs').readFileSync(resolve(ws, 'package.json'), 'utf-8'),
+          );
           if (pkg.scripts?.lint) {
             command = 'npm run lint';
-          } else if (existsSync(resolve(ws, '.eslintrc.js')) || existsSync(resolve(ws, '.eslintrc.json')) || existsSync(resolve(ws, 'eslint.config.js'))) {
+          } else if (
+            existsSync(resolve(ws, '.eslintrc.js')) ||
+            existsSync(resolve(ws, '.eslintrc.json')) ||
+            existsSync(resolve(ws, 'eslint.config.js'))
+          ) {
             command = 'npx eslint';
             if (fix) command += ' --fix';
           }
-        } catch (err) { /* ignore */ }
+        } catch (err) {
+          /* ignore */
+        }
       }
 
-      if (!command && existsSync(resolve(ws, 'pyproject.toml')) || existsSync(resolve(ws, '.pylintrc'))) {
+      if (
+        (!command && existsSync(resolve(ws, 'pyproject.toml'))) ||
+        existsSync(resolve(ws, '.pylintrc'))
+      ) {
         command = fix ? 'python -m black . && python -m pylint' : 'python -m pylint';
       }
 
@@ -64,7 +79,10 @@ export const LintCodeTool: ITool = {
       }
 
       if (!command) {
-        return { success: false, content: '未检测到支持的Lint工具。请确认项目已配置 ESLint/Pylint/golangci-lint。' };
+        return {
+          success: false,
+          content: '未检测到支持的Lint工具。请确认项目已配置 ESLint/Pylint/golangci-lint。',
+        };
       }
 
       if (filePath) {
@@ -113,7 +131,10 @@ export const FormatCodeTool: ITool = {
   parameters: {
     type: 'object',
     properties: {
-      filePath: { type: 'string', description: '可选: 指定要格式化的文件路径(相对于工作区), 不指定则格式化整个项目' },
+      filePath: {
+        type: 'string',
+        description: '可选: 指定要格式化的文件路径(相对于工作区), 不指定则格式化整个项目',
+      },
       check: { type: 'boolean', description: '仅检查不修改(check模式), 默认false' },
     },
     required: [],
@@ -123,23 +144,29 @@ export const FormatCodeTool: ITool = {
     const filePath = params.filePath as string | undefined;
     const check = (params.check as boolean) || false;
     try {
-
       let command = '';
       if (existsSync(resolve(ws, 'package.json'))) {
         // 优先使用项目配置的 format 脚本
         try {
-          const pkg = JSON.parse(require('node:fs').readFileSync(resolve(ws, 'package.json'), 'utf-8'));
+          const pkg = JSON.parse(
+            require('node:fs').readFileSync(resolve(ws, 'package.json'), 'utf-8'),
+          );
           if (pkg.scripts?.format) {
             command = 'npm run format';
           }
-        } catch (err) { /* ignore */ }
+        } catch (err) {
+          /* ignore */
+        }
         if (!command) {
           command = 'npx prettier --write';
           if (check) command = 'npx prettier --check';
         }
       }
 
-      if (!command && (existsSync(resolve(ws, 'pyproject.toml')) || existsSync(resolve(ws, 'requirements.txt')))) {
+      if (
+        !command &&
+        (existsSync(resolve(ws, 'pyproject.toml')) || existsSync(resolve(ws, 'requirements.txt')))
+      ) {
         command = check ? 'python -m black --check .' : 'python -m black .';
       }
 
@@ -148,7 +175,10 @@ export const FormatCodeTool: ITool = {
       }
 
       if (!command) {
-        return { success: false, content: '未检测到支持的格式化工具。请安装 Prettier/Black/gofmt。' };
+        return {
+          success: false,
+          content: '未检测到支持的格式化工具。请安装 Prettier/Black/gofmt。',
+        };
       }
 
       if (filePath) {
@@ -190,12 +220,16 @@ export const FormatCodeTool: ITool = {
  */
 export const ReadLintsTool: ITool = {
   name: 'read_lints',
-  description: '读取并显示文件或项目的Linter/编译器诊断信息（错误、警告、提示）。帮助快速定位代码问题。',
+  description:
+    '读取并显示文件或项目的Linter/编译器诊断信息（错误、警告、提示）。帮助快速定位代码问题。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
     properties: {
-      paths: { type: 'string', description: '可选: 文件或目录路径(相对于工作区), 不指定则返回所有文件的诊断' },
+      paths: {
+        type: 'string',
+        description: '可选: 文件或目录路径(相对于工作区), 不指定则返回所有文件的诊断',
+      },
     },
     required: [],
   },
@@ -208,7 +242,8 @@ export const ReadLintsTool: ITool = {
       if (!existsSync(resolve(ws, 'tsconfig.json'))) {
         return {
           success: true,
-          content: '未找到 tsconfig.json，无法进行类型检查。对于非 TypeScript 项目，请使用 lint_code 工具。',
+          content:
+            '未找到 tsconfig.json，无法进行类型检查。对于非 TypeScript 项目，请使用 lint_code 工具。',
         };
       }
 
@@ -220,7 +255,10 @@ export const ReadLintsTool: ITool = {
           maxBuffer: 1024 * 1024 * 5,
         });
 
-        const errorLines = output.trim().split('\n').filter(l => l.includes('error TS'));
+        const errorLines = output
+          .trim()
+          .split('\n')
+          .filter((l) => l.includes('error TS'));
         if (errorLines.length === 0) {
           return { success: true, content: '✅ 没有类型错误。' };
         }
@@ -257,7 +295,10 @@ export const TypeCheckTool: ITool = {
   parameters: {
     type: 'object',
     properties: {
-      project: { type: 'string', description: '可选: tsconfig.json路径(相对于工作区), 默认使用根目录的tsconfig.json' },
+      project: {
+        type: 'string',
+        description: '可选: tsconfig.json路径(相对于工作区), 默认使用根目录的tsconfig.json',
+      },
     },
     required: [],
   },

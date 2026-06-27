@@ -22,7 +22,13 @@ type MainMessage =
   | { type: 'getTools'; requestId: string }
   | { type: 'getSkills'; requestId: string }
   | { type: 'getHooks'; requestId: string }
-  | { type: 'executeTool'; requestId: string; toolName: string; params: Record<string, unknown>; context: unknown }
+  | {
+      type: 'executeTool';
+      requestId: string;
+      toolName: string;
+      params: Record<string, unknown>;
+      context: unknown;
+    }
   | { type: 'triggerHook'; requestId: string; event: string; context: unknown }
   | { type: 'shutdown'; requestId: string };
 
@@ -135,8 +141,16 @@ async function handleInit(requestId: string, pluginPath: string): Promise<void> 
         description: p.description || '',
         author: p.author,
         dependencies: p.dependencies,
-        tools: registeredTools.map((t) => ({ name: t.name, description: t.description, group: t.group })),
-        skills: registeredSkills.map((s) => ({ name: s.name, description: s.description, tags: s.tags })),
+        tools: registeredTools.map((t) => ({
+          name: t.name,
+          description: t.description,
+          group: t.group,
+        })),
+        skills: registeredSkills.map((s) => ({
+          name: s.name,
+          description: s.description,
+          tags: s.tags,
+        })),
         hooks: registeredHooks.map((h) => ({ event: h.event, priority: h.priority })),
       },
     });
@@ -150,9 +164,12 @@ async function handleInit(requestId: string, pluginPath: string): Promise<void> 
  */
 function handleGetTools(requestId: string): void {
   try {
-    const tools = pluginInstance && typeof (pluginInstance as Record<string, unknown>).getTools === 'function'
-      ? (pluginInstance as Record<string, unknown>).getTools!() as Array<Record<string, unknown>>
-      : registeredTools;
+    const tools =
+      pluginInstance && typeof (pluginInstance as Record<string, unknown>).getTools === 'function'
+        ? ((pluginInstance as Record<string, unknown>).getTools!() as Array<
+            Record<string, unknown>
+          >)
+        : registeredTools;
 
     // 序列化工具定义（移除 execute 函数引用）
     const serialized = tools.map((t: Record<string, unknown>) => ({
@@ -174,9 +191,12 @@ function handleGetTools(requestId: string): void {
  */
 function handleGetSkills(requestId: string): void {
   try {
-    const skills = pluginInstance && typeof (pluginInstance as Record<string, unknown>).getSkills === 'function'
-      ? (pluginInstance as Record<string, unknown>).getSkills!() as Array<Record<string, unknown>>
-      : registeredSkills;
+    const skills =
+      pluginInstance && typeof (pluginInstance as Record<string, unknown>).getSkills === 'function'
+        ? ((pluginInstance as Record<string, unknown>).getSkills!() as Array<
+            Record<string, unknown>
+          >)
+        : registeredSkills;
 
     sendResponse({ requestId, type: 'getSkills', success: true, data: skills });
   } catch (error) {
@@ -189,9 +209,12 @@ function handleGetSkills(requestId: string): void {
  */
 function handleGetHooks(requestId: string): void {
   try {
-    const hooks = pluginInstance && typeof (pluginInstance as Record<string, unknown>).getHooks === 'function'
-      ? (pluginInstance as Record<string, unknown>).getHooks!() as Array<Record<string, unknown>>
-      : registeredHooks;
+    const hooks =
+      pluginInstance && typeof (pluginInstance as Record<string, unknown>).getHooks === 'function'
+        ? ((pluginInstance as Record<string, unknown>).getHooks!() as Array<
+            Record<string, unknown>
+          >)
+        : registeredHooks;
 
     // 序列化钩子（移除 handler 函数引用）
     const serialized = hooks.map((h: Record<string, unknown>) => ({
@@ -212,7 +235,7 @@ async function handleExecuteTool(
   requestId: string,
   toolName: string,
   params: Record<string, unknown>,
-  context: unknown
+  context: unknown,
 ): Promise<void> {
   try {
     if (!pluginInstance) {
@@ -220,9 +243,12 @@ async function handleExecuteTool(
     }
 
     // 查找工具
-    const tools = pluginInstance && typeof (pluginInstance as Record<string, unknown>).getTools === 'function'
-      ? (pluginInstance as Record<string, unknown>).getTools!() as Array<Record<string, unknown>>
-      : registeredTools;
+    const tools =
+      pluginInstance && typeof (pluginInstance as Record<string, unknown>).getTools === 'function'
+        ? ((pluginInstance as Record<string, unknown>).getTools!() as Array<
+            Record<string, unknown>
+          >)
+        : registeredTools;
 
     const tool = tools.find((t: Record<string, unknown>) => t.name === toolName);
     if (!tool) {
@@ -248,16 +274,19 @@ async function handleExecuteTool(
 async function handleTriggerHook(
   requestId: string,
   event: string,
-  context: unknown
+  context: unknown,
 ): Promise<void> {
   try {
     if (!pluginInstance) {
       throw new Error('插件未初始化');
     }
 
-    const hooks = pluginInstance && typeof (pluginInstance as Record<string, unknown>).getHooks === 'function'
-      ? (pluginInstance as Record<string, unknown>).getHooks!() as Array<Record<string, unknown>>
-      : registeredHooks;
+    const hooks =
+      pluginInstance && typeof (pluginInstance as Record<string, unknown>).getHooks === 'function'
+        ? ((pluginInstance as Record<string, unknown>).getHooks!() as Array<
+            Record<string, unknown>
+          >)
+        : registeredHooks;
 
     const matchingHooks = hooks.filter((h: Record<string, unknown>) => h.event === event);
 
@@ -266,7 +295,7 @@ async function handleTriggerHook(
     // 按优先级排序
     const sorted = [...matchingHooks].sort(
       (a: Record<string, unknown>, b: Record<string, unknown>) =>
-        ((a.priority as number) ?? 100) - ((b.priority as number) ?? 100)
+        ((a.priority as number) ?? 100) - ((b.priority as number) ?? 100),
     );
 
     for (const hook of sorted) {
@@ -287,7 +316,10 @@ async function handleTriggerHook(
  */
 function handleShutdown(requestId: string): void {
   try {
-    if (pluginInstance && typeof (pluginInstance as Record<string, unknown>).unregister === 'function') {
+    if (
+      pluginInstance &&
+      typeof (pluginInstance as Record<string, unknown>).unregister === 'function'
+    ) {
       (pluginInstance as Record<string, unknown>).unregister!();
     }
     pluginInstance = null;
@@ -316,7 +348,11 @@ parentPort?.on('message', async (message: MainMessage) => {
       handleGetHooks(requestId);
       break;
     case 'executeTool': {
-      const msg = message as { toolName: string; params: Record<string, unknown>; context: unknown };
+      const msg = message as {
+        toolName: string;
+        params: Record<string, unknown>;
+        context: unknown;
+      };
       await handleExecuteTool(requestId, msg.toolName, msg.params, msg.context);
       break;
     }

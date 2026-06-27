@@ -145,11 +145,30 @@ describe('TelegramAdapter — sendMessage', () => {
     fetchSpy.mockResolvedValue(mockTelegramOk({ message_id: 1 }));
     // 包含所有需要转义的字符
     const rawText = '_*[]()~`>#+-=|{}.!';
-    
+
     await adapter.sendMessage('12345', rawText, { parseMode: 'MarkdownV2' } as IMSendOptions);
     const body = JSON.parse(fetchSpy.mock.calls[0][1].body as string);
     // 每个特殊字符前应有转义反斜杠
-    const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+    const specialChars = [
+      '_',
+      '*',
+      '[',
+      ']',
+      '(',
+      ')',
+      '~',
+      '`',
+      '>',
+      '#',
+      '+',
+      '-',
+      '=',
+      '|',
+      '{',
+      '}',
+      '.',
+      '!',
+    ];
     for (const ch of specialChars) {
       expect(body.text).toContain(`\\${ch}`);
     }
@@ -160,7 +179,10 @@ describe('TelegramAdapter — sendMessage', () => {
 
     await adapter.sendMessage('12345', 'Choose', {
       inlineKeyboard: [
-        [{ text: 'Yes', callbackData: 'yes' }, { text: 'No', callbackData: 'no' }],
+        [
+          { text: 'Yes', callbackData: 'yes' },
+          { text: 'No', callbackData: 'no' },
+        ],
         [{ text: 'Docs', url: 'https://example.com' }],
       ],
     } as IMSendOptions);
@@ -176,9 +198,9 @@ describe('TelegramAdapter — sendMessage', () => {
     fetchSpy.mockResolvedValue(mockTelegramError(400, 'Bad Request'));
 
     // apiCall 检测到 !response.ok 时先抛异常，适配器自身错误检查不会被执行
-    await expect(
-      adapter.sendMessage('12345', 'test')
-    ).rejects.toThrow('Telegram API sendMessage 返回 400');
+    await expect(adapter.sendMessage('12345', 'test')).rejects.toThrow(
+      'Telegram API sendMessage 返回 400',
+    );
   });
 });
 
@@ -304,7 +326,11 @@ describe('TelegramAdapter — 媒体与状态发送', () => {
   it('sendDocument 应返回 message_id', async () => {
     fetchSpy.mockResolvedValue(mockTelegramOk({ message_id: 200 }));
 
-    const msgId = await adapter.sendDocument('12345', 'https://files.example.com/doc.pdf', 'Document');
+    const msgId = await adapter.sendDocument(
+      '12345',
+      'https://files.example.com/doc.pdf',
+      'Document',
+    );
     expect(msgId).toBe('200');
     const body = JSON.parse(fetchSpy.mock.calls[0][1].body as string);
     expect(body.document).toBe('https://files.example.com/doc.pdf');
@@ -321,18 +347,21 @@ describe('TelegramAdapter — 生命周期', () => {
 
   beforeEach(() => {
     fetchCalls = [];
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string, init: RequestInit) => {
-      const call = { url, body: init?.body as string || '' };
-      fetchCalls.push(call);
-      // 区分不同的 API 调用
-      if (url.includes('getMe')) {
-        return mockTelegramOk({ id: 12345, username: 'testbot' });
-      }
-      if (url.includes('getUpdates')) {
-        return mockTelegramOk([]);
-      }
-      return mockTelegramOk({});
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (url: string, init: RequestInit) => {
+        const call = { url, body: (init?.body as string) || '' };
+        fetchCalls.push(call);
+        // 区分不同的 API 调用
+        if (url.includes('getMe')) {
+          return mockTelegramOk({ id: 12345, username: 'testbot' });
+        }
+        if (url.includes('getUpdates')) {
+          return mockTelegramOk([]);
+        }
+        return mockTelegramOk({});
+      }),
+    );
     adapter = new TelegramAdapter(createConfig());
   });
 
@@ -343,19 +372,22 @@ describe('TelegramAdapter — 生命周期', () => {
   it('start 应调用 getMe 验证 token', async () => {
     await adapter.start();
     // 验证 getMe 被调用
-    const getMeCall = fetchCalls.find(c => c.url.includes('getMe'));
+    const getMeCall = fetchCalls.find((c) => c.url.includes('getMe'));
     expect(getMeCall).toBeDefined();
     expect(adapter.status).toBe('running');
   });
 
   it('getMe 失败应抛出异常', async () => {
     vi.unstubAllGlobals();
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => {
-      if (url.includes('getMe')) {
-        return mockTelegramError(401, 'Unauthorized');
-      }
-      return mockTelegramOk({});
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (url: string) => {
+        if (url.includes('getMe')) {
+          return mockTelegramError(401, 'Unauthorized');
+        }
+        return mockTelegramOk({});
+      }),
+    );
     const ad = new TelegramAdapter(createConfig());
 
     // apiCall 先于 onStart 的错误检查抛出异常 (response.ok=false)
@@ -398,14 +430,17 @@ describe('TelegramAdapter — Webhook', () => {
       return mockTelegramOk({});
     });
 
-    adapter = new TelegramAdapter(createConfig({
-      mode: 'webhook',
-      webhookUrl: 'https://myapp.example.com/webhook',
-    }));
+    adapter = new TelegramAdapter(
+      createConfig({
+        mode: 'webhook',
+        webhookUrl: 'https://myapp.example.com/webhook',
+      }),
+    );
 
     await adapter.start();
-    const webhookCall = (fetchSpy.mock.calls as Array<[string, RequestInit]>)
-      .find(c => c[0].includes('setWebhook'));
+    const webhookCall = (fetchSpy.mock.calls as Array<[string, RequestInit]>).find((c) =>
+      c[0].includes('setWebhook'),
+    );
     expect(webhookCall).toBeDefined();
   });
 
@@ -475,8 +510,9 @@ describe('TelegramAdapter — 轮询', () => {
     await adapter.start();
 
     // 第一次轮询立即触发
-    const getUpdatesCall = (fetchMock.mock.calls as Array<[string, RequestInit]>)
-      .find(c => c[0].includes('getUpdates'));
+    const getUpdatesCall = (fetchMock.mock.calls as Array<[string, RequestInit]>).find((c) =>
+      c[0].includes('getUpdates'),
+    );
     expect(getUpdatesCall).toBeDefined();
   });
 
@@ -490,7 +526,8 @@ describe('TelegramAdapter — 轮询', () => {
         return {
           ok: false,
           status: 409,
-          text: async () => '{"ok":false,"description":"Conflict: terminated by other getUpdates request"}',
+          text: async () =>
+            '{"ok":false,"description":"Conflict: terminated by other getUpdates request"}',
         };
       }
       return mockTelegramOk({});

@@ -2,20 +2,20 @@ import type { FC } from 'react';
 /** Agent状态类型 */
 export type AgentState = 'idle' | 'thinking' | 'running' | 'error';
 interface StatusBarProps {
-    /** Agent当前状态 */
-    state: AgentState;
-    /** 当前使用的模型名 */
-    model: string;
-    /** 可用工具数量 */
-    toolCount: number;
-    /** 当前会话ID */
-    sessionId?: string;
-    /** Token用量统计 */
-    tokenUsage?: {
-        input: number;
-        output: number;
-        total: number;
-    };
+  /** Agent当前状态 */
+  state: AgentState;
+  /** 当前使用的模型名 */
+  model: string;
+  /** 可用工具数量 */
+  toolCount: number;
+  /** 当前会话ID */
+  sessionId?: string;
+  /** Token用量统计 */
+  tokenUsage?: {
+    input: number;
+    output: number;
+    total: number;
+  };
 }
 /**
  * 状态栏 - 底部信息栏

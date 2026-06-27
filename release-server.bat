@@ -174,7 +174,7 @@ echo   Git 标签:   v!NEW_VERSION!
 echo.
 echo   执行步骤:
 echo     (1) 更新 version.json → !NEW_VERSION!
-echo     (2) 同步版本到 6 个 package.json
+echo     (2) 同步版本到 7 个 package.json
 echo     (3) 更新 CHANGELOG.md
 echo     (4) Git commit + tag v!NEW_VERSION!
 echo     (5) Git push origin main + tags

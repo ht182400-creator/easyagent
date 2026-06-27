@@ -188,7 +188,7 @@ echo   Type: %RELEASE_TYPE%
 echo -----------------------------------------------------------
 echo   Will execute:
 echo   (1) Update version.json
-echo   (2) Sync 6 package.json files
+echo   (2) Sync 7 package.json files
 echo   (3) Update CHANGELOG.md
 echo   (4) git commit + tag + push
 echo -----------------------------------------------------------
@@ -484,6 +484,35 @@ rem --- Skip upload ---
 echo   Skipped GitHub Release. Please create it manually later.
 
 rem ============================================================
+rem Step 5.5: Build Web Dashboard (optional)
+rem ============================================================
+:STEP_WEB_BUILD
+echo.
+echo -----------------------------------------------------------
+echo   Step 5.5: Build Web Dashboard
+echo -----------------------------------------------------------
+echo   Mode: fast (vite build only, ~20s)
+echo   Output: packages\web\dist\
+echo -----------------------------------------------------------
+
+if %AUTO_MODE%==0 (
+    set /p CONFIRM_WEB="  Build Web Dashboard? [Y/n]: "
+    if /i not "!CONFIRM_WEB!"=="Y" if not "!CONFIRM_WEB!"=="" (
+        echo   Skipped Web build.
+        goto :STEP_SYNC
+    )
+)
+
+echo   Running: build-web.bat
+echo   ----------------------------------------
+call build-web.bat
+if %errorlevel% neq 0 (
+    echo   [WARN] Web build had issues (exit code: %errorlevel%)
+) else (
+    echo   [OK] Web build complete
+)
+
+rem ============================================================
 rem Step 6: Pipeline Data Auto-Sync
 rem ============================================================
 :STEP_SYNC
@@ -542,9 +571,10 @@ echo -----------------------------------------------------------
 echo   Pipeline Summary:
 echo   1. Version Bump       [OK] v!FIN_VERSION!
 echo   2. DTS Type Check     [Check output above]
-echo   3. EXE Build          [Check output above]
+echo   3. Desktop EXE Build  [Check output above]
 echo   4. GitHub Release     [Check output above]
-echo   5. Pipeline Sync      [Check output above]
+echo   5. Web Build          [Check output above]
+echo   6. Pipeline Sync      [Check output above]
 echo -----------------------------------------------------------
 echo.
 
@@ -630,14 +660,15 @@ echo   release-publish.bat            Interactive mode (recommended)
 echo   release-publish.bat --auto      Auto mode (patch, fewer prompts)
 echo   release-publish.bat --help      Show this help
 echo.
-echo 6-Step Pipeline:
+echo 7-Step Pipeline:
 echo   1. Select version bump type (patch/minor/major/custom)
 echo   2. Pre-checks (git status, remote connectivity)
-echo   3. Version bump (version.json + package.json + CHANGELOG + git push)
+echo   3. Version bump (version.json + 7 package.json + CHANGELOG + git push)
 echo   3.5. DTS Type Check (npx tsup --dts)^ - quality gate
-echo   4. Build EXE (build.bat --release)
+echo   4. Build Desktop EXE (build.bat --release)
 echo   5. Upload to GitHub Release (gh CLI / _release.mjs / manual)
-echo   6. Pipeline Data Auto-Sync (vitest results + server restart)
+echo   6. Build Web Dashboard (build-web.bat)
+echo   7. Pipeline Data Auto-Sync (vitest results + server restart)
 echo.
 echo Prerequisites:
 echo   - Git installed and configured

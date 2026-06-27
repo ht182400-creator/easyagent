@@ -20,7 +20,9 @@ const MessageBubble: FC<{ msg: ChatMessage }> = ({ msg }) => {
   const isAssistant = msg.role === 'assistant';
 
   return (
-    <div className={`flex gap-3 px-4 py-3 message-enter ${isUser ? 'bg-surface-main' : 'bg-surface-shell/50'}`}>
+    <div
+      className={`flex gap-3 px-4 py-3 message-enter ${isUser ? 'bg-surface-main' : 'bg-surface-shell/50'}`}
+    >
       {/* 头像 */}
       <div
         className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium
@@ -42,9 +44,7 @@ const MessageBubble: FC<{ msg: ChatMessage }> = ({ msg }) => {
         {isAssistant && (
           <div className="text-sm text-text-primary leading-relaxed">
             {/* 错误提示 */}
-            {msg.error && (
-              <p className="text-red-400 mb-1">{msg.error}</p>
-            )}
+            {msg.error && <p className="text-red-400 mb-1">{msg.error}</p>}
             <div className={`whitespace-pre-wrap ${msg.isStreaming ? 'cursor-blink' : ''}`}>
               {msg.content || '思考中...'}
             </div>
@@ -56,28 +56,35 @@ const MessageBubble: FC<{ msg: ChatMessage }> = ({ msg }) => {
                   <div
                     key={tc.toolCallId}
                     className={`text-xs rounded-lg border px-3 py-2 transition-colors
-                      ${tc.status === 'done'
-                        ? 'bg-green-500/5 border-green-500/20 text-green-400'
-                        : tc.status === 'error'
-                          ? 'bg-red-500/5 border-red-500/20 text-red-400'
-                          : 'bg-surface-overlay border-border-subtle text-text-secondary'
+                      ${
+                        tc.status === 'done'
+                          ? 'bg-green-500/5 border-green-500/20 text-green-400'
+                          : tc.status === 'error'
+                            ? 'bg-red-500/5 border-red-500/20 text-red-400'
+                            : 'bg-surface-overlay border-border-subtle text-text-secondary'
                       }`}
                   >
                     <div className="flex items-center gap-2 font-medium mb-0.5">
-                      {tc.status === 'pending' && <span className="w-2 h-2 rounded-full bg-gray-400" />}
-                      {tc.status === 'running' && <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />}
-                      {tc.status === 'done' && <span className="w-2 h-2 rounded-full bg-green-400" />}
+                      {tc.status === 'pending' && (
+                        <span className="w-2 h-2 rounded-full bg-gray-400" />
+                      )}
+                      {tc.status === 'running' && (
+                        <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                      )}
+                      {tc.status === 'done' && (
+                        <span className="w-2 h-2 rounded-full bg-green-400" />
+                      )}
                       {tc.status === 'error' && <AlertCircle className="w-3 h-3 text-red-400" />}
                       <span>{tc.toolName}</span>
                     </div>
                     {tc.output && (
                       <pre className="mt-1 text-xs text-text-muted overflow-x-auto max-h-24 overflow-y-auto">
-                        {typeof tc.output === 'string' ? tc.output.slice(0, 500) : JSON.stringify(tc.output, null, 2).slice(0, 500)}
+                        {typeof tc.output === 'string'
+                          ? tc.output.slice(0, 500)
+                          : JSON.stringify(tc.output, null, 2).slice(0, 500)}
                       </pre>
                     )}
-                    {tc.status === 'error' && (
-                      <p className="mt-1 text-red-400">工具执行出错</p>
-                    )}
+                    {tc.status === 'error' && <p className="mt-1 text-red-400">工具执行出错</p>}
                   </div>
                 ))}
               </div>
@@ -104,14 +111,20 @@ const WelcomeView: FC<{ onQuickStart: (msg: string) => void }> = ({ onQuickStart
     <div className="flex items-center justify-center h-full">
       <div className="text-center space-y-6 animate-scale-in max-w-lg px-6">
         <div className="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto">
-          <svg className="w-8 h-8 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg
+            className="w-8 h-8 text-brand"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-text-primary">EasyAgent</h1>
         <p className="text-sm text-text-secondary leading-relaxed">
-          集成 DeepSeek、通义千问、文心一言等国产大模型的 AI 编程助手。
-          支持文件读写、代码搜索、Git 操作等 13 种内置工具。
+          集成 DeepSeek、通义千问、文心一言等国产大模型的 AI 编程助手。 支持文件读写、代码搜索、Git
+          操作等 13 种内置工具。
         </p>
         <div className="grid grid-cols-2 gap-2 pt-2">
           {suggestions.map((s) => (
@@ -157,7 +170,10 @@ export const ChatView: FC<ChatViewProps> = ({ sessionId }) => {
   useEffect(() => {
     const api = (window as any).easyAgent;
     if (api?.getAppVersion) {
-      api.getAppVersion().then((v: string) => setAppVersion(v)).catch(() => {});
+      api
+        .getAppVersion()
+        .then((v: string) => setAppVersion(v))
+        .catch(() => {});
     }
   }, []);
 
@@ -209,7 +225,8 @@ export const ChatView: FC<ChatViewProps> = ({ sessionId }) => {
           devStore.addMessage(sessionId, {
             id: genMsgId(),
             role: 'assistant',
-            content: '你好！我是 EasyAgent。\n\n当前处于开发模式，AI 回复将通过 Electron IPC 获取。\n\n请确保：\n1. 已配置模型提供商 API Key\n2. 运行在生产环境 (`npm run start`)',
+            content:
+              '你好！我是 EasyAgent。\n\n当前处于开发模式，AI 回复将通过 Electron IPC 获取。\n\n请确保：\n1. 已配置模型提供商 API Key\n2. 运行在生产环境 (`npm run start`)',
             timestamp: Date.now(),
             isStreaming: false,
           });
@@ -265,15 +282,22 @@ export const ChatView: FC<ChatViewProps> = ({ sessionId }) => {
             <div ref={messagesEndRef} />
           </div>
         ) : (
-          <WelcomeView onQuickStart={(text) => { setInput(text); setTimeout(() => handleSend(text), 100); }} />
+          <WelcomeView
+            onQuickStart={(text) => {
+              setInput(text);
+              setTimeout(() => handleSend(text), 100);
+            }}
+          />
         )}
       </div>
 
       {/* 输入区域 */}
       <div className="flex-shrink-0 border-t border-border-subtle bg-surface-main px-4 py-3">
         <div className="max-w-[var(--chat-max-width)] mx-auto">
-          <div className="flex items-end gap-2 bg-surface-raised border border-border-subtle rounded-xl px-3 py-2 
-            focus-within:border-border-focus transition-colors">
+          <div
+            className="flex items-end gap-2 bg-surface-raised border border-border-subtle rounded-xl px-3 py-2 
+            focus-within:border-border-focus transition-colors"
+          >
             <textarea
               ref={inputRef}
               value={input}
@@ -289,9 +313,10 @@ export const ChatView: FC<ChatViewProps> = ({ sessionId }) => {
               onClick={isRunning ? handleStop : () => handleSend()}
               disabled={!isRunning && !input.trim()}
               className={`p-2 rounded-lg transition-all flex-shrink-0
-                ${isRunning
-                  ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                  : 'bg-brand text-white hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed'
+                ${
+                  isRunning
+                    ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                    : 'bg-brand text-white hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed'
                 }`}
             >
               {isRunning ? <Square className="w-4 h-4" /> : <Send className="w-4 h-4" />}

@@ -81,7 +81,9 @@ describe('WeChatAdapter - URL 验证', () => {
 
   it('无 echostr 应返回空字符串', async () => {
     const adapter = new WeChatAdapter({
-      platform: 'wechat', enabled: true, name: 'Test',
+      platform: 'wechat',
+      enabled: true,
+      name: 'Test',
     } as WeChatConfig);
     const result = await adapter.handleUrlVerify({});
     expect(result).toBe('');
@@ -89,7 +91,9 @@ describe('WeChatAdapter - URL 验证', () => {
 
   it('无 EncodingAESKey 时应返回原始 echostr', async () => {
     const adapter = new WeChatAdapter({
-      platform: 'wechat', enabled: true, name: 'No Encrypt',
+      platform: 'wechat',
+      enabled: true,
+      name: 'No Encrypt',
     } as WeChatConfig);
     const result = await adapter.handleUrlVerify({ echostr: 'plain_echo' });
     expect(result).toBe('plain_echo');
@@ -97,7 +101,9 @@ describe('WeChatAdapter - URL 验证', () => {
 
   it('无效 EncodingAESKey 解密失败应 fallback 返回原始 echostr', async () => {
     const adapter = new WeChatAdapter({
-      platform: 'wechat', enabled: true, name: 'Bad Key',
+      platform: 'wechat',
+      enabled: true,
+      name: 'Bad Key',
       encodingAESKey: 'wrong_key_has_43_chars_at_least_xx_abc',
     } as WeChatConfig);
     // 无效 base64 会导致解密失败 → 返回原始值
@@ -119,7 +125,9 @@ describe('WeChatAdapter - 消息回调', () => {
 
   it('handleMessageCallback 明文 XML 无回调不应崩溃', async () => {
     const adapter = new WeChatAdapter({
-      platform: 'wechat', enabled: true, name: 'No Callback',
+      platform: 'wechat',
+      enabled: true,
+      name: 'No Callback',
     } as WeChatConfig);
 
     const xml = buildWxXml({
@@ -134,7 +142,9 @@ describe('WeChatAdapter - 消息回调', () => {
 
   it('handleMessageCallback 空字符串不应崩溃', async () => {
     const adapter = new WeChatAdapter({
-      platform: 'wechat', enabled: true, name: 'Empty',
+      platform: 'wechat',
+      enabled: true,
+      name: 'Empty',
     } as WeChatConfig);
 
     await expect(adapter.handleMessageCallback('')).resolves.toBe('');
@@ -142,7 +152,9 @@ describe('WeChatAdapter - 消息回调', () => {
 
   it('handleMessageCallback 非 XML 输入不应崩溃', async () => {
     const adapter = new WeChatAdapter({
-      platform: 'wechat', enabled: true, name: 'Malformed',
+      platform: 'wechat',
+      enabled: true,
+      name: 'Malformed',
     } as WeChatConfig);
 
     await expect(adapter.handleMessageCallback('不是 XML')).resolves.toBe('');
@@ -150,7 +162,9 @@ describe('WeChatAdapter - 消息回调', () => {
 
   it('handleMessageCallback 无有效标签的 XML 不应崩溃', async () => {
     const adapter = new WeChatAdapter({
-      platform: 'wechat', enabled: true, name: 'Bad XML',
+      platform: 'wechat',
+      enabled: true,
+      name: 'Bad XML',
     } as WeChatConfig);
 
     await expect(adapter.handleMessageCallback('<root></root>')).resolves.toBe('');

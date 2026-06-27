@@ -16,7 +16,7 @@ import type { ProviderId } from '@easyagent/core/types';
  * @see {@link import('@easyagent/core/types').ModelConfig.pricing 核心模型定价}
  */
 export interface ModelPricing {
-  input: number;   // 每百万token价格(元)
+  input: number; // 每百万token价格(元)
   output: number;
 }
 
@@ -84,13 +84,16 @@ export const useProviderStore = create<ProviderState>((set, get) => ({
     try {
       const providers = await apiRequest<Provider[]>('/api/providers');
       const list = Array.isArray(providers) ? providers : [];
-      
+
       // 智能选择默认模型：优先选已配置密钥的提供商，其次选第一个
       const currentState = get();
       // 当前选中但该提供商无密钥 → 不算有效选择
-      const currentHasKey = list.find((p: Provider) => p.id === currentState.currentProvider)?.hasKey;
-      const hasValidSelection = currentState.currentProvider && currentState.currentModel && currentHasKey;
-      
+      const currentHasKey = list.find(
+        (p: Provider) => p.id === currentState.currentProvider,
+      )?.hasKey;
+      const hasValidSelection =
+        currentState.currentProvider && currentState.currentModel && currentHasKey;
+
       if (!hasValidSelection && list.length > 0) {
         // 优先选有密钥的提供商（Ollama 本地模型总是有密钥）
         const withKey = list.find((p: Provider) => p.hasKey);

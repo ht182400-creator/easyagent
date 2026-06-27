@@ -1,8 +1,25 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import {
-  BookOpen, Upload, Database, Search, FileText, FolderTree,
-  Tag, Trash2, Plus, X, Filter, RefreshCw, ChevronDown,
-  File, FileCode, Link, Folder, FolderOpen, Globe, Briefcase,
+  BookOpen,
+  Upload,
+  Database,
+  Search,
+  FileText,
+  FolderTree,
+  Tag,
+  Trash2,
+  Plus,
+  X,
+  Filter,
+  RefreshCw,
+  ChevronDown,
+  File,
+  FileCode,
+  Link,
+  Folder,
+  FolderOpen,
+  Globe,
+  Briefcase,
 } from 'lucide-react';
 import {
   useKnowledgeBaseStore,
@@ -15,9 +32,27 @@ import FileBrowser from '../components/FileBrowser';
 
 /** 功能卡片 */
 const FEATURES = [
-  { icon: Upload, title: '文档导入', desc: '支持 Markdown、代码文件、文本文件的文档导入和手动输入', color: 'text-blue-400', action: 'import' as const },
-  { icon: Search, title: '智能搜索', desc: '基于标题、标签、分类和内容的多维度全文检索', color: 'text-green-400', action: 'search' as const },
-  { icon: FolderTree, title: '分类管理', desc: '6个预设分类 + 自定义标签，轻松组织知识文档', color: 'text-purple-400', action: 'category' as const },
+  {
+    icon: Upload,
+    title: '文档导入',
+    desc: '支持 Markdown、代码文件、文本文件的文档导入和手动输入',
+    color: 'text-blue-400',
+    action: 'import' as const,
+  },
+  {
+    icon: Search,
+    title: '智能搜索',
+    desc: '基于标题、标签、分类和内容的多维度全文检索',
+    color: 'text-green-400',
+    action: 'search' as const,
+  },
+  {
+    icon: FolderTree,
+    title: '分类管理',
+    desc: '6个预设分类 + 自定义标签，轻松组织知识文档',
+    color: 'text-purple-400',
+    action: 'category' as const,
+  },
 ];
 
 /** 分类图标映射 */
@@ -39,18 +74,32 @@ function formatSize(bytes: number): string {
 
 export default function KnowledgeBase() {
   const {
-    documents, loading, searchQuery, searchResults,
-    selectedCategory, selectedTag, allTags, stats,
-    fetchDocuments, addDocument, removeDocument,
-    searchDocument, setSearchQuery, setSelectedCategory,
-    setSelectedTag, importFromFile, uploadFile, scope, setScope,
+    documents,
+    loading,
+    searchQuery,
+    searchResults,
+    selectedCategory,
+    selectedTag,
+    allTags,
+    stats,
+    fetchDocuments,
+    addDocument,
+    removeDocument,
+    searchDocument,
+    setSearchQuery,
+    setSelectedCategory,
+    setSelectedTag,
+    importFromFile,
+    uploadFile,
+    scope,
+    setScope,
     getDocument,
   } = useKnowledgeBaseStore();
   const addNotification = useAppStore((s) => s.addNotification);
 
   const [showAdd, setShowAdd] = useState(false);
   const [viewDoc, setViewDoc] = useState<KnowledgeDocument | null>(null);
-  const [loadingDoc, setLoadingDoc] = useState(false);  // 加载文档详情中
+  const [loadingDoc, setLoadingDoc] = useState(false); // 加载文档详情中
   const [searchInput, setSearchInput] = useState('');
   const [showBrowser, setShowBrowser] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,8 +151,8 @@ export default function KnowledgeBase() {
   const filteredDocs = selectedCategory
     ? documents.filter((d) => d.category === selectedCategory)
     : selectedTag
-    ? documents.filter((d) => d.tags.includes(selectedTag))
-    : documents;
+      ? documents.filter((d) => d.tags.includes(selectedTag))
+      : documents;
 
   const handleAdd = async () => {
     if (!formTitle.trim()) {
@@ -120,7 +169,10 @@ export default function KnowledgeBase() {
     }
 
     try {
-      const tags = formTags.split(',').map((t) => t.trim()).filter(Boolean);
+      const tags = formTags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
 
       if (addType === 'upload' && uploadFileObj) {
         // 文件上传
@@ -147,7 +199,7 @@ export default function KnowledgeBase() {
    */
   const handleViewDoc = async (docId: string) => {
     setLoadingDoc(true);
-    setViewDoc(null);  // 先清空上一次的
+    setViewDoc(null); // 先清空上一次的
     try {
       const fullDoc = await getDocument(docId);
       setViewDoc(fullDoc);
@@ -249,7 +301,10 @@ export default function KnowledgeBase() {
           </div>
           <button
             className="btn-primary flex items-center gap-2"
-            onClick={() => { resetForm(); setShowAdd(true); }}
+            onClick={() => {
+              resetForm();
+              setShowAdd(true);
+            }}
           >
             <Plus className="w-4 h-4" /> 添加文档
           </button>
@@ -263,11 +318,21 @@ export default function KnowledgeBase() {
             key={f.title}
             className="card text-center cursor-pointer hover:border-primary-500/30 hover:bg-gray-800/80 transition-all group"
             onClick={() => handleFeatureClick(f.action)}
-            title={f.action === 'import' ? '点击打开添加文档弹窗' : f.action === 'search' ? '点击跳转到搜索栏' : '点击查看分类筛选'}
+            title={
+              f.action === 'import'
+                ? '点击打开添加文档弹窗'
+                : f.action === 'search'
+                  ? '点击跳转到搜索栏'
+                  : '点击查看分类筛选'
+            }
           >
-            <f.icon className={`w-10 h-10 ${f.color} mx-auto mb-3 group-hover:scale-110 transition-transform`} />
+            <f.icon
+              className={`w-10 h-10 ${f.color} mx-auto mb-3 group-hover:scale-110 transition-transform`}
+            />
             <h3 className="font-semibold">{f.title}</h3>
-            <p className="text-sm text-gray-400 mt-2 group-hover:text-gray-300 transition-colors">{f.desc}</p>
+            <p className="text-sm text-gray-400 mt-2 group-hover:text-gray-300 transition-colors">
+              {f.desc}
+            </p>
           </div>
         ))}
       </div>
@@ -284,7 +349,9 @@ export default function KnowledgeBase() {
             <div className="text-sm text-gray-400">已索引文档</div>
           </div>
           <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-2xl font-bold text-green-400">{stats.totalSize > 0 ? formatSize(stats.totalSize) : '0B'}</div>
+            <div className="text-2xl font-bold text-green-400">
+              {stats.totalSize > 0 ? formatSize(stats.totalSize) : '0B'}
+            </div>
             <div className="text-sm text-gray-400">存储大小</div>
           </div>
           <div className="bg-gray-800 rounded-lg p-4">
@@ -330,7 +397,10 @@ export default function KnowledgeBase() {
           {searchInput && (
             <button
               className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-700 rounded"
-              onClick={() => { setSearchInput(''); searchDocument(''); }}
+              onClick={() => {
+                setSearchInput('');
+                searchDocument('');
+              }}
             >
               <X className="w-3.5 h-3.5 text-gray-500" />
             </button>
@@ -341,7 +411,10 @@ export default function KnowledgeBase() {
         <div className="flex gap-1.5 flex-wrap" ref={categoryFilterRef}>
           <button
             className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${!selectedCategory && !selectedTag ? 'bg-primary-500/20 text-primary-400' : 'bg-gray-800 text-gray-400 hover:bg-gray-750'}`}
-            onClick={() => { setSelectedCategory(null); setSelectedTag(null); }}
+            onClick={() => {
+              setSelectedCategory(null);
+              setSelectedTag(null);
+            }}
           >
             全部
           </button>
@@ -351,7 +424,10 @@ export default function KnowledgeBase() {
               <button
                 key={cat.id}
                 className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 ${selectedCategory === cat.id ? 'bg-primary-500/20 text-primary-400' : 'bg-gray-800 text-gray-400 hover:bg-gray-750'}`}
-                onClick={() => { setSelectedCategory(cat.id === selectedCategory ? null : cat.id); setSelectedTag(null); }}
+                onClick={() => {
+                  setSelectedCategory(cat.id === selectedCategory ? null : cat.id);
+                  setSelectedTag(null);
+                }}
               >
                 {cat.label} {count > 0 && <span className="opacity-60">({count})</span>}
               </button>
@@ -370,7 +446,10 @@ export default function KnowledgeBase() {
               <button
                 key={tag}
                 className={`px-2 py-0.5 rounded text-xs transition-colors ${selectedTag === tag ? 'bg-primary-500/20 text-primary-400' : 'bg-gray-800 text-gray-500 hover:bg-gray-750'}`}
-                onClick={() => { setSelectedTag(tag === selectedTag ? null : tag); setSelectedCategory(null); }}
+                onClick={() => {
+                  setSelectedTag(tag === selectedTag ? null : tag);
+                  setSelectedCategory(null);
+                }}
               >
                 #{tag} {tagCount > 0 && <span className="opacity-60">({tagCount})</span>}
               </button>
@@ -408,20 +487,25 @@ export default function KnowledgeBase() {
                           {Math.round(r.score * 100)}% 匹配
                         </span>
                         <span className="text-xs text-gray-600">
-                          {KB_CATEGORIES.find((c) => c.id === r.document.category)?.label || r.document.category}
+                          {KB_CATEGORIES.find((c) => c.id === r.document.category)?.label ||
+                            r.document.category}
                         </span>
                       </div>
                       {r.snippet && (
                         <p className="text-sm text-gray-400 line-clamp-2">{r.snippet}</p>
                       )}
                       <p className="text-xs text-gray-600 mt-1">
-                        {formatSize(r.document.size)} · {r.document.chunkCount} 块 · {new Date(r.document.updatedAt).toLocaleDateString('zh-CN')}
+                        {formatSize(r.document.size)} · {r.document.chunkCount} 块 ·{' '}
+                        {new Date(r.document.updatedAt).toLocaleDateString('zh-CN')}
                       </p>
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
                       <button
                         className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                        onClick={(e) => { e.stopPropagation(); handleDelete(r.document.id, r.document.title); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(r.document.id, r.document.title);
+                        }}
                       >
                         <Trash2 className="w-4 h-4 text-red-400" />
                       </button>
@@ -455,7 +539,10 @@ export default function KnowledgeBase() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className="p-2 bg-gray-750 rounded-lg flex-shrink-0" style={{ color: catInfo?.color }}>
+                        <div
+                          className="p-2 bg-gray-750 rounded-lg flex-shrink-0"
+                          style={{ color: catInfo?.color }}
+                        >
                           <CatIcon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -470,18 +557,27 @@ export default function KnowledgeBase() {
                           </p>
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                             {doc.tags.map((t) => (
-                              <span key={t} className="text-xs px-1.5 py-0.5 bg-gray-750 rounded text-gray-500">#{t}</span>
+                              <span
+                                key={t}
+                                className="text-xs px-1.5 py-0.5 bg-gray-750 rounded text-gray-500"
+                              >
+                                #{t}
+                              </span>
                             ))}
                           </div>
                           <p className="text-xs text-gray-600 mt-1">
-                            {formatSize(doc.size)} · {doc.chunkCount} 块 · {doc.source} · {new Date(doc.updatedAt).toLocaleDateString('zh-CN')}
+                            {formatSize(doc.size)} · {doc.chunkCount} 块 · {doc.source} ·{' '}
+                            {new Date(doc.updatedAt).toLocaleDateString('zh-CN')}
                           </p>
                         </div>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
                         <button
                           className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                          onClick={(e) => { e.stopPropagation(); handleDelete(doc.id, doc.title); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(doc.id, doc.title);
+                          }}
                         >
                           <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
@@ -503,20 +599,34 @@ export default function KnowledgeBase() {
 
       {/* 文档详情弹窗 */}
       {(viewDoc || loadingDoc) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => { if (!loadingDoc) setViewDoc(null); }}>
-          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => {
+            if (!loadingDoc) setViewDoc(null);
+          }}
+        >
+          <div
+            className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between p-6 border-b border-gray-800">
               <h2 className="text-lg font-bold truncate">{viewDoc?.title || '加载中...'}</h2>
               <div className="flex gap-2">
                 {viewDoc && (
                   <button
                     className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                    onClick={() => { handleDelete(viewDoc.id, viewDoc.title); setViewDoc(null); }}
+                    onClick={() => {
+                      handleDelete(viewDoc.id, viewDoc.title);
+                      setViewDoc(null);
+                    }}
                   >
                     <Trash2 className="w-4 h-4 text-red-400" />
                   </button>
                 )}
-                <button className="p-1 hover:bg-gray-800 rounded-lg" onClick={() => setViewDoc(null)}>
+                <button
+                  className="p-1 hover:bg-gray-800 rounded-lg"
+                  onClick={() => setViewDoc(null)}
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -531,10 +641,13 @@ export default function KnowledgeBase() {
                 <>
                   <div className="flex flex-wrap gap-2 mb-4">
                     <span className="text-xs px-2 py-1 bg-primary-500/10 text-primary-400 rounded">
-                      {KB_CATEGORIES.find((c) => c.id === viewDoc.category)?.label || viewDoc.category}
+                      {KB_CATEGORIES.find((c) => c.id === viewDoc.category)?.label ||
+                        viewDoc.category}
                     </span>
                     {viewDoc.tags?.map((t: string) => (
-                      <span key={t} className="text-xs px-2 py-1 bg-gray-800 text-gray-400 rounded">#{t}</span>
+                      <span key={t} className="text-xs px-2 py-1 bg-gray-800 text-gray-400 rounded">
+                        #{t}
+                      </span>
                     ))}
                     <span className="text-xs px-2 py-1 bg-gray-800 text-gray-500 rounded">
                       {formatSize(viewDoc.size)} · {viewDoc.chunkCount} 块
@@ -543,7 +656,9 @@ export default function KnowledgeBase() {
                       来源: {viewDoc.source}
                     </span>
                     {/* 显示作用域标签 */}
-                    <span className={`text-xs px-2 py-1 rounded ${scope === 'global' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded ${scope === 'global' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}
+                    >
                       {scope === 'global' ? '全局' : '项目'}
                     </span>
                   </div>
@@ -559,14 +674,23 @@ export default function KnowledgeBase() {
 
       {/* 添加文档弹窗 */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowAdd(false)}>
-          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowAdd(false)}
+        >
+          <div
+            className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary-400" />
                 添加文档
               </h2>
-              <button className="p-1 hover:bg-gray-800 rounded-lg" onClick={() => setShowAdd(false)}>
+              <button
+                className="p-1 hover:bg-gray-800 rounded-lg"
+                onClick={() => setShowAdd(false)}
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -693,7 +817,8 @@ export default function KnowledgeBase() {
                     )}
                   </div>
                   <p className="mt-1 text-xs text-gray-600">
-                    上传的文件将导入到{scope === 'global' ? '全局' : '项目'}知识库中，可跨所有项目共享和检索。
+                    上传的文件将导入到{scope === 'global' ? '全局' : '项目'}
+                    知识库中，可跨所有项目共享和检索。
                   </p>
                 </div>
               )}
@@ -716,7 +841,9 @@ export default function KnowledgeBase() {
 
               {/* 标签 */}
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">标签 (逗号分隔)</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  标签 (逗号分隔)
+                </label>
                 <input
                   type="text"
                   className="input w-full"
@@ -728,7 +855,9 @@ export default function KnowledgeBase() {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button className="btn-secondary" onClick={() => setShowAdd(false)}>取消</button>
+              <button className="btn-secondary" onClick={() => setShowAdd(false)}>
+                取消
+              </button>
               <button className="btn-primary flex items-center gap-2" onClick={handleAdd}>
                 <Plus className="w-4 h-4" /> 添加文档
               </button>

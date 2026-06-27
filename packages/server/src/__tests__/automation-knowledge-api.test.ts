@@ -39,16 +39,12 @@ describe('POST /api/automations', () => {
   let automationId: string;
 
   it('缺少 name 参数返回 400', async () => {
-    const res = await request(app)
-      .post('/api/automations')
-      .send({ prompt: 'test prompt' });
+    const res = await request(app).post('/api/automations').send({ prompt: 'test prompt' });
     expect(res.status).toBe(400);
   });
 
   it('缺少 prompt 参数返回 400', async () => {
-    const res = await request(app)
-      .post('/api/automations')
-      .send({ name: 'test-automation' });
+    const res = await request(app).post('/api/automations').send({ name: 'test-automation' });
     expect(res.status).toBe(400);
   });
 
@@ -70,14 +66,12 @@ describe('POST /api/automations', () => {
   });
 
   it('创建 once 类型自动化任务返回 scheduledAt', async () => {
-    const res = await request(app)
-      .post('/api/automations')
-      .send({
-        name: '一次性测试自动化',
-        prompt: '执行一次性任务',
-        scheduleType: 'once',
-        scheduledAt: '2026-12-31T23:59',
-      });
+    const res = await request(app).post('/api/automations').send({
+      name: '一次性测试自动化',
+      prompt: '执行一次性任务',
+      scheduleType: 'once',
+      scheduledAt: '2026-12-31T23:59',
+    });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('id');
     expect(res.body).toHaveProperty('scheduleType', 'once');
@@ -86,9 +80,7 @@ describe('POST /api/automations', () => {
 
 describe('PUT /api/automations/:id', () => {
   it('更新不存在的自动化任务返回 404', async () => {
-    const res = await request(app)
-      .put('/api/automations/nonexistent')
-      .send({ name: 'updated' });
+    const res = await request(app).put('/api/automations/nonexistent').send({ name: 'updated' });
     expect(res.status).toBe(404);
   });
 
@@ -157,9 +149,7 @@ describe('POST /api/knowledge', () => {
   let docId: string;
 
   it('缺少 title 参数返回 400', async () => {
-    const res = await request(app)
-      .post('/api/knowledge')
-      .send({ content: 'test content' });
+    const res = await request(app).post('/api/knowledge').send({ content: 'test content' });
     expect(res.status).toBe(400);
   });
 
@@ -180,13 +170,11 @@ describe('POST /api/knowledge', () => {
   });
 
   it('支持 global 作用域添加文档', async () => {
-    const res = await request(app)
-      .post('/api/knowledge')
-      .send({
-        title: '全局知识库测试',
-        content: '全局文档内容',
-        scope: 'global',
-      });
+    const res = await request(app).post('/api/knowledge').send({
+      title: '全局知识库测试',
+      content: '全局文档内容',
+      scope: 'global',
+    });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('success', true);
   });
@@ -288,9 +276,7 @@ describe('IM Management', () => {
   });
 
   it('ALL /api/im/webhook/:platform 接收 Webhook（无签名返回 400）', async () => {
-    const res = await request(app)
-      .post('/api/im/webhook/wechat')
-      .send({ Body: 'test' });
+    const res = await request(app).post('/api/im/webhook/wechat').send({ Body: 'test' });
     // Webhook 可能返回 400（签名校验失败）或其他状态
     expect([200, 400, 500]).toContain(res.status);
   });

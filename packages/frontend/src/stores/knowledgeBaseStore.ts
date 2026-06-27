@@ -65,7 +65,9 @@ interface KnowledgeBaseState {
 
   // Actions
   fetchDocuments: () => Promise<void>;
-  addDocument: (doc: Omit<KnowledgeDocument, 'id' | 'addedAt' | 'updatedAt' | 'chunkCount'>) => Promise<void>;
+  addDocument: (
+    doc: Omit<KnowledgeDocument, 'id' | 'addedAt' | 'updatedAt' | 'chunkCount'>,
+  ) => Promise<void>;
   removeDocument: (id: string) => Promise<void>;
   searchDocument: (query: string) => Promise<void>;
   setSearchQuery: (query: string) => void;
@@ -99,15 +101,22 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
     try {
       const data = await apiRequest<any>(`/api/knowledge?scope=${scope}`);
       // 兼容新旧格式: API返回 { success, documents, stats, tags }
-      const docs: KnowledgeDocument[] = Array.isArray(data.documents) ? data.documents : Array.isArray(data) ? data : [];
+      const docs: KnowledgeDocument[] = Array.isArray(data.documents)
+        ? data.documents
+        : Array.isArray(data)
+          ? data
+          : [];
       const serverTags: string[] = Array.isArray(data.tags) ? data.tags : [];
       const allTags = [...new Set([...serverTags, ...docs.flatMap((d) => d.tags)])].sort();
       const categories: Record<string, number> = {};
 
       if (data.stats && data.stats.categories) {
-        docs.forEach((d) => { categories[d.category] = (categories[d.category] || 0) + 1; });
+        docs.forEach((d) => {
+          categories[d.category] = (categories[d.category] || 0) + 1;
+        });
         set({
-          documents: docs, allTags,
+          documents: docs,
+          allTags,
           stats: {
             totalDocs: data.stats.totalDocs || docs.length,
             totalSize: data.stats.totalSize || docs.reduce((sum, d) => sum + d.size, 0),
@@ -116,10 +125,17 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           loading: false,
         });
       } else {
-        docs.forEach((d) => { categories[d.category] = (categories[d.category] || 0) + 1; });
+        docs.forEach((d) => {
+          categories[d.category] = (categories[d.category] || 0) + 1;
+        });
         set({
-          documents: docs, allTags,
-          stats: { totalDocs: docs.length, totalSize: docs.reduce((sum, d) => sum + d.size, 0), categories },
+          documents: docs,
+          allTags,
+          stats: {
+            totalDocs: docs.length,
+            totalSize: docs.reduce((sum, d) => sum + d.size, 0),
+            categories,
+          },
           loading: false,
         });
       }
@@ -134,9 +150,13 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
       const data = await apiRequest<any>('/api/knowledge', {
         method: 'POST',
         body: JSON.stringify({
-          title: doc.title, content: doc.content,
-          filePath: doc.source !== '手动输入' && !doc.source.startsWith('上传:') ? doc.source : undefined,
-          category: doc.category, tags: doc.tags, scope,
+          title: doc.title,
+          content: doc.content,
+          filePath:
+            doc.source !== '手动输入' && !doc.source.startsWith('上传:') ? doc.source : undefined,
+          category: doc.category,
+          tags: doc.tags,
+          scope,
         }),
       });
 
@@ -147,7 +167,8 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           id: data.document.id,
           addedAt: data.document.addedAt || new Date().toISOString(),
           updatedAt: data.document.updatedAt || new Date().toISOString(),
-          chunkCount: data.document.chunkCount || Math.ceil((data.document.size || doc.size) / 1000),
+          chunkCount:
+            data.document.chunkCount || Math.ceil((data.document.size || doc.size) / 1000),
         };
         set((s) => ({
           documents: [newDoc, ...s.documents],
@@ -155,7 +176,10 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           stats: {
             totalDocs: s.stats.totalDocs + 1,
             totalSize: s.stats.totalSize + newDoc.size,
-            categories: { ...s.stats.categories, [newDoc.category]: (s.stats.categories[newDoc.category] || 0) + 1 },
+            categories: {
+              ...s.stats.categories,
+              [newDoc.category]: (s.stats.categories[newDoc.category] || 0) + 1,
+            },
           },
         }));
         useAppStore.getState().addNotification({
@@ -168,16 +192,22 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
     } catch (err) {
       // 服务端不可用时乐观更新
       const newDoc: KnowledgeDocument = {
-        ...doc, id: `kb_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        addedAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        ...doc,
+        id: `kb_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        addedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         chunkCount: Math.ceil(doc.size / 1000),
       };
       set((s) => ({
         documents: [newDoc, ...s.documents],
         allTags: [...new Set([...s.allTags, ...doc.tags])].sort(),
         stats: {
-          totalDocs: s.stats.totalDocs + 1, totalSize: s.stats.totalSize + doc.size,
-          categories: { ...s.stats.categories, [doc.category]: (s.stats.categories[doc.category] || 0) + 1 },
+          totalDocs: s.stats.totalDocs + 1,
+          totalSize: s.stats.totalSize + doc.size,
+          categories: {
+            ...s.stats.categories,
+            [doc.category]: (s.stats.categories[doc.category] || 0) + 1,
+          },
         },
       }));
       useAppStore.getState().addNotification({
@@ -211,7 +241,9 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
 
     try {
       await apiRequest(`/api/knowledge/${id}?scope=${scope}`, { method: 'DELETE' });
-    } catch (err) { /* ignore */ }
+    } catch (err) {
+      /* ignore */
+    }
   },
 
   searchDocument: async (query) => {
@@ -226,15 +258,19 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
       const params = new URLSearchParams({ q: query, maxResults: '20', scope });
       const data = await apiRequest<any>(`/api/knowledge/search?${params}`);
       if (data.success && Array.isArray(data.results)) {
-          const results: KBSearchResult[] = data.results.map((r: { document: KnowledgeDocument; score: number; snippet: string }) => ({
+        const results: KBSearchResult[] = data.results.map(
+          (r: { document: KnowledgeDocument; score: number; snippet: string }) => ({
             document: r.document,
             score: r.score,
             snippet: r.snippet || r.document.content?.slice(0, 150) || '',
-          }));
+          }),
+        );
         set({ searchResults: results });
         return;
       }
-    } catch (err) { /* 降级到本地搜索 */ }
+    } catch (err) {
+      /* 降级到本地搜索 */
+    }
 
     // 本地搜索降级
     const q = query.toLowerCase();
@@ -250,7 +286,10 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
           score += 0.3;
           const start = Math.max(0, idx - 50);
           const end = Math.min(doc.content.length, idx + q.length + 100);
-          snippet = (start > 0 ? '...' : '') + doc.content.slice(start, end) + (end < doc.content.length ? '...' : '');
+          snippet =
+            (start > 0 ? '...' : '') +
+            doc.content.slice(start, end) +
+            (end < doc.content.length ? '...' : '');
         }
         return { document: doc, score, snippet };
       })

@@ -9,7 +9,10 @@ import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 function createTestDir(): string {
-  const dir = resolve(tmpdir(), `ea-pv-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const dir = resolve(
+    tmpdir(),
+    `ea-pv-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -31,14 +34,13 @@ describe('PreviewURLTool - URL预览', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('有效HTTP URL应成功', async () => {
-    const result = await PreviewURLTool.execute(
-      { url: 'http://localhost:3000' },
-      ctx(workspace)
-    );
+    const result = await PreviewURLTool.execute({ url: 'http://localhost:3000' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('localhost:3000');
   });
@@ -46,17 +48,14 @@ describe('PreviewURLTool - URL预览', () => {
   it('有效HTTPS URL应成功', async () => {
     const result = await PreviewURLTool.execute(
       { url: 'https://example.com/page' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('example.com');
   });
 
   it('无效URL应返回错误', async () => {
-    const result = await PreviewURLTool.execute(
-      { url: 'not-a-valid-url' },
-      ctx(workspace)
-    );
+    const result = await PreviewURLTool.execute({ url: 'not-a-valid-url' }, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.content).toContain('无效');
   });
@@ -64,17 +63,14 @@ describe('PreviewURLTool - URL预览', () => {
   it('非HTTP协议的URL应返回错误', async () => {
     const result = await PreviewURLTool.execute(
       { url: 'ftp://files.example.com/data' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('不支持的协议');
   });
 
   it('file://协议应被拒绝', async () => {
-    const result = await PreviewURLTool.execute(
-      { url: 'file:///etc/passwd' },
-      ctx(workspace)
-    );
+    const result = await PreviewURLTool.execute({ url: 'file:///etc/passwd' }, ctx(workspace));
     expect(result.success).toBe(false);
   });
 
@@ -98,7 +94,9 @@ describe('DiffFilesTool - 文件对比', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('两个相同文件应返回(较小篇幅)diff输出', async () => {
@@ -106,7 +104,7 @@ describe('DiffFilesTool - 文件对比', () => {
     writeFileSync(join(workspace, 'b.txt'), 'line1\nline2\nline3');
     const result = await DiffFilesTool.execute(
       { filePath1: 'a.txt', filePath2: 'b.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     // diff 对于相同文件，输出只含 --- 和 +++ 头，不包含 -/+
@@ -119,7 +117,7 @@ describe('DiffFilesTool - 文件对比', () => {
     writeFileSync(join(workspace, 'new.ts'), 'const x = 1;\nconst z = 3;');
     const result = await DiffFilesTool.execute(
       { filePath1: 'old.ts', filePath2: 'new.ts' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('---');
@@ -131,7 +129,7 @@ describe('DiffFilesTool - 文件对比', () => {
     writeFileSync(join(workspace, 'content.txt'), 'hello world');
     const result = await DiffFilesTool.execute(
       { filePath1: 'empty.txt', filePath2: 'content.txt' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     // 空对非空,应有diff
@@ -159,14 +157,13 @@ describe('AskUserTool - 用户交互', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('无选项时应为确认型问题', async () => {
-    const result = await AskUserTool.execute(
-      { question: '是否继续操作？' },
-      ctx(workspace)
-    );
+    const result = await AskUserTool.execute({ question: '是否继续操作？' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('确认');
     expect(result.content).toContain('是否继续操作');
@@ -176,7 +173,7 @@ describe('AskUserTool - 用户交互', () => {
   it('有选项时应为选择型问题', async () => {
     const result = await AskUserTool.execute(
       { question: '选择方案', options: ['方案A', '方案B', '方案C'] },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('方案A');
@@ -187,7 +184,7 @@ describe('AskUserTool - 用户交互', () => {
   it('应支持标题参数', async () => {
     const result = await AskUserTool.execute(
       { question: '选择版本', title: '版本选择', options: ['v1', 'v2'] },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('版本选择');
@@ -196,7 +193,7 @@ describe('AskUserTool - 用户交互', () => {
   it('多选模式应显示提示', async () => {
     const result = await AskUserTool.execute(
       { question: '选择多个', options: ['A', 'B', 'C'], multiSelect: true },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('多选');
@@ -207,10 +204,7 @@ describe('AskUserTool - 用户交互', () => {
   });
 
   it('空选项数组应显示确认模式', async () => {
-    const result = await AskUserTool.execute(
-      { question: '确认?', options: [] },
-      ctx(workspace)
-    );
+    const result = await AskUserTool.execute({ question: '确认?', options: [] }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('确认');
   });
@@ -231,57 +225,50 @@ describe('ReadImageTool - 读取图片', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('文件不存在应返回错误', async () => {
-    const result = await ReadImageTool.execute(
-      { filePath: 'nonexistent.png' },
-      ctx(workspace)
-    );
+    const result = await ReadImageTool.execute({ filePath: 'nonexistent.png' }, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.error).toBe('FILE_NOT_FOUND');
   });
 
   it('不支持的格式应返回错误', async () => {
     writeFileSync(join(workspace, 'file.xyz'), Buffer.from('fake'));
-    const result = await ReadImageTool.execute(
-      { filePath: 'file.xyz' },
-      ctx(workspace)
-    );
+    const result = await ReadImageTool.execute({ filePath: 'file.xyz' }, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.content).toContain('不支持的图片格式');
   });
 
   it('应能读取PNG图片', async () => {
     // 最小PNG (1x1 像素, 67字节)
-    const minPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
-    writeFileSync(join(workspace, 'test.png'), minPng);
-    const result = await ReadImageTool.execute(
-      { filePath: 'test.png' },
-      ctx(workspace)
+    const minPng = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
     );
+    writeFileSync(join(workspace, 'test.png'), minPng);
+    const result = await ReadImageTool.execute({ filePath: 'test.png' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.metadata.format).toBe('.png');
     expect(result.metadata.mimeType).toBe('image/png');
   });
 
   it('应支持SVG格式', async () => {
-    writeFileSync(join(workspace, 'icon.svg'), '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40"/></svg>');
-    const result = await ReadImageTool.execute(
-      { filePath: 'icon.svg' },
-      ctx(workspace)
+    writeFileSync(
+      join(workspace, 'icon.svg'),
+      '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40"/></svg>',
     );
+    const result = await ReadImageTool.execute({ filePath: 'icon.svg' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.metadata.format).toBe('.svg');
     expect(result.metadata.mimeType).toBe('image/svg+xml');
   });
 
   it('工作区外路径应被拦截', async () => {
-    const result = await ReadImageTool.execute(
-      { filePath: '../../etc/image.png' },
-      ctx(workspace)
-    );
+    const result = await ReadImageTool.execute({ filePath: '../../etc/image.png' }, ctx(workspace));
     expect(result.success).toBe(false);
   });
 });
@@ -301,13 +288,15 @@ describe('GenerateImageTool - AI图片生成', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('有效prompt应返回生成配置', async () => {
     const result = await GenerateImageTool.execute(
       { prompt: 'A beautiful sunset over mountains' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('AI图片生成');
@@ -317,7 +306,7 @@ describe('GenerateImageTool - AI图片生成', () => {
   it('应支持尺寸参数', async () => {
     const result = await GenerateImageTool.execute(
       { prompt: 'landscape', size: '1536x1024' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.metadata.width).toBe(1536);
@@ -327,27 +316,21 @@ describe('GenerateImageTool - AI图片生成', () => {
   it('无效的尺寸格式应返回错误', async () => {
     const result = await GenerateImageTool.execute(
       { prompt: 'test', size: 'invalid' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(false);
     expect(result.content).toContain('无效的尺寸参数');
   });
 
   it('应支持n参数控制在1-4之间', async () => {
-    const result = await GenerateImageTool.execute(
-      { prompt: 'cat', n: 3 },
-      ctx(workspace)
-    );
+    const result = await GenerateImageTool.execute({ prompt: 'cat', n: 3 }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.metadata.n).toBe(3);
     expect(result.metadata.filenames.length).toBe(3);
   });
 
   it('n超过4应被限制为4', async () => {
-    const result = await GenerateImageTool.execute(
-      { prompt: 'cat', n: 10 },
-      ctx(workspace)
-    );
+    const result = await GenerateImageTool.execute({ prompt: 'cat', n: 10 }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.metadata.n).toBe(4);
   });
@@ -355,7 +338,7 @@ describe('GenerateImageTool - AI图片生成', () => {
   it('应支持style和quality参数', async () => {
     const result = await GenerateImageTool.execute(
       { prompt: 'art', style: 'vivid', quality: 'high' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.metadata.style).toBe('vivid');
@@ -382,24 +365,20 @@ describe('ScreenshotTool - 截图', () => {
   });
 
   afterEach(() => {
-    try { rmSync(workspace, { recursive: true, force: true }); } catch (err) { }
+    try {
+      rmSync(workspace, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('有效URL应返回截图配置', async () => {
-    const result = await ScreenshotTool.execute(
-      { url: 'https://example.com' },
-      ctx(workspace)
-    );
+    const result = await ScreenshotTool.execute({ url: 'https://example.com' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('网页截图');
     expect(result.content).toContain('example.com');
   });
 
   it('无效URL应返回错误', async () => {
-    const result = await ScreenshotTool.execute(
-      { url: 'not a url at all' },
-      ctx(workspace)
-    );
+    const result = await ScreenshotTool.execute({ url: 'not a url at all' }, ctx(workspace));
     expect(result.success).toBe(false);
     expect(result.content).toContain('无效的URL');
   });
@@ -407,17 +386,14 @@ describe('ScreenshotTool - 截图', () => {
   it('应支持fullPage参数', async () => {
     const result = await ScreenshotTool.execute(
       { url: 'https://example.com', fullPage: true },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.metadata.fullPage).toBe(true);
   });
 
   it('默认应为全页截图', async () => {
-    const result = await ScreenshotTool.execute(
-      { url: 'https://example.com' },
-      ctx(workspace)
-    );
+    const result = await ScreenshotTool.execute({ url: 'https://example.com' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.metadata.fullPage).toBe(true);
   });
@@ -425,7 +401,7 @@ describe('ScreenshotTool - 截图', () => {
   it('应支持selector参数', async () => {
     const result = await ScreenshotTool.execute(
       { url: 'https://example.com', selector: '#main' },
-      ctx(workspace)
+      ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.metadata.selector).toBe('#main');

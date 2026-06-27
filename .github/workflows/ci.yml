@@ -137,6 +137,24 @@ jobs:
       - name: Run pipeline tests
         run: node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 
+  lint-and-format:
+    name: Lint & Format Check
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: scripts\\lint.bat
+      - name: Format check
+        run: npx prettier --check "packages/**/*.{ts,tsx,json,css}" "scripts/**/*.mjs" "docs/**/*.md"
+
   build-check:
     name: Build Verification
     needs: test-core

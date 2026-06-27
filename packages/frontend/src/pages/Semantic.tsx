@@ -4,10 +4,25 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Search, FileCode, GitBranch, Loader2, RefreshCw, Map,
-  FolderTree, Code2, Hash, BarChart3, ExternalLink, Copy,
-  CheckCircle2, XCircle, ChevronRight, Filter, ArrowRight,
-  FileText, Layers,
+  Search,
+  FileCode,
+  GitBranch,
+  Loader2,
+  RefreshCw,
+  Map,
+  FolderTree,
+  Code2,
+  Hash,
+  BarChart3,
+  ExternalLink,
+  Copy,
+  CheckCircle2,
+  XCircle,
+  ChevronRight,
+  Filter,
+  ArrowRight,
+  FileText,
+  Layers,
 } from 'lucide-react';
 import { useSemanticStore } from '../stores/semanticStore';
 
@@ -29,13 +44,28 @@ export default function SemanticPage() {
   const [workspacePath, setWorkspacePath] = useState('');
 
   const {
-    mapLoading, mapError, mapStats, root, topSymbols,
-    searchQuery, searchResults, searchTotal, searching,
-    refResults, refTotal, refLoading,
-    overview, overviewLoading,
-    fileAnalysis, fileAnalysisLoading,
-    fetchSemanticMap, searchSymbols, findReferences,
-    fetchOverview, analyzeSingleFile, clearResults,
+    mapLoading,
+    mapError,
+    mapStats,
+    root,
+    topSymbols,
+    searchQuery,
+    searchResults,
+    searchTotal,
+    searching,
+    refResults,
+    refTotal,
+    refLoading,
+    overview,
+    overviewLoading,
+    fileAnalysis,
+    fileAnalysisLoading,
+    fetchSemanticMap,
+    searchSymbols,
+    findReferences,
+    fetchOverview,
+    analyzeSingleFile,
+    clearResults,
   } = useSemanticStore();
 
   // 页面加载时自动获取概览
@@ -69,7 +99,7 @@ export default function SemanticPage() {
           <input
             type="text"
             value={workspacePath}
-            onChange={e => setWorkspacePath(e.target.value)}
+            onChange={(e) => setWorkspacePath(e.target.value)}
             placeholder="输入代码库路径..."
             className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 
               placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50"
@@ -81,7 +111,11 @@ export default function SemanticPage() {
           className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 
             text-purple-400 hover:bg-purple-500/20 transition-colors text-sm font-medium disabled:opacity-50"
         >
-          {mapLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          {mapLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <RefreshCw className="w-4 h-4" />
+          )}
           构建地图
         </button>
       </div>
@@ -93,7 +127,7 @@ export default function SemanticPage() {
           { id: 'search' as const, icon: Search, label: '符号搜索' },
           { id: 'overview' as const, icon: FolderTree, label: '代码概览' },
           { id: 'file' as const, icon: FileCode, label: '文件分析' },
-        ].map(tab => (
+        ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => {
@@ -114,35 +148,43 @@ export default function SemanticPage() {
 
       {/* Tab 内容 */}
       <div className="min-h-[400px]">
-        {activeTab === 'map' && <SemanticMapTab
-          loading={mapLoading}
-          error={mapError}
-          stats={mapStats}
-          root={root}
-          topSymbols={topSymbols}
-          onRebuild={handleBuildMap}
-        />}
-        {activeTab === 'search' && <SymbolSearchTab
-          searching={searching}
-          query={searchQuery}
-          results={searchResults}
-          total={searchTotal}
-          onSearch={(q, cs, k) => searchSymbols(q, workspacePath || undefined, cs, k)}
-          onFindRefs={(sym) => findReferences(sym, workspacePath || undefined)}
-          refResults={refResults}
-          refTotal={refTotal}
-          refLoading={refLoading}
-        />}
-        {activeTab === 'overview' && <OverviewTab
-          loading={overviewLoading}
-          overview={overview}
-          onRefresh={() => fetchOverview(workspacePath || undefined)}
-        />}
-        {activeTab === 'file' && <FileAnalysisTab
-          loading={fileAnalysisLoading}
-          analysis={fileAnalysis}
-          onAnalyze={(fp) => analyzeSingleFile(fp)}
-        />}
+        {activeTab === 'map' && (
+          <SemanticMapTab
+            loading={mapLoading}
+            error={mapError}
+            stats={mapStats}
+            root={root}
+            topSymbols={topSymbols}
+            onRebuild={handleBuildMap}
+          />
+        )}
+        {activeTab === 'search' && (
+          <SymbolSearchTab
+            searching={searching}
+            query={searchQuery}
+            results={searchResults}
+            total={searchTotal}
+            onSearch={(q, cs, k) => searchSymbols(q, workspacePath || undefined, cs, k)}
+            onFindRefs={(sym) => findReferences(sym, workspacePath || undefined)}
+            refResults={refResults}
+            refTotal={refTotal}
+            refLoading={refLoading}
+          />
+        )}
+        {activeTab === 'overview' && (
+          <OverviewTab
+            loading={overviewLoading}
+            overview={overview}
+            onRefresh={() => fetchOverview(workspacePath || undefined)}
+          />
+        )}
+        {activeTab === 'file' && (
+          <FileAnalysisTab
+            loading={fileAnalysisLoading}
+            analysis={fileAnalysis}
+            onAnalyze={(fp) => analyzeSingleFile(fp)}
+          />
+        )}
       </div>
     </div>
   );
@@ -150,11 +192,21 @@ export default function SemanticPage() {
 
 /** ============ 语义地图 Tab ============ */
 function SemanticMapTab({
-  loading, error, stats, root, topSymbols, onRebuild,
+  loading,
+  error,
+  stats,
+  root,
+  topSymbols,
+  onRebuild,
 }: {
   loading: boolean;
   error: string | null;
-  stats: { totalFiles: number; totalLines: number; totalSymbols: number; languages: Record<string, number> } | null;
+  stats: {
+    totalFiles: number;
+    totalLines: number;
+    totalSymbols: number;
+    languages: Record<string, number>;
+  } | null;
   root: string;
   topSymbols: Array<{ name: string; count: number; locations: string[] }>;
   onRebuild: () => void;
@@ -176,7 +228,9 @@ function SemanticMapTab({
         <div className="text-center space-y-3">
           <XCircle className="w-8 h-8 text-red-400 mx-auto" />
           <p className="text-red-400 text-sm">{error}</p>
-          <button onClick={onRebuild} className="text-purple-400 text-sm hover:underline">重试</button>
+          <button onClick={onRebuild} className="text-purple-400 text-sm hover:underline">
+            重试
+          </button>
         </div>
       </div>
     );
@@ -197,10 +251,25 @@ function SemanticMapTab({
     <div className="space-y-6">
       {/* 统计卡片 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={FolderTree} label="文件数" value={stats.totalFiles.toString()} color="blue" />
-        <StatCard icon={Code2} label="总行数" value={stats.totalLines.toLocaleString()} color="green" />
+        <StatCard
+          icon={FolderTree}
+          label="文件数"
+          value={stats.totalFiles.toString()}
+          color="blue"
+        />
+        <StatCard
+          icon={Code2}
+          label="总行数"
+          value={stats.totalLines.toLocaleString()}
+          color="green"
+        />
         <StatCard icon={Hash} label="符号数" value={stats.totalSymbols.toString()} color="purple" />
-        <StatCard icon={Layers} label="语言" value={Object.keys(stats.languages).length.toString()} color="amber" />
+        <StatCard
+          icon={Layers}
+          label="语言"
+          value={Object.keys(stats.languages).length.toString()}
+          color="amber"
+        />
       </div>
 
       {/* 语言分布 */}
@@ -213,7 +282,10 @@ function SemanticMapTab({
           {Object.entries(stats.languages)
             .sort(([, a], [, b]) => b - a)
             .map(([lang, count]) => (
-              <span key={lang} className="px-3 py-1.5 rounded-md bg-gray-800/50 border border-gray-700/30 text-xs text-gray-300">
+              <span
+                key={lang}
+                className="px-3 py-1.5 rounded-md bg-gray-800/50 border border-gray-700/30 text-xs text-gray-300"
+              >
                 {lang} <span className="text-gray-500 ml-1">{count}</span>
               </span>
             ))}
@@ -228,10 +300,17 @@ function SemanticMapTab({
             高频符号（多处定义/引用）
           </h3>
           <div className="space-y-2">
-            {topSymbols.slice(0, 30).map(sym => (
-              <div key={sym.name} className="flex items-start gap-3 p-2.5 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-colors">
-                <span className="text-purple-400 font-mono text-sm min-w-0 truncate">{sym.name}</span>
-                <span className="text-xs text-gray-600 bg-gray-800 px-1.5 py-0.5 rounded shrink-0">{sym.count}处</span>
+            {topSymbols.slice(0, 30).map((sym) => (
+              <div
+                key={sym.name}
+                className="flex items-start gap-3 p-2.5 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-colors"
+              >
+                <span className="text-purple-400 font-mono text-sm min-w-0 truncate">
+                  {sym.name}
+                </span>
+                <span className="text-xs text-gray-600 bg-gray-800 px-1.5 py-0.5 rounded shrink-0">
+                  {sym.count}处
+                </span>
                 <span className="text-xs text-gray-500 truncate hidden md:block">
                   {sym.locations.slice(0, 3).join(', ')}
                 </span>
@@ -246,11 +325,25 @@ function SemanticMapTab({
 
 /** ============ 符号搜索 Tab ============ */
 function SymbolSearchTab({
-  searching, query, results, total, onSearch, onFindRefs, refResults, refTotal, refLoading,
+  searching,
+  query,
+  results,
+  total,
+  onSearch,
+  onFindRefs,
+  refResults,
+  refTotal,
+  refLoading,
 }: {
   searching: boolean;
   query: string;
-  results: Array<{ name: string; kind: string; line: number; filePath: string; signature?: string }>;
+  results: Array<{
+    name: string;
+    kind: string;
+    line: number;
+    filePath: string;
+    signature?: string;
+  }>;
   total: number;
   onSearch: (q: string, caseSensitive: boolean, kind?: string) => void;
   onFindRefs: (symbol: string) => void;
@@ -277,7 +370,7 @@ function SymbolSearchTab({
           <input
             type="text"
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="输入符号名称搜索..."
             className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 
               placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
@@ -287,14 +380,14 @@ function SymbolSearchTab({
           <input
             type="checkbox"
             checked={caseSensitive}
-            onChange={e => setCaseSensitive(e.target.checked)}
+            onChange={(e) => setCaseSensitive(e.target.checked)}
             className="rounded bg-gray-800 border-gray-600"
           />
           区分大小写
         </label>
         <select
           value={kindFilter}
-          onChange={e => setKindFilter(e.target.value)}
+          onChange={(e) => setKindFilter(e.target.value)}
           className="bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-sm text-gray-200"
         >
           <option value="">全部类型</option>
@@ -312,7 +405,11 @@ function SymbolSearchTab({
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 
             text-purple-400 hover:bg-purple-500/20 transition-colors text-sm disabled:opacity-50"
         >
-          {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          {searching ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Search className="w-4 h-4" />
+          )}
           搜索
         </button>
       </form>
@@ -323,13 +420,20 @@ function SymbolSearchTab({
       {results.length > 0 && (
         <div className="space-y-1 max-h-96 overflow-y-auto">
           {results.map((sym, i) => (
-            <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-900/20 hover:bg-gray-900/40 transition-colors group">
+            <div
+              key={i}
+              className="flex items-center justify-between p-2.5 rounded-lg bg-gray-900/20 hover:bg-gray-900/40 transition-colors group"
+            >
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`px-1.5 py-0.5 rounded text-[0.65rem] font-medium shrink-0 ${KIND_COLORS[sym.kind] || 'text-gray-400 bg-gray-500/10'}`}>
+                <span
+                  className={`px-1.5 py-0.5 rounded text-[0.65rem] font-medium shrink-0 ${KIND_COLORS[sym.kind] || 'text-gray-400 bg-gray-500/10'}`}
+                >
                   {sym.kind}
                 </span>
                 <span className="text-sm font-mono text-gray-200 truncate">{sym.name}</span>
-                <span className="text-xs text-gray-600 truncate hidden sm:block">{sym.filePath}:{sym.line}</span>
+                <span className="text-xs text-gray-600 truncate hidden sm:block">
+                  {sym.filePath}:{sym.line}
+                </span>
               </div>
               <button
                 onClick={() => {
@@ -358,11 +462,17 @@ function SymbolSearchTab({
           <div className="space-y-1 max-h-60 overflow-y-auto">
             {refResults.slice(0, 50).map((ref, i) => (
               <div key={i} className="flex items-center gap-2 p-1.5 text-xs text-gray-400">
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  ref.kind === 'definition' ? 'bg-purple-400' : 'bg-gray-600'
-                }`} />
-                <span className="truncate">{ref.filePath}:{ref.line}</span>
-                <span className="text-gray-600 shrink-0">{ref.kind === 'definition' ? '定义' : '引用'}</span>
+                <span
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    ref.kind === 'definition' ? 'bg-purple-400' : 'bg-gray-600'
+                  }`}
+                />
+                <span className="truncate">
+                  {ref.filePath}:{ref.line}
+                </span>
+                <span className="text-gray-600 shrink-0">
+                  {ref.kind === 'definition' ? '定义' : '引用'}
+                </span>
               </div>
             ))}
           </div>
@@ -374,10 +484,21 @@ function SymbolSearchTab({
 
 /** ============ 代码概览 Tab ============ */
 function OverviewTab({
-  loading, overview, onRefresh,
+  loading,
+  overview,
+  onRefresh,
 }: {
   loading: boolean;
-  overview: { root: string; fileTree: string; stats: { totalFiles: number; totalLines: number; totalSize: number; languages: Record<string, number> } } | null;
+  overview: {
+    root: string;
+    fileTree: string;
+    stats: {
+      totalFiles: number;
+      totalLines: number;
+      totalSize: number;
+      languages: Record<string, number>;
+    };
+  } | null;
   onRefresh: () => void;
 }) {
   useEffect(() => {
@@ -397,9 +518,24 @@ function OverviewTab({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={FolderTree} label="文件数" value={overview.stats.totalFiles.toString()} color="blue" />
-        <StatCard icon={Code2} label="总行数" value={overview.stats.totalLines.toLocaleString()} color="green" />
-        <StatCard icon={Layers} label="语言" value={Object.keys(overview.stats.languages).length.toString()} color="amber" />
+        <StatCard
+          icon={FolderTree}
+          label="文件数"
+          value={overview.stats.totalFiles.toString()}
+          color="blue"
+        />
+        <StatCard
+          icon={Code2}
+          label="总行数"
+          value={overview.stats.totalLines.toLocaleString()}
+          color="green"
+        />
+        <StatCard
+          icon={Layers}
+          label="语言"
+          value={Object.keys(overview.stats.languages).length.toString()}
+          color="amber"
+        />
         <StatCard icon={Hash} label="总大小" value={`${sizeMB}MB`} color="purple" />
       </div>
 
@@ -418,13 +554,21 @@ function OverviewTab({
 
 /** ============ 文件分析 Tab ============ */
 function FileAnalysisTab({
-  loading, analysis, onAnalyze,
+  loading,
+  analysis,
+  onAnalyze,
 }: {
   loading: boolean;
   analysis: {
     filePath: string;
     language: string;
-    symbols: Array<{ name: string; kind: string; line: number; filePath: string; signature?: string }>;
+    symbols: Array<{
+      name: string;
+      kind: string;
+      line: number;
+      filePath: string;
+      signature?: string;
+    }>;
     imports: string[];
     exports: string[];
     lineCount: number;
@@ -445,7 +589,7 @@ function FileAnalysisTab({
         <input
           type="text"
           value={filePath}
-          onChange={e => setFilePath(e.target.value)}
+          onChange={(e) => setFilePath(e.target.value)}
           placeholder="输入要分析的文件路径..."
           className="flex-1 bg-gray-900/50 border border-gray-700/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 
             placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
@@ -456,7 +600,11 @@ function FileAnalysisTab({
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 
             text-purple-400 hover:bg-purple-500/20 transition-colors text-sm disabled:opacity-50"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCode className="w-4 h-4" />}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <FileCode className="w-4 h-4" />
+          )}
           分析
         </button>
       </form>
@@ -477,11 +625,15 @@ function FileAnalysisTab({
             </div>
             <div className="bg-gray-900/30 rounded-lg border border-gray-800/30 p-3">
               <p className="text-xs text-gray-500">行数</p>
-              <p className="text-sm text-gray-200 font-medium">{analysis.lineCount.toLocaleString()}</p>
+              <p className="text-sm text-gray-200 font-medium">
+                {analysis.lineCount.toLocaleString()}
+              </p>
             </div>
             <div className="bg-gray-900/30 rounded-lg border border-gray-800/30 p-3">
               <p className="text-xs text-gray-500">大小</p>
-              <p className="text-sm text-gray-200 font-medium">{(analysis.size / 1024).toFixed(1)} KB</p>
+              <p className="text-sm text-gray-200 font-medium">
+                {(analysis.size / 1024).toFixed(1)} KB
+              </p>
             </div>
             <div className="bg-gray-900/30 rounded-lg border border-gray-800/30 p-3">
               <p className="text-xs text-gray-500">符号数</p>
@@ -501,13 +653,20 @@ function FileAnalysisTab({
                 }
                 return [...grouped.entries()].map(([kind, syms]) => (
                   <div key={kind} className="mb-3">
-                    <p className="text-xs text-gray-500 mb-1.5 uppercase">{kind} ({syms.length})</p>
+                    <p className="text-xs text-gray-500 mb-1.5 uppercase">
+                      {kind} ({syms.length})
+                    </p>
                     <div className="space-y-0.5">
                       {syms.slice(0, 15).map((sym, i) => (
-                        <div key={i} className="flex items-center gap-2 p-1.5 text-xs text-gray-400 hover:bg-gray-800/30 rounded">
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 p-1.5 text-xs text-gray-400 hover:bg-gray-800/30 rounded"
+                        >
                           <span className="text-gray-600 w-10 shrink-0">L{sym.line}</span>
                           <span className="font-mono text-gray-300">{sym.name}</span>
-                          {sym.signature && <span className="text-gray-600 truncate">{sym.signature}</span>}
+                          {sym.signature && (
+                            <span className="text-gray-600 truncate">{sym.signature}</span>
+                          )}
                         </div>
                       ))}
                       {syms.length > 15 && (
@@ -528,7 +687,9 @@ function FileAnalysisTab({
                   <h3 className="text-xs font-medium text-gray-500 mb-2 uppercase">导入</h3>
                   <div className="space-y-1">
                     {[...new Set(analysis.imports)].slice(0, 20).map((imp, i) => (
-                      <p key={i} className="text-xs text-gray-400 font-mono truncate">{imp}</p>
+                      <p key={i} className="text-xs text-gray-400 font-mono truncate">
+                        {imp}
+                      </p>
                     ))}
                   </div>
                 </div>
@@ -538,7 +699,9 @@ function FileAnalysisTab({
                   <h3 className="text-xs font-medium text-gray-500 mb-2 uppercase">导出</h3>
                   <div className="space-y-1">
                     {[...new Set(analysis.exports)].slice(0, 20).map((exp, i) => (
-                      <p key={i} className="text-xs text-gray-400 font-mono truncate">{exp}</p>
+                      <p key={i} className="text-xs text-gray-400 font-mono truncate">
+                        {exp}
+                      </p>
                     ))}
                   </div>
                 </div>
@@ -552,7 +715,12 @@ function FileAnalysisTab({
 }
 
 /** 统计卡片 */
-function StatCard({ icon: Icon, label, value, color }: {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  color,
+}: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;

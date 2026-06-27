@@ -29,7 +29,9 @@ describe('SessionManager - 会话创建与获取', () => {
   });
 
   afterEach(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('应该能够创建新会话', () => {
@@ -61,13 +63,13 @@ describe('SessionManager - 会话创建与获取', () => {
       model: 'deepseek-chat',
     });
     const session2 = manager.getOrCreate('session-1', {
-      workspace: '/tmp/b',  // 不同配置，应返回已有会话
+      workspace: '/tmp/b', // 不同配置，应返回已有会话
       provider: 'qwen',
       model: 'qwen-max',
     });
 
-    expect(session2).toBe(session1);  // 同一引用
-    expect(session2.workspace).toBe('/tmp/a');  // 保持原有配置
+    expect(session2).toBe(session1); // 同一引用
+    expect(session2.workspace).toBe('/tmp/a'); // 保持原有配置
     expect(session2.modelConfig.provider).toBe('deepseek');
 
     manager.close();
@@ -87,7 +89,7 @@ describe('SessionManager - 会话创建与获取', () => {
     const manager = new SessionManager(testDir);
     const session = manager.getOrCreate('default-session');
     expect(session.modelConfig.provider).toBe('deepseek');
-    expect(session.modelConfig.model).toBe('deepseek-v4');  // v0.4+ 默认模型
+    expect(session.modelConfig.model).toBe('deepseek-v4'); // v0.4+ 默认模型
 
     manager.close();
   });
@@ -107,7 +109,9 @@ describe('SessionManager - 会话列表与过滤', () => {
   });
 
   afterEach(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('list应返回所有活跃会话', () => {
@@ -160,7 +164,9 @@ describe('SessionManager - 会话保存与持久化', () => {
   });
 
   afterEach(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('save应保存会话到内存和数据库', () => {
@@ -246,7 +252,9 @@ describe('SessionManager - 会话删除与归档', () => {
   });
 
   afterEach(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('delete应删除会话', () => {
@@ -302,7 +310,9 @@ describe('SessionManager - 搜索', () => {
   });
 
   afterEach(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('search应能按标题搜索', () => {
@@ -368,7 +378,9 @@ describe('SessionManager - Token统计', () => {
   });
 
   afterEach(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('getTotalTokenUsage应汇总所有会话的Token用量', () => {

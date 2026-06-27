@@ -3,7 +3,16 @@
  * 显示会话列表、导航菜单、提供商状态
  */
 import { useState, useCallback } from 'react';
-import { MessageSquare, Settings, Database, Zap, Monitor, ChevronLeft, Plus, SidebarOpenIcon } from 'lucide-react';
+import {
+  MessageSquare,
+  Settings,
+  Database,
+  Zap,
+  Monitor,
+  ChevronLeft,
+  Plus,
+  SidebarOpenIcon,
+} from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useChatStore } from '@/stores/chatStore';
@@ -37,7 +46,7 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
   );
 
   const handleSessionClick = useCallback(
-    (session: typeof sessions[0]) => {
+    (session: (typeof sessions)[0]) => {
       setActiveSession(session.id);
       // 清空该会话的聊天消息
       useChatStore.getState().clearMessages(session.id);
@@ -95,9 +104,10 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150
-                    ${isActive
-                      ? 'bg-brand/10 text-brand border border-brand/20'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover border border-transparent'
+                    ${
+                      isActive
+                        ? 'bg-brand/10 text-brand border border-brand/20'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover border border-transparent'
                     }`}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
@@ -146,9 +156,10 @@ export const Sidebar: FC<SidebarProps> = ({ collapsed }) => {
                   key={session.id}
                   onClick={() => handleSessionClick(session)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-150 group
-                    ${activeSessionId === session.id
-                      ? 'bg-surface-overlay text-text-primary'
-                      : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                    ${
+                      activeSessionId === session.id
+                        ? 'bg-surface-overlay text-text-primary'
+                        : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                     }`}
                 >
                   <div className="flex items-center gap-2">

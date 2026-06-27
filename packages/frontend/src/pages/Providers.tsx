@@ -27,7 +27,9 @@ export default function Providers() {
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
   const [apiKeyInput, setApiKeyInput] = useState('');
   /** 测试结果: null=测试中, {success: false, error} 失败, {success: true} 成功, undefined 未测试 */
-  const [testResults, setTestResults] = useState<Record<string, { success: boolean; error?: string } | null>>({});
+  const [testResults, setTestResults] = useState<
+    Record<string, { success: boolean; error?: string } | null>
+  >({});
   const [refreshingProvider, setRefreshingProvider] = useState<string | null>(null);
 
   useEffect(() => {
@@ -79,17 +81,17 @@ export default function Providers() {
   };
 
   const handleTest = async (providerId: string) => {
-    setTestResults(prev => ({ ...prev, [providerId]: null }));
+    setTestResults((prev) => ({ ...prev, [providerId]: null }));
     try {
       const apiBase = getApiBase();
       const res = await fetch(`${apiBase}/api/providers/${providerId}/test`, { method: 'POST' });
       const data = await res.json();
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         [providerId]: { success: data.success, error: data.error },
       }));
     } catch (err) {
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         [providerId]: { success: false, error: '网络请求失败，请检查后端服务是否正常运行' },
       }));
@@ -107,7 +109,7 @@ export default function Providers() {
         <div className="text-center py-12 text-gray-500">加载中...</div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {providers.map(provider => (
+          {providers.map((provider) => (
             <div key={provider.id} className="card">
               {/* 提供商头部 */}
               <div className="flex items-center justify-between mb-4">
@@ -119,17 +121,26 @@ export default function Providers() {
                     <h3 className="font-semibold flex items-center gap-2">
                       {provider.name}
                       {provider.fromDynamic && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20" title="模型列表已从 API 动态获取">
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20"
+                          title="模型列表已从 API 动态获取"
+                        >
                           动态
                         </span>
                       )}
                       {!provider.hasKey && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20" title="需要配置API密钥">
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          title="需要配置API密钥"
+                        >
                           未配置
                         </span>
                       )}
                       {provider.hasKey && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20" title="API密钥已配置">
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20"
+                          title="API密钥已配置"
+                        >
                           已配置
                         </span>
                       )}
@@ -144,28 +155,36 @@ export default function Providers() {
                     className="btn-secondary text-xs py-1 px-3 flex items-center gap-1"
                     title="从提供商 API 动态获取模型列表并合并预设"
                   >
-                    <RefreshCw className={`w-3 h-3 ${refreshingProvider === provider.id ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`w-3 h-3 ${refreshingProvider === provider.id ? 'animate-spin' : ''}`}
+                    />
                   </button>
                   <button
                     onClick={() => handleTest(provider.id)}
                     className="btn-secondary text-xs py-1 px-3"
                   >
-                    {testResults[provider.id] === null ? '测试中...' :
-                     testResults[provider.id] === undefined ? '测试连接' :
-                     testResults[provider.id]!.success ? '✓ 已连接' : '✗ 失败'}
+                    {testResults[provider.id] === null
+                      ? '测试中...'
+                      : testResults[provider.id] === undefined
+                        ? '测试连接'
+                        : testResults[provider.id]!.success
+                          ? '✓ 已连接'
+                          : '✗ 失败'}
                   </button>
                 </div>
               </div>
 
               {/* 测试失败时显示详细错误信息 */}
-              {testResults[provider.id] && !testResults[provider.id]!.success && testResults[provider.id]!.error && (
-                <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">
-                  <div className="flex items-start gap-2">
-                    <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <span>{testResults[provider.id]!.error}</span>
+              {testResults[provider.id] &&
+                !testResults[provider.id]!.success &&
+                testResults[provider.id]!.error && (
+                  <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+                    <div className="flex items-start gap-2">
+                      <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <span>{testResults[provider.id]!.error}</span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* API密钥设置 */}
               <div className="mb-4">
@@ -177,7 +196,7 @@ export default function Providers() {
                     <input
                       type="password"
                       value={apiKeyInput}
-                      onChange={e => setApiKeyInput(e.target.value)}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
                       placeholder="输入API密钥..."
                       className="input text-sm flex-1"
                       autoFocus
@@ -214,7 +233,7 @@ export default function Providers() {
                   )}
                 </h4>
                 <div className="space-y-2">
-                  {provider.models.map(model => (
+                  {provider.models.map((model) => (
                     <div
                       key={model.id}
                       className={`bg-gray-800 rounded-lg p-3 flex items-center justify-between ${
@@ -226,16 +245,25 @@ export default function Providers() {
                         <span className="text-gray-500">-</span>
                         <span className="text-sm">{model.name}</span>
                         {(model as any).fromDynamic && (
-                          <span className="badge-green text-[10px] px-1.5 py-0" title="来自提供商API动态获取">动态</span>
+                          <span
+                            className="badge-green text-[10px] px-1.5 py-0"
+                            title="来自提供商API动态获取"
+                          >
+                            动态
+                          </span>
                         )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-gray-500">
                         <span>{model.maxContextTokens / 1000}K ctx</span>
                         {model.supportsTools && (
-                          <span className="badge-blue" title="支持工具调用">🛠️</span>
+                          <span className="badge-blue" title="支持工具调用">
+                            🛠️
+                          </span>
                         )}
                         {model.supportsVision && (
-                          <span className="badge-green" title="支持图像">👁️</span>
+                          <span className="badge-green" title="支持图像">
+                            👁️
+                          </span>
                         )}
                         {model.pricing && (
                           <span title="价格/百万token">
@@ -271,11 +299,11 @@ export default function Providers() {
             <br />
             # 设置其他提供商
             <br />
-            export DASHSCOPE_API_KEY="sk-your-key"  # 通义千问
+            export DASHSCOPE_API_KEY="sk-your-key" # 通义千问
             <br />
-            export ZHIPU_API_KEY="your-key"         # 智谱GLM
+            export ZHIPU_API_KEY="your-key" # 智谱GLM
             <br />
-            export MOONSHOT_API_KEY="sk-your-key"   # Kimi
+            export MOONSHOT_API_KEY="sk-your-key" # Kimi
           </code>
         </div>
       </div>

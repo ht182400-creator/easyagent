@@ -84,7 +84,11 @@ describe('Preload IPC API 规范', () => {
     it('switchModel 应调用 switch-model 通道', () => {
       const api = createMockAPI();
       api.switchModel('deepseek', 'deepseek-chat');
-      expect(api._mocks.mockInvoke).toHaveBeenCalledWith('switch-model', 'deepseek', 'deepseek-chat');
+      expect(api._mocks.mockInvoke).toHaveBeenCalledWith(
+        'switch-model',
+        'deepseek',
+        'deepseek-chat',
+      );
     });
 
     it('getAppVersion 应调用 get-app-version 通道', () => {

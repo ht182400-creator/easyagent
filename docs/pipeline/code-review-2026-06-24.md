@@ -12,19 +12,19 @@
 
 ## 变更文件清单
 
-| 文件 | 变更量 | 类型 |
-|------|--------|------|
-| `.github/workflows/ci.yml` | +2 | CI 修复 |
-| `.github/workflows/release.yml` | +2 | CI 修复 |
-| `docs/pipeline/lib/pipeline-config.mjs` | +128/-14 | 核心：评分引擎 |
-| `docs/pipeline/lib/pipeline-api.mjs` | +4/-2 | API 适配 |
-| `docs/pipeline/index.html` | +83/-10 | 前端：微观视图 |
-| `docs/pipeline/__tests__/pipeline-config.test.mjs` | +75/-4 | 测试覆盖 |
-| `scripts/update-progress.mjs` | +49/-6 | 脚本：自动评分 |
-| `docs/pipeline/.pipeline-cache.json` | +30/-6 | 缓存数据 |
-| `docs/pipeline/pipeline-data.json` | +40/-6 | 管线数据 |
-| `docs/pipeline/project-progress-data.json` | +6 | 进度数据 |
-| `.codebuddy/memory/2026-06-23.md` | +54 | 开发记忆 |
+| 文件                                               | 变更量   | 类型           |
+| -------------------------------------------------- | -------- | -------------- |
+| `.github/workflows/ci.yml`                         | +2       | CI 修复        |
+| `.github/workflows/release.yml`                    | +2       | CI 修复        |
+| `docs/pipeline/lib/pipeline-config.mjs`            | +128/-14 | 核心：评分引擎 |
+| `docs/pipeline/lib/pipeline-api.mjs`               | +4/-2    | API 适配       |
+| `docs/pipeline/index.html`                         | +83/-10  | 前端：微观视图 |
+| `docs/pipeline/__tests__/pipeline-config.test.mjs` | +75/-4   | 测试覆盖       |
+| `scripts/update-progress.mjs`                      | +49/-6   | 脚本：自动评分 |
+| `docs/pipeline/.pipeline-cache.json`               | +30/-6   | 缓存数据       |
+| `docs/pipeline/pipeline-data.json`                 | +40/-6   | 管线数据       |
+| `docs/pipeline/project-progress-data.json`         | +6       | 进度数据       |
+| `.codebuddy/memory/2026-06-23.md`                  | +54      | 开发记忆       |
 
 ---
 
@@ -59,11 +59,11 @@ export function calculateScore() {
 
 ### C2. `scoreDimensions` 字段命名不一致
 
-| 位置 | 字段名 | 行号 |
-|------|--------|------|
-| `syncPipelineData()` | `pipelineData.scoreDimensions` | L352 |
-| `getKPI()` | `_scoreDimensions: score.dimensions` | L543 |
-| `generateDashboardDetails()` | `kpi._scoreDimensions` | L650 |
+| 位置                         | 字段名                               | 行号 |
+| ---------------------------- | ------------------------------------ | ---- |
+| `syncPipelineData()`         | `pipelineData.scoreDimensions`       | L352 |
+| `getKPI()`                   | `_scoreDimensions: score.dimensions` | L543 |
+| `generateDashboardDetails()` | `kpi._scoreDimensions`               | L650 |
 
 **问题**：同一份维度数据同时出现在 `pipelineData.scoreDimensions`（顶层）和 `kpi._scoreDimensions`（嵌套），前者从未被读取使用，是死数据。
 
@@ -156,35 +156,35 @@ const statusMap = { done: '✅ 已完成', 'in-progress': '⏳ 进行中', pendi
 
 ### ROI 评估
 
-| 变更 | ROI | 说明 |
-|------|-----|------|
-| 五维度动态评分 | ⭐⭐⭐⭐⭐ | 消除硬编码，自动化程度提升 |
-| CI MSVC 版本修复 | ⭐⭐⭐⭐⭐ | 解除 CI 阻塞，直接影响开发流程 |
-| 前端微观视图 | ⭐⭐⭐⭐ | 提升调试体验，click-to-detail 符合直觉 |
-| 前端硬编码替换 | ⭐⭐⭐ | 维护性改进 |
+| 变更             | ROI        | 说明                                   |
+| ---------------- | ---------- | -------------------------------------- |
+| 五维度动态评分   | ⭐⭐⭐⭐⭐ | 消除硬编码，自动化程度提升             |
+| CI MSVC 版本修复 | ⭐⭐⭐⭐⭐ | 解除 CI 阻塞，直接影响开发流程         |
+| 前端微观视图     | ⭐⭐⭐⭐   | 提升调试体验，click-to-detail 符合直觉 |
+| 前端硬编码替换   | ⭐⭐⭐     | 维护性改进                             |
 
 ---
 
 ## 检查清单逐项核对
 
-| 检查项 | 结果 | 说明 |
-|--------|------|------|
-| monorepo 包边界 | ✅ 不适用 | 变更未触及 core/cli/server/web/desktop |
-| API 注册 / WebSocket | ✅ 不适用 | 无产品 API 变更 |
-| Desktop 自动更新（electron-updater） | ✅ 不适用 | 无 Desktop 变更 |
-| ModelRegistry 目录合并 | ✅ 不适用 | 无模型适配器变更 |
-| 国际化 `t()` | ✅ 不适用 | 仪表板是内部工具 |
-| i18n JSON 同步 | ✅ 不适用 | 无国际化变更 |
-| CHANGELOG 记录 | 🟡 建议补充 | `1bf5a59` CI 修复建议记录 |
-| Node 版本兼容 | ✅ | `fs.existsSync/readdirSync/readFileSync` — Node 18+ 通用 |
-| better-sqlite3 封装 | ✅ 不适用 | 未使用数据库 |
-| Web/Desktop 同步 | ✅ 不适用 | 这是 docs/ 独立基础设施 |
-| 版本号来源 | ✅ | 从 `version.json` / `package.json` 读取 |
-| 插件安全（worker_threads/vm 隔离） | ✅ 不适用 | 无插件逻辑变更 |
-| KnowledgeService scope 区分 | ✅ 不适用 | 无知识库变更 |
-| 用户可见字符串 `t()` | ✅ 不适用 | 仪表板是内部开发工具 |
-| 循环中同步 I/O | 🟡 见 C1 | `calculateScore()` 同步扫描文件系统 |
-| 数据库直连 `require('better-sqlite3')` | ✅ 不适用 | 未使用数据库 |
+| 检查项                                 | 结果        | 说明                                                     |
+| -------------------------------------- | ----------- | -------------------------------------------------------- |
+| monorepo 包边界                        | ✅ 不适用   | 变更未触及 core/cli/server/web/desktop                   |
+| API 注册 / WebSocket                   | ✅ 不适用   | 无产品 API 变更                                          |
+| Desktop 自动更新（electron-updater）   | ✅ 不适用   | 无 Desktop 变更                                          |
+| ModelRegistry 目录合并                 | ✅ 不适用   | 无模型适配器变更                                         |
+| 国际化 `t()`                           | ✅ 不适用   | 仪表板是内部工具                                         |
+| i18n JSON 同步                         | ✅ 不适用   | 无国际化变更                                             |
+| CHANGELOG 记录                         | 🟡 建议补充 | `1bf5a59` CI 修复建议记录                                |
+| Node 版本兼容                          | ✅          | `fs.existsSync/readdirSync/readFileSync` — Node 18+ 通用 |
+| better-sqlite3 封装                    | ✅ 不适用   | 未使用数据库                                             |
+| Web/Desktop 同步                       | ✅ 不适用   | 这是 docs/ 独立基础设施                                  |
+| 版本号来源                             | ✅          | 从 `version.json` / `package.json` 读取                  |
+| 插件安全（worker_threads/vm 隔离）     | ✅ 不适用   | 无插件逻辑变更                                           |
+| KnowledgeService scope 区分            | ✅ 不适用   | 无知识库变更                                             |
+| 用户可见字符串 `t()`                   | ✅ 不适用   | 仪表板是内部开发工具                                     |
+| 循环中同步 I/O                         | 🟡 见 C1    | `calculateScore()` 同步扫描文件系统                      |
+| 数据库直连 `require('better-sqlite3')` | ✅ 不适用   | 未使用数据库                                             |
 
 ---
 
@@ -193,23 +193,25 @@ const statusMap = { done: '✅ 已完成', 'in-progress': '⏳ 进行中', pendi
 ### 🟡 Comment（建议修改后重审）
 
 **核心理由**：
+
 - **B1**（CWD 依赖的 `import()`）是唯一需要修复的阻塞项
 - C1-C6 都是建设性改进建议，不影响功能正确性
 - 整体代码质量良好，JSDoc 完整，测试覆盖合理，架构分层清晰
 
 **推荐行动**：
 
-| 优先级 | 编号 | 行动 | 期望位置 |
-|--------|------|------|----------|
-| 🔴 必须 | B1 | `update-progress.mjs` `import()` 改用 `import.meta.url` | 本次修复 |
-| 🟡 强烈建议 | C1 | `calculateScore()` 添加短期内存缓存 | 本次或下次 |
-| 🟡 建议 | C3 | 评分历史插入逻辑增加防御性检查 | 本次 PR 内 |
-| 🟢 后续 | C5 | 测试隔离性改进（依赖注入） | 新建 Issue 跟踪 |
-| 🟢 后续 | C2 | 统一 `scoreDimensions` 命名 | 技术债务清理 |
-| 🟢 后续 | C4 | `getScoreHistory()` 避免重复计算 | 性能优化 |
-| 🟢 后续 | C6 | 添加 `escapeHtml()` 安全实践 | 安全加固 |
+| 优先级      | 编号 | 行动                                                    | 期望位置        |
+| ----------- | ---- | ------------------------------------------------------- | --------------- |
+| 🔴 必须     | B1   | `update-progress.mjs` `import()` 改用 `import.meta.url` | 本次修复        |
+| 🟡 强烈建议 | C1   | `calculateScore()` 添加短期内存缓存                     | 本次或下次      |
+| 🟡 建议     | C3   | 评分历史插入逻辑增加防御性检查                          | 本次 PR 内      |
+| 🟢 后续     | C5   | 测试隔离性改进（依赖注入）                              | 新建 Issue 跟踪 |
+| 🟢 后续     | C2   | 统一 `scoreDimensions` 命名                             | 技术债务清理    |
+| 🟢 后续     | C4   | `getScoreHistory()` 避免重复计算                        | 性能优化        |
+| 🟢 后续     | C6   | 添加 `escapeHtml()` 安全实践                            | 安全加固        |
 
 **正面评价**：
+
 - ✅ 五维度加权公式设计合理（0.35 + 0.25 + 0.20 + 0.10 + 0.10），可在 `calculateScore` JSDoc 中清晰看到
 - ✅ 新增测试 12 条，覆盖结构校验、边界值、加权一致性
 - ✅ CI 修复（`npm_config_msvs_version: '2022'`）精准命中根因：VS 2026 (v18) 不被 node-gyp 识别
@@ -219,4 +221,4 @@ const statusMap = { done: '✅ 已完成', 'in-progress': '⏳ 进行中', pendi
 
 ---
 
-*本报告基于 EasyAgent 代码评审专家（兼产品架构视角）角色生成。评审依据：PRD v5.3、ADD v5.4、战略审查蓝皮书、Review 优化报告。*
+_本报告基于 EasyAgent 代码评审专家（兼产品架构视角）角色生成。评审依据：PRD v5.3、ADD v5.4、战略审查蓝皮书、Review 优化报告。_

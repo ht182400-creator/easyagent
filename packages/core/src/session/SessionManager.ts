@@ -96,7 +96,7 @@ export class SessionManager {
    */
   getOrCreate(
     id: string,
-    config?: { workspace?: string; provider?: string; model?: string }
+    config?: { workspace?: string; provider?: string; model?: string },
   ): Session {
     const existing = this.sessions.get(id);
     if (existing) return existing;
@@ -136,7 +136,7 @@ export class SessionManager {
   list(status?: SessionMetadata['status']): Session[] {
     const all = Array.from(this.sessions.values());
     if (status) {
-      return all.filter(s => s.metadata.status === status);
+      return all.filter((s) => s.metadata.status === status);
     }
     return all;
   }
@@ -158,7 +158,7 @@ export class SessionManager {
         .prepare(
           `INSERT OR REPLACE INTO sessions 
            (id, workspace, provider, model, messages, title, status, token_usage, summary, created_at, updated_at, tags)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
           session.id,
@@ -172,7 +172,7 @@ export class SessionManager {
           session.summary || '',
           session.metadata.createdAt.toISOString(),
           session.metadata.updatedAt.toISOString(),
-          JSON.stringify(session.metadata.tags || [])
+          JSON.stringify(session.metadata.tags || []),
         );
     } catch (error) {
       logger.error({ error, sessionId: session.id }, '会话保存失败');
@@ -205,12 +205,12 @@ export class SessionManager {
   search(query: string): Session[] {
     const lowerQuery = query.toLowerCase();
     return Array.from(this.sessions.values()).filter(
-      s =>
+      (s) =>
         s.metadata.title.toLowerCase().includes(lowerQuery) ||
-        s.messages.some(m => {
+        s.messages.some((m) => {
           const content = typeof m.content === 'string' ? m.content : '';
           return content.toLowerCase().includes(lowerQuery);
-        })
+        }),
     );
   }
 

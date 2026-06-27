@@ -18,6 +18,7 @@ import SkillsPage from './pages/Skills';
 import IMSettings from './pages/IMSettings';
 import SandboxPage from './pages/Sandbox';
 import SemanticPage from './pages/Semantic';
+import DocsGuide from './pages/DocsGuide';
 import { useAppStore, initializeTheme } from './stores/appStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useConfig } from './config';
@@ -101,6 +102,7 @@ export default function App() {
         <Route path="/sandbox" element={<SandboxPage />} />
         <Route path="/semantic" element={<SemanticPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/docs-guide" element={<DocsGuide />} />
       </Routes>
     </Layout>
   );

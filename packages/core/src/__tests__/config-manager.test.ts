@@ -34,7 +34,9 @@ describe('ConfigManager - 默认配置', () => {
     expect(config.security.requireConfirmation).toBe(true);
     expect(config.knowledgeBase.enabled).toBe(true);
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('getConfig应返回当前配置', async () => {
@@ -44,7 +46,9 @@ describe('ConfigManager - 默认配置', () => {
     await manager.load();
     const config = manager.getConfig();
     expect(config.agent.maxTurns).toBe(25);
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 });
 
@@ -60,7 +64,9 @@ describe('ConfigManager - 模型切换', () => {
     expect(config.currentModel.provider).toBe('qwen');
     expect(config.currentModel.model).toBe('qwen-max');
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('getAvailableProviders应返回有密钥的提供商(Ollama默认有key)', async () => {
@@ -70,12 +76,14 @@ describe('ConfigManager - 模型切换', () => {
     await manager.load();
 
     const providers = manager.getAvailableProviders();
-    const ids = providers.map(p => p.id);
+    const ids = providers.map((p) => p.id);
     // Ollama在PROVIDER_PRESETS中有apiKey: 'ollama'
     expect(ids).toContain('ollama');
     expect(providers.length).toBeGreaterThan(0);
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('setApiKey后应能在providers中找到', async () => {
@@ -89,7 +97,7 @@ describe('ConfigManager - 模型切换', () => {
 
     // 直接检查 getConfig().providers
     const config = manager.getConfig();
-    const deepseek = config.providers.find(p => p.id === 'deepseek');
+    const deepseek = config.providers.find((p) => p.id === 'deepseek');
     expect(deepseek).toBeDefined();
     expect(deepseek!.apiKey).toBe('sk-test-key');
 
@@ -97,7 +105,9 @@ describe('ConfigManager - 模型切换', () => {
     const provider = manager.getProvider('deepseek');
     expect(provider).toBeDefined();
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('getProviderPresets应隐藏真实密钥', async () => {
@@ -108,7 +118,7 @@ describe('ConfigManager - 模型切换', () => {
     manager.setApiKey('deepseek', 'real-secret-key');
 
     const presets = manager.getProviderPresets();
-    const deepseek = presets.find(p => p.id === 'deepseek');
+    const deepseek = presets.find((p) => p.id === 'deepseek');
     expect(deepseek).toBeDefined();
     // getProviderPresets会替换apiKey为掩码
     // 但由于PROVIDER_PRESETS被load()修改过，需要检查实际值
@@ -116,7 +126,9 @@ describe('ConfigManager - 模型切换', () => {
       expect(deepseek!.apiKey).toBe('••••••••');
     }
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 });
 
@@ -139,7 +151,9 @@ describe('ConfigManager - 部分更新', () => {
     expect(config.currentModel.provider).toBeDefined();
     expect(config.currentModel.model).toBeDefined();
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 });
 
@@ -162,7 +176,7 @@ describe('ConfigManager - 自定义提供商', () => {
     manager.setApiKey('new-custom' as any, 'custom-key-123');
 
     const config = manager.getConfig();
-    const custom = config.providers.find(p => p.id === 'new-custom');
+    const custom = config.providers.find((p) => p.id === 'new-custom');
     expect(custom).toBeDefined();
     expect(custom!.apiKey).toBe('custom-key-123');
     expect(custom!.apiFormat).toBe('openai');
@@ -170,14 +184,16 @@ describe('ConfigManager - 自定义提供商', () => {
     expect(custom!.baseURL).toBeTruthy();
     expect(custom!.baseURL).toContain('https://');
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('setApiKey为预设提供商(kimi)创建条目时baseURL应来自预设', async () => {
     const { ConfigManager } = await import('../config/ConfigManager.js');
     const testDir = createTestDir();
     const manager = new ConfigManager(testDir);
-    await manager.load();  // load后kimi不在providers中(无apiKey)
+    await manager.load(); // load后kimi不在providers中(无apiKey)
 
     // 模拟用户通过UI为kimi设置API Key
     manager.setApiKey('kimi', 'sk-moonshot-test-key');
@@ -195,7 +211,9 @@ describe('ConfigManager - 自定义提供商', () => {
     expect(kimi!.models).toBeDefined();
     expect(kimi!.models.length).toBeGreaterThan(0);
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 
   it('setApiKey为多个预设提供商(智谱/千问/豆包)都应正确获取baseURL', async () => {
@@ -224,6 +242,8 @@ describe('ConfigManager - 自定义提供商', () => {
     const openai = manager.getProvider('openai');
     expect(openai!.baseURL).toBe('https://api.openai.com/v1');
 
-    try { rmSync(testDir, { recursive: true, force: true }); } catch (err) {}
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch (err) {}
   });
 });

@@ -62,7 +62,7 @@ export class AgentEngine {
     adapterOrConfig: BaseAdapter | ProviderConfig,
     tools?: ToolRegistry,
     sessions?: SessionManager,
-    config?: Partial<AgentConfig>
+    config?: Partial<AgentConfig>,
   ) {
     // 支持传入适配器实例或提供商配置
     // 使用鸭子类型判断: 有chat和chatStream方法的视为适配器
@@ -113,7 +113,7 @@ export class AgentEngine {
    * 移除事件监听器
    */
   offEvent(listener: AgentEventListener): void {
-    this.listeners = this.listeners.filter(l => l !== listener);
+    this.listeners = this.listeners.filter((l) => l !== listener);
   }
 
   /**
@@ -136,11 +136,14 @@ export class AgentEngine {
    * @param options - 对话选项
    * @returns 最终响应文本
    */
-  async run(userMessage: string, options?: {
-    sessionId?: string;
-    workspace?: string;
-    onPartialResponse?: (text: string) => void;
-  }): Promise<string> {
+  async run(
+    userMessage: string,
+    options?: {
+      sessionId?: string;
+      workspace?: string;
+      onPartialResponse?: (text: string) => void;
+    },
+  ): Promise<string> {
     const sessionId = options?.sessionId || `session_${Date.now()}`;
     const workspace = options?.workspace || process.cwd();
 
@@ -213,7 +216,11 @@ export class AgentEngine {
         fullResponse += response.content || '';
 
         // 检查是否需要调用工具
-        if (response.toolCalls && response.toolCalls.length > 0 && response.finishReason === 'tool_calls') {
+        if (
+          response.toolCalls &&
+          response.toolCalls.length > 0 &&
+          response.finishReason === 'tool_calls'
+        ) {
           this.state = 'acting';
           this.emit('tool_call', { toolCalls: response.toolCalls });
 
@@ -256,7 +263,7 @@ export class AgentEngine {
       }
 
       // 保存会话
-      session.messages = messages.filter(m => m.role !== 'system');
+      session.messages = messages.filter((m) => m.role !== 'system');
       session.metadata.updatedAt = new Date();
       session.metadata.tokenUsage = { ...this.totalUsage };
       this.sessions.save(session);
@@ -287,7 +294,7 @@ export class AgentEngine {
   private async streamChat(
     messages: Message[],
     options: ChatOptions,
-    onChunk: (text: string) => void
+    onChunk: (text: string) => void,
   ): Promise<ChatResponse> {
     let fullContent = '';
     let finalUsage: TokenUsage | undefined;
@@ -331,7 +338,7 @@ export class AgentEngine {
 
     // 处理累积的工具调用
     if (toolCallMap.size > 0) {
-      toolCalls = Array.from(toolCallMap.values()).map(tc => ({
+      toolCalls = Array.from(toolCallMap.values()).map((tc) => ({
         id: tc.id || `call_${Date.now()}`,
         type: 'function' as const,
         function: {
@@ -355,7 +362,8 @@ export class AgentEngine {
    * 构建系统提示词
    */
   private buildSystemPrompt(workspace: string): string {
-    const os = process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux';
+    const os =
+      process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux';
     const date = new Date().toLocaleString('zh-CN');
 
     return `${this.config.systemPrompt}
@@ -415,18 +423,29 @@ ${this.config.allowTools ? this.tools.getDescriptions() : '工具调用已禁用
  * 对常见敏感字段（apiKey, token, password, secret, key 等）的值进行掩码
  */
 function sanitizeToolInput(input: Record<string, unknown>): Record<string, unknown> {
-  const sensitiveKeys = ['apiKey', 'apikey', 'api_key',
-    'token', 'accessToken', 'access_token', 'refreshToken',
-    'password', 'passwd', 'secret', 'privateKey', 'private_key',
-    'key', 'credential', 'auth'];
+  const sensitiveKeys = [
+    'apiKey',
+    'apikey',
+    'api_key',
+    'token',
+    'accessToken',
+    'access_token',
+    'refreshToken',
+    'password',
+    'passwd',
+    'secret',
+    'privateKey',
+    'private_key',
+    'key',
+    'credential',
+    'auth',
+  ];
   const sanitized: Record<string, unknown> = {};
 
   for (const [k, v] of Object.entries(input)) {
     const lowerKey = k.toLowerCase();
     if (sensitiveKeys.some((sk) => lowerKey === sk || lowerKey.includes(sk))) {
-      sanitized[k] = typeof v === 'string' && v.length > 3
-        ? v.slice(0, 3) + '***'
-        : '***';
+      sanitized[k] = typeof v === 'string' && v.length > 3 ? v.slice(0, 3) + '***' : '***';
     } else if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
       sanitized[k] = sanitizeToolInput(v as Record<string, unknown>);
     } else {

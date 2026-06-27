@@ -17,7 +17,7 @@ class MockStatement {
 
   constructor(
     private db: MockDatabase,
-    private sql: string
+    private sql: string,
   ) {}
 
   /** 绑定参数 */
@@ -131,9 +131,11 @@ class MockDatabase {
     let rows = this.tables.get(tableName) || [];
 
     // 转为 Record 数组
-    let result: Array<Record<string, unknown>> = rows.map(row => {
+    let result: Array<Record<string, unknown>> = rows.map((row) => {
       const obj: Record<string, unknown> = {};
-      row.forEach((value, key) => { obj[key] = value; });
+      row.forEach((value, key) => {
+        obj[key] = value;
+      });
       return obj;
     });
 
@@ -143,7 +145,7 @@ class MockDatabase {
       const colName = whereMatch[1];
       const operator = whereMatch[2];
       const paramVal = params[0];
-      result = result.filter(row => {
+      result = result.filter((row) => {
         if (operator === '!=') return row[colName] !== paramVal;
         return row[colName] === paramVal;
       });
@@ -162,15 +164,30 @@ class MockDatabase {
   }
 
   /** 处理 INSERT 或 REPLACE */
-  private handleInsertOrReplace(tableName: string, params: unknown[]): { changes: number; lastInsertRowid: number } {
+  private handleInsertOrReplace(
+    tableName: string,
+    params: unknown[],
+  ): { changes: number; lastInsertRowid: number } {
     const rows = this.tables.get(tableName) || [];
     // 列顺序: id, workspace, provider, model, messages, title, status, token_usage, summary, created_at, updated_at, tags
-    const columns = ['id', 'workspace', 'provider', 'model', 'messages', 'title', 'status',
-      'token_usage', 'summary', 'created_at', 'updated_at', 'tags'];
+    const columns = [
+      'id',
+      'workspace',
+      'provider',
+      'model',
+      'messages',
+      'title',
+      'status',
+      'token_usage',
+      'summary',
+      'created_at',
+      'updated_at',
+      'tags',
+    ];
 
     // 查找是否已存在
     const id = params[0] as string;
-    const existingIdx = rows.findIndex(r => r.get('id') === id);
+    const existingIdx = rows.findIndex((r) => r.get('id') === id);
 
     const row = new Map<string, unknown>();
     columns.forEach((col, i) => {
@@ -188,15 +205,22 @@ class MockDatabase {
   }
 
   /** 处理普通 INSERT */
-  private handleInsert(tableName: string, params: unknown[]): { changes: number; lastInsertRowid: number } {
+  private handleInsert(
+    tableName: string,
+    params: unknown[],
+  ): { changes: number; lastInsertRowid: number } {
     return this.handleInsertOrReplace(tableName, params);
   }
 
   /** 处理带 WHERE 的 DELETE */
-  private handleDeleteWithWhere(tableName: string, _colName: string, params: unknown[]): { changes: number; lastInsertRowid: number } {
+  private handleDeleteWithWhere(
+    tableName: string,
+    _colName: string,
+    params: unknown[],
+  ): { changes: number; lastInsertRowid: number } {
     const rows = this.tables.get(tableName) || [];
     const idOrVal = params[0] as string;
-    const newRows = rows.filter(r => r.get('id') !== idOrVal);
+    const newRows = rows.filter((r) => r.get('id') !== idOrVal);
     const deleted = rows.length - newRows.length;
     this.tables.set(tableName, newRows);
     return { changes: deleted, lastInsertRowid: 0 };

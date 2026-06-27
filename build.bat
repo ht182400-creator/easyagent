@@ -88,42 +88,27 @@ if /i "%MODE%"=="verify" (
 :::::: Phase 2: Build All Modules
 :::::: ============================================================
 echo.
-echo [2/5] Building core...
-
-cd packages\core
-call pnpm exec tsup
+echo [2/5] Building core + server (shared by build.bat ^& build-web.bat)...
+call "%~dp0build-shared.bat"
 if %errorlevel% neq 0 (
-    echo [FAIL] core build failed
-    cd ..\..
+    echo [FAIL] Shared build failed
     pause
     exit /b 1
 )
 
-echo [3/5] Building server...
-cd ..\server
-call pnpm exec tsup
-if %errorlevel% neq 0 (
-    echo [FAIL] server build failed
-    cd ..\..
-    pause
-    exit /b 1
-)
-
-echo [4/5] Building desktop...
-cd ..\desktop
-
+echo [3/5] Building desktop...
 echo   - tsup (main)...
-call pnpm exec tsup
+call pnpm --filter @easyagent/desktop exec tsup
 if %errorlevel% neq 0 goto :BUILD_FAIL
 
 echo   - tsup (preload - CJS)...
-call pnpm exec tsup --config tsup.preload.config.ts
+call pnpm --filter @easyagent/desktop exec tsup -- --config tsup.preload.config.ts
 if %errorlevel% neq 0 goto :BUILD_FAIL
 
 echo   - vite (renderer)...
 rem 暂时关闭延迟扩展避免 Vite 输出中的 ! 符号被 CMD 解析
 setlocal disabledelayedexpansion
-call pnpm exec vite build
+call pnpm --filter @easyagent/desktop exec vite build
 rem 在 setlocal 内部判断 errorlevel，避免 endlocal 将其重置为 0
 if errorlevel 1 (
     endlocal

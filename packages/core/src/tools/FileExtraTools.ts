@@ -22,7 +22,8 @@ function safePath(workspace: string, targetPath: string): string {
  */
 export const FileInfoTool: ITool = {
   name: 'file_info',
-  description: '获取文件的详细信息：大小、修改时间、行数、MIME类型等。用于了解文件而不读取全部内容。',
+  description:
+    '获取文件的详细信息：大小、修改时间、行数、MIME类型等。用于了解文件而不读取全部内容。',
   requiresConfirm: false,
   parameters: {
     type: 'object',
@@ -38,7 +39,11 @@ export const FileInfoTool: ITool = {
     try {
       const filePath = safePath(context.workspace, params.filePath as string);
       if (!existsSync(filePath)) {
-        return { success: false, content: `文件不存在: ${params.filePath}`, error: 'FILE_NOT_FOUND' };
+        return {
+          success: false,
+          content: `文件不存在: ${params.filePath}`,
+          error: 'FILE_NOT_FOUND',
+        };
       }
       const stat = statSync(filePath);
       const { readFileSync } = await import('node:fs');
@@ -57,7 +62,11 @@ export const FileInfoTool: ITool = {
         `扩展名: .${ext}`,
         `权限: ${stat.mode.toString(8).slice(-3)}`,
       ].join('\n');
-      return { success: true, content: info, metadata: { path: relative(context.workspace, filePath), size: stat.size, lineCount } };
+      return {
+        success: true,
+        content: info,
+        metadata: { path: relative(context.workspace, filePath), size: stat.size, lineCount },
+      };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       return { success: false, content: `获取文件信息失败: ${msg}`, error: msg };
@@ -112,7 +121,11 @@ export const MoveFileTool: ITool = {
       const src = safePath(context.workspace, params.sourcePath as string);
       const dest = safePath(context.workspace, params.destPath as string);
       if (!existsSync(src)) {
-        return { success: false, content: `源文件不存在: ${params.sourcePath}`, error: 'FILE_NOT_FOUND' };
+        return {
+          success: false,
+          content: `源文件不存在: ${params.sourcePath}`,
+          error: 'FILE_NOT_FOUND',
+        };
       }
       mkdirSync(dirname(dest), { recursive: true });
       renameSync(src, dest);
@@ -147,7 +160,11 @@ export const BatchEditTool: ITool = {
       const filePath = safePath(context.workspace, params.filePath as string);
       const { readFileSync, writeFileSync } = await import('node:fs');
       if (!existsSync(filePath)) {
-        return { success: false, content: `文件不存在: ${params.filePath}`, error: 'FILE_NOT_FOUND' };
+        return {
+          success: false,
+          content: `文件不存在: ${params.filePath}`,
+          error: 'FILE_NOT_FOUND',
+        };
       }
       const content = readFileSync(filePath, 'utf-8');
       const pattern = params.pattern as string;
@@ -160,7 +177,11 @@ export const BatchEditTool: ITool = {
       }
       const newContent = content.replace(regex, replacement);
       writeFileSync(filePath, newContent, 'utf-8');
-      return { success: true, content: `批量编辑完成: ${matchCount}处替换`, metadata: { matchCount } };
+      return {
+        success: true,
+        content: `批量编辑完成: ${matchCount}处替换`,
+        metadata: { matchCount },
+      };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       return { success: false, content: `批量编辑失败: ${msg}`, error: msg };

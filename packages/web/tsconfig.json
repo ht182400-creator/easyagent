@@ -16,8 +16,8 @@
     "noUnusedParameters": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../frontend/src/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "../frontend/src"]
+  "include": ["src"]
 }

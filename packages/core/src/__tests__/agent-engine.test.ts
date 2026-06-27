@@ -52,14 +52,16 @@ describe('AgentEngine - 初始化', () => {
       baseURL: 'https://api.deepseek.com',
       apiKey: 'test-key',
       apiFormat: 'openai' as const,
-      models: [{
-        id: 'deepseek-chat',
-        name: 'V3',
-        maxContextTokens: 65536,
-        maxOutputTokens: 8192,
-        supportsTools: true,
-        supportsVision: false,
-      }],
+      models: [
+        {
+          id: 'deepseek-chat',
+          name: 'V3',
+          maxContextTokens: 65536,
+          maxOutputTokens: 8192,
+          supportsTools: true,
+          supportsVision: false,
+        },
+      ],
     };
 
     const tools = new ToolRegistry();
@@ -161,11 +163,13 @@ describe('AgentEngine - Agent运行循环', () => {
             model: 'test',
             content: '',
             finishReason: 'tool_calls' as const,
-            toolCalls: [{
-              id: 'call_1',
-              type: 'function' as const,
-              function: { name: 'echo', arguments: '{"text":"hello"}' },
-            }],
+            toolCalls: [
+              {
+                id: 'call_1',
+                type: 'function' as const,
+                function: { name: 'echo', arguments: '{"text":"hello"}' },
+              },
+            ],
             usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
           };
         }
@@ -184,7 +188,11 @@ describe('AgentEngine - Agent运行循环', () => {
       name: 'echo',
       description: '回显',
       requiresConfirm: false,
-      parameters: { type: 'object', properties: { text: { type: 'string', description: '' } }, required: ['text'] },
+      parameters: {
+        type: 'object',
+        properties: { text: { type: 'string', description: '' } },
+        required: ['text'],
+      },
       execute: async (params: any) => ({ success: true, content: `Echo: ${params.text}` }),
     });
 
@@ -250,7 +258,7 @@ describe('AgentEngine - 中止', () => {
           throw err;
         }
         // 等待一点时间让abort有机会触发
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         // 再次检查
         if (options?.signal?.aborted) {
           const err = new Error('The operation was aborted');
@@ -272,7 +280,7 @@ describe('AgentEngine - 中止', () => {
     // 异步运行agent
     const runPromise = agent.run('test');
     // 给agent一点时间进入循环后立即中止
-    await new Promise(resolve => setTimeout(resolve, 2));
+    await new Promise((resolve) => setTimeout(resolve, 2));
     agent.abort();
 
     const response = await runPromise;
@@ -299,14 +307,16 @@ describe('AgentEngine - 模型切换', () => {
       baseURL: 'https://dashscope.aliyuncs.com/compatible-mode',
       apiKey: 'test-key',
       apiFormat: 'openai' as const,
-      models: [{
-        id: 'qwen-max',
-        name: 'Qwen Max',
-        maxContextTokens: 32768,
-        maxOutputTokens: 8192,
-        supportsTools: true,
-        supportsVision: false,
-      }],
+      models: [
+        {
+          id: 'qwen-max',
+          name: 'Qwen Max',
+          maxContextTokens: 32768,
+          maxOutputTokens: 8192,
+          supportsTools: true,
+          supportsVision: false,
+        },
+      ],
     };
 
     // 不应抛出异常

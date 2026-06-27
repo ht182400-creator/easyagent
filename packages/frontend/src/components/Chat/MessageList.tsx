@@ -224,10 +224,7 @@ function StreamingBubble({ text }: { text: string }) {
 function renderMarkdown(text: string): string {
   if (!text) return '';
 
-  let html = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // 代码块 ```
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang: string, code: string) => {
@@ -246,7 +243,7 @@ function renderMarkdown(text: string): string {
   // 链接 [text](url)
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener">$1</a>'
+    '<a href="$2" target="_blank" rel="noopener">$1</a>',
   );
 
   // 标题
@@ -275,11 +272,7 @@ function renderMarkdown(text: string): string {
  * 虚拟列表中的单行渲染
  * 使用 ResizeObserver 自动测量实际高度并更新 dynamicRowHeight 缓存
  */
-function VirtualRow({
-  index,
-  style,
-  items,
-}: RowComponentProps<RowExtraProps>) {
+function VirtualRow({ index, style, items }: RowComponentProps<RowExtraProps>) {
   const rowRef = useRef<HTMLDivElement>(null);
   const item = items[index];
 
@@ -378,8 +371,7 @@ export function MessageList({ sessionId }: { sessionId: string }) {
 
     /** 处理用户手动滚动 */
     const handleScroll = () => {
-      const distanceFromBottom =
-        outerEl.scrollHeight - outerEl.scrollTop - outerEl.clientHeight;
+      const distanceFromBottom = outerEl.scrollHeight - outerEl.scrollTop - outerEl.clientHeight;
       isNearBottomRef.current = distanceFromBottom < SCROLL_THRESHOLD;
     };
 
@@ -415,19 +407,17 @@ export function MessageList({ sessionId }: { sessionId: string }) {
           向 EasyAgent 提问编程问题、请求代码审查或获取技术支持
         </p>
         <div className="flex gap-3 mt-6 flex-wrap justify-center">
-          {['解释这段代码的作用', '帮我优化这个函数', '写一个单元测试', '代码审查'].map(
-            (hint) => (
-              <button
-                key={hint}
-                className="btn btn-secondary text-xs"
-                onClick={() => {
-                  useChatStore.getState().setComposerPrefill(hint);
-                }}
-              >
-                {hint}
-              </button>
-            )
-          )}
+          {['解释这段代码的作用', '帮我优化这个函数', '写一个单元测试', '代码审查'].map((hint) => (
+            <button
+              key={hint}
+              className="btn btn-secondary text-xs"
+              onClick={() => {
+                useChatStore.getState().setComposerPrefill(hint);
+              }}
+            >
+              {hint}
+            </button>
+          ))}
         </div>
       </div>
     );

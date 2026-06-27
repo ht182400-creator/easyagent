@@ -41,10 +41,16 @@ export default defineConfig({
       },
     },
     // 排除 Electron 原生模块
+    // React 实例去重：pnpm workspace 中 desktop + frontend 各自依赖 React，
+    // 通过 @/ alias 引入 frontend 组件时可能产生双重实例，导致 hooks 为 null
     server: {
       deps: {
-        inline: [],
+        inline: ['react', 'react-dom', 'react-dom/client'],
       },
     },
+  },
+  // 确保 vitest 只使用一个 React 副本
+  resolve: {
+    dedupe: ['react', 'react-dom'],
   },
 });

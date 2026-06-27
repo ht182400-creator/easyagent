@@ -85,7 +85,11 @@ export class MCPManager {
     const client = this.clients.get(serverName);
 
     if (!client) {
-      return { success: false, content: `MCP服务器未连接: ${serverName}`, error: 'MCP_NOT_CONNECTED' };
+      return {
+        success: false,
+        content: `MCP服务器未连接: ${serverName}`,
+        error: 'MCP_NOT_CONNECTED',
+      };
     }
 
     try {
@@ -114,7 +118,7 @@ export class MCPManager {
     return {
       name: fullName,
       description: `[MCP:${serverName}] ${mcpTool.description || mcpTool.name}`,
-      requiresConfirm: !(config.autoApprove?.includes(mcpTool.name)),
+      requiresConfirm: !config.autoApprove?.includes(mcpTool.name),
       parameters: {
         type: 'object',
         properties: (mcpTool.inputSchema as any)?.properties || {},

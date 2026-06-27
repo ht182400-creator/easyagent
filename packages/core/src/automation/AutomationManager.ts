@@ -66,7 +66,9 @@ export interface AutomationManagerOptions {
   /** 检查间隔(毫秒)，默认 30000 (30秒) */
   checkIntervalMs?: number;
   /** 执行任务回调: 返回 { result, tokenUsage } */
-  executor?: (task: AutomationTask) => Promise<{ result: string; tokenUsage?: { input: number; output: number; total: number } }>;
+  executor?: (
+    task: AutomationTask,
+  ) => Promise<{ result: string; tokenUsage?: { input: number; output: number; total: number } }>;
 }
 
 /** 自动化事件 */
@@ -84,19 +86,24 @@ export class AutomationManager extends EventEmitter {
   private storagePath: string;
   private checkIntervalMs: number;
   private checkTimer: ReturnType<typeof setInterval> | null = null;
-  private executor: (task: AutomationTask) => Promise<{ result: string; tokenUsage?: { input: number; output: number; total: number } }>;
+  private executor: (
+    task: AutomationTask,
+  ) => Promise<{ result: string; tokenUsage?: { input: number; output: number; total: number } }>;
   private runningTasks: Map<string, AbortController> = new Map();
 
   constructor(options: AutomationManagerOptions = {}) {
     super();
-    this.storagePath = options.storagePath || join(homedir(), '.easyagent', 'data', 'automations.json');
+    this.storagePath =
+      options.storagePath || join(homedir(), '.easyagent', 'data', 'automations.json');
     this.checkIntervalMs = options.checkIntervalMs || 30000;
 
     // 默认执行器: 仅记录日志
-    this.executor = options.executor || (async (task) => {
-      logger.info({ task: task.name }, '默认执行器: 无实际任务执行');
-      return { result: `[占位] 任务 "${task.name}" 执行完成` };
-    });
+    this.executor =
+      options.executor ||
+      (async (task) => {
+        logger.info({ task: task.name }, '默认执行器: 无实际任务执行');
+        return { result: `[占位] 任务 "${task.name}" 执行完成` };
+      });
   }
 
   /** 初始化: 加载任务并启动调度器 */
@@ -122,7 +129,11 @@ export class AutomationManager extends EventEmitter {
   }
 
   /** 设置执行器 */
-  setExecutor(executor: (task: AutomationTask) => Promise<{ result: string; tokenUsage?: { input: number; output: number; total: number } }>): void {
+  setExecutor(
+    executor: (
+      task: AutomationTask,
+    ) => Promise<{ result: string; tokenUsage?: { input: number; output: number; total: number } }>,
+  ): void {
     this.executor = executor;
   }
 
@@ -139,7 +150,9 @@ export class AutomationManager extends EventEmitter {
   }
 
   /** 创建任务 */
-  createTask(task: Omit<AutomationTask, 'createdAt' | 'runCount' | 'status' | 'id'> & { id?: string }): AutomationTask {
+  createTask(
+    task: Omit<AutomationTask, 'createdAt' | 'runCount' | 'status' | 'id'> & { id?: string },
+  ): AutomationTask {
     const tasks = this.loadTasks();
 
     const newTask: AutomationTask = {
@@ -158,7 +171,10 @@ export class AutomationManager extends EventEmitter {
     tasks.push(newTask);
     this.saveTasks(tasks);
 
-    logger.info({ id: newTask.id, name: newTask.name, scheduleType: newTask.scheduleType }, '自动化任务已创建');
+    logger.info(
+      { id: newTask.id, name: newTask.name, scheduleType: newTask.scheduleType },
+      '自动化任务已创建',
+    );
     return newTask;
   }
 
@@ -170,7 +186,12 @@ export class AutomationManager extends EventEmitter {
 
     tasks[index] = { ...tasks[index], ...updates };
     // 状态变更时重新计算下次运行时间
-    if (updates.status === 'ACTIVE' || updates.rrule || updates.scheduledAt || updates.scheduleType) {
+    if (
+      updates.status === 'ACTIVE' ||
+      updates.rrule ||
+      updates.scheduledAt ||
+      updates.scheduleType
+    ) {
       tasks[index].nextRunAt = this.computeNextRun(tasks[index]);
     }
     this.saveTasks(tasks);
@@ -347,11 +368,14 @@ export class AutomationManager extends EventEmitter {
    */
   private computeNextRecurring(rrule: string): string | undefined {
     try {
-      const parts = rrule.split(';').reduce((acc, part) => {
-        const [key, val] = part.split('=');
-        acc[key.trim()] = val?.trim() || '';
-        return acc;
-      }, {} as Record<string, string>);
+      const parts = rrule.split(';').reduce(
+        (acc, part) => {
+          const [key, val] = part.split('=');
+          acc[key.trim()] = val?.trim() || '';
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
 
       const now = new Date();
 
@@ -380,7 +404,13 @@ export class AutomationManager extends EventEmitter {
         const days = (parts.BYDAY || 'MO').split(',');
 
         const dayMap: Record<string, number> = {
-          MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6, SU: 0,
+          MO: 1,
+          TU: 2,
+          WE: 3,
+          TH: 4,
+          FR: 5,
+          SA: 6,
+          SU: 0,
         };
 
         const nowDay = now.getDay();
@@ -430,9 +460,12 @@ export class AutomationManager extends EventEmitter {
       // 超时控制
       let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
       if (task.maxDurationMinutes) {
-        timeoutHandle = setTimeout(() => {
-          controller.abort();
-        }, task.maxDurationMinutes * 60 * 1000);
+        timeoutHandle = setTimeout(
+          () => {
+            controller.abort();
+          },
+          task.maxDurationMinutes * 60 * 1000,
+        );
       }
 
       const execResult = await this.executor(task);

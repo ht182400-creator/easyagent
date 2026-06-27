@@ -26,7 +26,9 @@ vi.mock('@/stores/appStore', () => ({
 import { useSessionStore } from '@/stores/sessionStore';
 
 /** 构造测试用的会话元数据 */
-function makeSession(overrides: Partial<ReturnType<typeof useSessionStore.getState>['sessions'][number]> = {}) {
+function makeSession(
+  overrides: Partial<ReturnType<typeof useSessionStore.getState>['sessions'][number]> = {},
+) {
   return {
     id: 'session-1',
     workspace: '/test/workspace',
@@ -76,7 +78,10 @@ describe('sessionStore', () => {
 
   describe('fetchSessions', () => {
     it('成功获取应填充会话列表', async () => {
-      const mockData = [makeSession(), makeSession({ id: 'session-2', metadata: { ...makeSession().metadata, title: '会话2' } })];
+      const mockData = [
+        makeSession(),
+        makeSession({ id: 'session-2', metadata: { ...makeSession().metadata, title: '会话2' } }),
+      ];
       mockApiRequest.mockResolvedValue(mockData);
 
       await useSessionStore.getState().fetchSessions();
@@ -89,7 +94,7 @@ describe('sessionStore', () => {
 
     it('请求期间 loading 应为 true', async () => {
       mockApiRequest.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve([makeSession()]), 50))
+        () => new Promise((resolve) => setTimeout(() => resolve([makeSession()]), 50)),
       );
 
       const promise = useSessionStore.getState().fetchSessions();
@@ -216,7 +221,10 @@ describe('sessionStore', () => {
   describe('异常边界', () => {
     it('大量会话操作应正常', () => {
       const sessions = Array.from({ length: 100 }, (_, i) =>
-        makeSession({ id: `session-${i}`, metadata: { ...makeSession().metadata, title: `会话 ${i}` } })
+        makeSession({
+          id: `session-${i}`,
+          metadata: { ...makeSession().metadata, title: `会话 ${i}` },
+        }),
       );
       useSessionStore.setState({ sessions });
       expect(useSessionStore.getState().sessions).toHaveLength(100);

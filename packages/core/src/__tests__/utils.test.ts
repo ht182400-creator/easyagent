@@ -330,9 +330,19 @@ describe('main index - 工具子路径导出', () => {
   it('tools子路径应导出所有工具分组', async () => {
     const mod = await import('../tools/index.js');
     const groups = [
-      'FileTools', 'FileExtraTools', 'SearchTools', 'ExecTools',
-      'CodeTools', 'QualityTools', 'ProjectTools', 'MemoryTools',
-      'PreviewTools', 'MediaTools', 'DatabaseTools', 'KnowledgeTools', 'SubAgentTools',
+      'FileTools',
+      'FileExtraTools',
+      'SearchTools',
+      'ExecTools',
+      'CodeTools',
+      'QualityTools',
+      'ProjectTools',
+      'MemoryTools',
+      'PreviewTools',
+      'MediaTools',
+      'DatabaseTools',
+      'KnowledgeTools',
+      'SubAgentTools',
     ];
     for (const group of groups) {
       expect(mod[group], `${group} should be exported`).toBeDefined();

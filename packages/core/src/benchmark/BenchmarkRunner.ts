@@ -171,7 +171,10 @@ export class BenchmarkRunner {
     // 逐题评测
     for (let i = 0; i < problems.length; i++) {
       const problem = problems[i];
-      logger.info({ idx: i + 1, total: problems.length, id: problem.id }, `评测中: ${problem.issue_title}`);
+      logger.info(
+        { idx: i + 1, total: problems.length, id: problem.id },
+        `评测中: ${problem.issue_title}`,
+      );
 
       try {
         const result = await this.evaluateProblem(problem);
@@ -209,7 +212,7 @@ export class BenchmarkRunner {
 
     // 计算按难度分组
     const byDifficulty: Record<string, { total: number; passed: number; rate: number }> = {};
-    const problemMap = new Map(problems.map(p => [p.id, p]));
+    const problemMap = new Map(problems.map((p) => [p.id, p]));
     for (const r of problemResults) {
       const diff = problemMap.get(r.problemId)?.difficulty || 'unknown';
       if (!byDifficulty[diff]) byDifficulty[diff] = { total: 0, passed: 0, rate: 0 };
@@ -250,7 +253,9 @@ export class BenchmarkRunner {
   /**
    * 评测单个问题 (pass@k)
    */
-  private async evaluateProblem(problem: import('./SWEBenchEngine.js').SWEBenchProblem): Promise<BenchmarkProblemResult> {
+  private async evaluateProblem(
+    problem: import('./SWEBenchEngine.js').SWEBenchProblem,
+  ): Promise<BenchmarkProblemResult> {
     const attempts: BenchmarkAttempt[] = [];
     let passCount = 0;
 
@@ -276,7 +281,7 @@ export class BenchmarkRunner {
    */
   private async singleAttempt(
     problem: import('./SWEBenchEngine.js').SWEBenchProblem,
-    attemptIndex: number
+    attemptIndex: number,
   ): Promise<BenchmarkAttempt> {
     const startTime = Date.now();
 
@@ -289,7 +294,7 @@ export class BenchmarkRunner {
       // 通过 Agent.run() 生成代码响应
       const responseText = await this.runWithTimeout(
         agent.run(prompt),
-        this.config.timeoutPerProblem
+        this.config.timeoutPerProblem,
       );
 
       // 提取生成的代码
@@ -376,7 +381,7 @@ ${problem.test_patch}
    */
   private async runTests(
     solution: string,
-    testPatch: string
+    testPatch: string,
   ): Promise<{ passed: boolean; output: string }> {
     // 简化的测试验证策略：
     // 1. 检查代码是否非空
@@ -420,7 +425,7 @@ ${problem.test_patch}
     return Promise.race([
       promise,
       new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error(`评测超时 (${timeoutMs}ms)`)), timeoutMs)
+        setTimeout(() => reject(new Error(`评测超时 (${timeoutMs}ms)`)), timeoutMs),
       ),
     ]);
   }
@@ -429,10 +434,8 @@ ${problem.test_patch}
    * 保存评测报告为 Markdown
    */
   saveReport(report: BenchmarkReport, outputPath?: string): string {
-    const filePath = outputPath || path.join(
-      this.config.outputDir,
-      `swebench_report_${Date.now()}.md`
-    );
+    const filePath =
+      outputPath || path.join(this.config.outputDir, `swebench_report_${Date.now()}.md`);
 
     const dir = path.dirname(filePath);
     if (!fs.existsSync(dir)) {
@@ -464,7 +467,7 @@ ${problem.test_patch}
       '',
       `| 指标 | 值 |`,
       `|------|-----|`,
-      `| 总体 Pass@${meta.k} | **${passRate}%** (${report.problemResults.filter(r => r.passed).length}/${meta.totalProblems}) |`,
+      `| 总体 Pass@${meta.k} | **${passRate}%** (${report.problemResults.filter((r) => r.passed).length}/${meta.totalProblems}) |`,
       `| 解决率 (Resolved Rate) | **${passRate}%** |`,
       `| 平均耗时 | ${(scores.avgTimePerProblem / 1000).toFixed(1)}s |`,
       `| 平均输入 Token | ${Math.round(scores.avgTokens.input)} |`,
@@ -485,16 +488,16 @@ ${problem.test_patch}
 
     for (const r of report.problemResults) {
       const status = r.passed ? '✅' : '❌';
-      const passInfo = r.totalAttempts > 1
-        ? ` (${r.passCount}/${r.totalAttempts} attempts)`
-        : '';
+      const passInfo = r.totalAttempts > 1 ? ` (${r.passCount}/${r.totalAttempts} attempts)` : '';
       lines.push(`### ${status} ${r.problemId} - \`${r.difficulty}\`${passInfo}`);
       lines.push(`- 通过率: ${(r.passAtK * 100).toFixed(0)}%`);
       lines.push('');
 
       for (const a of r.attempts) {
         const aStatus = a.success ? '✅' : '❌';
-        lines.push(`<details><summary>${aStatus} 尝试 ${a.attemptIndex + 1} (${(a.timeElapsed / 1000).toFixed(1)}s)</summary>`);
+        lines.push(
+          `<details><summary>${aStatus} 尝试 ${a.attemptIndex + 1} (${(a.timeElapsed / 1000).toFixed(1)}s)</summary>`,
+        );
         lines.push('');
         if (a.solution) {
           lines.push('```typescript');
@@ -521,16 +524,20 @@ ${problem.test_patch}
    */
   getSummaryJSON(report: BenchmarkReport): string {
     const { meta, scores } = report;
-    return JSON.stringify({
-      provider: meta.provider,
-      model: meta.model,
-      passAtK: meta.k,
-      passRate: scores.overallPassRate,
-      resolvedRate: scores.overallResolvedRate,
-      totalProblems: meta.totalProblems,
-      byDifficulty: scores.byDifficulty,
-      timestamp: meta.timestamp,
-    }, null, 2);
+    return JSON.stringify(
+      {
+        provider: meta.provider,
+        model: meta.model,
+        passAtK: meta.k,
+        passRate: scores.overallPassRate,
+        resolvedRate: scores.overallResolvedRate,
+        totalProblems: meta.totalProblems,
+        byDifficulty: scores.byDifficulty,
+        timestamp: meta.timestamp,
+      },
+      null,
+      2,
+    );
   }
 }
 

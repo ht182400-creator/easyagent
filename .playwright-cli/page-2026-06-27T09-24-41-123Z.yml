@@ -1,0 +1,329 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - img [ref=e9]
+      - generic [ref=e11]: EasyAgent
+      - button "收起" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+    - navigation [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]: 核心
+        - generic [ref=e18]:
+          - link "首页" [ref=e19] [cursor=pointer]:
+            - /url: /
+            - img [ref=e20]
+            - generic [ref=e25]: 首页
+          - link "文档导读" [ref=e26] [cursor=pointer]:
+            - /url: /docs-guide
+            - img [ref=e27]
+            - generic [ref=e30]: 文档导读
+          - link "对话" [ref=e31] [cursor=pointer]:
+            - /url: /chat
+            - img [ref=e32]
+            - generic [ref=e34]: 对话
+      - generic [ref=e35]:
+        - generic [ref=e36]: 管理
+        - generic [ref=e37]:
+          - link "模型" [ref=e38] [cursor=pointer]:
+            - /url: /providers
+            - img [ref=e39]
+            - generic [ref=e42]: 模型
+          - link "会话" [ref=e43] [cursor=pointer]:
+            - /url: /sessions
+            - img [ref=e44]
+            - generic [ref=e48]: 会话
+          - link "工具" [ref=e49] [cursor=pointer]:
+            - /url: /tools
+            - img [ref=e50]
+            - generic [ref=e52]: 工具
+          - link "技能" [ref=e53] [cursor=pointer]:
+            - /url: /skills
+            - img [ref=e54]
+            - generic [ref=e56]: 技能
+      - generic [ref=e57]:
+        - generic [ref=e58]: 扩展
+        - generic [ref=e59]:
+          - link "知识库" [ref=e60] [cursor=pointer]:
+            - /url: /knowledge
+            - img [ref=e61]
+            - generic [ref=e64]: 知识库
+          - link "自动化" [ref=e65] [cursor=pointer]:
+            - /url: /automation
+            - img [ref=e66]
+            - generic [ref=e69]: 自动化
+          - link "用量分析" [ref=e70] [cursor=pointer]:
+            - /url: /token-usage
+            - img [ref=e71]
+            - generic [ref=e73]: 用量分析
+          - link "IM" [ref=e74] [cursor=pointer]:
+            - /url: /im
+            - img [ref=e75]
+            - generic [ref=e78]: IM
+          - link "沙箱" [ref=e79] [cursor=pointer]:
+            - /url: /sandbox
+            - img [ref=e80]
+            - generic [ref=e83]: 沙箱
+          - link "语义" [ref=e84] [cursor=pointer]:
+            - /url: /semantic
+            - img [ref=e85]
+            - generic [ref=e87]: 语义
+      - generic [ref=e88]:
+        - generic [ref=e89]: 系统
+        - link "设置" [ref=e91] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e92]
+          - generic [ref=e95]: 设置
+    - generic [ref=e96]:
+      - button "亮色模式" [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+        - generic [ref=e104]: 亮色模式
+      - generic [ref=e107]: 未连接
+      - generic [ref=e108]: v0.4.1
+  - main [ref=e110]:
+    - generic [ref=e112]:
+      - generic [ref=e114]:
+        - img [ref=e116]
+        - generic [ref=e119]:
+          - heading "文档导读" [level=1] [ref=e120]
+          - paragraph [ref=e121]: 按角色浏览推荐阅读路径 · 快速找到你需要的文档
+      - generic [ref=e122]:
+        - button "所有人" [ref=e123] [cursor=pointer]:
+          - img [ref=e124]
+          - text: 所有人
+        - button "开发者" [ref=e129] [cursor=pointer]:
+          - img [ref=e130]
+          - text: 开发者
+        - button "发布者" [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+          - text: 发布者
+        - button "排查者" [ref=e140] [cursor=pointer]:
+          - img [ref=e141]
+          - text: 排查者
+      - generic [ref=e150]:
+        - img [ref=e151]
+        - generic [ref=e156]:
+          - generic [ref=e157]: 所有人阅读路径
+          - paragraph [ref=e158]: 新人入职必读，10分钟快速了解项目
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - img [ref=e162]
+            - generic [ref=e167]: 所有人
+            - generic [ref=e168]: · 3 篇文档 · 按顺序阅读
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - button "1 新手上手指南 从克隆代码到第一次发布的完整步行 docs/00_新手上手指南.md !" [ref=e171] [cursor=pointer]:
+                - generic [ref=e172]: "1"
+                - img [ref=e174]
+                - generic [ref=e177]: 新手上手指南
+                - generic [ref=e178]: 从克隆代码到第一次发布的完整步行
+                - code [ref=e180]: docs/00_新手上手指南.md
+                - generic [ref=e182]: "!"
+              - img [ref=e184]
+            - generic [ref=e186]:
+              - button "2 构建前必检清单 30秒救命清单，每次构建前看 docs/14_构建前必检清单.md !" [ref=e187] [cursor=pointer]:
+                - generic [ref=e188]: "2"
+                - img [ref=e190]
+                - generic [ref=e192]: 构建前必检清单
+                - generic [ref=e193]: 30秒救命清单，每次构建前看
+                - code [ref=e195]: docs/14_构建前必检清单.md
+                - generic [ref=e197]: "!"
+              - img [ref=e199]
+            - button "3 项目启动与运行方式指南 如何启动后端/前端 docs/12_项目启动与运行方式指南.md !" [ref=e202] [cursor=pointer]:
+              - generic [ref=e203]: "3"
+              - img [ref=e205]
+              - generic [ref=e207]: 项目启动与运行方式指南
+              - generic [ref=e208]: 如何启动后端/前端
+              - code [ref=e210]: docs/12_项目启动与运行方式指南.md
+              - generic [ref=e212]: "!"
+        - generic [ref=e213]:
+          - generic [ref=e214]:
+            - img [ref=e215]
+            - generic [ref=e219]: 开发者
+            - generic [ref=e220]: · 5 篇文档 · 按顺序阅读
+          - generic [ref=e221]:
+            - generic [ref=e222]:
+              - button "1 双重构建体系详解 理解构建流程 docs/37_双重构建体系详解_Desktop与Web.md !" [ref=e223] [cursor=pointer]:
+                - generic [ref=e224]: "1"
+                - img [ref=e226]
+                - generic [ref=e230]: 双重构建体系详解
+                - generic [ref=e231]: 理解构建流程
+                - code [ref=e233]: docs/37_双重构建体系详解_Desktop与Web.md
+                - generic [ref=e235]: "!"
+              - img [ref=e237]
+            - generic [ref=e239]:
+              - button "2 构建链路对照表 源码 → 产物的映射关系 docs/11_构建链路对照表_tsup_asar_inline详解.md !" [ref=e240] [cursor=pointer]:
+                - generic [ref=e241]: "2"
+                - img [ref=e243]
+                - generic [ref=e247]: 构建链路对照表
+                - generic [ref=e248]: 源码 → 产物的映射关系
+                - code [ref=e250]: docs/11_构建链路对照表_tsup_asar_inline详解.md
+                - generic [ref=e252]: "!"
+              - img [ref=e254]
+            - generic [ref=e256]:
+              - button "3 架构设计文档 完整技术架构 v5.4 docs/02_架构设计文档_ADD.md" [ref=e257] [cursor=pointer]:
+                - generic [ref=e258]: "3"
+                - img [ref=e260]
+                - generic [ref=e262]: 架构设计文档
+                - generic [ref=e263]: 完整技术架构 v5.4
+                - code [ref=e265]: docs/02_架构设计文档_ADD.md
+              - img [ref=e267]
+            - generic [ref=e269]:
+              - button "4 调试日志规范体系 怎么写 debug 日志 docs/36_调试日志规范体系.md" [ref=e270] [cursor=pointer]:
+                - generic [ref=e271]: "4"
+                - img [ref=e273]
+                - generic [ref=e276]: 调试日志规范体系
+                - generic [ref=e277]: 怎么写 debug 日志
+                - code [ref=e279]: docs/36_调试日志规范体系.md
+              - img [ref=e281]
+            - button "5 CHANGELOG 自动生成 CHANGELOG 怎么来的 docs/39_CHANGELOG自动生成机制_三级Fallback.md" [ref=e284] [cursor=pointer]:
+              - generic [ref=e285]: "5"
+              - img [ref=e287]
+              - generic [ref=e289]: CHANGELOG 自动生成
+              - generic [ref=e290]: CHANGELOG 怎么来的
+              - code [ref=e292]: docs/39_CHANGELOG自动生成机制_三级Fallback.md
+        - generic [ref=e293]:
+          - generic [ref=e294]:
+            - img [ref=e295]
+            - generic [ref=e300]: 发布者
+            - generic [ref=e301]: · 5 篇文档 · 按顺序阅读
+          - generic [ref=e302]:
+            - generic [ref=e303]:
+              - button "1 双通道发布指南 两种发布方式对比 docs/38_双通道发布指南_本地vs服务器.md !" [ref=e304] [cursor=pointer]:
+                - generic [ref=e305]: "1"
+                - img [ref=e307]
+                - generic [ref=e311]: 双通道发布指南
+                - generic [ref=e312]: 两种发布方式对比
+                - code [ref=e314]: docs/38_双通道发布指南_本地vs服务器.md
+                - generic [ref=e316]: "!"
+              - img [ref=e318]
+            - generic [ref=e320]:
+              - button "2 发布产物与自动化流程 latest.yml / release.yml 是什么 docs/40_发布产物与自动化流程详解_面向新手.md !" [ref=e321] [cursor=pointer]:
+                - generic [ref=e322]: "2"
+                - img [ref=e324]
+                - generic [ref=e328]: 发布产物与自动化流程
+                - generic [ref=e329]: latest.yml / release.yml 是什么
+                - code [ref=e331]: docs/40_发布产物与自动化流程详解_面向新手.md
+                - generic [ref=e333]: "!"
+              - img [ref=e335]
+            - generic [ref=e337]:
+              - button "3 CI/CD 流程指南 CI/CD 全流程 docs/06_版本发布与CI-CD流程指南.md" [ref=e338] [cursor=pointer]:
+                - generic [ref=e339]: "3"
+                - img [ref=e341]
+                - generic [ref=e346]: CI/CD 流程指南
+                - generic [ref=e347]: CI/CD 全流程
+                - code [ref=e349]: docs/06_版本发布与CI-CD流程指南.md
+              - img [ref=e351]
+            - generic [ref=e353]:
+              - button "4 Desktop EXE 打包流程 打包技术细节 docs/05_Desktop_EXE打包标准流程.md" [ref=e354] [cursor=pointer]:
+                - generic [ref=e355]: "4"
+                - img [ref=e357]
+                - generic [ref=e359]: Desktop EXE 打包流程
+                - generic [ref=e360]: 打包技术细节
+                - code [ref=e362]: docs/05_Desktop_EXE打包标准流程.md
+              - img [ref=e364]
+            - button "5 自动更新分发方案 GitHub/R2/COS 等 5 方案 docs/07_自动更新分发方案对比.md" [ref=e367] [cursor=pointer]:
+              - generic [ref=e368]: "5"
+              - img [ref=e370]
+              - generic [ref=e374]: 自动更新分发方案
+              - generic [ref=e375]: GitHub/R2/COS 等 5 方案
+              - code [ref=e377]: docs/07_自动更新分发方案对比.md
+        - generic [ref=e378]:
+          - generic [ref=e379]:
+            - img [ref=e380]
+            - generic [ref=e389]: 排查者
+            - generic [ref=e390]: · 4 篇文档 · 按顺序阅读
+          - generic [ref=e391]:
+            - generic [ref=e392]:
+              - button "1 陷阱清单 37 条 高频问题速查 docs/MEMORY.md (.codebuddy/memory/) !" [ref=e393] [cursor=pointer]:
+                - generic [ref=e394]: "1"
+                - img [ref=e396]
+                - generic [ref=e398]: 陷阱清单 37 条
+                - generic [ref=e399]: 高频问题速查
+                - code [ref=e401]: docs/MEMORY.md (.codebuddy/memory/)
+                - generic [ref=e403]: "!"
+              - img [ref=e405]
+            - generic [ref=e407]:
+              - button "2 MODULE_VERSION 问题 better-sqlite3 必读 docs/35_MODULE_VERSION问题分析与根治方案.md !" [ref=e408] [cursor=pointer]:
+                - generic [ref=e409]: "2"
+                - img [ref=e411]
+                - generic [ref=e420]: MODULE_VERSION 问题
+                - generic [ref=e421]: better-sqlite3 必读
+                - code [ref=e423]: docs/35_MODULE_VERSION问题分析与根治方案.md
+                - generic [ref=e425]: "!"
+              - img [ref=e427]
+            - generic [ref=e429]:
+              - button "3 CORS 修复深度复盘 编译链与假成功陷阱 docs/04_CORS修复深度复盘_编译链与假成功陷阱.md" [ref=e430] [cursor=pointer]:
+                - generic [ref=e431]: "3"
+                - img [ref=e433]
+                - generic [ref=e435]: CORS 修复深度复盘
+                - generic [ref=e436]: 编译链与假成功陷阱
+                - code [ref=e438]: docs/04_CORS修复深度复盘_编译链与假成功陷阱.md
+              - img [ref=e440]
+            - button "4 Desktop 连接失败排查 React 竞态条件修复 docs/10_Desktop连接失败深度排查_React竞态条件修复.md" [ref=e443] [cursor=pointer]:
+              - generic [ref=e444]: "4"
+              - img [ref=e446]
+              - generic [ref=e448]: Desktop 连接失败排查
+              - generic [ref=e449]: React 竞态条件修复
+              - code [ref=e451]: docs/10_Desktop连接失败深度排查_React竞态条件修复.md
+      - generic [ref=e452]:
+        - generic [ref=e453]:
+          - img [ref=e454]
+          - heading "高频陷阱速查" [level=2] [ref=e456]
+          - generic [ref=e457]: （完整 37 条见 MEMORY.md）
+        - generic [ref=e458]:
+          - generic [ref=e459]:
+            - generic [ref=e460]:
+              - generic [ref=e461]: "#9"
+              - generic [ref=e462]: better-sqlite3 编译失败
+            - code [ref=e463]: 用预编译 .node + npmRebuild:false
+          - generic [ref=e464]:
+            - generic [ref=e465]:
+              - generic [ref=e466]: "#21"
+              - generic [ref=e467]: mime 缺失 Express 500
+            - code [ref=e468]: desktop 显式添加 mime@^1.6.0
+          - generic [ref=e469]:
+            - generic [ref=e470]:
+              - generic [ref=e471]: "#22"
+              - generic [ref=e472]: MODULE_VERSION 不一致
+            - code [ref=e473]: 构建前跑 build.bat Phase 2.5
+          - generic [ref=e474]:
+            - generic [ref=e475]:
+              - generic [ref=e476]: "#29"
+              - generic [ref=e477]: production CSS 布局错乱
+            - code [ref=e478]: tailwind content 加 frontend 路径
+          - generic [ref=e479]:
+            - generic [ref=e480]:
+              - generic [ref=e481]: "#33"
+              - generic [ref=e482]: electron-rebuild 静默跳过
+            - code [ref=e483]: 用 node-gyp rebuild
+      - generic [ref=e484]:
+        - generic [ref=e485]:
+          - img [ref=e486]
+          - heading "关键链接" [level=2] [ref=e491]
+        - generic [ref=e492]:
+          - link "GitHub 仓库 https://github.com/ht182400-creator/easyagent" [ref=e493] [cursor=pointer]:
+            - /url: https://github.com/ht182400-creator/easyagent
+            - generic [ref=e494]: GitHub 仓库
+            - code [ref=e495]: https://github.com/ht182400-creator/easyagent
+          - link "GitHub Releases https://github.com/ht182400-creator/easyagent/releases" [ref=e496] [cursor=pointer]:
+            - /url: https://github.com/ht182400-creator/easyagent/releases
+            - generic [ref=e497]: GitHub Releases
+            - code [ref=e498]: https://github.com/ht182400-creator/easyagent/releases
+          - link "CI/CD 流水线 https://github.com/ht182400-creator/easyagent/actions" [ref=e499] [cursor=pointer]:
+            - /url: https://github.com/ht182400-creator/easyagent/actions
+            - generic [ref=e500]: CI/CD 流水线
+            - code [ref=e501]: https://github.com/ht182400-creator/easyagent/actions
+          - link "本地后端 http://127.0.0.1:3456" [ref=e502] [cursor=pointer]:
+            - /url: http://127.0.0.1:3456
+            - generic [ref=e503]: 本地后端
+            - code [ref=e504]: http://127.0.0.1:3456
+          - link "管线仪表板 http://127.0.0.1:8899" [ref=e505] [cursor=pointer]:
+            - /url: http://127.0.0.1:8899
+            - generic [ref=e506]: 管线仪表板
+            - code [ref=e507]: http://127.0.0.1:8899
+      - generic [ref=e508]:
+        - generic [ref=e509]:
+          - img [ref=e510]
+          - heading "项目文件地图" [level=2] [ref=e514]
+        - generic [ref=e516]: "EasyAgent/ ├── packages/ │ ├── core/ # 🔧 核心库 (Agent/工具/MCP/适配器) │ ├── server/ # 🌐 Express 后端 (端口 3456) │ ├── desktop/ # 🖥️ Electron 桌面应用 │ ├── web/ # 🌍 Web Dashboard │ ├── frontend/ # 🎨 共享前端组件 (Desktop+Web 共用) │ └── cli/ # ⌨️ 命令行工具 ├── docs/ # 📖 项目文档 ← 你在这里 ├── scripts/ # 🔧 构建/发布/同步脚本 ├── .codebuddy/ │ └── memory/ # 🧠 AI 开发日志 + MEMORY.md ├── .github/workflows/# ⚙️ CI/CD 配置 ├── version.json # 唯一版本号 ├── CHANGELOG.md # 版本更新日志 └── build.bat # 构建入口"

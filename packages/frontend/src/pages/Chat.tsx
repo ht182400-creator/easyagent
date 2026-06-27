@@ -65,13 +65,14 @@ export default function ChatPage() {
             id: m.id || `history_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
             role: m.role as 'user' | 'assistant' | 'system',
             content: m.content || '',
-            toolCalls: m.toolCalls?.map((tc) => ({
-              toolCallId: tc.toolCallId,
-              toolName: tc.toolName,
-              input: tc.input,
-              output: tc.output,
-              status: (tc.status as any) || 'done',
-            })) || [],
+            toolCalls:
+              m.toolCalls?.map((tc) => ({
+                toolCallId: tc.toolCallId,
+                toolName: tc.toolName,
+                input: tc.input,
+                output: tc.output,
+                status: (tc.status as any) || 'done',
+              })) || [],
             timestamp: Date.now(),
             isStreaming: false,
           });
@@ -81,7 +82,9 @@ export default function ChatPage() {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [urlSessionId, sessionId, clearMessages, addMessage]);
 
   // 初始化：连接WebSocket + 加载提供商（历史会话不连WebSocket）
@@ -125,14 +128,20 @@ export default function ChatPage() {
         );
       case 'error':
         return (
-          <button onClick={handleReconnect} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300">
+          <button
+            onClick={handleReconnect}
+            className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
+          >
             <WifiOff className="w-3 h-3" />
             连接失败 (点击重试)
           </button>
         );
       default:
         return (
-          <button onClick={handleReconnect} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-400">
+          <button
+            onClick={handleReconnect}
+            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-400"
+          >
             <WifiOff className="w-3 h-3" />
             未连接
           </button>
@@ -147,7 +156,11 @@ export default function ChatPage() {
         <div>
           <div className="flex items-center gap-2">
             {isHistory && (
-              <a href="/sessions" className="text-gray-500 hover:text-gray-300 transition-colors" title="返回会话列表">
+              <a
+                href="/sessions"
+                className="text-gray-500 hover:text-gray-300 transition-colors"
+                title="返回会话列表"
+              >
                 <ArrowLeft className="w-4 h-4" />
               </a>
             )}
@@ -179,7 +192,9 @@ export default function ChatPage() {
       {isHistory && (
         <div className="py-3 px-4 text-center text-sm text-gray-600 border-t border-gray-800">
           这是历史会话的只读视图，如需继续对话请
-          <a href="/chat" className="text-primary-400 hover:text-primary-300 ml-1">新建会话</a>
+          <a href="/chat" className="text-primary-400 hover:text-primary-300 ml-1">
+            新建会话
+          </a>
         </div>
       )}
     </div>

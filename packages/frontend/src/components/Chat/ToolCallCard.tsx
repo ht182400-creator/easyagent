@@ -3,8 +3,17 @@
  */
 import { useState } from 'react';
 import {
-  Wrench, ChevronDown, ChevronRight, CheckCircle2,
-  XCircle, Loader2, Clock, FileCode, Search, Terminal, GitBranch
+  Wrench,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Clock,
+  FileCode,
+  Search,
+  Terminal,
+  GitBranch,
 } from 'lucide-react';
 import type { ToolCallBlock } from '../../stores/chatStore';
 
@@ -42,10 +51,14 @@ function StatusIcon({ status }: { status: ToolCallBlock['status'] }) {
 /** 状态文案 */
 function statusLabel(status: ToolCallBlock['status'], toolName: string): string {
   switch (status) {
-    case 'pending': return `准备执行 ${toolName}...`;
-    case 'running': return `正在执行 ${toolName}...`;
-    case 'done': return `${toolName} 执行完成`;
-    case 'error': return `${toolName} 执行失败`;
+    case 'pending':
+      return `准备执行 ${toolName}...`;
+    case 'running':
+      return `正在执行 ${toolName}...`;
+    case 'done':
+      return `${toolName} 执行完成`;
+    case 'error':
+      return `${toolName} 执行失败`;
   }
 }
 
@@ -64,9 +77,7 @@ export function ToolCallCard({ toolCall }: { toolCall: ToolCallBlock }) {
   const isDone = toolCall.status === 'done' || toolCall.status === 'error';
   const Icon = TOOL_ICONS[toolCall.toolName] || Wrench;
   const duration =
-    toolCall.startTime && toolCall.endTime
-      ? toolCall.endTime - toolCall.startTime
-      : null;
+    toolCall.startTime && toolCall.endTime ? toolCall.endTime - toolCall.startTime : null;
 
   return (
     <div
@@ -82,14 +93,13 @@ export function ToolCallCard({ toolCall }: { toolCall: ToolCallBlock }) {
         <StatusIcon status={toolCall.status} />
         <Icon className="w-3.5 h-3.5" />
         <span className="flex-1">{statusLabel(toolCall.status, toolCall.toolName)}</span>
-        {duration && (
-          <span className="text-xs opacity-60">{formatDuration(duration)}</span>
-        )}
-        {isDone && (
-          expanded
-            ? <ChevronDown className="w-3.5 h-3.5" />
-            : <ChevronRight className="w-3.5 h-3.5" />
-        )}
+        {duration && <span className="text-xs opacity-60">{formatDuration(duration)}</span>}
+        {isDone &&
+          (expanded ? (
+            <ChevronDown className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5" />
+          ))}
       </button>
 
       {/* 展开详情 */}

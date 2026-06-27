@@ -129,7 +129,9 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     try {
       const data = await apiRequest<AutomationRun[]>('/api/automations/history');
       set({ history: Array.isArray(data) ? data : [] });
-    } catch (err) { /* ignore */ }
+    } catch (err) {
+      /* ignore */
+    }
   },
 
   createTask: async (task) => {
@@ -214,9 +216,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
   toggleTask: async (id, active) => {
     const oldTasks = get().tasks;
     set((s) => ({
-      tasks: s.tasks.map((t) =>
-        t.id === id ? { ...t, status: active ? 'ACTIVE' : 'PAUSED' } : t
-      ),
+      tasks: s.tasks.map((t) => (t.id === id ? { ...t, status: active ? 'ACTIVE' : 'PAUSED' } : t)),
     }));
 
     try {
@@ -359,7 +359,12 @@ function handleAutomationProgress(data: AutomationProgressEvent) {
 /**
  * 处理自动化完成事件
  */
-function handleAutomationCompleted(data: { taskId: string; runId: string; endTime: string; tokenUsage?: { input: number; output: number; total: number } }) {
+function handleAutomationCompleted(data: {
+  taskId: string;
+  runId: string;
+  endTime: string;
+  tokenUsage?: { input: number; output: number; total: number };
+}) {
   const store = useAutomationStore.getState();
   const taskName = store.tasks.find((t) => t.id === data.taskId)?.name || '未知任务';
 
@@ -373,20 +378,18 @@ function handleAutomationCompleted(data: { taskId: string; runId: string; endTim
       history: s.history.map((h) =>
         h.taskId === data.taskId && h.status === 'running'
           ? { ...h, endTime: data.endTime, status: 'completed', tokenUsage: data.tokenUsage }
-          : h
+          : h,
       ),
       tasks: s.tasks.map((t) =>
-        t.id === data.taskId
-          ? { ...t, lastRunAt: data.endTime, runCount: t.runCount + 1 }
-          : t
+        t.id === data.taskId ? { ...t, lastRunAt: data.endTime, runCount: t.runCount + 1 } : t,
       ),
       lastRun: {
-        ...s.history.find((h) => h.taskId === data.taskId && h.status === 'running') || {
+        ...(s.history.find((h) => h.taskId === data.taskId && h.status === 'running') || {
           id: data.runId,
           taskId: data.taskId,
           taskName,
           startTime: '',
-        },
+        }),
         endTime: data.endTime,
         status: 'completed',
         tokenUsage: data.tokenUsage,
@@ -404,7 +407,12 @@ function handleAutomationCompleted(data: { taskId: string; runId: string; endTim
 /**
  * 处理自动化失败事件
  */
-function handleAutomationFailed(data: { taskId: string; runId: string; endTime: string; error?: string }) {
+function handleAutomationFailed(data: {
+  taskId: string;
+  runId: string;
+  endTime: string;
+  error?: string;
+}) {
   const store = useAutomationStore.getState();
   const taskName = store.tasks.find((t) => t.id === data.taskId)?.name || '未知任务';
 
@@ -418,15 +426,15 @@ function handleAutomationFailed(data: { taskId: string; runId: string; endTime: 
       history: s.history.map((h) =>
         h.taskId === data.taskId && h.status === 'running'
           ? { ...h, endTime: data.endTime, status: 'failed', error: data.error }
-          : h
+          : h,
       ),
       lastRun: {
-        ...s.history.find((h) => h.taskId === data.taskId && h.status === 'running') || {
+        ...(s.history.find((h) => h.taskId === data.taskId && h.status === 'running') || {
           id: data.runId,
           taskId: data.taskId,
           taskName,
           startTime: '',
-        },
+        }),
         endTime: data.endTime,
         status: 'failed',
         error: data.error,
@@ -460,8 +468,17 @@ on('automation_progress', (payload) => {
   handleAutomationProgress(payload as AutomationProgressEvent);
 });
 on('automation_completed', (payload) => {
-  handleAutomationCompleted(payload as { taskId: string; runId: string; endTime: string; tokenUsage?: { input: number; output: number; total: number } });
+  handleAutomationCompleted(
+    payload as {
+      taskId: string;
+      runId: string;
+      endTime: string;
+      tokenUsage?: { input: number; output: number; total: number };
+    },
+  );
 });
 on('automation_failed', (payload) => {
-  handleAutomationFailed(payload as { taskId: string; runId: string; endTime: string; error?: string });
+  handleAutomationFailed(
+    payload as { taskId: string; runId: string; endTime: string; error?: string },
+  );
 });

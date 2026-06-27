@@ -89,12 +89,13 @@ describe('Settings 页面 - 自动更新 UI', () => {
     mockFetch.mockReset();
     // 默认 fetch 返回（version API）
     mockFetch.mockResolvedValue({
-      json: () => Promise.resolve({
-        version: '0.5.20',
-        codename: 'Test',
-        releaseDate: '2026-06-26',
-        changelog: 'Test changelog',
-      }),
+      json: () =>
+        Promise.resolve({
+          version: '0.5.20',
+          codename: 'Test',
+          releaseDate: '2026-06-26',
+          changelog: 'Test changelog',
+        }),
     });
     mockEasyAgent();
   });
@@ -125,7 +126,6 @@ describe('Settings 页面 - 自动更新 UI', () => {
         expect(screen.getByText(/v0\.5\.20/)).toBeDefined();
       });
     });
-
   });
 
   // ============ 状态卡片样式函数测试（组件外纯函数） ============
@@ -275,7 +275,6 @@ describe('Settings 页面 - 自动更新 UI', () => {
         expect(mockFetch).toHaveBeenCalled();
       });
     });
-
   });
 
   // ============ 事件监听测试 ============

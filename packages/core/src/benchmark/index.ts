@@ -1,10 +1,7 @@
 /**
  * 评测模块导出
  */
-export {
-  SWEBenchEngine,
-  scanSWEBenchData,
-} from './SWEBenchEngine.js';
+export { SWEBenchEngine, scanSWEBenchData } from './SWEBenchEngine.js';
 
 export type {
   SWEBenchProblem,
@@ -14,11 +11,7 @@ export type {
   BenchmarkConfig,
 } from './SWEBenchEngine.js';
 
-export {
-  BenchmarkRunner,
-  loadBuiltinDataset,
-  dryRunBenchmark,
-} from './BenchmarkRunner.js';
+export { BenchmarkRunner, loadBuiltinDataset, dryRunBenchmark } from './BenchmarkRunner.js';
 
 export type {
   AgentBenchmarkConfig,

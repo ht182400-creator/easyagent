@@ -767,13 +767,22 @@ async function init() {
 
   // ---- Tier 2: 尝试静态 JSON 文件 ---- //
   try {
-    const res = await fetch('pipeline-data.json');
-    if (res.ok) {
-      const raw = await res.json();
+    const [pipeRes, dashRes] = await Promise.all([
+      fetch('pipeline-data.json'),
+      fetch('dashboard-data.json')
+    ]);
+    if (pipeRes.ok) {
+      const raw = await pipeRes.json();
       pipelineData = transformJSONData(raw);
-      dashboardData = raw.dashboard || null;
+      // dashboard 已从 pipeline-data.json 中分离为独立文件 (#11 精简)
+      if (dashRes.ok) {
+        dashboardData = await dashRes.json();
+      } else {
+        console.log('[Pipeline] dashboard-data.json 不可用，仪表板卡片将使用骨架');
+        dashboardData = null;
+      }
       dataSource = 'json';
-      console.log('[Pipeline] ✅ 从 pipeline-data.json 加载（静态快照）');
+      console.log('[Pipeline] ✅ 从 pipeline-data.json + dashboard-data.json 加载（静态快照）');
       applyDataAndRender();
       return;
     }

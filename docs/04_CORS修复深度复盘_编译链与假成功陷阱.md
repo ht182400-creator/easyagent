@@ -80,10 +80,10 @@
 
 ### 关键发现：两份 CORS 代码，一份生效
 
-| 位置 | 代码来源 | 大小 | 是否生效 |
-|------|---------|------|---------|
-| `asar://dist/main.js` | tsup 内联 server 源码 | 1.2 MB | **✅ 是** — `package.json.main` 指向此处 |
-| `asar://node_modules/@easyagent/server/dist/index.js` | pnpm workspace 发布 | 625 KB | ❌ 否 — 被 main.js 覆盖 |
+| 位置                                                  | 代码来源              | 大小   | 是否生效                                 |
+| ----------------------------------------------------- | --------------------- | ------ | ---------------------------------------- |
+| `asar://dist/main.js`                                 | tsup 内联 server 源码 | 1.2 MB | **✅ 是** — `package.json.main` 指向此处 |
+| `asar://node_modules/@easyagent/server/dist/index.js` | pnpm workspace 发布   | 625 KB | ❌ 否 — 被 main.js 覆盖                  |
 
 **为什么有两份？** Electron 主进程 `main.ts` 通过 `import { createApp } from '@easyagent/server'` 引入 server，tsup 打包时**内联了整个 server 包**（含 `cors()` 配置），导致 asar 中同时存在两份 CORS 中间件代码。
 
@@ -93,12 +93,12 @@
 
 ### 尝试 #1：只修改 server 包 ❌ 假成功
 
-| 步骤 | 操作 | 结果 | 为什么是"假成功" |
-|------|------|------|----------------|
-| 1 | 修改 `packages/server/src/index.ts` CORS 逻辑 | ✅ 代码正确 | — |
-| 2 | `cd packages/server && npx tsup --clean` | ✅ 编译成功 | — |
-| 3 | 验证 `packages/server/dist/index.js` 含 `corsEnv` | ✅ 确认 | — |
-| 4 | 提取 asar → 替换 `node_modules/@easyagent/server/dist/index.js` → 重新打包 | ✅ asar 生成 | 🔴 **asar 中还有 `dist/main.js`，里面的旧 CORS 会覆盖新代码** |
+| 步骤 | 操作                                                                       | 结果         | 为什么是"假成功"                                              |
+| ---- | -------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- |
+| 1    | 修改 `packages/server/src/index.ts` CORS 逻辑                              | ✅ 代码正确  | —                                                             |
+| 2    | `cd packages/server && npx tsup --clean`                                   | ✅ 编译成功  | —                                                             |
+| 3    | 验证 `packages/server/dist/index.js` 含 `corsEnv`                          | ✅ 确认      | —                                                             |
+| 4    | 提取 asar → 替换 `node_modules/@easyagent/server/dist/index.js` → 重新打包 | ✅ asar 生成 | 🔴 **asar 中还有 `dist/main.js`，里面的旧 CORS 会覆盖新代码** |
 
 **假成功信号**: asar 重新打包成功，但实际运行仍使用 `dist/main.js` 中的旧 CORS 逻辑。
 
@@ -108,12 +108,12 @@
 
 ### 尝试 #2：better-sqlite3 重建 ❌ 假成功
 
-| 步骤 | 操作 | 结果 | 为什么是"假成功" |
-|------|------|------|----------------|
-| 1 | `npx node-gyp rebuild --target=30.0.0 ...` | exitCode 0 | 🔴 **pnpm 硬链接环境下，rebuild 输出到 store 目录，而非当前工作副本** |
-| 2 | 检查文件大小 | 1,755,136 (没变) | 🔴 **实际仍需 NVM 137，不是需要的 123** |
-| 3 | `npx @electron/rebuild --force --only=better-sqlite3` | 声称成功 | 🔴 **electron-rebuild 在 pnpm 符链环境下找不到正确路径，静默跳过** |
-| 4 | node require 测试 | "loaded successfully" | 🔴 **当前 node 是 NVM 137，二进制匹配 → 显示成功；但 Electron 需要 NVM 123** |
+| 步骤 | 操作                                                  | 结果                  | 为什么是"假成功"                                                             |
+| ---- | ----------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------- |
+| 1    | `npx node-gyp rebuild --target=30.0.0 ...`            | exitCode 0            | 🔴 **pnpm 硬链接环境下，rebuild 输出到 store 目录，而非当前工作副本**        |
+| 2    | 检查文件大小                                          | 1,755,136 (没变)      | 🔴 **实际仍需 NVM 137，不是需要的 123**                                      |
+| 3    | `npx @electron/rebuild --force --only=better-sqlite3` | 声称成功              | 🔴 **electron-rebuild 在 pnpm 符链环境下找不到正确路径，静默跳过**           |
+| 4    | node require 测试                                     | "loaded successfully" | 🔴 **当前 node 是 NVM 137，二进制匹配 → 显示成功；但 Electron 需要 NVM 123** |
 
 **假成功信号**: 命令 exit 0、输出 "loaded successfully"。
 
@@ -123,12 +123,12 @@
 
 ### 尝试 #3：asar 提取 + 替换 server 包 ✅→❌ 部分成功
 
-| 步骤 | 操作 | 结果 | 为什么是"部分假成功" |
-|------|------|------|----------------|
-| 1 | 提取 asar | ✅ 提取成功 | — |
-| 2 | 替换 `node_modules/@easyagent/server/dist/index.js` | ✅ 替换成功 | — |
-| 3 | 重新打包 asar | ✅ 打包成功 | — |
-| 4 | API 测试: `Origin: null` → ACAO 检查 | ❌ 仍返回 `http://127.0.0.1:3456` | 🔴 **asar 中 `dist/main.js` 的旧 CORS 仍在运行** |
+| 步骤 | 操作                                                | 结果                              | 为什么是"部分假成功"                             |
+| ---- | --------------------------------------------------- | --------------------------------- | ------------------------------------------------ |
+| 1    | 提取 asar                                           | ✅ 提取成功                       | —                                                |
+| 2    | 替换 `node_modules/@easyagent/server/dist/index.js` | ✅ 替换成功                       | —                                                |
+| 3    | 重新打包 asar                                       | ✅ 打包成功                       | —                                                |
+| 4    | API 测试: `Origin: null` → ACAO 检查                | ❌ 仍返回 `http://127.0.0.1:3456` | 🔴 **asar 中 `dist/main.js` 的旧 CORS 仍在运行** |
 
 **假成功信号**: asar 操作成功、API 有响应，但 CORS 行为未变。
 
@@ -138,13 +138,13 @@
 
 ### 尝试 #4：重编译 desktop + 完整替换 ✅ 真正解决
 
-| 步骤 | 操作 | 结果 |
-|------|------|------|
-| 1 | `cd packages/desktop && npx tsup --clean` | ✅ 编译成功，main.js 1.19 MB |
-| 2 | 验证 main.js 含 `corsEnv` | ✅ 确认 |
-| 3 | 提取 asar → 替换 `dist/main.js` + `node_modules/@easyagent/server/dist/index.js` | ✅ 双重替换 |
-| 4 | 重新打包 asar | ✅ 打包成功，4.1 MB |
-| 5 | API 测试: `Origin: null` | ✅ ACAO 返回 `"null"` |
+| 步骤 | 操作                                                                             | 结果                         |
+| ---- | -------------------------------------------------------------------------------- | ---------------------------- |
+| 1    | `cd packages/desktop && npx tsup --clean`                                        | ✅ 编译成功，main.js 1.19 MB |
+| 2    | 验证 main.js 含 `corsEnv`                                                        | ✅ 确认                      |
+| 3    | 提取 asar → 替换 `dist/main.js` + `node_modules/@easyagent/server/dist/index.js` | ✅ 双重替换                  |
+| 4    | 重新打包 asar                                                                    | ✅ 打包成功，4.1 MB          |
+| 5    | API 测试: `Origin: null`                                                         | ✅ ACAO 返回 `"null"`        |
 
 ---
 
@@ -160,7 +160,7 @@ node-gyp rebuild → exitCode 0
 原因: pnpm hardlink → 重建的是 store 副本，当前路径仍是旧文件
 ```
 
-### 假成功类型 #B：环境匹配 ≠ 目标环境匹配  
+### 假成功类型 #B：环境匹配 ≠ 目标环境匹配
 
 ```
 node -e "require('better_sqlite3.node')" → OK
@@ -208,14 +208,14 @@ L5: 运行中 API 行为                          ← HTTP 探测 + 头检查
 
 ### 真实验证 vs 假阳性信号
 
-| 假阳性信号 | 为什么不可靠 | 真实验证应该怎么做 |
-|-----------|------------|-----------------|
-| `node-gyp rebuild → 0` | pnpm hardlink 分离 | 检查文件 mtime+大小，确认 NVM 版本匹配 |
-| `electron-rebuild → succeeded` | pnpm 下静默跳过 | 直接使用 node-gyp + 验证二进制 NVM 值 |
-| `node require() → OK` | 系统 Node ≠ Electron Node | 必须在 Electron 中加载或检查 NVM 头 |
-| asar 打包成功 | 内容可能还是旧的 | 提取 asar 后检查组串 + 运行 API 探测 |
-| API 返回 200 | CORS 头可能仍错误 | 带上 `Origin: null` 检查 `Access-Control-Allow-Origin` |
-| 进程启动无崩溃 | 前端可能静默失败 | 检查 Electron 内 fetch 是否成功 |
+| 假阳性信号                     | 为什么不可靠              | 真实验证应该怎么做                                     |
+| ------------------------------ | ------------------------- | ------------------------------------------------------ |
+| `node-gyp rebuild → 0`         | pnpm hardlink 分离        | 检查文件 mtime+大小，确认 NVM 版本匹配                 |
+| `electron-rebuild → succeeded` | pnpm 下静默跳过           | 直接使用 node-gyp + 验证二进制 NVM 值                  |
+| `node require() → OK`          | 系统 Node ≠ Electron Node | 必须在 Electron 中加载或检查 NVM 头                    |
+| asar 打包成功                  | 内容可能还是旧的          | 提取 asar 后检查组串 + 运行 API 探测                   |
+| API 返回 200                   | CORS 头可能仍错误         | 带上 `Origin: null` 检查 `Access-Control-Allow-Origin` |
+| 进程启动无崩溃                 | 前端可能静默失败          | 检查 Electron 内 fetch 是否成功                        |
 
 ---
 
@@ -248,13 +248,13 @@ node -e "var http=require('http');http.get('http://127.0.0.1:3456/api/health',{h
 
 ## 七、已知修复历史（完整）
 
-| 日期 | 尝试 | 问题 | 修复 | 是否生效 |
-|------|------|------|------|---------|
-| 06-24 | 初始 | CORS 完全开放 | 添加 `CORS_ORIGIN` + 默认白名单 | ✅ |
-| 06-26 #1 | 假成功 | Desktop Origin:null 被拒 | server CORS 改为回调，只替换 asar 中 server 包 | ❌ main.js 中旧代码覆盖 |
-| 06-26 #2 | 假成功 | better-sqlite3 NVM 不匹配 | node-gyp/electron-rebuild 重建 | ❌ pnpm 硬链接 + 环境不匹配 |
-| 06-26 #3 | 部分成功 | 同 #1 | asar 热更新 server 包 + 修补 main.js | ⚠️ desktop main 未重编译 |
-| 06-26 #4 | ✅ 真成功 | 根因: dual-CORS + tsup 内联 | `tsup --clean` 重编译 desktop + 完整替换 asar 内 main.js + server/index.js | ✅ |
+| 日期     | 尝试      | 问题                        | 修复                                                                       | 是否生效                    |
+| -------- | --------- | --------------------------- | -------------------------------------------------------------------------- | --------------------------- |
+| 06-24    | 初始      | CORS 完全开放               | 添加 `CORS_ORIGIN` + 默认白名单                                            | ✅                          |
+| 06-26 #1 | 假成功    | Desktop Origin:null 被拒    | server CORS 改为回调，只替换 asar 中 server 包                             | ❌ main.js 中旧代码覆盖     |
+| 06-26 #2 | 假成功    | better-sqlite3 NVM 不匹配   | node-gyp/electron-rebuild 重建                                             | ❌ pnpm 硬链接 + 环境不匹配 |
+| 06-26 #3 | 部分成功  | 同 #1                       | asar 热更新 server 包 + 修补 main.js                                       | ⚠️ desktop main 未重编译    |
+| 06-26 #4 | ✅ 真成功 | 根因: dual-CORS + tsup 内联 | `tsup --clean` 重编译 desktop + 完整替换 asar 内 main.js + server/index.js | ✅                          |
 
 ---
 
@@ -267,15 +267,17 @@ node -e "var http=require('http');http.get('http://127.0.0.1:3456/api/health',{h
    - `packages/desktop` — tsup 内联 server 到 main.js，必须重编
 
 2. **二进制模块重建必须验证 NVM 值**，不能只看 exitCode 或文件是否存在：
+
    ```js
    // 检查 better_sqlite3.node 的 NODE_MODULE_VERSION
    const buf = fs.readFileSync('better_sqlite3.node');
-   const nvm123 = buf.indexOf(Buffer.from([123,0,0,0]));
-   const nvm137 = buf.indexOf(Buffer.from([137,0,0,0]));
+   const nvm123 = buf.indexOf(Buffer.from([123, 0, 0, 0]));
+   const nvm137 = buf.indexOf(Buffer.from([137, 0, 0, 0]));
    // Electron 30.x 需要 NVM 123
    ```
 
 3. **asar 修改后必须提取验证**，不能假设重新打包的内容正确：
+
    ```bash
    npx @electron/asar extract app.asar _check/
    # 确认 _check/dist/main.js 和 _check/node_modules/@easyagent/server/dist/index.js 均已更新
@@ -286,6 +288,7 @@ node -e "var http=require('http');http.get('http://127.0.0.1:3456/api/health',{h
 ### 📊 陷阱登记（追加到 MEMORY.md）
 
 此事件新发现/确认的陷阱：
+
 - **陷阱 #31**: 🖥️ **tsup 内联 server 代码导致 asar 双重 CORS** — desktop main.js 内联了 server 的 cors()，asar 中同时存在两份 CORS 中间件，main.js 中的覆盖 node_modules 中的
 - **陷阱 #32**: 🖥️ **pnpm 硬链接下 node-gyp rebuild 假成功** — rebuild 输出到 store 目录，当前路径未变，需检查文件 mtime+大小+NVM 值
 - **陷阱 #33**: 🖥️ **electron-rebuild 在 pnpm 下静默跳过** — 命令声称成功但实际未修改任何文件

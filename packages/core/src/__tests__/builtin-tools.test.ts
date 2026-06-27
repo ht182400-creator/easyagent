@@ -16,7 +16,9 @@ function createTestWorkspace(): string {
 }
 
 function cleanupWorkspace(dir: string) {
-  try { rmSync(dir, { recursive: true, force: true }); } catch (err) {}
+  try {
+    rmSync(dir, { recursive: true, force: true });
+  } catch (err) {}
 }
 
 describe('FileTools - 工具定义验证', () => {
@@ -82,7 +84,7 @@ describe('FileTools - 执行功能', () => {
 
     const result = await ReadFileTool.execute(
       { filePath: 'test.txt' },
-      { workspace, sessionId: 'test' }
+      { workspace, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('Hello World');
@@ -98,7 +100,7 @@ describe('FileTools - 执行功能', () => {
 
     const result = await ReadFileTool.execute(
       { filePath: 'lines.txt', offset: 3, limit: 2 },
-      { workspace, sessionId: 'test' }
+      { workspace, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     // 应包含第3-4行
@@ -110,7 +112,7 @@ describe('FileTools - 执行功能', () => {
     const { ReadFileTool } = await import('../tools/FileTools.js');
     const result = await ReadFileTool.execute(
       { filePath: 'nonexistent.txt' },
-      { workspace, sessionId: 'test' }
+      { workspace, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('FILE_NOT_FOUND');
@@ -123,7 +125,7 @@ describe('FileTools - 执行功能', () => {
 
     const result = await ReadFileTool.execute(
       { filePath: 'subdir' },
-      { workspace, sessionId: 'test' }
+      { workspace, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('IS_DIRECTORY');
@@ -133,7 +135,7 @@ describe('FileTools - 执行功能', () => {
     const { ReadFileTool } = await import('../tools/FileTools.js');
     const result = await ReadFileTool.execute(
       { filePath: '../../../etc/passwd' },
-      { workspace, sessionId: 'test' }
+      { workspace, sessionId: 'test' },
     );
     expect(result.success).toBe(false);
   });
@@ -142,7 +144,7 @@ describe('FileTools - 执行功能', () => {
     const { WriteFileTool } = await import('../tools/FileTools.js');
     const result = await WriteFileTool.execute(
       { filePath: 'output.txt', content: 'Test content' },
-      { workspace, sessionId: 'test' }
+      { workspace, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(existsSync(join(workspace, 'output.txt'))).toBe(true);
@@ -156,7 +158,7 @@ describe('FileTools - 执行功能', () => {
 
     const result = await ListDirTool.execute(
       { targetDirectory: workspace },
-      { workspace, sessionId: 'test' }
+      { workspace, sessionId: 'test' },
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('a.txt');
@@ -208,7 +210,7 @@ describe('ExecTools - 工具定义验证', () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const result = await ExecTool.execute(
       { command: 'rm -rf /' },
-      { workspace: '/tmp', sessionId: 'test' }
+      { workspace: '/tmp', sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('DANGEROUS_COMMAND');
@@ -218,7 +220,7 @@ describe('ExecTools - 工具定义验证', () => {
     const { ExecTool } = await import('../tools/ExecTools.js');
     const result = await ExecTool.execute(
       { command: 'git push --force origin main' },
-      { workspace: '/tmp', sessionId: 'test' }
+      { workspace: '/tmp', sessionId: 'test' },
     );
     expect(result.success).toBe(false);
     expect(result.error).toBe('DANGEROUS_COMMAND');

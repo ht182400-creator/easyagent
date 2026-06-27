@@ -72,7 +72,7 @@ const MAX_VERSION = 999;
  */
 export function loadManifest(
   pluginDir: string,
-  allowedPermissions?: PluginPermissions
+  allowedPermissions?: PluginPermissions,
 ): ManifestValidationResult {
   const result: ManifestValidationResult = {
     valid: false,
@@ -95,7 +95,7 @@ export function loadManifest(
     raw = JSON.parse(content);
   } catch (error) {
     result.errors.push(
-      `manifest.json 解析失败: ${error instanceof Error ? error.message : String(error)}`
+      `manifest.json 解析失败: ${error instanceof Error ? error.message : String(error)}`,
     );
     return result;
   }
@@ -118,9 +118,7 @@ export function loadManifest(
   if (manifest.name) {
     const name = String(manifest.name);
     if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(name)) {
-      result.errors.push(
-        `插件名 "${name}" 不符合 kebab-case 命名规范（小写字母+连字符）`
-      );
+      result.errors.push(`插件名 "${name}" 不符合 kebab-case 命名规范（小写字母+连字符）`);
     }
     // 名称长度限制
     if (name.length > 64) {
@@ -157,13 +155,10 @@ export function loadManifest(
   // 5. 验证 permissions
   if (manifest.permissions && typeof manifest.permissions === 'object') {
     const permissions = manifest.permissions as PluginPermissions;
-    const permissionCheck = checkPermissions(
-      permissions,
-      allowedPermissions || permissions
-    );
+    const permissionCheck = checkPermissions(permissions, allowedPermissions || permissions);
     if (!permissionCheck.allowed) {
       result.errors.push(
-        `权限声明超出允许范围: ${permissionCheck.deniedPermission} - ${permissionCheck.reason}`
+        `权限声明超出允许范围: ${permissionCheck.deniedPermission} - ${permissionCheck.reason}`,
       );
     }
 
@@ -195,9 +190,7 @@ export function loadManifest(
       description: String(manifest.description),
       main: String(manifest.main),
       author: manifest.author ? String(manifest.author) : undefined,
-      dependencies: manifest.dependencies
-        ? (manifest.dependencies as string[])
-        : undefined,
+      dependencies: manifest.dependencies ? (manifest.dependencies as string[]) : undefined,
       engines: manifest.engines as PluginManifest['engines'],
       permissions: manifest.permissions as PluginPermissions,
       keywords: manifest.keywords as string[],
@@ -206,8 +199,10 @@ export function loadManifest(
     };
   }
 
-  logger.info({ name: manifest.name, valid: result.valid, errors: result.errors.length },
-    `Manifest 验证${result.valid ? '通过' : '失败'}`);
+  logger.info(
+    { name: manifest.name, valid: result.valid, errors: result.errors.length },
+    `Manifest 验证${result.valid ? '通过' : '失败'}`,
+  );
   return result;
 }
 

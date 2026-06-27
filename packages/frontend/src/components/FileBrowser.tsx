@@ -113,11 +113,11 @@ export default function FileBrowser({ selectedPath, onSelect, onClose, scope }: 
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
           <div className="flex items-center gap-2">
             <FolderTree className="w-5 h-5 text-primary-400" />
-            <h3 className="font-semibold">
-              浏览{scope === 'global' ? '用户目录' : '工作区'}文件
-            </h3>
+            <h3 className="font-semibold">浏览{scope === 'global' ? '用户目录' : '工作区'}文件</h3>
             {scope === 'global' && (
-              <span className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded">全局</span>
+              <span className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded">
+                全局
+              </span>
             )}
           </div>
           <button className="p-1 hover:bg-gray-800 rounded-lg" onClick={onClose}>
@@ -127,10 +127,7 @@ export default function FileBrowser({ selectedPath, onSelect, onClose, scope }: 
 
         {/* 面包屑 */}
         <div className="px-5 py-2 border-b border-gray-800 flex items-center gap-1 text-sm flex-wrap">
-          <button
-            className="text-primary-400 hover:underline"
-            onClick={() => navigateToPath([])}
-          >
+          <button className="text-primary-400 hover:underline" onClick={() => navigateToPath([])}>
             工作区
           </button>
           {pathSegments.map((seg, i) => (
@@ -149,9 +146,7 @@ export default function FileBrowser({ selectedPath, onSelect, onClose, scope }: 
         {/* 内容区 */}
         <div className="flex-1 overflow-y-auto px-2 py-2 min-h-[300px]">
           {loading ? (
-            <div className="flex items-center justify-center py-16 text-gray-500">
-              加载中...
-            </div>
+            <div className="flex items-center justify-center py-16 text-gray-500">加载中...</div>
           ) : error ? (
             <div className="flex items-center justify-center py-16 text-red-400">{error}</div>
           ) : (

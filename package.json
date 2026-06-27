@@ -14,27 +14,37 @@
     "build:cli": "cd packages/cli && npx tsup",
     "build:server": "cd packages/server && npx tsup",
     "build:desktop": "cd packages/desktop && npx tsup",
+    "build:frontend": "cd packages/frontend && npx tsup",
     "build:web": "cd packages/web && npm run build",
-    "test": "cd packages/core && npx vitest run",
-    "test:core": "cd packages/core && npx vitest run",
-    "test:server": "cd packages/server && npx vitest run",
-    "test:all": "cd packages/core && npx vitest run && cd ../server && npx vitest run",
+    "test": "pnpm --filter @easyagent/core exec vitest run",
+    "test:core": "pnpm --filter @easyagent/core exec vitest run",
+    "test:server": "pnpm --filter @easyagent/server exec vitest run",
+    "test:desktop": "pnpm --filter @easyagent/desktop exec vitest run",
+    "test:frontend": "pnpm --filter @easyagent/frontend exec vitest run",
+    "test:web": "pnpm --filter @easyagent/web exec vitest run",
+    "test:cli": "pnpm --filter @easyagent/cli exec vitest run",
+    "test:all": "pnpm run test:core && pnpm run test:server && pnpm run test:desktop && pnpm run test:frontend && pnpm run test:web && pnpm run test:cli",
     "test:coverage": "pnpm -r run test:coverage",
     "test:coverage:core": "cd packages/core && pnpm run test:coverage",
     "test:coverage:server": "cd packages/server && pnpm run test:coverage",
     "benchmark": "node scripts/swe-bench/run-benchmark.mjs",
     "benchmark:dry": "node scripts/swe-bench/run-benchmark.mjs --dry-run",
-    "lint": "eslint packages/*/src --ext .ts,.tsx --max-warnings 50",
+    "lint": "scripts\\lint.bat",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,json,css}\" \"scripts/**/*.mjs\" \"docs/**/*.md\"",
+    "format:check": "prettier --check \"packages/**/*.{ts,tsx,json,css}\" \"scripts/**/*.mjs\" \"docs/**/*.md\"",
     "update-progress": "node scripts/update-progress.mjs",
     "update-progress:dry": "node scripts/update-progress.mjs --dry",
     "install-hooks": "node scripts/install-git-hooks.mjs",
     "install-hooks:remove": "node scripts/install-git-hooks.mjs --remove",
-    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules",
+    "clean": "scripts\\clean.bat",
     "start": "node packages/cli/dist/main.js",
     "start:server": "node packages/server/dist/index.js",
     "start:desktop": "cd packages/desktop && npx electron dist/main.js"
   },
   "engines": {
     "node": ">=18.0.0 <24.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.4"
   }
 }

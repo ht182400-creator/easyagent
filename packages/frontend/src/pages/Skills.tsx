@@ -3,7 +3,19 @@
  * 支持：技能总览表格、激活/停用、自定义技能 CRUD、搜索筛选
  */
 import { useState, useEffect } from 'react';
-import { Zap, Tag, Play, Info, Search, Plus, Trash2, RefreshCw, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import {
+  Zap,
+  Tag,
+  Play,
+  Info,
+  Search,
+  Plus,
+  Trash2,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { getApiBase } from '../request';
 
 /** 技能类型 */
@@ -85,7 +97,9 @@ export default function SkillsPage() {
     setActivating(skillName);
     try {
       const apiBase = getApiBase();
-      const res = await fetch(`${apiBase}/api/skills/${encodeURIComponent(skillName)}/activate`, { method: 'POST' });
+      const res = await fetch(`${apiBase}/api/skills/${encodeURIComponent(skillName)}/activate`, {
+        method: 'POST',
+      });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || '激活失败');
       // 更新列表中的激活状态
@@ -107,7 +121,9 @@ export default function SkillsPage() {
     setActivating(skillName);
     try {
       const apiBase = getApiBase();
-      const res = await fetch(`${apiBase}/api/skills/${encodeURIComponent(skillName)}/deactivate`, { method: 'POST' });
+      const res = await fetch(`${apiBase}/api/skills/${encodeURIComponent(skillName)}/deactivate`, {
+        method: 'POST',
+      });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || '停用失败');
       setSkills((prev) => prev.map((s) => (s.name === skillName ? { ...s, activated: false } : s)));
@@ -127,7 +143,9 @@ export default function SkillsPage() {
     if (!confirm(`确定删除自定义技能 "${skillName}" 吗？此操作不可撤销。`)) return;
     try {
       const apiBase = getApiBase();
-      const res = await fetch(`${apiBase}/api/skills/custom/${encodeURIComponent(skillName)}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBase}/api/skills/custom/${encodeURIComponent(skillName)}`, {
+        method: 'DELETE',
+      });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || '删除失败');
@@ -157,7 +175,12 @@ export default function SkillsPage() {
           name: name.trim(),
           description: description.trim(),
           prompt: prompt.trim() || undefined,
-          tags: tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : undefined,
+          tags: tags
+            ? tags
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : undefined,
         }),
       });
       const data = await res.json();
@@ -203,9 +226,7 @@ export default function SkillsPage() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold">技能市场</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            管理 Agent 技能：激活/停用、添加自定义技能
-          </p>
+          <p className="text-sm text-gray-500 mt-1">管理 Agent 技能：激活/停用、添加自定义技能</p>
         </div>
         <div className="flex items-center gap-3">
           {/* 视图切换 */}
@@ -232,7 +253,10 @@ export default function SkillsPage() {
             <span>/{skills.length} 总计</span>
           </div>
           <button
-            onClick={() => { fetchSkills(); setFeedback(null); }}
+            onClick={() => {
+              fetchSkills();
+              setFeedback(null);
+            }}
             className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800 rounded"
             title="刷新"
           >
@@ -248,7 +272,11 @@ export default function SkillsPage() {
           {(['all', 'builtin', 'plugin', 'custom'] as const).map((src) => (
             <button
               key={src}
-              onClick={() => { setSourceFilter(src); setActiveSkill(null); setFeedback(null); }}
+              onClick={() => {
+                setSourceFilter(src);
+                setActiveSkill(null);
+                setFeedback(null);
+              }}
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
                 sourceFilter === src
                   ? 'bg-gray-700 text-gray-200'
@@ -257,7 +285,13 @@ export default function SkillsPage() {
             >
               {src === 'all' ? '全部' : SOURCE_LABELS[src]}
               <span className="ml-1 opacity-50">
-                {src === 'all' ? skills.length : src === 'builtin' ? builtinCount : src === 'plugin' ? pluginCount : customCount}
+                {src === 'all'
+                  ? skills.length
+                  : src === 'builtin'
+                    ? builtinCount
+                    : src === 'plugin'
+                      ? pluginCount
+                      : customCount}
               </span>
             </button>
           ))}
@@ -279,9 +313,14 @@ export default function SkillsPage() {
 
         {/* 添加自定义技能按钮 */}
         <button
-          onClick={() => { setShowAddForm(!showAddForm); setFeedback(null); }}
+          onClick={() => {
+            setShowAddForm(!showAddForm);
+            setFeedback(null);
+          }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors ${
-            showAddForm ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-900 border border-gray-800 text-gray-400 hover:text-gray-200'
+            showAddForm
+              ? 'bg-orange-500/20 text-orange-400'
+              : 'bg-gray-900 border border-gray-800 text-gray-400 hover:text-gray-200'
           }`}
         >
           <Plus className="w-3.5 h-3.5" />
@@ -335,7 +374,10 @@ export default function SkillsPage() {
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <button onClick={() => setShowAddForm(false)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-300">
+            <button
+              onClick={() => setShowAddForm(false)}
+              className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-300"
+            >
               取消
             </button>
             <button
@@ -403,12 +445,16 @@ export default function SkillsPage() {
                             <span className="text-base">{skillIcons[skill.name] || '📦'}</span>
                             <div>
                               <div className="font-medium text-gray-200 text-sm">{skill.name}</div>
-                              <div className="text-xs text-gray-500 truncate max-w-xs">{skill.description}</div>
+                              <div className="text-xs text-gray-500 truncate max-w-xs">
+                                {skill.description}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-2.5">
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${SOURCE_COLORS[skill.source]}`}>
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded ${SOURCE_COLORS[skill.source]}`}
+                          >
                             {SOURCE_LABELS[skill.source]}
                           </span>
                         </td>
@@ -427,7 +473,10 @@ export default function SkillsPage() {
                           <div className="flex gap-1.5">
                             {skill.activated ? (
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleDeactivate(skill.name); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeactivate(skill.name);
+                                }}
                                 disabled={activating === skill.name}
                                 className="text-xs px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 disabled:opacity-50"
                               >
@@ -435,7 +484,10 @@ export default function SkillsPage() {
                               </button>
                             ) : (
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleActivate(skill.name); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleActivate(skill.name);
+                                }}
                                 disabled={activating === skill.name}
                                 className="text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 disabled:opacity-50"
                               >
@@ -445,7 +497,10 @@ export default function SkillsPage() {
                             {/* 自定义技能可删除 */}
                             {skill.source === 'custom' && (
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleDeleteCustom(skill.name); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCustom(skill.name);
+                                }}
                                 className="text-xs px-1.5 py-1 rounded text-gray-600 hover:text-red-400 hover:bg-red-500/10"
                                 title="删除"
                               >
@@ -485,21 +540,32 @@ export default function SkillsPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-medium text-sm text-gray-200">{skill.name}</h3>
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded ${SOURCE_COLORS[skill.source]}`}>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded ${SOURCE_COLORS[skill.source]}`}
+                            >
                               {SOURCE_LABELS[skill.source]}
                             </span>
                             {skill.activated && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">已激活</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">
+                                已激活
+                              </span>
                             )}
                             {skill.requiresConfirm && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500">需确认</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500">
+                                需确认
+                              </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{skill.description}</p>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                            {skill.description}
+                          </p>
                           {skill.tags && skill.tags.length > 0 && (
                             <div className="flex gap-1 mt-2 flex-wrap">
                               {skill.tags.map((tag) => (
-                                <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-500">
+                                <span
+                                  key={tag}
+                                  className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-500"
+                                >
                                   {tag}
                                 </span>
                               ))}
@@ -508,7 +574,10 @@ export default function SkillsPage() {
                         </div>
                       </div>
                       {/* 快速操作按钮 */}
-                      <div className="flex gap-1 ml-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex gap-1 ml-2 shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {skill.activated ? (
                           <button
                             onClick={() => handleDeactivate(skill.name)}
@@ -544,16 +613,20 @@ export default function SkillsPage() {
                 <div>
                   <h3 className="font-semibold text-gray-200">{activeSkill.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${SOURCE_COLORS[activeSkill.source]}`}>
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded ${SOURCE_COLORS[activeSkill.source]}`}
+                    >
                       {SOURCE_LABELS[activeSkill.source]}
                     </span>
                     {activeSkill.activated ? (
                       <span className="text-xs text-green-400 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />已激活
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        已激活
                       </span>
                     ) : (
                       <span className="text-xs text-gray-600 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-600" />未激活
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-600" />
+                        未激活
                       </span>
                     )}
                   </div>
@@ -569,7 +642,10 @@ export default function SkillsPage() {
                   </div>
                   <div className="flex gap-1 flex-wrap">
                     {activeSkill.tags.map((tag) => (
-                      <span key={tag} className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400">
+                      <span
+                        key={tag}
+                        className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400"
+                      >
                         {tag}
                       </span>
                     ))}

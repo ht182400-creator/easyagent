@@ -1,8 +1,22 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import {
-  Plus, Play, Pause, Trash2, Clock, RefreshCw, Calendar,
-  Zap, X, CheckCircle2, XCircle, Hourglass, Settings,
-  History, AlertTriangle, ChevronDown, ChevronUp,
+  Plus,
+  Play,
+  Pause,
+  Trash2,
+  Clock,
+  RefreshCw,
+  Calendar,
+  Zap,
+  X,
+  CheckCircle2,
+  XCircle,
+  Hourglass,
+  Settings,
+  History,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import {
   useAutomationStore,
@@ -18,17 +32,59 @@ import { useProviderStore } from '../stores/providerStore';
 
 /** 功能卡片配置 */
 const FEATURES = [
-  { icon: Clock, title: '定时执行', desc: '支持 RRULE 表达式，设置每日/每周/每小时的定时任务', color: 'text-yellow-400', action: 'templates' as const },
-  { icon: RefreshCw, title: '立即触发', desc: '随时手动触发任务执行，实时查看运行结果', color: 'text-green-400', action: 'tasklist' as const },
-  { icon: History, title: '执行历史', desc: '查看完整的任务运行记录和 Token 消耗统计', color: 'text-purple-400', action: 'history' as const },
+  {
+    icon: Clock,
+    title: '定时执行',
+    desc: '支持 RRULE 表达式，设置每日/每周/每小时的定时任务',
+    color: 'text-yellow-400',
+    action: 'templates' as const,
+  },
+  {
+    icon: RefreshCw,
+    title: '立即触发',
+    desc: '随时手动触发任务执行，实时查看运行结果',
+    color: 'text-green-400',
+    action: 'tasklist' as const,
+  },
+  {
+    icon: History,
+    title: '执行历史',
+    desc: '查看完整的任务运行记录和 Token 消耗统计',
+    color: 'text-purple-400',
+    action: 'history' as const,
+  },
 ];
 
 /** 预设任务模板 */
 const TASK_TEMPLATES = [
-  { name: '每日代码审查', scheduleType: 'recurring' as ScheduleType, rrule: 'FREQ=DAILY;BYHOUR=9;BYMINUTE=0', prompt: '请审查当前项目的最新代码变更，列出潜在问题、代码风格问题和安全风险，并给出改进建议。', icon: '🔍' },
-  { name: '项目文档更新', scheduleType: 'recurring' as ScheduleType, rrule: 'FREQ=DAILY;BYHOUR=18;BYMINUTE=0', prompt: '检查今天的代码变更，更新项目的 README.md 和相关技术文档，确保文档与代码保持同步。', icon: '📝' },
-  { name: '依赖安全检查', scheduleType: 'recurring' as ScheduleType, rrule: 'FREQ=WEEKLY;BYDAY=MO;BYHOUR=10;BYMINUTE=0', prompt: '检查项目依赖的安全漏洞，使用 npm audit 或类似工具，生成安全报告和修复建议。', icon: '🔒' },
-  { name: '性能分析', scheduleType: 'recurring' as ScheduleType, rrule: 'FREQ=WEEKLY;BYDAY=FR;BYHOUR=17;BYMINUTE=0', prompt: '分析代码性能热点和瓶颈，提供优化建议，包括算法复杂度、内存使用、I/O 效率等方面。', icon: '⚡' },
+  {
+    name: '每日代码审查',
+    scheduleType: 'recurring' as ScheduleType,
+    rrule: 'FREQ=DAILY;BYHOUR=9;BYMINUTE=0',
+    prompt: '请审查当前项目的最新代码变更，列出潜在问题、代码风格问题和安全风险，并给出改进建议。',
+    icon: '🔍',
+  },
+  {
+    name: '项目文档更新',
+    scheduleType: 'recurring' as ScheduleType,
+    rrule: 'FREQ=DAILY;BYHOUR=18;BYMINUTE=0',
+    prompt: '检查今天的代码变更，更新项目的 README.md 和相关技术文档，确保文档与代码保持同步。',
+    icon: '📝',
+  },
+  {
+    name: '依赖安全检查',
+    scheduleType: 'recurring' as ScheduleType,
+    rrule: 'FREQ=WEEKLY;BYDAY=MO;BYHOUR=10;BYMINUTE=0',
+    prompt: '检查项目依赖的安全漏洞，使用 npm audit 或类似工具，生成安全报告和修复建议。',
+    icon: '🔒',
+  },
+  {
+    name: '性能分析',
+    scheduleType: 'recurring' as ScheduleType,
+    rrule: 'FREQ=WEEKLY;BYDAY=FR;BYHOUR=17;BYMINUTE=0',
+    prompt: '分析代码性能热点和瓶颈，提供优化建议，包括算法复杂度、内存使用、I/O 效率等方面。',
+    icon: '⚡',
+  },
 ];
 
 /** 状态标签 */
@@ -41,20 +97,39 @@ function StatusBadge({ status }: { status: string }) {
   };
   const c = config[status] || config.PAUSED;
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.bg}`} style={{ color: c.color }}>
+    <span
+      className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.bg}`}
+      style={{ color: c.color }}
+    >
       {c.label}
     </span>
   );
 }
 
 export default function Automation() {
-  const { tasks, history, loading, running, lastRun, progressLogs, fetchTasks, fetchHistory, createTask, deleteTask, toggleTask, runTaskNow, stopTask, addProgressLog, clearProgressLogs } = useAutomationStore();
+  const {
+    tasks,
+    history,
+    loading,
+    running,
+    lastRun,
+    progressLogs,
+    fetchTasks,
+    fetchHistory,
+    createTask,
+    deleteTask,
+    toggleTask,
+    runTaskNow,
+    stopTask,
+    addProgressLog,
+    clearProgressLogs,
+  } = useAutomationStore();
   const { providers, fetchProviders } = useProviderStore();
   const addNotification = useAppStore((s) => s.addNotification);
 
   const [showCreate, setShowCreate] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [expandedErrors, setExpandedErrors] = useState<Set<string>>(new Set());  // 展开的错误详情
+  const [expandedErrors, setExpandedErrors] = useState<Set<string>>(new Set()); // 展开的错误详情
 
   /** 功能卡片点击的滚动目标 ref */
   const taskListRef = useRef<HTMLDivElement>(null);
@@ -89,7 +164,7 @@ export default function Automation() {
     fetchProviders();
   }, [fetchTasks, fetchHistory, fetchProviders]);
 
-  /** 
+  /**
    * WebSocket 连接：订阅自动化任务进度
    * 接收服务端推送的工具调用、推理轮次等实时事件
    */
@@ -121,15 +196,21 @@ export default function Automation() {
                 detail: progress.detail,
               });
             }
-          } catch (err) { /* ignore malformed messages */ }
+          } catch (err) {
+            /* ignore malformed messages */
+          }
         };
         ws.onclose = () => {
           if (!closed) {
             reconnectTimer = setTimeout(connect, 5000);
           }
         };
-        ws.onerror = () => { /* will trigger onclose */ };
-      } catch (err) { /* retry on next effect */ }
+        ws.onerror = () => {
+          /* will trigger onclose */
+        };
+      } catch (err) {
+        /* retry on next effect */
+      }
     };
 
     connect();
@@ -195,7 +276,7 @@ export default function Automation() {
     stopTask(task.id);
   };
 
-  const handleUseTemplate = (template: typeof TASK_TEMPLATES[number]) => {
+  const handleUseTemplate = (template: (typeof TASK_TEMPLATES)[number]) => {
     setFormName(template.name);
     setFormPrompt(template.prompt);
     setFormScheduleType(template.scheduleType);
@@ -231,7 +312,10 @@ export default function Automation() {
           </button>
           <button
             className="btn-primary flex items-center gap-2"
-            onClick={() => { resetForm(); setShowCreate(true); }}
+            onClick={() => {
+              resetForm();
+              setShowCreate(true);
+            }}
           >
             <Plus className="w-4 h-4" /> 创建任务
           </button>
@@ -245,11 +329,21 @@ export default function Automation() {
             key={f.title}
             className="card text-center cursor-pointer hover:border-primary-500/30 hover:bg-gray-800/80 transition-all group"
             onClick={() => handleFeatureClick(f.action)}
-            title={f.action === 'history' ? '点击展开/收起执行历史' : f.action === 'tasklist' ? '点击查看任务列表' : '点击查看任务模板'}
+            title={
+              f.action === 'history'
+                ? '点击展开/收起执行历史'
+                : f.action === 'tasklist'
+                  ? '点击查看任务列表'
+                  : '点击查看任务模板'
+            }
           >
-            <f.icon className={`w-10 h-10 ${f.color} mx-auto mb-3 group-hover:scale-110 transition-transform`} />
+            <f.icon
+              className={`w-10 h-10 ${f.color} mx-auto mb-3 group-hover:scale-110 transition-transform`}
+            />
             <h3 className="font-semibold">{f.title}</h3>
-            <p className="text-sm text-gray-400 mt-2 group-hover:text-gray-300 transition-colors">{f.desc}</p>
+            <p className="text-sm text-gray-400 mt-2 group-hover:text-gray-300 transition-colors">
+              {f.desc}
+            </p>
           </div>
         ))}
       </div>
@@ -270,7 +364,7 @@ export default function Automation() {
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {history.slice(0, 30).map((run) => (
                 <div key={run.id}>
-                  <div 
+                  <div
                     className={`bg-gray-800 rounded-lg p-3 flex items-center justify-between ${
                       run.status === 'failed' && run.error ? 'cursor-pointer hover:bg-gray-750' : ''
                     }`}
@@ -285,9 +379,13 @@ export default function Automation() {
                     }}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      {run.status === 'running' ? <Hourglass className="w-4 h-4 text-yellow-400 animate-pulse" /> :
-                       run.status === 'completed' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> :
-                       <XCircle className="w-4 h-4 text-red-400" />}
+                      {run.status === 'running' ? (
+                        <Hourglass className="w-4 h-4 text-yellow-400 animate-pulse" />
+                      ) : run.status === 'completed' ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-400" />
+                      )}
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{run.taskName}</p>
                         <p className="text-xs text-gray-500">
@@ -297,25 +395,37 @@ export default function Automation() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        run.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' :
-                        run.status === 'running' ? 'bg-amber-500/10 text-amber-400' :
-                        'bg-red-500/10 text-red-400'
-                      }`}>
-                        {run.status === 'completed' ? '成功' : run.status === 'running' ? '执行中' : '失败'}
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded ${
+                          run.status === 'completed'
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : run.status === 'running'
+                              ? 'bg-amber-500/10 text-amber-400'
+                              : 'bg-red-500/10 text-red-400'
+                        }`}
+                      >
+                        {run.status === 'completed'
+                          ? '成功'
+                          : run.status === 'running'
+                            ? '执行中'
+                            : '失败'}
                       </span>
-                      {run.status === 'failed' && run.error && (
-                        expandedErrors.has(run.id) 
-                          ? <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
-                          : <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
-                      )}
+                      {run.status === 'failed' &&
+                        run.error &&
+                        (expandedErrors.has(run.id) ? (
+                          <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                        ))}
                     </div>
                   </div>
                   {/* 展开的错误详情 */}
                   {run.status === 'failed' && run.error && expandedErrors.has(run.id) && (
                     <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3 mt-1 ml-9">
                       <p className="text-xs text-red-400 font-medium mb-1">错误原因</p>
-                      <pre className="text-xs text-red-300 whitespace-pre-wrap break-words">{run.error}</pre>
+                      <pre className="text-xs text-red-300 whitespace-pre-wrap break-words">
+                        {run.error}
+                      </pre>
                     </div>
                   )}
                 </div>
@@ -361,7 +471,9 @@ export default function Automation() {
                     <p className="text-sm text-gray-500 truncate">{task.prompt}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
                       {task.provider && (
-                        <span className="text-primary-400/70">模型: {task.provider}/{task.model || '默认'}</span>
+                        <span className="text-primary-400/70">
+                          模型: {task.provider}/{task.model || '默认'}
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
@@ -379,35 +491,57 @@ export default function Automation() {
                     </div>
 
                     {/* 实时执行进度日志 */}
-                    {running.has(task.id) && progressLogs.get(task.id) && progressLogs.get(task.id)!.length > 0 && (
-                      <div className="mt-3 max-h-40 overflow-y-auto border-t border-gray-700/50 pt-2">
-                        <p className="text-xs text-gray-500 mb-1 font-medium">实时执行日志</p>
-                        {progressLogs.get(task.id)!.slice(-20).map((log, i) => (
-                          <div key={i} className="text-xs py-0.5 flex items-start gap-2">
-                            <span className="text-gray-600 flex-shrink-0 w-14 text-right">
-                              {new Date(log.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </span>
-                            <span className={`flex-shrink-0 ${
-                              log.type === 'tool_call' ? 'text-blue-400' :
-                              log.type === 'tool_result' ? 'text-purple-400' :
-                              log.type === 'agent_error' ? 'text-red-400' :
-                              log.type === 'agent_done' ? 'text-emerald-400' :
-                              'text-yellow-400'
-                            }`}>
-                              {log.message}
-                            </span>
-                            {log.detail && (
-                              <span className="text-gray-500 truncate max-w-[200px]" title={log.detail}>
-                                {log.detail.length > 60 ? log.detail.substring(0, 60) + '...' : log.detail}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                        {progressLogs.get(task.id)!.length > 20 && (
-                          <p className="text-xs text-gray-600 mt-1">仅显示最近 20 条，共 {progressLogs.get(task.id)!.length} 条</p>
-                        )}
-                      </div>
-                    )}
+                    {running.has(task.id) &&
+                      progressLogs.get(task.id) &&
+                      progressLogs.get(task.id)!.length > 0 && (
+                        <div className="mt-3 max-h-40 overflow-y-auto border-t border-gray-700/50 pt-2">
+                          <p className="text-xs text-gray-500 mb-1 font-medium">实时执行日志</p>
+                          {progressLogs
+                            .get(task.id)!
+                            .slice(-20)
+                            .map((log, i) => (
+                              <div key={i} className="text-xs py-0.5 flex items-start gap-2">
+                                <span className="text-gray-600 flex-shrink-0 w-14 text-right">
+                                  {new Date(log.timestamp).toLocaleTimeString('zh-CN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                  })}
+                                </span>
+                                <span
+                                  className={`flex-shrink-0 ${
+                                    log.type === 'tool_call'
+                                      ? 'text-blue-400'
+                                      : log.type === 'tool_result'
+                                        ? 'text-purple-400'
+                                        : log.type === 'agent_error'
+                                          ? 'text-red-400'
+                                          : log.type === 'agent_done'
+                                            ? 'text-emerald-400'
+                                            : 'text-yellow-400'
+                                  }`}
+                                >
+                                  {log.message}
+                                </span>
+                                {log.detail && (
+                                  <span
+                                    className="text-gray-500 truncate max-w-[200px]"
+                                    title={log.detail}
+                                  >
+                                    {log.detail.length > 60
+                                      ? log.detail.substring(0, 60) + '...'
+                                      : log.detail}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          {progressLogs.get(task.id)!.length > 20 && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              仅显示最近 20 条，共 {progressLogs.get(task.id)!.length} 条
+                            </p>
+                          )}
+                        </div>
+                      )}
                   </div>
 
                   {/* 操作按钮 */}
@@ -463,7 +597,10 @@ export default function Automation() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {TASK_TEMPLATES.map((tmpl) => (
-            <div key={tmpl.name} className="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-750 transition-colors">
+            <div
+              key={tmpl.name}
+              className="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-750 transition-colors"
+            >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-2xl">{tmpl.icon}</span>
                 <div className="min-w-0">
@@ -487,14 +624,23 @@ export default function Automation() {
 
       {/* 创建任务弹窗 */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowCreate(false)}>
-          <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowCreate(false)}
+        >
+          <div
+            className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <Settings className="w-5 h-5 text-primary-400" />
                 创建自动化任务
               </h2>
-              <button className="p-1 hover:bg-gray-800 rounded-lg" onClick={() => setShowCreate(false)}>
+              <button
+                className="p-1 hover:bg-gray-800 rounded-lg"
+                onClick={() => setShowCreate(false)}
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -542,13 +688,14 @@ export default function Automation() {
                         value={formProvider}
                         onChange={(e) => {
                           setFormProvider(e.target.value);
-                          setFormModel('');  // 清空模型选择
+                          setFormModel(''); // 清空模型选择
                         }}
                       >
                         <option value="">默认（当前选中）</option>
                         {allProviders.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.name}{configuredProviderIds.has(p.id) ? '' : ' (未配置密钥)'}
+                            {p.name}
+                            {configuredProviderIds.has(p.id) ? '' : ' (未配置密钥)'}
                           </option>
                         ))}
                       </select>
@@ -560,7 +707,9 @@ export default function Automation() {
                         >
                           <option value="">默认模型</option>
                           {selectedProviderModels.map((m) => (
-                            <option key={m.id} value={m.id}>{m.id}</option>
+                            <option key={m.id} value={m.id}>
+                              {m.id}
+                            </option>
                           ))}
                         </select>
                       )}
@@ -569,7 +718,8 @@ export default function Automation() {
                     {formProvider && !configuredProviderIds.has(formProvider) && (
                       <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 rounded-lg p-2 mt-2">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                        该提供商尚未配置 API 密钥，需先在「设置 → 模型提供商」中配置后才能正常执行任务。
+                        该提供商尚未配置 API 密钥，需先在「设置 →
+                        模型提供商」中配置后才能正常执行任务。
                       </div>
                     )}
                   </>
@@ -634,7 +784,9 @@ export default function Automation() {
                   min={1}
                   max={120}
                   value={formMaxDuration || ''}
-                  onChange={(e) => setFormMaxDuration(e.target.value ? parseInt(e.target.value) : undefined)}
+                  onChange={(e) =>
+                    setFormMaxDuration(e.target.value ? parseInt(e.target.value) : undefined)
+                  }
                 />
               </div>
 
@@ -647,7 +799,9 @@ export default function Automation() {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button className="btn-secondary" onClick={() => setShowCreate(false)}>取消</button>
+              <button className="btn-secondary" onClick={() => setShowCreate(false)}>
+                取消
+              </button>
               <button className="btn-primary flex items-center gap-2" onClick={handleCreate}>
                 <Plus className="w-4 h-4" /> 创建任务
               </button>

@@ -116,7 +116,9 @@ describe('GET /api/sessions/search', () => {
   });
 
   it('支持 status 过滤参数', async () => {
-    const res = await request(app).get('/api/sessions/search').query({ q: 'test', status: 'active' });
+    const res = await request(app)
+      .get('/api/sessions/search')
+      .query({ q: 'test', status: 'active' });
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
