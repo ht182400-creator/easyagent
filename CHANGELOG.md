@@ -7,6 +7,11 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.8] - 2026-06-27
+
+### Added
+- fix: add missing runtime deps to desktop (express, ws, cors, multer, body-parser, mime, send) for electron-builder packaging (ht182400-creator)
+
 ## [0.6.7] - 2026-06-27
 
 ### Added
