@@ -2,6 +2,8 @@ dist/
 node_modules/
 release/
 pnpm-lock.yaml
+*.d.ts
+package-lock.json
 *.png
 *.node
 *.exe

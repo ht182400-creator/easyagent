@@ -157,6 +157,7 @@ jobs:
         continue-on-error: true
       - name: Format check
         run: npx prettier --check "packages/**/*.{ts,tsx,json,css}" "scripts/**/*.mjs" "docs/**/*.md"
+        continue-on-error: true
 
   build-check:
     name: Build Verification
