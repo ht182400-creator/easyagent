@@ -7,6 +7,11 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.13] - 2026-06-27
+
+### Fixed
+- fix: CI sync-pipeline push 竞态修复 + 文档完善 (ht182400-creator)
+
 ## [0.6.12] - 2026-06-27
 
 ### Added
