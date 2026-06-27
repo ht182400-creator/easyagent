@@ -630,9 +630,11 @@ git commit -m "chore: release artifacts for !FINAL_VERSION!"
 if %errorlevel% equ 0 (
     echo   [OK] Commit created
     rem 推送前先 rebase 远程（CI 管线同步可能在此期间推了新 commit）
-    rem 管线 JSON 和版本文件在不同目录，不会冲突
+    rem git hooks 可能在 commit 后修改了管线文件 → stash 保护
     echo   Syncing with remote before push...
+    git stash
     git pull --rebase origin main
+    git stash pop
     git push origin main
     if %errorlevel% equ 0 (
         echo   [OK] Pushed to origin

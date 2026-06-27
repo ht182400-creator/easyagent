@@ -367,7 +367,10 @@ async function main() {
 
     // 推送前先 rebase 远程（CI 管线同步可能在此期间推了新 commit）
     // 管线 JSON 和版本文件在不同目录，不会冲突
+    // git hooks 可能在 commit/tag 后修改了管线文件 → stash 保护
+    execSync('git stash', { cwd: root, stdio: 'inherit' });
     execSync('git pull --rebase origin main', { cwd: root, stdio: 'inherit' });
+    execSync('git stash pop', { cwd: root, stdio: 'inherit' });
     execSync('git push origin main --follow-tags', { cwd: root, stdio: 'inherit' });
     success('已推送到 GitHub (main + tags)');
   } catch (err) {
