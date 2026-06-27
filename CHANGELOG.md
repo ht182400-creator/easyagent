@@ -7,6 +7,14 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.14] - 2026-06-27
+
+### Added
+- fix: CI sync-pipeline 改用 git add docs/pipeline/ + stash 保护，杜绝 unstaged 残留阻塞 rebase (ht182400-creator)
+
+### Fixed
+- fix: Release workflow 修复 Build Desktop GH_TOKEN + Build Web react 依赖缺失 (ht182400-creator)
+
 ## [0.6.13] - 2026-06-27
 
 ### Fixed
