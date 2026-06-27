@@ -5473,7 +5473,7 @@
     }
   },
   "_totalIssues": 757,
-  "_generatedAt": "2026-06-27T16:13:41.154Z",
+  "_generatedAt": "2026-06-27T16:21:25.931Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -5485,16 +5485,17 @@
     "2026-06-25.md",
     "2026-06-26.md",
     "2026-06-27.md",
+    "2026-06-28.md",
     "MEMORY.md",
     "README.md"
   ],
   "_cacheStats": {
-    "totalFiles": 12,
+    "totalFiles": 13,
     "cacheHits": 0,
-    "reparsed": 12
+    "reparsed": 13
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-27T16:13:41.165Z"
+    "exportedAt": "2026-06-27T16:21:25.940Z"
   }
 }
