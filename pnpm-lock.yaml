@@ -114,15 +114,24 @@ importers:
       bindings:
         specifier: ^1.5.0
         version: 1.5.0
+      body-parser:
+        specifier: ^1.20.2
+        version: 1.20.5
       builder-util-runtime:
         specifier: 9.7.0
         version: 9.7.0
+      cors:
+        specifier: ^2.8.0
+        version: 2.8.6
       electron-store:
         specifier: ^8.1.0
         version: 8.2.0
       electron-updater:
         specifier: ^6.1.0
         version: 6.8.9
+      express:
+        specifier: ^4.19.0
+        version: 4.22.2
       fast-redact:
         specifier: ^3.1.1
         version: 3.5.0
@@ -150,6 +159,12 @@ importers:
       lucide-react:
         specifier: ^0.378.0
         version: 0.378.0(react@18.3.0)
+      mime:
+        specifier: ^1.6.0
+        version: 1.6.0
+      multer:
+        specifier: ^2.2.0
+        version: 2.2.0
       on-exit-leak-free:
         specifier: ^2.1.0
         version: 2.1.2
@@ -189,6 +204,9 @@ importers:
       semver:
         specifier: ~7.7.3
         version: 7.7.4
+      send:
+        specifier: ^0.19.0
+        version: 0.19.2
       sonic-boom:
         specifier: ^3.7.0
         version: 3.7.0
@@ -201,6 +219,9 @@ importers:
       tiny-typed-emitter:
         specifier: ^2.1.0
         version: 2.1.0
+      ws:
+        specifier: ^8.17.0
+        version: 8.21.0
       zustand:
         specifier: ^4.5.0
         version: 4.5.0(@types/react@18.3.31)(react@18.3.0)
