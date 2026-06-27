@@ -3901,6 +3901,13 @@
           "problem": ": `scripts/release.mjs` 运行时报 `readdirSync is not defined`，导致 changelog 生成失败回退到默认条目 [根因] : 第 13 行 `import { readFileSync, writeFileSync, existsSync } from 'node:fs'` 缺少 `readdirSync`",
           "solution": "添加 `readdirSync` 到 import 列表",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "pipeline-auto-sync.ps1 param 绑定报错修复 (13:22)",
+          "problem": ": `release-publish.bat` Step 6 调用 `pipeline-auto-sync.ps1` 时报错 `Cannot convert \"600\" to SwitchParameter` [根因] : BAT 第 491 行用 `-Command \"[Console]::OutputEncoding=...; & 'script.ps1'\"` 模式，PowerShell `-Command` 参数解析时产生了额外 token `\"600\"`，作为第一个位置参数绑定到了 `[switch]$SkipCI`（switch 不接受 int）",
+          "solution": "改回 `-File` 模式 (`powershell -File \"scripts\\pipeline-auto-sync.ps1\"`)，因 .ps1 第 14 行已在 param() 前设置 `[Console]::OutputEncoding`，不再需要 `-Command` 的预编码设置",
+          "status": "resolved"
         }
       ]
     },
@@ -4228,6 +4235,13 @@
           "title": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
           "problem": "BAT 文件 BOM 及 PowerShell 中文乱码修复 (12:04)",
           "solution": "1. `release-publish.bat`: 改用 `-Command \"[Console]::OutputEncoding=[Text.Encoding]::UTF8; & '...'\"` 替代 `-File` 2. `scripts/pipeline-auto-sync.ps1`: 在 param 块前新增 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`；原理: CMD `chcp 65001` 设置自身代码页为 UTF-8，但 PowerShell 子进程默认使用 OEM 代码页输出；设置 `OutputEncoding` 让 PS 以 UTF-8 输出，CMD 侧才能正确解析中文",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "pipeline-auto-sync.ps1 param 绑定报错修复 (13:22)",
+          "problem": ": `release-publish.bat` Step 6 调用 `pipeline-auto-sync.ps1` 时报错 `Cannot convert \"600\" to SwitchParameter` [根因] : BAT 第 491 行用 `-Command \"[Console]::OutputEncoding=...; & 'script.ps1'\"` 模式，PowerShell `-Command` 参数解析时产生了额外 token `\"600\"`，作为第一个位置参数绑定到了 `[switch]$SkipCI`（switch 不接受 int）",
+          "solution": "改回 `-File` 模式 (`powershell -File \"scripts\\pipeline-auto-sync.ps1\"`)，因 .ps1 第 14 行已在 param() 前设置 `[Console]::OutputEncoding`，不再需要 `-Command` 的预编码设置",
           "status": "resolved"
         }
       ]
@@ -4982,8 +4996,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 687,
-  "_generatedAt": "2026-06-27T05:23:24.582Z",
+  "_totalIssues": 689,
+  "_generatedAt": "2026-06-27T06:09:35.978Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -5005,6 +5019,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-27T05:23:24.595Z"
+    "exportedAt": "2026-06-27T06:09:35.992Z"
   }
 }

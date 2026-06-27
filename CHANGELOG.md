@@ -7,6 +7,32 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.5] - 2026-06-27
+
+### Added
+- 为 Web 版本创建独立的构建脚本（类似 build.bat）
+
+### Changed
+- 用户要求将使用方法写入规范文档 `docs/36_调试日志规范体系.md`
+- 用户发现 Web 版本(localhost:5173)也走 Desktop 的 electron-updater 更新流程，询问是否合理
+- 将 Desktop/Web 构建分析过程、bat 参数用法、优化建议写成高质量文档，方便初学者使用
+- 实现 CI/CD 自动构建，推送标签 `v*` 时自动构建 Desktop + Web 并发布到 GitHub Release
+- 1) 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
+- 保证 `git commit` 的 message 必须有实际内容，而非只有 `release: v0.x.x`
+- 避免手动 git commit 才能生成有意义的 CHANGELOG，改为从 `.codebuddy/memory/` 结构化记录自动提取
+- `docs/39_CHANGELOG自动生成机制_三级Fallback.md`
+
+### Fixed
+- Desktop 更新签名校验失败修复
+- Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本
+- release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容
+- BAT 文件 BOM 及 PowerShell 中文乱码修复
+- `git status` 中文文件名显示为 octal 转义（`docs/36_\345\217\214...`）
+- `scripts/release.mjs` 运行时报 `readdirSync is not defined`，导致 changelog 生成失败回退到默认条目
+- `release-publish.bat` Step 6 调用 `pipeline-auto-sync.ps1` 时报错 `Cannot convert "600" to SwitchParameter`
+- v0.5.11~v0.5.28 共 18 个 tag 指向同一 commit `001a4ad`，v0.5.30~v0.5.32 共 3 个 tag 指向同一 commit `646c388`。GitHub Releases 页面看不到独立的 commit
+- CI pipeline 报错 `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH - "pnpmfileChecksum" doesn't match`
+
 ## [0.6.4] - 2026-06-27
 
 ### Added

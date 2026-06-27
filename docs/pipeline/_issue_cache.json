@@ -37,8 +37,8 @@
       "size": 76816
     },
     "2026-06-27.md": {
-      "mtimeMs": 1782537758369.6135,
-      "size": 14840
+      "mtimeMs": 1782540333396.8352,
+      "size": 15789
     },
     "MEMORY.md": {
       "mtimeMs": 1782537707500.203,
@@ -8960,6 +8960,30 @@
           "f11",
           "f16"
         ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "pipeline-auto-sync.ps1 param 绑定报错修复 (13:22)",
+        "problem": ": `release-publish.bat` Step 6 调用 `pipeline-auto-sync.ps1` 时报错 `Cannot convert \"600\" to SwitchParameter` [根因] : BAT 第 491 行用 `-Command \"[Console]::OutputEncoding=...; & 'script.ps1'\"` 模式，PowerShell `-Command` 参数解析时产生了额外 token `\"600\"`，作为第一个位置参数绑定到了 `[switch]$SkipCI`（switch 不接受 int）",
+        "solution": "改回 `-File` 模式 (`powershell -File \"scripts\\pipeline-auto-sync.ps1\"`)，因 .ps1 第 14 行已在 param() 前设置 `[Console]::OutputEncoding`，不再需要 `-Command` 的预编码设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-27",
+        "title": "pipeline-auto-sync.ps1 param 绑定报错修复 (13:22)",
+        "problem": ": `release-publish.bat` Step 6 调用 `pipeline-auto-sync.ps1` 时报错 `Cannot convert \"600\" to SwitchParameter` [根因] : BAT 第 491 行用 `-Command \"[Console]::OutputEncoding=...; & 'script.ps1'\"` 模式，PowerShell `-Command` 参数解析时产生了额外 token `\"600\"`，作为第一个位置参数绑定到了 `[switch]$SkipCI`（switch 不接受 int）",
+        "solution": "改回 `-File` 模式 (`powershell -File \"scripts\\pipeline-auto-sync.ps1\"`)，因 .ps1 第 14 行已在 param() 前设置 `[Console]::OutputEncoding`，不再需要 `-Command` 的预编码设置",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16",
+          "p5a"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -8977,5 +9001,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-27T05:23:24.579Z"
+  "generatedAt": "2026-06-27T06:09:35.975Z"
 }

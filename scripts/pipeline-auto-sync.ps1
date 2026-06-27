@@ -13,10 +13,19 @@
 # 确保 PowerShell 输出 UTF-8，防止在 CMD 子进程中乱码
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
 
-param(
-    [switch]$SkipCI,    # 跳过 CI 数据回取（使用本地已有数据）
-    [int]$Timeout = 600 # CI 等待超时秒数
-)
+# 手动解析参数（不用 param() 自动绑定，防止 CMD chcp 输出污染导致的 stray arg 错误）
+$Timeout = 600
+$SkipCI = $false
+if ($args -contains '--skip-ci' -or $args -contains '-SkipCI') {
+    $SkipCI = $true
+}
+# 从 $args 中提取显式的 --timeout 值
+for ($i = 0; $i -lt $args.Count; $i++) {
+    if ($args[$i] -eq '--timeout' -and $i + 1 -lt $args.Count) {
+        $val = [int]::TryParse($args[$i + 1], [ref]$Timeout)
+    }
+}
+
 $ErrorActionPreference = "Continue"
 # 设置控制台输出编码为 UTF-8，防止中文乱码
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8

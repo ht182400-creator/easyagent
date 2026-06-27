@@ -71,7 +71,7 @@ echo   [1] patch  (bug fix)    --%V_MAJOR%.%V_MINOR%.%NEXT_PATCH_VER%
 echo   [2] minor  (feature)    --%V_MAJOR%.%NEXT_MINOR_VER%.0
 echo   [3] major  (breaking)   --%NEXT_MAJOR_VER%.0.0
 echo   [4] custom (enter x.y.z)
-echo   [0] skip   (already tagged, build/upload only)
+echo   [0] skip   (已手动递增版本+commit，仅 build/upload - 无新commit则拒绝打tag)
 echo -----------------------------------------------------------
 echo.
 
@@ -376,6 +376,17 @@ if %errorlevel% equ 0 (
     echo   [OK] Tag !TAG_VERSION! exists
 ) else (
     echo   [WARN] Tag !TAG_VERSION! does not exist
+    rem 安全检查：防止多个 tag 指向同一个 commit（常见于跳过了 Step 3 版本递增）
+    set HEAD_HAS_TAG=0
+    for /f %%c in ('git tag --points-at HEAD --list "v*" 2^>nul') do set "HEAD_HAS_TAG=1" & set "EXISTING_TAG=%%c"
+    if "!HEAD_HAS_TAG!"=="1" (
+        echo   [ERROR] HEAD already has tag !EXISTING_TAG! - multiple tags on same commit is not allowed!
+        echo   This means no new commit was created since the last release.
+        echo   Please re-run and choose a version bump type in Step 1, do NOT skip.
+        echo   Falling back to alternative upload method...
+        pause
+        goto :UPLOAD_TOKEN
+    )
     if %AUTO_MODE%==0 (
         set /p TAG_CONT="  Create and push tag? [Y/n]: "
         if /i not "!TAG_CONT!"=="Y" if not "!TAG_CONT!"=="" goto :UPLOAD_TOKEN
@@ -486,8 +497,7 @@ echo   Step 6c: Running unified-sync with CI data
 echo   Step 6d: Restarting pipeline server on port 8899
 echo   Running: powershell -File scripts/pipeline-auto-sync.ps1
 echo   ----------------------------------------
-rem 设置 UTF-8 编码避免中文乱码 (CMD 侧 + PowerShell 侧双保险)
-chcp 65001 >nul 2>&1
+rem 注: UTF-8 代码页已在脚本顶部 chcp 65001，此处不再重复设置以避免 chcp 控制台输出污染 PowerShell 参数解析
 powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\pipeline-auto-sync.ps1"
 set _SYNC_ERR=%errorlevel%
 rem 使用 goto 模式避免 CMD if 块内 () 冲突
