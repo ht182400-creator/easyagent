@@ -18,6 +18,7 @@ import {
   Filter,
   RefreshCw,
   Download,
+  AlertTriangle,
   Database,
   ChevronRight,
 } from 'lucide-react';

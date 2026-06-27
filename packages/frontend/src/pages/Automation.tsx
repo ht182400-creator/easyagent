@@ -226,7 +226,7 @@ export default function Automation() {
   /** 所有提供商列表（包含未配置的，供用户选择） */
   const allProviders = providers;
   /** 有密钥的提供商列表（用于判断执行可行性） */
-  const configuredProviderIds = new Set(providers.filter((p) => p.hasKey).map((p) => p.id));
+  const configuredProviderIds = new Set<string>(providers.filter((p) => p.hasKey).map((p) => p.id));
 
   const handleCreate = async () => {
     if (!formName.trim()) {

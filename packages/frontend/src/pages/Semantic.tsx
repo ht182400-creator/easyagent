@@ -646,12 +646,12 @@ function FileAnalysisTab({
             <div className="bg-gray-900/30 rounded-xl border border-gray-800/30 p-5">
               <h3 className="text-sm font-medium text-gray-300 mb-3">符号结构</h3>
               {(() => {
-                const grouped = new Map<string, typeof analysis.symbols>();
+                const grouped: Record<string, typeof analysis.symbols> = {};
                 for (const s of analysis.symbols) {
-                  if (!grouped.has(s.kind)) grouped.set(s.kind, []);
-                  grouped.get(s.kind)!.push(s);
+                  if (!grouped[s.kind]) grouped[s.kind] = [];
+                  grouped[s.kind].push(s);
                 }
-                return [...grouped.entries()].map(([kind, syms]) => (
+                return Object.entries(grouped).map(([kind, syms]) => (
                   <div key={kind} className="mb-3">
                     <p className="text-xs text-gray-500 mb-1.5 uppercase">
                       {kind} ({syms.length})

@@ -10,6 +10,7 @@ import { apiRequest } from '../request';
 interface SemanticStats {
   totalFiles: number;
   totalLines: number;
+  totalSize: number;
   totalSymbols: number;
   languages: Record<string, number>;
 }

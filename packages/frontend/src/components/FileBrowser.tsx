@@ -27,6 +27,8 @@ interface BrowseResponse {
   dirs: DirEntry[];
   files: FileEntry[];
   parentPath: string | null;
+  /** 失败时的错误信息 */
+  error?: string;
 }
 
 interface FileBrowserProps {

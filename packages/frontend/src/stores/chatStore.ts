@@ -7,7 +7,8 @@ import { emit } from '../events';
 import { getWsBase } from '../request';
 
 /** 从核心类型库导入共享类型，替代本地重复定义 */
-export type { MessageRole } from '@easyagent/core/types';
+import type { MessageRole } from '@easyagent/core/types';
+export type { MessageRole };
 
 /** 工具调用块 */
 export interface ToolCallBlock {
