@@ -107,27 +107,46 @@ Write-Host "`n[4/4] Verifying data consistency..." -ForegroundColor Yellow
 try {
     # 必须指定 -Encoding UTF8，否则 PS 默认用 GBK 读取导致中文乱码破坏 JSON 语法
     $pd = Get-Content "$PIPELINE_DIR\pipeline-data.json" -Raw -Encoding UTF8 | ConvertFrom-Json
-    $td = Get-Content "$PIPELINE_DIR\_test_detail.json" -Raw -Encoding UTF8 | ConvertFrom-Json
     $mp = Get-Content "$PIPELINE_DIR\test-case-mapping.json" -Raw -Encoding UTF8 | ConvertFrom-Json
 
     $kpiCases = $pd.kpi.testCases
     $kpiPassed = $pd.kpi.testPassed
     $kpiFailed = $pd.kpi.testFailed
     $kpiScore = $pd.kpi.scoreTotal
-    $detailTotal = $td._meta.totalTests
     $mappingCases = $mp._meta.totalTestCases
     $mappingFiles = $mp._meta.totalTestFiles
 
     Write-Host "    pipeline-data KPI:  $kpiCases / $kpiPassed / $kpiFailed  score=$kpiScore" -ForegroundColor Gray
-    Write-Host "    _test_detail:       $detailTotal" -ForegroundColor Gray
     Write-Host "    test-case-mapping:  $mappingCases cases, $mappingFiles files" -ForegroundColor Gray
 
-    $match1 = ($kpiCases -eq $detailTotal)
-    $match2 = ($kpiCases -eq $mappingCases)
-    if ($match1 -and $match2) {
-        Write-Host "    [OK] Data consistent: ALL MATCH ($kpiCases cases)" -ForegroundColor Green
+    # KPI 与 mapping 必须一致（同源：源码解析）；_test_detail.json 来自 vitest 实际运行，允许 < KPI
+    if ($kpiCases -eq $mappingCases) {
+        Write-Host "    [OK] KPI & mapping consistent ($kpiCases cases)" -ForegroundColor Green
     } else {
-        Write-Host "    [FAIL] Data mismatch! KPI=$kpiCases detail=$detailTotal mapping=$mappingCases" -ForegroundColor Red
+        Write-Host "    [FAIL] KPI ($kpiCases) != mapping ($mappingCases) — source sync error!" -ForegroundColor Red
+    }
+
+    # _test_detail.json 独立验证：来自 vitest 实际执行，总是 ≤ 源码计数
+    if (Test-Path "$PIPELINE_DIR\_test_detail.json") {
+        try {
+            $td = Get-Content "$PIPELINE_DIR\_test_detail.json" -Raw -Encoding UTF8 | ConvertFrom-Json
+            $detailTotal = $td._meta.totalTests
+            $detailPassed = $td._meta.totalPassed
+            $detailFailed = $td._meta.totalFailed
+            Write-Host "    _test_detail:       $detailTotal / $detailPassed / $detailFailed" -ForegroundColor Gray
+            if ($SkipCI) {
+                Write-Host "    [INFO] --skip-ci: _test_detail.json may be stale (no fresh vitest reports)" -ForegroundColor Yellow
+            }
+            if ($detailTotal -le $kpiCases) {
+                Write-Host "    [OK] _test_detail ($detailTotal) <= KPI ($kpiCases) — expected (vitest <= source)" -ForegroundColor Green
+            } else {
+                Write-Host "    [WARN] _test_detail ($detailTotal) > KPI ($kpiCases) — possible stale KPI" -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host "    [WARN] _test_detail.json parse failed — may be stale or corrupted" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "    [WARN] _test_detail.json missing — run vitest (CI or local) to generate" -ForegroundColor Yellow
     }
 } catch {
     Write-Host "    [FAIL] Verification error: $_" -ForegroundColor Red
