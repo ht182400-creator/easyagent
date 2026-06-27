@@ -7,6 +7,13 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.9] - 2026-06-27
+
+### Fixed
+- fix: verification logic now correctly separates KPI/mapping (source parse) from _test_detail (vitest execution) (ht182400-creator)
+- fix: specify UTF-8 encoding in pipeline sync script (ht182400-creator)
+- fix: prevent pipeline sync blocking release + fix CMD/PowerShell encoding garbled text (ht182400-creator)
+
 ## [0.6.8] - 2026-06-27
 
 ### Added

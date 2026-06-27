@@ -37,8 +37,8 @@
       "size": 76816
     },
     "2026-06-27.md": {
-      "mtimeMs": 1782568482099.2788,
-      "size": 45578
+      "mtimeMs": 1782569352803.0789,
+      "size": 47810
     },
     "MEMORY.md": {
       "mtimeMs": 1782568482114.9917,
@@ -9635,6 +9635,200 @@
           "f4",
           "p5a"
         ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布前准备 (21:55-22:06)",
+        "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
+        "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f11",
+          "f13",
+          "f14",
+          "f16",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布前准备 (21:55-22:06)",
+        "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
+        "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f11",
+          "f13",
+          "f14",
+          "f16",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布前准备 (21:55-22:06)",
+        "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
+        "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f11",
+          "f13",
+          "f14",
+          "f16",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布前准备 (21:55-22:06)",
+        "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
+        "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f11",
+          "f13",
+          "f14",
+          "f16",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布前准备 (21:55-22:06)",
+        "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
+        "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f11",
+          "f13",
+          "f14",
+          "f16",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布前准备 (21:55-22:06)",
+        "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
+        "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f11",
+          "f13",
+          "f14",
+          "f16",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布前准备 (21:55-22:06)",
+        "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
+        "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f9",
+          "f11",
+          "f13",
+          "f14",
+          "f16",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布流程优化 (22:08)",
+        "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
+        "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f13",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布流程优化 (22:08)",
+        "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
+        "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f13",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布流程优化 (22:08)",
+        "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
+        "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f13",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布流程优化 (22:08)",
+        "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
+        "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f13",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-27",
+        "title": "v0.6.7 发布流程优化 (22:08)",
+        "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
+        "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f4",
+          "f13",
+          "f16",
+          "p5a"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -9652,5 +9846,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-27T14:03:26.525Z"
+  "generatedAt": "2026-06-27T14:17:30.531Z"
 }
