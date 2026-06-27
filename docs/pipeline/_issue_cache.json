@@ -37,8 +37,8 @@
       "size": 76816
     },
     "2026-06-27.md": {
-      "mtimeMs": 1782573838875.8662,
-      "size": 50744
+      "mtimeMs": 1782575103411.0117,
+      "size": 53395
     },
     "MEMORY.md": {
       "mtimeMs": 1782568482114.9917,
@@ -9853,6 +9853,177 @@
           "b1a",
           "b2b"
         ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-27",
+        "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+        "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+        "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f9",
+          "f4",
+          "f10",
+          "f11",
+          "f14",
+          "p5a",
+          "b3b"
+        ]
       }
     ],
     "MEMORY.md": [
@@ -9870,5 +10041,5 @@
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-27T15:31:36.655Z"
+  "generatedAt": "2026-06-27T16:13:41.150Z"
 }

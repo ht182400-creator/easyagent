@@ -220,6 +220,13 @@
           "problem": "架构方案升级 v2.0 — 平台适配器模式 + 扩展性设计 (19:24)",
           "solution": "平台适配器模式 @easyagent/frontend (共享UI层, 零平台依赖) web适配器 / desktop适配器 / (未来) mobile适配器；设计原则: ① 共享层零平台依赖 ② 适配器是薄层(30-50行) ③ 统一包名导入 ④ 独立编译边界；Desktop 改造: `@/mountApp` → `@easyagent/frontend` + IPC桥接抽离为独立模块(`ipcBridge.ts`) + vite alias 改用包名；Web 改造: 同上包名导入 + 移除 tsconfig `include: [\"../frontend/src\"]` + `@/` 回归指向自身；扩展性: 新增平台只需 `packages/<name>/src/main.tsx` (~10行)，frontend 零改动；改动范围: 8个文件，约30行净改动，Desktop 构建链零影响；推荐路径: P0(修复exports) → P1(平台适配器模式,本周) → P2(Library Mode,按需)；变更文件: docs/41_前端架构优化方案_模块共享与解析歧义根治.md (v2.0)",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+          "status": "resolved"
         }
       ]
     },
@@ -624,6 +631,13 @@
           "title": "v0.6.7 发布前准备 (21:55-22:06)",
           "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
           "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
           "status": "resolved"
         }
       ]
@@ -2121,6 +2135,13 @@
           "status": "resolved"
         },
         {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+          "status": "resolved"
+        },
+        {
           "date": "",
           "title": "⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)",
           "problem": "⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)",
@@ -2524,6 +2545,13 @@
           "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
           "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+          "status": "resolved"
         }
       ]
     },
@@ -2836,6 +2864,13 @@
           "problem": ": v0.6.5 commit (`5342c65`) 在 Step 3 就完成了，但 Step 4/6/结束又修改了 7 个文件从未提交",
           "solution": "1. 恢复 `pnpm-lock.yaml` 到正确 committed 版本 (`git checkout HEAD --`) 2. 提交剩余 6 个文件: `61fb70c chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7` 3. post-commit hook 又改了 pipeline 文件 → `1b610f7 chore: pipeline timestamp update for v0.6.5`；根因: post-commit hook 每次都重新生成 pipeline JSON（仅 `generatedAt` 时间戳差异）；临时解决: commit 后 `git checkout HEAD -- docs/pipeline/` 恢复 4. `release-publish.bat` 末尾新增 **Step 7: Final Commit** — 自动恢复 pnpm-lock.yaml + 提交 pipeline 产物变更，确保未来 release 不再遗漏",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+          "status": "resolved"
         }
       ]
     },
@@ -3058,6 +3093,13 @@
           "title": "v0.6.7 发布前准备 (21:55-22:06)",
           "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
           "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
           "status": "resolved"
         }
       ]
@@ -3552,6 +3594,13 @@
           "title": "v0.6.7 发布前准备 (21:55-22:06)",
           "problem": ": `desktop/package.json` 缺少 7 个服务器运行时依赖（express/ws/cors/multer/body-parser/mime/send）",
           "solution": "`packages/desktop/package.json`: 新增 7 个依赖（express@^4.19.0, ws@^8.17.0, cors@^2.8.0, multer@^2.2.0, body-parser@^1.20.2, mime@^1.6.0, send@^0.19.0）；`pnpm install`: 需设置 `$env:EASYAGENT_SKIP_NODE_CHECK=1` 跳过 Node 24 版本检查（preinstall 拦截）；Node 24 问题确认：当前环境只有 Node 24，sqlite3 双版本已编译就绪，可以继续使用；验证结果: 0 错误、6 个无阻塞警告（3 个 better_sqlite3.node 路径查找错误 + 3 个 dist 缓存过旧）；提交: `96fdc3b` → origin/main，管道同步（进度 90%、评分 100）；附加操作: GitHub Release 清理 — 删除 v0.6.6 的 `EasyAgent-0.6.6-win-x64.exe` (105 MB)，通过 `gh api -X DELETE` 删除 asset ID 459330696；关键发现: PowerShell 环境下需用 `$env:GH_TOKEN` 设置 token，`gh` 的 `--jq` 参数在 PS 下引号有问题 → 改用 `ConvertFrom-Json` + `Where-Object` 过滤",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
           "status": "resolved"
         }
       ]
@@ -4551,6 +4600,13 @@
           "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
           "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+          "status": "resolved"
         }
       ]
     },
@@ -5400,6 +5456,13 @@
           "problem": "[现象] : 重启 Vite 后所有页面（首页 + DocsGuide）`#root` 完全为空，无 JS 错误 [根因] : `frontend/src/main.tsx` 和 `web/src/main.tsx` 同名，Vite 在模块解析时将 `/src/main.tsx` 错误解析到 frontend 的文件（因其在 tsconfig `include` 中：`\"include\": [\"src\", \"../frontend/src\"]`）",
           "solution": "1. 重命名 `frontend/src/main.tsx` → `frontend/src/mountApp.tsx`（该文件只导出 mountApp 函数，新名称更语义化） 2. 更新引用: `web/src/main.tsx` 中 `@/main` → `@/mountApp` 3. 更新引用: `desktop/src/renderer/main.tsx` 中 `@/main` → `@/mountApp`；变更文件: frontend/src/main.tsx→mountApp.tsx / web/src/main.tsx / desktop/src/renderer/main.tsx；Node.js fetch `/src/main.tsx` → 1755 bytes, `[web/main.tsx]` log 出现, mountApp() 被调用 ✅；Playwright 自动化测试: 页面完整渲染, Sidebar + DocsGuide 全部功能正常 ✅；Console: 0 JS 错误 (仅 favicon.ico 404) 1. Vite 多源路径下同名文件会导致模块解析冲突，tsconfig `include` 会引入额外的解析目标 2. 排查 \"#root 为空\" 应先用 `fetch('/src/main.tsx')` 验证模块是否正确加载 3. 手动调用 `mountApp()` 后页面渲染成功 → 说明模块体系正常，问题在入口文件解析",
           "status": "resolved"
+        },
+        {
+          "date": "2026-06-27",
+          "title": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:",
+          "problem": "CI 修复第3轮 — Prettier + TypeScript 类型错误修复 (23:26-23:33)",
+          "solution": "1. `FileBrowser.tsx`: `BrowseResponse` 接口缺少 `error?: string` — 已添加 2. `Automation.tsx`: `configuredProviderIds` 是 `Set<ProviderId>` 但 `formProvider` 是 `string` — 改为 `Set<string>` 3. `TokenUsage.tsx`: 使用了 `AlertTriangle` 但未从 `lucide-react` 导入 — 已添加 4. `chatStore.ts`: `export type { MessageRole } from 'core'` 不会使 `MessageRole` 在本地作用域可用（仅重新导出） — 改为先 `import type` 再 `export type` 5. `semanticStore.ts`: `SemanticStats` 接口缺少 `totalSize: number` — 已添加 6. `Semantic.tsx`: `new Map<string, typeof analysis.symbols>()` 泛型错误 → 改用 `Record<string, typeof analysis.symbols>`，`grouped.entries()` → `Object.entr；CI #83 结果: ✅✅✅ **全部 8/8 Job 通过！从5连败到全绿！**；Lint ✅ Test Core ✅ Test Server ✅ Build Verification ✅ Test Desktop ✅ Pipeline Tests ✅ Coverage Gate ✅ Sync Pipeline Data ✅；总耗时 ~5min，Coverage Gate 核心+服务端覆盖率均通过；最终成果: 3轮修复、6个根因定位，CI 管道已稳定",
+          "status": "resolved"
         }
       ]
     },
@@ -5409,8 +5472,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 748,
-  "_generatedAt": "2026-06-27T15:31:36.658Z",
+  "_totalIssues": 757,
+  "_generatedAt": "2026-06-27T16:13:41.154Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -5432,6 +5495,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-06-27T15:31:36.668Z"
+    "exportedAt": "2026-06-27T16:13:41.165Z"
   }
 }
