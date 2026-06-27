@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   npm_config_msvs_version: '2022'
 
 jobs:
