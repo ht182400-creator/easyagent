@@ -520,14 +520,13 @@ echo.
 echo -----------------------------------------------------------
 echo   Step 6: Pipeline Data Auto-Sync
 echo -----------------------------------------------------------
-echo   Step 6a: Waiting for GitHub CI to complete...
-echo   Step 6b: Downloading CI vitest reports (core/server/desktop)
-echo   Step 6c: Running unified-sync with CI data
-echo   Step 6d: Restarting pipeline server on port 8899
-echo   Running: powershell -File scripts/pipeline-auto-sync.ps1
+echo   Step 6a: Running unified-sync locally (CI sync is handled by GitHub Actions sync-pipeline job)
+echo   Step 6b: Restarting pipeline server on port 8899
+echo   Running: powershell -File scripts/pipeline-auto-sync.ps1 --skip-ci
 echo   ----------------------------------------
-rem 注: UTF-8 代码页已在脚本顶部 chcp 65001，此处不再重复设置以避免 chcp 控制台输出污染 PowerShell 参数解析
-powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\pipeline-auto-sync.ps1"
+rem 注: --skip-ci 跳过等待 CI 完成（CI 的 sync-pipeline job 会自动推送管线数据）
+rem      本地 release 流程不需要等 CI，避免阻塞 5-10 分钟
+powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\pipeline-auto-sync.ps1" --skip-ci
 set _SYNC_ERR=%errorlevel%
 rem 使用 goto 模式避免 CMD if 块内 () 冲突
 if %_SYNC_ERR% equ 0 goto :SYNC_OK
@@ -668,7 +667,7 @@ echo   3.5. DTS Type Check (npx tsup --dts)^ - quality gate
 echo   4. Build Desktop EXE (build.bat --release)
 echo   5. Upload to GitHub Release (gh CLI / _release.mjs / manual)
 echo   6. Build Web Dashboard (build-web.bat)
-echo   7. Pipeline Data Auto-Sync (vitest results + server restart)
+echo   6. Pipeline Data Local-Sync (unified-sync + server restart, CI auto-sync handled by GitHub Actions)
 echo.
 echo Prerequisites:
 echo   - Git installed and configured

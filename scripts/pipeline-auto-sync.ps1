@@ -36,52 +36,53 @@ $PIPELINE_DIR = "$WORKSPACE\docs\pipeline"
 $SERVER_PORT = 8899
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "管线本地同步开始: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Cyan
+# 使用英文避免 CMD+PowerShell 编码不一致导致乱码
+Write-Host "Pipeline Local Sync START: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-# ---- 第 1 步：等待 CI + 回取 vitest 报告 + git pull ----
+# ---- Step 1: Wait for CI + download vitest reports + git pull ----
 if ($SkipCI) {
-    Write-Host "`n[1/4] 跳过 CI 数据回取 (--skip-ci)" -ForegroundColor Yellow
+    Write-Host "`n[1/4] Skipping CI data fetch (--skip-ci)" -ForegroundColor Yellow
 } else {
-    Write-Host "`n[1/4] 等待 CI 完成并回取 vitest 报告..." -ForegroundColor Yellow
+    Write-Host "`n[1/4] Waiting for CI to complete & fetching vitest reports..." -ForegroundColor Yellow
     Set-Location $WORKSPACE
     try {
         $ciResult = node scripts/fetch-ci-data.mjs --timeout $Timeout 2>&1
         $ciResult | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "    ✅ CI 数据回取完成" -ForegroundColor Green
+            Write-Host "    [OK] CI data fetch complete" -ForegroundColor Green
         } else {
-            Write-Host "    ⚠️ CI 回取退出码: $LASTEXITCODE，继续本地同步..." -ForegroundColor Yellow
+            Write-Host "    [WARN] CI fetch exit code: $LASTEXITCODE, continuing local sync..." -ForegroundColor Yellow
         }
     } catch {
-        Write-Host "    ⚠️ CI 数据回取异常: $_，将使用本地 fallback 数据" -ForegroundColor Yellow
+        Write-Host "    [WARN] CI data fetch error: $_, using local fallback data" -ForegroundColor Yellow
     }
 }
 
-# ---- 第 2 步：本地运行 unified-sync（用 CI vitest 报告 / 本地 fallback）----
-Write-Host "`n[2/4] 运行 unified-sync.mjs 同步本地数据..." -ForegroundColor Yellow
+# ---- Step 2: Run local unified-sync ----
+Write-Host "`n[2/4] Running unified-sync.mjs..." -ForegroundColor Yellow
 try {
     node scripts/unified-sync.mjs 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "    ✅ unified-sync 完成" -ForegroundColor Green
+        Write-Host "    [OK] unified-sync complete" -ForegroundColor Green
     } else {
-        Write-Host "    ⚠️ unified-sync 退出码: $LASTEXITCODE" -ForegroundColor Yellow
+        Write-Host "    [WARN] unified-sync exit code: $LASTEXITCODE" -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "    ❌ unified-sync 失败: $_" -ForegroundColor Red
+    Write-Host "    [FAIL] unified-sync error: $_" -ForegroundColor Red
 }
 
-# ---- 第 3 步：重启本地管线服务器 ----
-Write-Host "`n[3/4] 重启管线服务器 (端口 $SERVER_PORT)..." -ForegroundColor Yellow
+# ---- Step 3: Restart pipeline server ----
+Write-Host "`n[3/4] Restarting pipeline server (port $SERVER_PORT)..." -ForegroundColor Yellow
 
 $existing = Get-NetTCPConnection -LocalPort $SERVER_PORT -ErrorAction SilentlyContinue
 if ($existing) {
     $procId = $existing.OwningProcess
     try {
         Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
-        Write-Host "    已停止旧进程 (PID: $procId)" -ForegroundColor Gray
+        Write-Host "    Stopped old process (PID: $procId)" -ForegroundColor Gray
     } catch {
-        Write-Host "    ⚠️ 无法停止进程 PID:$procId" -ForegroundColor Yellow
+        Write-Host "    [WARN] Cannot stop process PID:$procId" -ForegroundColor Yellow
     }
     Start-Sleep -Seconds 1
 }
@@ -92,16 +93,16 @@ try {
     Start-Sleep -Seconds 2
     $check = Get-NetTCPConnection -LocalPort $SERVER_PORT -ErrorAction SilentlyContinue
     if ($check -and $check.State -eq "Listen") {
-        Write-Host "    ✅ 服务器运行中 (PID: $($proc.Id), 端口: $SERVER_PORT)" -ForegroundColor Green
+        Write-Host "    [OK] Server running (PID: $($proc.Id), port: $SERVER_PORT)" -ForegroundColor Green
     } else {
-        Write-Host "    ⚠️ 端口验证未通过" -ForegroundColor Yellow
+        Write-Host "    [WARN] Port verification failed" -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "    ❌ 启动服务器失败: $_" -ForegroundColor Red
+    Write-Host "    [FAIL] Server start error: $_" -ForegroundColor Red
 }
 
-# ---- 第 4 步：验证数据一致性 ----
-Write-Host "`n[4/4] 验证数据一致性..." -ForegroundColor Yellow
+# ---- Step 4: Verify data consistency ----
+Write-Host "`n[4/4] Verifying data consistency..." -ForegroundColor Yellow
 
 try {
     $pd = Get-Content "$PIPELINE_DIR\pipeline-data.json" -Raw | ConvertFrom-Json
@@ -118,21 +119,21 @@ try {
 
     Write-Host "    pipeline-data KPI:  $kpiCases / $kpiPassed / $kpiFailed  score=$kpiScore" -ForegroundColor Gray
     Write-Host "    _test_detail:       $detailTotal" -ForegroundColor Gray
-    Write-Host "    test-case-mapping:  $mappingCases 用例, $mappingFiles 文件" -ForegroundColor Gray
+    Write-Host "    test-case-mapping:  $mappingCases cases, $mappingFiles files" -ForegroundColor Gray
 
     $match1 = ($kpiCases -eq $detailTotal)
     $match2 = ($kpiCases -eq $mappingCases)
     if ($match1 -and $match2) {
-        Write-Host "    ✅ 数据一致性: ALL MATCH ($kpiCases 用例)" -ForegroundColor Green
+        Write-Host "    [OK] Data consistent: ALL MATCH ($kpiCases cases)" -ForegroundColor Green
     } else {
-        Write-Host "    ❌ 数据不一致! KPI=$kpiCases detail=$detailTotal mapping=$mappingCases" -ForegroundColor Red
+        Write-Host "    [FAIL] Data mismatch! KPI=$kpiCases detail=$detailTotal mapping=$mappingCases" -ForegroundColor Red
     }
 } catch {
-    Write-Host "    ❌ 验证失败: $_" -ForegroundColor Red
+    Write-Host "    [FAIL] Verification error: $_" -ForegroundColor Red
 }
 
-# 文件状态
-Write-Host "`n数据文件:" -ForegroundColor Yellow
+# File status
+Write-Host "`nData files:" -ForegroundColor Yellow
 @("pipeline-data.json", "_test_detail.json", "test-case-mapping.json", 
   "issue-data.json", "project-progress-data.json") | ForEach-Object {
     $p = "$PIPELINE_DIR\$_"
@@ -145,5 +146,5 @@ Write-Host "`n数据文件:" -ForegroundColor Yellow
 }
 
 Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "管线本地同步完成: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Cyan
+Write-Host "Pipeline Local Sync DONE: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
