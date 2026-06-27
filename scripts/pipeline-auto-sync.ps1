@@ -105,9 +105,10 @@ try {
 Write-Host "`n[4/4] Verifying data consistency..." -ForegroundColor Yellow
 
 try {
-    $pd = Get-Content "$PIPELINE_DIR\pipeline-data.json" -Raw | ConvertFrom-Json
-    $td = Get-Content "$PIPELINE_DIR\_test_detail.json" -Raw | ConvertFrom-Json
-    $mp = Get-Content "$PIPELINE_DIR\test-case-mapping.json" -Raw | ConvertFrom-Json
+    # 必须指定 -Encoding UTF8，否则 PS 默认用 GBK 读取导致中文乱码破坏 JSON 语法
+    $pd = Get-Content "$PIPELINE_DIR\pipeline-data.json" -Raw -Encoding UTF8 | ConvertFrom-Json
+    $td = Get-Content "$PIPELINE_DIR\_test_detail.json" -Raw -Encoding UTF8 | ConvertFrom-Json
+    $mp = Get-Content "$PIPELINE_DIR\test-case-mapping.json" -Raw -Encoding UTF8 | ConvertFrom-Json
 
     $kpiCases = $pd.kpi.testCases
     $kpiPassed = $pd.kpi.testPassed
