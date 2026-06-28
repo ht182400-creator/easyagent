@@ -66,7 +66,7 @@
 - **唯一版本源**: `version.json` (v0.4.0)，修改后运行 `node scripts/sync-version.mjs` 同步
 - **禁止硬编码**: UI 组件通过 `/api/version` API 获取版本号，严禁写死
 - **发布**: `node scripts/release.mjs patch|minor|major` 版本标记；`release-publish.bat` 全流程交互发布
-- **CI/CD**: `.github/workflows/ci.yml` (日常测试) + `release.yml` (Tag 推送自动构建+发布)。⚠️ **必须使用 `windows-2022` runner**，`windows-latest` (Server 2025 + VS 2026) 不被 node-gyp v10.3.1 识别。⚠️ **发版 commit 绝不能含 `[skip ci]`**：因为 tag 指向该 commit，GitHub 会把 tag push 事件也跳过，导致 release.yml 不触发（v0.6.18 实测验证）。
+- **CI/CD**: `.github/workflows/ci.yml` (日常测试) + `release.yml` (Tag 推送自动构建+发布)。⚠️ **必须使用 `windows-2022` runner**，`windows-latest` (Server 2025 + VS 2026) 不被 node-gyp v10.3.1 识别。⚠️ **发版 commit 绝不能含 `[skip ci]`**：因为 tag 指向该 commit，GitHub 会把 tag push 事件也跳过，导致 release.yml 不触发（v0.6.18 实测验证）。📄 详细复盘见 `docs/50_v0.6.18_发版双问题复盘_eslint路径与skipCI抑制.md`
 - verify-build.cjs 第 6 项自动拦截旧版本号硬编码
 - 模型列表通过 `/v1/models` API 动态获取，ProviderPresets 仅兜底
 - 命令白名单从 `EASYAGENT_ALLOWED_COMMANDS` 环境变量加载

@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/core",
-  "version": "0.6.19",
+  "version": "0.6.20",
   "description": "EasyAgent核心引擎 - Agent系统、模型适配器、工具系统",
   "type": "module",
   "main": "./dist/index.js",

@@ -388,6 +388,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      # tag checkout 进入 detached HEAD，git push 无法工作 → 切换到 main 分支
+      - name: Switch to main branch
+        run: git checkout main
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
