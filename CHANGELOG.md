@@ -7,6 +7,13 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.22] - 2026-06-28
+
+### Fixed
+- fix(lint): 修复剩余10个errors (prefer-const, no-unsafe-function-type, no-require-imports, no-misleading-character-class) + 51号文档 (ht182400-creator)
+- fix(lint): 修复12个测试文件中51处 no-empty 错误（catch块添加注释） (ht182400-creator)
+- fix(ci): package.json eslint 版本号与 pnpm-lock.yaml 对齐 (^9.15.0→^9.39.4, ^8.15.0→^8.62.0) (ht182400-creator)
+
 ## [0.6.21] - 2026-06-28
 
 ### Fixed

@@ -625,6 +625,8 @@ if "!HAS_POST_CHANGES!"=="0" (
 )
 
 echo   Committing pipeline artifacts...
+rem 清理管线脏文件（Step 6 pipeline sync 的残留），防止混入 artifacts commit
+git checkout HEAD -- docs/pipeline/ 2>nul
 git add .
 git commit -m "chore: release artifacts for !FINAL_VERSION! [skip ci]"
 if %errorlevel% equ 0 (
@@ -648,6 +650,16 @@ del "%STATUS_FILE%" 2>nul
 
 :FINAL_DONE
 echo -----------------------------------------------------------
+
+rem 清理管线脏文件（Step 6 pipeline sync 的残留修改，防止下次 git pull --rebase 冲突）
+echo   Cleaning pipeline artifacts...
+git checkout HEAD -- docs/pipeline/ 2>nul
+if %errorlevel% equ 0 (
+    echo   [OK] Pipeline files cleaned
+) else (
+    echo   [WARN] Could not clean pipeline files (may already be clean)
+)
+echo.
 
 pause
 exit /b 0
