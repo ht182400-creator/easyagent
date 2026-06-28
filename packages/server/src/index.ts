@@ -2902,7 +2902,7 @@ if (isMainModule) {
         console.log(
           [
             '╔══════════════════════════════════════════╗',
-            '║        EasyAgent Server v0.6.21           ║',
+            '║        EasyAgent Server v0.6.22           ║',
             `║  HTTP:      http://localhost:${PORT}        ║`,
             `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
             '╚══════════════════════════════════════════╝',
