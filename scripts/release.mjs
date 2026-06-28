@@ -356,6 +356,11 @@ async function main() {
     // release.yml 也一并跳过。ci.yml 重复跑一次无害，Release workflow 能正常触发才关键。
     const commitMsg = `release: v${targetVersion}\n\n${changelogSummary}`;
 
+    // ⚠️ 关键：管线数据文件由 CI sync-pipeline job 自动维护，绝不能被 release commit 包含
+    // 否则与 origin/main 的 CI 自动推送数据冲突，导致 rebase 失败。
+    // post-commit hook（update-progress.mjs → unified-sync.mjs）会在每次 commit 后修改
+    // 这些文件，形成脏数据。必须先恢复到 HEAD 状态，阻止脏管线数据进入 commit。
+    execSync('git checkout HEAD -- docs/pipeline/', { cwd: root, stdio: 'pipe' });
     execSync('git add .', { cwd: root, stdio: 'inherit' });
     execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, { cwd: root, stdio: 'inherit' });
     success(`Git commit: release v${targetVersion}`);
@@ -367,11 +372,12 @@ async function main() {
     });
     success(`Git tag: v${targetVersion}`);
 
-    // 回退 post-commit hook 可能产生的管线文件修改（避免 rebase 冲突）
+    // 回退 post-commit hook 本次触发可能产生的管线文件修改
     try {
-      execSync('git restore docs/pipeline/', { cwd: root, stdio: 'pipe' });
+      execSync('git checkout HEAD -- docs/pipeline/', { cwd: root, stdio: 'pipe' });
     } catch { /* 没有管线文件修改则跳过 */ }
     // 推送前先 rebase 远程（CI 管线同步可能在此期间推了新 commit）
+    // 由于管线数据不再包含在 release commit 中，rebase 不会冲突
     execSync('git pull --rebase origin main', { cwd: root, stdio: 'inherit' });
 
     // 分两次 push：先 commit 再 tag
