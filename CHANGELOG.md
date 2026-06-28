@@ -7,6 +7,11 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.18] - 2026-06-28
+
+### Fixed
+- fix: release.mjs 分两次 push，避免 [skip ci] 抑制 tag 触发的 release.yml (ht182400-creator)
+
 ## [0.6.17] - 2026-06-28
 
 ### Fixed

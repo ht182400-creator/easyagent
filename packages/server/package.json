@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/server",
-  "version": "0.6.17",
+  "version": "0.6.18",
   "description": "EasyAgent Web服务端 - REST API + WebSocket",
   "type": "module",
   "main": "./dist/index.js",

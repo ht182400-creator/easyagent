@@ -14,12 +14,16 @@ function pnpmRequire(pkgName) {
   const pnpmDir = path.join(rootDir, 'node_modules', '.pnpm');
   const { readdirSync } = require('fs');
 
+  // pnpm 目录命名格式: @scope+pkg@version_peerDeps...
+  // 例如 @eslint/js → 目录前缀 @eslint+js@
+  const dirPrefix = pkgName.replace('/', '+') + '@';
   let foundDir = null;
   try {
     const dirs = readdirSync(pnpmDir, { withFileTypes: true });
     for (const dirent of dirs) {
-      if (dirent.isDirectory() && dirent.name.startsWith(pkgName.replace('/', '+') + '@')) {
-        foundDir = path.join(pnpmDir, dirent.name, 'node_modules', pkgName.split('/').pop());
+      if (dirent.isDirectory() && dirent.name.startsWith(dirPrefix)) {
+        // pkgName 保留完整 scope 路径(如 @eslint/js), path.join 自动处理跨平台分隔符
+        foundDir = path.join(pnpmDir, dirent.name, 'node_modules', pkgName);
         break;
       }
     }
