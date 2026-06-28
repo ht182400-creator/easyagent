@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/frontend",
-  "version": "0.6.20",
+  "version": "0.6.21",
   "description": "EasyAgent 统一前端 - Web + Desktop 共享 UI 组件/页面/状态管理",
   "type": "module",
   "main": "./src/mountApp.tsx",

@@ -7,6 +7,12 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.21] - 2026-06-28
+
+### Fixed
+- fix(ci): release sync-pipeline checkout main + 补全 eslint 依赖 [skip ci] (ht182400-creator)
+- fix(release): 阻止管线数据进入 release commit [skip ci] (ht182400-creator)
+
 ## [0.6.20] - 2026-06-28
 
 ### Changed

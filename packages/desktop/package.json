@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/desktop",
-  "version": "0.6.20",
+  "version": "0.6.21",
   "description": "EasyAgent 桌面版 - Electron原生桌面AI编程助手",
   "author": "EasyAgent Team <team@easyagent.dev>",
   "type": "module",
