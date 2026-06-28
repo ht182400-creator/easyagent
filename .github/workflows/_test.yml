@@ -1,0 +1,185 @@
+name: Shared Tests
+
+# ============================================================
+# 可复用测试工作流 — ci.yml 和 release.yml 的唯一真相来源
+#
+# 包含 7 个 job:
+#   test-core / test-server / test-desktop / coverage
+#   test-pipeline / lint-and-format / build-check
+#
+# 被 ci.yml（push/PR）和 release.yml（tag/手动）引用
+# ============================================================
+
+on:
+  workflow_call:
+
+env:
+  NODE_VERSION: '22'
+  npm_config_msvs_version: '2022'
+
+jobs:
+  test-core:
+    name: Test Core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+      - name: Run core tests
+        run: cd packages/core && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-core
+          path: docs/pipeline/_vitest-core.json
+          if-no-files-found: error
+
+  test-server:
+    name: Test Server
+    needs: test-core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+      - name: Build server
+        run: cd packages/server && npx tsup
+      - name: Run server tests
+        run: cd packages/server && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-server
+          path: docs/pipeline/_vitest-server.json
+          if-no-files-found: error
+
+  test-desktop:
+    name: Test Desktop
+    needs: test-core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core + frontend type check
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../frontend && npx tsc --noEmit
+      - name: Run desktop tests
+        run: cd packages/desktop && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-desktop
+          path: docs/pipeline/_vitest-desktop.json
+          if-no-files-found: error
+
+  coverage:
+    name: Coverage Gate
+    needs:
+      - test-core
+      - test-server
+      - test-desktop
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core + server
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../server && npx tsup
+      - name: Core coverage check
+        run: cd packages/core && npx vitest run --coverage
+      - name: Server coverage check (Desktop excluded - code in frontend pkg)
+        run: cd packages/server && npx vitest run --coverage
+
+  test-pipeline:
+    name: Pipeline Tests
+    needs: test-core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Run pipeline tests
+        run: node --test docs/pipeline/__tests__/pipeline-*.test.mjs
+
+  lint-and-format:
+    name: Lint & Format Check
+    continue-on-error: true  # 代码库有历史 lint 债务，不阻塞 CI 流程
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: npx eslint . --max-warnings 700 --config packages/frontend/eslint.config.cjs
+        continue-on-error: true
+      - name: Format check
+        run: npx prettier --check "packages/**/*.{ts,tsx,json,css}" "scripts/**/*.mjs" "docs/**/*.md"
+        continue-on-error: true
+
+  build-check:
+    name: Build Verification
+    needs: test-core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build all packages
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../cli && npx tsup
+          cd ../server && npx tsup
+          cd ../desktop && npx tsup
+          cd ../frontend && npx tsc --noEmit
+      - name: Verify build
+        run: node packages/desktop/scripts/verify-build.cjs

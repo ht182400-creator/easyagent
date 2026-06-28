@@ -1,20 +1,19 @@
 name: Release
 
 # ============================================================
-# EasyAgent 自动发布流水线
+# EasyAgent 自动发布流水线（D方案：可复用 Workflow）
 #
 # 触发方式：
 #   1. 推送版本标签 (v*) → 自动构建 + 发布到 GitHub Release
 #   2. 手动触发 (workflow_dispatch) → 输入版本号
 #
+# 质量门禁：
+#   - 测试（_test.yml）→ 构建 → 发布，任一步骤失败即中断
+#   - 发版 commit 含 [skip ci] 避免 CI 重复跑
+#
 # 构建目标：
 #   - Desktop NSIS 安装包 (Windows x64 .exe)
 #   - Web 仪表盘静态文件 (部署用)
-#
-# 发布方式：
-#   - 自动创建 GitHub Release (draft=false, latest=true)
-#   - 上传 Desktop EXE + blockmap + latest.yml
-#   - 上传 Web dist 压缩包
 # ============================================================
 
 on:
@@ -33,7 +32,7 @@ on:
         default: false
         type: boolean
 
-# 允许 Release 创建和上传
+# 允许 Release 创建 + 管线数据推送
 permissions:
   contents: write
   actions: read
@@ -70,11 +69,21 @@ jobs:
           echo "Resolved version: $VER"
 
   # ============================================================
+  # 质量门禁：全量测试（来自可复用 _test.yml）
+  # 测试不通过 → 不构建 → 不发版
+  # ============================================================
+  tests:
+    name: Quality Gate (Tests)
+    uses: ./.github/workflows/_test.yml
+
+  # ============================================================
   # Desktop 构建 (Windows 专属 - 需 MSVC + Electron 打包)
   # ============================================================
   build-desktop:
     name: Build Desktop (Windows EXE)
-    needs: version
+    needs:
+      - version
+      - tests       # 🔒 质量门禁：测试通过后才构建
     runs-on: windows-2022
     timeout-minutes: 30
     env:
@@ -84,7 +93,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        # 从 package.json 的 packageManager 字段自动检测版本
 
       - uses: actions/setup-node@v4
         with:
@@ -92,7 +100,6 @@ jobs:
           cache: 'pnpm'
 
       - uses: ilammy/msvc-dev-cmd@v1
-        # 提供 MSVC 编译器 (better-sqlite3 原生模块编译需要)
 
       # ---- 安装依赖 ----
       - name: Install dependencies
@@ -101,31 +108,25 @@ jobs:
       # ---- Phase 1: 构建共享模块 ----
       - name: Build core
         run: cd packages/core && npx tsup
-        # core: Agent/Tool/Session 引擎 (ESM, 含 .d.ts 类型声明)
 
       - name: Build server
         run: cd packages/server && npx tsup
-        # server: Express + WebSocket 后端 API
 
       # ---- Phase 2: 构建 Desktop 专属产物 ----
       - name: Build desktop main (tsup)
         run: cd packages/desktop && npx tsup
-        # main.js: 内联 core+server (noExternal 机制), ~1.14MB
 
       - name: Build desktop preload (CJS)
         run: cd packages/desktop && npx tsup --config tsup.preload.config.ts
-        # preload.cjs: Electron 渲染进程沙箱桥接 (必须 CJS 格式)
 
       - name: Build desktop renderer (Vite)
         run: cd packages/desktop && npx vite build
-        # dist/renderer/: React 前端 UI, 通过 file:// 协议加载
 
       # ---- Phase 2.5: 构建前验证 ----
       - name: Pre-package verification
         run: node packages/desktop/scripts/verify-build.cjs
 
       # ---- Phase 3: better-sqlite3 双版本编译 ----
-      # 系统 Node 的 .node 与 Electron 的 .node ABI 不同, 需分别编译
       - name: Compile better-sqlite3 (Dual ABI)
         run: node scripts/rebuild-sqlite3.mjs
 
@@ -143,12 +144,10 @@ jobs:
         run: |
           cd packages/desktop
           npx electron-builder --win --x64
-        # 输出: release/EasyAgent-{version}-win-x64.exe (安装包 ~105MB)
-        #       release/win-unpacked/EasyAgent.exe (便携版 ~168MB)
 
       # ---- Phase 4.5: 恢复 sqlite3 ----
       - name: Restore sqlite3 to System version
-        if: always()  # 即使打包失败也恢复, 不影响后续
+        if: always()
         run: |
           $release = "node_modules/.pnpm/better-sqlite3@12.11.1/node_modules/better-sqlite3/build/Release"
           if (Test-Path "$release/better_sqlite3.node.backup") {
@@ -179,7 +178,9 @@ jobs:
   # ============================================================
   build-web:
     name: Build Web Dashboard
-    needs: version
+    needs:
+      - version
+      - tests       # 🔒 质量门禁
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -187,7 +188,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        # 从 package.json 的 packageManager 字段自动检测版本
 
       - uses: actions/setup-node@v4
         with:
@@ -208,7 +208,6 @@ jobs:
       # ---- Phase 2: 构建 Web 前端 ----
       - name: Build web (Vite)
         run: cd packages/web && npx vite build
-        # 输出: packages/web/dist/ (静态 HTML+JS+CSS)
 
       # ---- Phase 3: 打包上传 ----
       - name: Package web dist
@@ -235,7 +234,7 @@ jobs:
       - build-web
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # 创建 Release + 上传 asset
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -264,7 +263,6 @@ jobs:
           echo "=== Release Assets ==="
           ls -lh release-assets/
           echo ""
-          # 检查 Desktop Installer
           EXE=$(ls release-assets/EasyAgent-*.exe 2>/dev/null | head -1)
           if [ -n "$EXE" ]; then
             echo "✅ Desktop EXE: $EXE ($(du -h "$EXE" | cut -f1))"
@@ -272,21 +270,18 @@ jobs:
             echo "❌ Desktop EXE not found!"
             exit 1
           fi
-          # 检查 blockmap
           BLOCKMAP=$(ls release-assets/EasyAgent-*.exe.blockmap 2>/dev/null | head -1)
           if [ -n "$BLOCKMAP" ]; then
             echo "✅ Blockmap: $BLOCKMAP ($(du -h "$BLOCKMAP" | cut -f1))"
           else
             echo "⚠️  Blockmap not found (incremental update will be disabled)"
           fi
-          # 检查 latest.yml
           if [ -f "release-assets/latest.yml" ]; then
             echo "✅ latest.yml: $(head -1 release-assets/latest.yml)"
           else
             echo "❌ latest.yml not found!"
             exit 1
           fi
-          # 检查 Web dist
           if [ -f "release-assets/web-dist.tar.gz" ]; then
             echo "✅ Web dist: $(du -h release-assets/web-dist.tar.gz | cut -f1)"
           else
@@ -305,7 +300,6 @@ jobs:
           RUN_ID="${{ github.run_id }}"
           SERVER_URL="${{ github.server_url }}"
 
-          # 尝试从 CHANGELOG.md 提取当前版本的变更内容
           CHANGES=""
           if [ -f "CHANGELOG.md" ]; then
             CHANGES=$(awk "/## ${TAG}/,/^## /" CHANGELOG.md | sed '1d;$d' | sed '/^$/d' || echo "")
@@ -378,3 +372,57 @@ jobs:
           echo ""
           echo "  Auto-update:  Desktop users will receive update notification within 24h."
           echo "========================================"
+
+  # ============================================================
+  # 管线数据同步 — 发版后自动更新管线文件
+  # ============================================================
+  sync-pipeline:
+    name: Sync Pipeline Data
+    needs:
+      - tests
+      - build-desktop
+      - build-web
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download vitest reports
+        uses: actions/download-artifact@v4
+        with:
+          path: docs/pipeline
+          merge-multiple: true
+      - name: Run unified sync
+        run: node scripts/unified-sync.mjs
+      - name: Commit pipeline data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/pipeline/
+          if git diff --cached --quiet; then
+            echo "No pipeline data changes to commit"
+          else
+            git commit -m "ci: auto-sync pipeline data [skip ci]"
+            git stash
+            if git pull --rebase origin main; then
+              git stash pop 2>/dev/null || true
+            else
+              echo "⚠️ Rebase conflict detected, resetting and re-syncing..."
+              git rebase --abort 2>/dev/null || true
+              git stash drop 2>/dev/null || true
+              git reset --hard origin/main
+              node scripts/unified-sync.mjs
+              git add docs/pipeline/
+              if git diff --cached --quiet; then
+                echo "No changes after re-sync"
+              else
+                git commit -m "ci: auto-sync pipeline data [skip ci]"
+              fi
+            fi
+            git push
+            echo "✅ Pipeline data synced and pushed"
+          fi

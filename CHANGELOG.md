@@ -7,6 +7,11 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.16] - 2026-06-28
+
+### Fixed
+- fix: CI sync-pipeline 冲突根治 — rebase 失败时 reset + 重新生成管线数据 (ht182400-creator)
+
 ## [0.6.15] - 2026-06-27
 
 ### Changed

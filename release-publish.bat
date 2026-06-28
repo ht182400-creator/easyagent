@@ -626,7 +626,7 @@ if "!HAS_POST_CHANGES!"=="0" (
 
 echo   Committing pipeline artifacts...
 git add .
-git commit -m "chore: release artifacts for !FINAL_VERSION!"
+git commit -m "chore: release artifacts for !FINAL_VERSION! [skip ci]"
 if %errorlevel% equ 0 (
     echo   [OK] Commit created
     rem 推送前先 rebase 远程（CI 管线同步可能在此期间推了新 commit）

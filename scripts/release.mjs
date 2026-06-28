@@ -352,7 +352,8 @@ async function main() {
       .replace(/^## \[.*\] - .*\n/gm, '') // 去掉标题行
       .replace(/^###\s/gm, '') // 保留分类名但去 ### 前缀
       .trim();
-    const commitMsg = `release: v${targetVersion}\n\n${changelogSummary}`;
+    // [skip ci] 避免 CI workflow 为发版 commit 重复跑（测试由 Release workflow 统一执行）
+    const commitMsg = `release: v${targetVersion} [skip ci]\n\n${changelogSummary}`;
 
     execSync('git add .', { cwd: root, stdio: 'inherit' });
     execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, { cwd: root, stdio: 'inherit' });
