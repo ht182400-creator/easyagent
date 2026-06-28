@@ -214,17 +214,32 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # 添加整个管线目录，确保 unified-sync 生成的所有文件都被追踪
           git add docs/pipeline/
           if git diff --cached --quiet; then
             echo "No pipeline data changes to commit"
           else
             git commit -m "ci: auto-sync pipeline data [skip ci]"
-            # unified-sync 可能在 commit 瞬间继续生成新文件，导致 unstaged 残留
-            # 推送前 stash → rebase 远程 → pop stash → push，杜绝竞态
+            # 防止 commit 后 hooks 产生 unstaged 残留阻塞 rebase
             git stash
-            git pull --rebase origin main
-            git stash pop
+            # 尝试 rebase；若并行 CI 同时修改了管线文件则可能冲突
+            if git pull --rebase origin main; then
+              git stash pop 2>/dev/null || true
+            else
+              # 冲突恢复策略：管线文件均为 unified-sync 全量生成，
+              # 重置到远程最新 → 用本轮测试报告重新生成 → 提交推送
+              echo "⚠️ Rebase conflict detected, resetting and re-syncing..."
+              git rebase --abort 2>/dev/null || true
+              git stash drop 2>/dev/null || true
+              git reset --hard origin/main
+              # 重新生成管线数据（下载的测试报告在 docs/pipeline/ 中不受 reset 影响）
+              node scripts/unified-sync.mjs
+              git add docs/pipeline/
+              if git diff --cached --quiet; then
+                echo "No changes after re-sync"
+              else
+                git commit -m "ci: auto-sync pipeline data [skip ci]"
+              fi
+            fi
             git push
             echo "✅ Pipeline data synced and pushed"
           fi
