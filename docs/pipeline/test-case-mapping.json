@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "generatedAt": "2026-06-28T10:12:07.180Z",
+    "generatedAt": "2026-06-28T10:14:26.058Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1313,
-    "unmappedCases": 118,
-    "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
+    "totalTestCases": 1271,
+    "unmappedCases": 76,
+    "projectRoot": "/home/runner/work/easyagent/easyagent",
     "source": "module-registry.mjs (统一注册表)"
   },
   "modules": {
@@ -471,15 +471,15 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 118,
+      "totalCases": 76,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 118,
+          "cases": 76,
           "files": [
             {
               "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",
-              "cases": 37
+              "cases": 0
             },
             {
               "path": "packages/desktop/src/__tests__/main/auto-updater-state.test.ts",
@@ -499,7 +499,7 @@
             },
             {
               "path": "packages/frontend/src/__tests__/mountapp.test.tsx",
-              "cases": 5
+              "cases": 0
             },
             {
               "path": "packages/frontend/src/__tests__/request.test.ts",
