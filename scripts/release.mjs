@@ -366,14 +366,20 @@ async function main() {
     });
     success(`Git tag: v${targetVersion}`);
 
+    // 回退 post-commit hook 可能产生的管线文件修改（避免 rebase 冲突）
+    try {
+      execSync('git restore docs/pipeline/', { cwd: root, stdio: 'pipe' });
+    } catch { /* 没有管线文件修改则跳过 */ }
     // 推送前先 rebase 远程（CI 管线同步可能在此期间推了新 commit）
-    // 管线 JSON 和版本文件在不同目录，不会冲突
-    // git hooks 可能在 commit/tag 后修改了管线文件 → stash 保护
-    execSync('git stash', { cwd: root, stdio: 'inherit' });
     execSync('git pull --rebase origin main', { cwd: root, stdio: 'inherit' });
-    execSync('git stash pop', { cwd: root, stdio: 'inherit' });
-    execSync('git push origin main --follow-tags', { cwd: root, stdio: 'inherit' });
-    success('已推送到 GitHub (main + tags)');
+
+    // ⚠️ 关键：分两次 push，避免 [skip ci] 抑制 tag 触发的 release.yml
+    // 第一次 push commit（含 [skip ci] → 跳过 ci.yml，这是我们期望的）
+    execSync('git push origin main', { cwd: root, stdio: 'inherit' });
+    success('已推送 commit 到 origin/main（ci.yml 已通过 [skip ci] 跳过）');
+    // 第二次单独 push tag（无 [skip ci] → 触发 release.yml 质量门禁 + 构建发布）
+    execSync(`git push origin v${targetVersion}`, { cwd: root, stdio: 'inherit' });
+    success(`已推送 tag v${targetVersion}（release.yml 应自动触发）`);
   } catch (err) {
     error(`Git 操作失败: ${(err && err.message) || err}`);
     process.exit(1);
