@@ -3,7 +3,7 @@
  * 覆盖 ReadConfigTool, NpmRunTool, EnvInfoTool, ProjectStatsTool, RememberTool, RecallTool, ForgetTool
  */
 import { describe, it, expect, beforeEach, beforeAll, afterEach } from 'vitest';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -291,7 +291,7 @@ describe('RememberTool - 存储记忆', () => {
     expect(result.content).toContain('my-setting');
     const memDir = join(workspace, '.easyagent', 'memory');
     expect(existsSync(memDir)).toBe(true);
-    const files = require('fs').readdirSync(memDir);
+    const files = readdirSync(memDir);
     expect(files.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -302,7 +302,7 @@ describe('RememberTool - 存储记忆', () => {
       ctx(workspace),
     );
     const memDir = join(workspace, '.easyagent', 'memory');
-    const files = require('fs').readdirSync(memDir);
+    const files = readdirSync(memDir);
     expect(files.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -319,7 +319,7 @@ describe('RememberTool - 存储记忆', () => {
     );
     expect(result.success).toBe(true);
     const memDir = join(workspace, '.easyagent', 'memory');
-    const files = require('fs').readdirSync(memDir);
+    const files = readdirSync(memDir);
     expect(files.some((f: string) => f.startsWith('general_'))).toBe(true);
   });
 

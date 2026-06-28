@@ -32,8 +32,8 @@ function cleanup(dir: string): void {
 // ==================== PluginPermission 测试 ====================
 
 describe('PluginPermission - 权限检查', () => {
-  let checkPermissions: Function;
-  let getDangerousPermissions: Function;
+  let checkPermissions: (...args: unknown[]) => unknown;
+  let getDangerousPermissions: (...args: unknown[]) => unknown;
   let PermissionLevels: any;
   let DANGEROUS_PERMISSIONS: any;
 
@@ -174,8 +174,8 @@ describe('PluginPermission - 权限级别预设', () => {
 // ==================== PluginManifest 测试 ====================
 
 describe('PluginManifest - manifest 加载验证', () => {
-  let loadManifest: Function;
-  let getManifestPath: Function;
+  let loadManifest: (...args: unknown[]) => unknown;
+  let getManifestPath: (...args: unknown[]) => unknown;
   const tmpDir = join(tmpdir(), `easyagent-manifest-test-${Date.now()}`);
 
   beforeAll(async () => {

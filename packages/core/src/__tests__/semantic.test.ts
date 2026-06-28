@@ -482,7 +482,7 @@ describe('getCodebaseOverview', () => {
     const overview = getCodebaseOverview(testDir);
     expect(overview.fileTree).toContain('src');
     // 应使用 📁 或 📄 前缀
-    expect(overview.fileTree).toMatch(/[📁📄]/);
+    expect(overview.fileTree).toMatch(/[📁📄]/u);
   });
 });
 

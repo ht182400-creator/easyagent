@@ -217,7 +217,7 @@ describe('PluginManager - unsafe模式加载', () => {
   });
 
   it('unsafe模式插件应有 register 回调被调用', async () => {
-    let registerCalled = false;
+    const registerCalled = false;
     const filePath = join(tmpDir, 'register-plugin.js');
     createFile(
       tmpDir,
