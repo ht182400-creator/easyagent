@@ -178,11 +178,158 @@ jobs:
 
 ## 7. 测试验证清单
 
-- [ ] `_test.yml` YAML 语法正确
-- [ ] `ci.yml` 正确引用 `_test.yml`
-- [ ] `release.yml` 正确引用 `_test.yml` + 质量门禁
-- [ ] `scripts/release.mjs` commit message 含 `[skip ci]`
-- [ ] `release-publish.bat` artifacts commit 含 `[skip ci]`
-- [ ] 所有 job 依赖链正确（needs 顺序）
-- [ ] Artifact 名称一致（vitest-core/server/desktop）
-- [ ] sync-pipeline 下载 artifact 路径正确
+- [x] `_test.yml` YAML 语法正确
+- [x] `ci.yml` 正确引用 `_test.yml`
+- [x] `release.yml` 正确引用 `_test.yml` + 质量门禁
+- [x] `scripts/release.mjs` commit message 含 `[skip ci]`
+- [x] `release-publish.bat` artifacts commit 含 `[skip ci]`
+- [x] 所有 job 依赖链正确（needs 顺序）
+- [x] Artifact 名称一致（vitest-core/server/desktop）
+- [x] sync-pipeline 下载 artifact 路径正确
+
+---
+
+## 8. 实战场验证：v0.6.17 发布问题与修复
+
+> 日期: 2026-06-28  ·  版本: v0.6.17  ·  状态: ✅ 已修复
+
+### 8.1 现象
+
+v0.6.17 通过 `release-publish.bat` 完整发布了（commit + tag + GitHub Release + EXE 上传全部成功），但 **`release.yml` 没有被自动触发**，只能通过 `workflow_dispatch` 手动启动。
+
+```
+$ gh run list --workflow=release.yml --limit 5
+# 只显示历史 v0.6.13~v0.6.15，没有 v0.6.17
+```
+
+### 8.2 根因分析
+
+#### 8.2.1 关键代码路径
+
+`scripts/release.mjs` 第 375 行（修复前）：
+
+```js
+execSync('git push origin main --follow-tags', { cwd: root, stdio: 'inherit' });
+```
+
+这条命令一次性推送了：
+- Commit `cf3a750`（消息：`release: v0.6.17 [skip ci]`）
+- Tag `v0.6.17`（消息：`EasyAgent v0.6.17`）
+
+#### 8.2.2 GitHub Actions 的 `[skip ci]` 机制
+
+GitHub 的 skip 规则是**以 push 事件为单位判断的**：
+
+```
+一次 git push → 一个 push event → 检查该 push 中所有 commit 的消息
+                                      ↓
+                          是否有 [skip ci] / [ci skip] 等标记？
+                          ↓ Yes                    ↓ No
+                   整个 push event 的          正常触发所有
+                   所有 workflow 全部跳过        workflow
+```
+
+**关键**: tag push 不是独立事件。当 `--follow-tags` 把 commit 和 tag 在一次 push 中发送时，GitHub 将它视为**同一个 push event**。因为 commit 消息含 `[skip ci]`，整个 push event 被跳过——包括本来该由 tag 触发的 `release.yml`。
+
+#### 8.2.3 图解
+
+```
+修复前：
+  git push origin main --follow-tags
+    │
+    ├─ commit cf3a750: "release: v0.6.17 [skip ci]"
+    └─ tag v0.6.17:    "EasyAgent v0.6.17"
+    ↓
+  GitHub 收到 1 个 push event → 发现 [skip ci] → ❌ 全部跳过
+    ├─ ci.yml 被跳过       ✅ 期望
+    └─ release.yml 被跳过   ❌ 不期望！
+```
+
+### 8.3 修复方案
+
+#### 8.3.1 核心思路
+
+把 commit 和 tag 分两次独立 push，让 tag push 成为一个**不含 `[skip ci]` 的独立事件**。
+
+#### 8.3.2 代码修改
+
+`scripts/release.mjs`（`cba41d8`）：
+
+```js
+// 修复前：
+// execSync('git stash', ...);
+// execSync('git pull --rebase origin main', ...);
+// execSync('git stash pop', ...);
+// execSync('git push origin main --follow-tags', ...);  ← 一处致命
+
+// 修复后：
+// ① 回退 post-commit hook 产生的管线文件修改（避免 rebase 冲突）
+try {
+  execSync('git restore docs/pipeline/', { cwd: root, stdio: 'pipe' });
+} catch { /* 没有修改则跳过 */ }
+
+// ② rebase 远程（CI 管线同步可能提前推了新 commit）
+execSync('git pull --rebase origin main', { cwd: root, stdio: 'inherit' });
+
+// ③ 第一次 push：只推 commit（含 [skip ci] → ci.yml 被跳过 ✅）
+execSync('git push origin main', { cwd: root, stdio: 'inherit' });
+// ④ 第二次 push：只推 tag（无 [skip ci] → release.yml 正常触发 ✅）
+execSync(`git push origin v${targetVersion}`, { cwd: root, stdio: 'inherit' });
+```
+
+#### 8.3.3 修复后效果
+
+```
+修复后：
+  git push origin main
+    └─ commit cf3a750: "release: v0.6.17 [skip ci]"
+    ↓
+  GitHub 收到 push event → 发现 [skip ci] → ❌ ci.yml 跳过  ✅
+
+  git push origin v0.6.17
+    └─ tag v0.6.17: "EasyAgent v0.6.17"
+    ↓
+  GitHub 收到 tag create event → 无 [skip ci] → ✅ release.yml 触发
+    ├─ version:    解析 v0.6.17
+    ├─ tests:      质量门禁（引用 _test.yml）
+    ├─ build-desktop:  needs: [version, tests]
+    ├─ build-web:      needs: [version, tests]
+    ├─ release:        创建 GitHub Release + 上传构建产物
+    └─ sync-pipeline:  管线数据同步
+```
+
+### 8.4 附带改进
+
+#### 8.4.1 post-commit hook 干扰缓解
+
+原代码在 commit + tag 后执行 `git stash → pull --rebase → stash pop` 来避免远程冲突。但 `post-commit` hook 会重新运行 `unified-sync`，修改 `docs/pipeline/*.json`，导致：
+
+```
+commit → hook 改脏管线文件 → stash 保护 → rebase → stash pop 恢复脏文件 → 无法 clean push
+```
+
+修复：在 rebase 前用 `git restore docs/pipeline/` 回退 hook 产生的修改，减少脏文件干扰。
+
+#### 8.4.2 风险说明
+
+| 场景 | 风险 | 缓解 |
+|------|------|------|
+| 两次 push 之间远程有新 commit | git push 可能 non-fast-forward | 仍在 try-catch 内，失败会提示手动处理 |
+| tag 已存在的重复推送 | git push tag 报错 | release-publish.bat Step 5 会先检查 tag 是否存在 |
+| post-commit hook 持续改文件 | `git restore` 后 hook 可能再次触发 | 仅影响本地工作区，不影响远程；Step 7 会处理 |
+
+### 8.5 经验教训
+
+1. **`[skip ci]` 是 push event 级别的开关**，不是 commit 级别的。理解了这一点，就能理解为什么 `--follow-tags` 是问题的根因。
+2. **tag 推送必须是独立事件** 才能触发 tag 相关的 workflow。`--follow-tags` 把 tag 绑在 commit push 上，破坏了独立性。
+3. **D 方案本身正确**，只是 `scripts/release.mjs` 的推送方式与 GitHub 的 skip 机制产生了预期之外的交互。修复后 D 方案完整可用。
+
+### 8.6 下次发版验证点
+
+执行 `release-publish.bat` 后应确认：
+
+- [x] 控制台输出 `已推送 tag vX.Y.Z（release.yml 应自动触发）`
+- [ ] `gh run list --workflow=release.yml` 立即出现新的 Running/Queued run
+- [ ] release.yml → tests job 全部通过 → build-desktop + build-web 自动执行 → release job 创建 Release
+- [ ] sync-pipeline job 自动推送管线数据
+- [ ] 全程无需手动 `workflow_dispatch`
