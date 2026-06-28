@@ -7,6 +7,23 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.19] - 2026-06-28
+
+### Changed
+- 复盘文档
+- GitHub Release EXE 大文件清理
+- CI Sync Pipeline Data rebase 冲突根治
+- D方案：CI/CD可复用Workflow优化
+- GitHub Release EXE 大文件清理
+
+### Fixed
+- CI sync-pipeline 竞态修复
+- CI sync-pipeline unstaged 残留修复
+- Release workflow Build Desktop + Build Web 修复
+- Release workflow 自动触发修复
+- eslint.config.cjs scoped 包路径修复
+- [skip ci] 双重抑制问题 + release.mjs 修复
+
 ## [0.6.18] - 2026-06-28
 
 ### Fixed

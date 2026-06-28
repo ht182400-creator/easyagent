@@ -352,8 +352,9 @@ async function main() {
       .replace(/^## \[.*\] - .*\n/gm, '') // 去掉标题行
       .replace(/^###\s/gm, '') // 保留分类名但去 ### 前缀
       .trim();
-    // [skip ci] 避免 CI workflow 为发版 commit 重复跑（测试由 Release workflow 统一执行）
-    const commitMsg = `release: v${targetVersion} [skip ci]\n\n${changelogSummary}`;
+    // 注意：不能加 [skip ci]，因为 tag 指向的 commit 含 [skip ci] 会导致 GitHub 连 tag 触发的
+    // release.yml 也一并跳过。ci.yml 重复跑一次无害，Release workflow 能正常触发才关键。
+    const commitMsg = `release: v${targetVersion}\n\n${changelogSummary}`;
 
     execSync('git add .', { cwd: root, stdio: 'inherit' });
     execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, { cwd: root, stdio: 'inherit' });
@@ -373,11 +374,10 @@ async function main() {
     // 推送前先 rebase 远程（CI 管线同步可能在此期间推了新 commit）
     execSync('git pull --rebase origin main', { cwd: root, stdio: 'inherit' });
 
-    // ⚠️ 关键：分两次 push，避免 [skip ci] 抑制 tag 触发的 release.yml
-    // 第一次 push commit（含 [skip ci] → 跳过 ci.yml，这是我们期望的）
+    // 分两次 push：先 commit 再 tag
+    // 第二次 push tag 会触发 release.yml（基于 push: tags: ['v*'] 事件）
     execSync('git push origin main', { cwd: root, stdio: 'inherit' });
-    success('已推送 commit 到 origin/main（ci.yml 已通过 [skip ci] 跳过）');
-    // 第二次单独 push tag（无 [skip ci] → 触发 release.yml 质量门禁 + 构建发布）
+    success('已推送 commit 到 origin/main');
     execSync(`git push origin v${targetVersion}`, { cwd: root, stdio: 'inherit' });
     success(`已推送 tag v${targetVersion}（release.yml 应自动触发）`);
   } catch (err) {
