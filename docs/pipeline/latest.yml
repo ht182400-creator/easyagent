@@ -1,0 +1,8 @@
+version: 0.6.22
+files:
+  - url: EasyAgent-0.6.22-win-x64.exe
+    sha512: ygyIcg+iN9ILqJVMZQLPfM+71icEZfPCGw90ayTWHcDabffTVzudatHSkT3fqvrJK/fpq5YxD6nhCp/5/wqUnQ==
+    size: 109974370
+path: EasyAgent-0.6.22-win-x64.exe
+sha512: ygyIcg+iN9ILqJVMZQLPfM+71icEZfPCGw90ayTWHcDabffTVzudatHSkT3fqvrJK/fpq5YxD6nhCp/5/wqUnQ==
+releaseDate: '2026-06-28T12:19:25.149Z'
