@@ -36,7 +36,7 @@ describe('PreviewURLTool - URL预览', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('有效HTTP URL应成功', async () => {
@@ -96,7 +96,7 @@ describe('DiffFilesTool - 文件对比', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('两个相同文件应返回(较小篇幅)diff输出', async () => {
@@ -159,7 +159,7 @@ describe('AskUserTool - 用户交互', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('无选项时应为确认型问题', async () => {
@@ -227,7 +227,7 @@ describe('ReadImageTool - 读取图片', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('文件不存在应返回错误', async () => {
@@ -290,7 +290,7 @@ describe('GenerateImageTool - AI图片生成', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('有效prompt应返回生成配置', async () => {
@@ -367,7 +367,7 @@ describe('ScreenshotTool - 截图', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('有效URL应返回截图配置', async () => {

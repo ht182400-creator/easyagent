@@ -35,7 +35,7 @@ describe('KnowledgeAddTool - 添加文档', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('应能添加文本内容到知识库', async () => {
@@ -139,7 +139,7 @@ describe('KnowledgeSearchTool - 搜索知识库', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('空知识库应返回友好提示', async () => {
@@ -246,7 +246,7 @@ describe('KnowledgeGetTool - 获取文档', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('应能通过docId获取完整文档内容', async () => {
@@ -321,7 +321,7 @@ describe('KnowledgeListTool - 列出文档', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('空知识库应返回提示', async () => {
@@ -410,7 +410,7 @@ describe('KnowledgeRemoveTool - 删除文档', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('应能删除已存在的文档', async () => {

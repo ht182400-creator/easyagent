@@ -36,7 +36,7 @@ describe('ConfigManager - 默认配置', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('getConfig应返回当前配置', async () => {
@@ -48,7 +48,7 @@ describe('ConfigManager - 默认配置', () => {
     expect(config.agent.maxTurns).toBe(25);
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 });
 
@@ -66,7 +66,7 @@ describe('ConfigManager - 模型切换', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('getAvailableProviders应返回有密钥的提供商(Ollama默认有key)', async () => {
@@ -83,7 +83,7 @@ describe('ConfigManager - 模型切换', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('setApiKey后应能在providers中找到', async () => {
@@ -107,7 +107,7 @@ describe('ConfigManager - 模型切换', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('getProviderPresets应隐藏真实密钥', async () => {
@@ -128,7 +128,7 @@ describe('ConfigManager - 模型切换', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 });
 
@@ -153,7 +153,7 @@ describe('ConfigManager - 部分更新', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 });
 
@@ -186,7 +186,7 @@ describe('ConfigManager - 自定义提供商', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('setApiKey为预设提供商(kimi)创建条目时baseURL应来自预设', async () => {
@@ -213,7 +213,7 @@ describe('ConfigManager - 自定义提供商', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
   it('setApiKey为多个预设提供商(智谱/千问/豆包)都应正确获取baseURL', async () => {
@@ -244,6 +244,6 @@ describe('ConfigManager - 自定义提供商', () => {
 
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (err) {}
+    } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 });
