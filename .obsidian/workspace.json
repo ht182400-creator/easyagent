@@ -183,8 +183,14 @@
       "bases:新建数据库": false
     }
   },
-  "active": "74bf28dfb41b5938",
+  "active": "e54cb5c6c8335b80",
   "lastOpenFiles": [
+    "packages/core/dist/index-Bbn5tFrB.d.ts",
+    "packages/core/dist/adapters/index.d.ts",
+    "packages/core/dist/tools/index.d.ts",
+    "packages/core/dist/index.d.ts",
+    "packages/core/tsup.config.bundled_kxoc8lbewi.mjs",
+    "docs/pipeline/latest.yml",
     "docs/00_新手上手指南.md",
     "packages/desktop/node_modules/@electron/notarize/node_modules/fs-extra/README.md"
   ]
