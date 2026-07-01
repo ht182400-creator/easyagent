@@ -25,6 +25,7 @@ import {
   Send,
   Activity,
   FileText,
+  GitBranch,
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 import { getApiBase } from '../request';
@@ -37,6 +38,7 @@ const navGroups = [
       { path: '/', icon: LayoutDashboard, label: '首页' },
       { path: '/docs-guide', icon: FileText, label: '文档导读' },
       { path: '/chat', icon: MessageSquare, label: '对话' },
+      { path: '/langgraph', icon: GitBranch, label: 'LangGraph' },
     ],
   },
   {

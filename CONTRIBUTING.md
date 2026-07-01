@@ -124,7 +124,8 @@ easyagent/
 │   ├── cli/           # Ink React 终端 CLI
 │   ├── server/        # Express API Server + WebSocket
 │   ├── desktop/       # Electron Desktop 应用
-│   └── frontend/      # React Web Dashboard
+│   ├── frontend/      # React Web Dashboard
+│   └── langgraph/     # LangGraph 工作流引擎（状态化智能体）
 ├── docs/              # 文档 & 管线数据
 ├── scripts/           # 构建/发布脚本
 │   └── swe-bench/     # SWE-Bench 基准测试
@@ -166,15 +167,18 @@ pnpm dev:server     # API Server + Web Dashboard
 pnpm dev:cli        # CLI Terminal
 
 # 构建
-pnpm build          # 全量构建
-pnpm build:core     # 仅 Core
-pnpm build:server   # 仅 Server
+pnpm build            # 全量构建
+pnpm build:core       # 仅 Core
+pnpm build:server     # 仅 Server
+pnpm build:langgraph  # 仅 LangGraph
 
 # 测试
-pnpm test           # 运行所有测试
-pnpm test:core      # 仅 Core 测试
-pnpm test:server    # 仅 Server 测试
-pnpm test:coverage  # 覆盖率报告
+pnpm test             # 运行所有测试
+pnpm test:core        # 仅 Core 测试
+pnpm test:server      # 仅 Server 测试
+pnpm test:langgraph   # 仅 LangGraph 测试
+pnpm test:frontend    # 仅 Frontend 测试
+pnpm test:coverage    # 覆盖率报告
 
 # 代码检查
 pnpm lint           # ESLint + Prettier
@@ -246,6 +250,8 @@ chore: 更新 pnpm-lock.yaml
 | 单元测试 | `packages/core/src/__tests__/` | Vitest | 核心逻辑 |
 | 集成测试 | `packages/server/src/__tests__/` | Vitest + supertest | API 端点 |
 | 组件测试 | `packages/desktop/src/__tests__/` | Vitest + jodom | React 组件 |
+| 前端测试 | `packages/frontend/src/__tests__/` | Vitest + happy-dom | 共享模块 + 组件 (含 LangGraph Phase D 6 文件 92 用例) |
+| 引擎测试 | `packages/langgraph/__tests__/` | Vitest | LangGraph 工作流 |
 | E2E 测试 | 待实现 | Playwright | 全链路 |
 
 ### 写测试的规则
@@ -260,8 +266,10 @@ chore: 更新 pnpm-lock.yaml
 
 ```bash
 pnpm test               # 全部测试
-pnpm test:core          # Core 模块 (908 cases)
-pnpm test:server        # Server 模块 (151 cases)
+pnpm test:core          # Core 模块测试
+pnpm test:server        # Server 模块测试
+pnpm test:langgraph     # LangGraph 引擎测试
+pnpm test:frontend      # Frontend 共享模块测试
 pnpm test:coverage      # 生成覆盖率报告
 ```
 

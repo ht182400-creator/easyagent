@@ -7,30 +7,50 @@
 - [项目概述](#项目概述) | [编码规范](#编码规范) | [核心规则](#核心规则)
 - [测试数据同步约束](#-测试数据同步约束v10-2026-06-25) | [日志优先排查原则](#-日志优先排查原则v10-2026-06-26)
 - [调试日志强制规范](#-调试日志强制规范v10-2026-06-26) | [Memory 记录格式](#memory-记录格式约定v11-2026-06-25-强化)
-- [关键陷阱清单 (37条)](#关键陷阱清单) | [Web↔Desktop 代码隔离](#-web--desktop-代码隔离约束)
+- [关键陷阱清单 (40条)](#关键陷阱清单) | [Web↔Desktop 代码隔离](#-web--desktop-代码隔离约束)
 - [标准化打包流水线](#标准化打包流水线) | [Server + Web 启动](#server--web-启动)
 - [测试命令](#测试命令) | [SWE-bench](#swe-bench-评测基准-p0-2-已完成) | [Node.js 版本限制](#nodejs-版本限制-p0-1-已完成)
 - [管线模块 v2.1 动态化架构](#管线模块-v21-动态化架构-2026-06-23) | [管线数据完整更新工作流](#-管线数据完整更新工作流-v20-2026-06-26)
-- [关键文件索引](#关键文件索引)
+- [文档管理规范](#文档管理规范) | [关键文件索引](#关键文件索引)
 
 ---
 
 ## 项目概述
 - **项目**: EasyAgent - 集成中国主流大模型的开源 AI 编程助手
-- **版本**: v0.6.6 (1274 用例全通过/100%, 29/29 模块 + 6阶段4分支, 综合评分 100, CI 6/6 jobs ✅)
+- **版本**: v0.6.24 (1578 用例, 1503+75, 99.9% 通过率, 32/32 模块 + 6阶段, 综合评分 100, CI 9/9 jobs ✅)
 - **优化完成度**: 17/18 (94%) — P0+P1+P2+P3 全部完成，仅 #16 Vite Library Mode 延期
 - **统一数据源**: `docs/pipeline/lib/module-registry.mjs` → `scripts/unified-sync.mjs` → `test-case-mapping.json` + `pipeline-data.json`(5.7KB) + `dashboard-data.json`(独立文件) → API → 前端
 - **管线模块添加**: 见 `docs/43_管线模块添加标准流程.md`（v1.1 补丁: 可操作性 60%→90%）
 - **测试报告**: `/api/test-detail` 端点提供四级树形测试详情 (包→文件→分组→用例+失败原因)
+- **LangGraph 双引擎**: ✅ Phase A/B/C/D 全部完成并已联调验证 (2026-06-29 21:35)。Phase A=引擎桥接, Phase B=Server接入+Checkpoint API, Phase C=前端可视化(/langgraph)+CLI引擎切换, Phase D=WebSocket实时高亮+Checkpoint详情弹窗+节点遍历动画+组件测试92用例。联调修复: POST /api/run/:id 端点新增，9 场景全部执行成功
 - **仓库**: https://github.com/ht182400-creator/easyagent (SSH 推送)
 - **技术栈**: TypeScript 5.x + React 18 + Vite 5 + Tailwind CSS 3 + Zustand 4 + Express + WebSocket + Electron 30 + SQLite(better-sqlite3) + Vitest + tsup
 - **对比参考**: D:\Work_Area\AI\cc-haha
+
+## LangGraph 子项目（2026-06-30）
+
+- **`packages/langgraph/`** 是基于 `@langchain/langgraph ^0.2` 的独立 Agent 引擎包（v0.1.0）
+- **图结构**: START → think → route → (act → observe → think 循环) → END（Think-Act-Observe 环形有向图）
+- **与主项目关系**: 设计为 `AgentEngine`（硬编码 while 循环）的替代引擎；API 兼容，Phase A 已完成桥接
+- **集成路线**: ✅ Phase A 引擎桥接（已完成）→ ✅ Phase B 后端API（已完成）→ ✅ Phase C 前端可视化（已完成）→ ✅ Phase D WebSocket+Checkpoint UI+组件测试（已完成）
+- **Phase A 产物**: `bridge/adapterBridge.ts` + `bridge/toolBridge.ts` + `bridge/AgentFactory.ts`，9 个集成测试全通过
+- **Phase B 产物**: `server/src/langgraph/` (agentAdapter + engineFactory)，3 个 Checkpoint API，9 个测试全通过
+- **Phase C 产物**: `frontend/src/components/LangGraph/` (4 组件) + `frontend/src/pages/LangGraph.tsx` + `stores/langGraphStore.ts` + 三种模式 UI（集成可视化/终端演示/独立Demo）
+- **Phase D 产物**: WebSocket 广播(server) + connectWebSocket(store) + SessionDetailModal + 遍历动画 + 前端组件测试(92 用例 100% 通过)
+- **集成进度**: ✅ Phase A/B/C/D 全部完成 (2026-06-29)
+- **🔧 引擎选择体系 (2026-06-30)**: 三级优先级 — CLI参数(`--engine langgraph|legacy`) > 环境变量(`EASYAGENT_ENGINE`) > 配置文件(`engine.config.json`) > 默认值(`legacy`)。配置文件可提交 Git、持久化、未来在设置页暴露。详细文档：`docs/53_引擎选择配置与LangGraph使用指南.md`
+- **关键依赖新增**: `@easyagent/core: workspace:*`（桥接层需要）
+- **详细方案**: `packages/langgraph/docs/06_LangGraph集成EasyAgent方案.md`
+- **Demo**: `pnpm demo:web` (端口 3455)，9 个场景 + SVG 有向图可视化
+- **关键依赖**: `@langchain/langgraph`, `@langchain/core`, `better-sqlite3`
+- **文档位置**: `packages/langgraph/docs/` (00~06 共 7 份)
 
 ## 编码规范
 
 - **注释要求**: 编写代码时必须保留良好的代码注释，中英文皆可，尽量言简意赅
 - 函数/类/复杂逻辑必须有注释说明其用途和关键决策
 - 避免无意义注释（如 `// i++`），注释应解释"为什么"而非"做什么"
+- **🔴 Linter 零容忍（2026-06-29 新增）**: 修改文件后必须 `read_lints` 直到零 ERROR。禁止"只修新增问题，不管已有的"——所有类型不兼容、未使用变量、rootDir 配置问题等，一旦发现必须根本性根治。公共 API 依赖的类型必须全部导出。详细规则见各包 `docs/02_约束规范.md` §八。
 
 ## 核心规则
 
@@ -204,7 +224,10 @@ EASYAGENT_DEBUG=1 ./build.sh
 | B2e | 用户行为埋点 | B3a | 一键安装脚本 |
 | B3b | VS Code 插件 | B3c | Contributor 引导 |
 | P5a | 管线解析与缓存 | P5b | 管线 API 服务 |
-| P5c | 前端渲染仪表板 | | |
+| P5c | 前端渲染仪表板 | lg1 | LangGraph 引擎核心 |
+| lg2 | LangGraph 持久化 | lg3 | LangGraph 桥接与集成 |
+| lg4 | LangGraph 前端可视化 | lg5 | LangGraph 页面路由 |
+| lg6 | CLI 双引擎接入 | | |
 
 **缓存说明**：存量文件（06-22及之前）无需重新格式化，解析器通过 mtime 缓存机制复用已解析结果。
 
@@ -253,8 +276,28 @@ EASYAGENT_DEBUG=1 ./build.sh
 | 37 | 🖥️ | **Desktop 有独立 renderer CSS，与 frontend CSS 是两个文件** | 修改 `packages/frontend/src/styles/index.css` 的 CSP 字体修复对 Desktop 不生效，因为 Desktop 的 `index.html` 引用 `/src/renderer/index.css`（指向 `packages/desktop/src/renderer/index.css`），而非 frontend 的 CSS。两个文件内容高度相似但独立维护。**前端合并(B1a)后 JS/组件已统一，CSS 也应统一**。 | ✅ 已删除 `packages/desktop/src/renderer/index.css`，移除 `index.html` 中的 `<link>` 标签。CSS 统一由 `frontend/main.tsx` → `import './styles/index.css'` 加载 |
 | 38 | 🔀 | **pnpm v11 isolated mode 下 `pnpm exec` 找不到 eslint/rimraf** | `pnpm exec eslint` → `[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command \"eslint\" not found`；node_modules 中只有 `.pnpm/` 和 `.vite/` 目录，无 `.bin/` 符号链 | 使用 `scripts/lint.bat` / `scripts/clean.bat` 包装器，直接 `node \"node_modules\\.pnpm\\eslint@<ver>\\node_modules\\eslint\\bin\\eslint.js\"` 调用；`eslint.config.cjs` 用 `createRequire` 从 .pnpm 路径加载 `@eslint/js` 和 `typescript-eslint` |
 | 39 | 🖥️ | **pnpm isolated + electron-builder: 传递依赖必须显式声明** | electron-builder 从 `packages/desktop/node_modules/` 打包；pnpm isolated 模式下该目录只有直接依赖的 symlink，无 `.pnpm/` 目录。Server 的 express 传递依赖（55 个）在根 `.pnpm/` 中，electron-builder 找不到 → 运行时 `Cannot find module` | 两种解法: 1) tsup `noExternal` 把 express/cors/ws/multer 内联进 main.js（不需要运行时解析）; 2) `node-linker=hoisted` 平坦化 node_modules。pino 例外：CJS `require('pino-pretty')` 不可内联，必须保持 external + 保留其 11 个传递依赖。Desktop deps: 119→36 项 |
+| 40 | 🖥️ | **LangGraph checkpoint 序列化导致 BaseMessage 丢失原型方法** | `state.messages[0]?.getType is not a function` — SqliteCheckpointer 用 JSON.stringify/parse 持久化 State，messages 数组中的 AIMessage/HumanMessage 等实例转为普通 JS 对象，丢失 getType() 等 prototype 方法。同样影响 `instanceof AIMessage` 判断（checkpoint 还原后为 false）、`tool_calls` 属性存取方式 | 所有消息处理代码统一使用 `getMessageType(msg)` 工具函数（优先调 getType()，否则读 .type 属性，兜底 constructor.name）；`toChatMessages()` 用 hasToolCalls/getToolCallId 替代原始属性检查；参考 `packages/langgraph/src/graph/messageUtils.ts` |
+| 41 | 🔀 | **LangGraph 普通聊天误暴露 benchmark 工具导致死循环** | 普通问候却反复调用 benchmark_load/run/report，最终 `Recursion limit of 25 reached`。根因：系统提示词未约束工具使用；AgentFactory 把 69 个工具全量下发（含 benchmark_*）；observeNode 失败后无条件继续；recursionLimit 与 maxTurns 单位不一致 | 系统提示词明确"普通聊天不调用工具"；AgentFactory 过滤 `benchmark_*`；AgentState 增加 `consecutiveFailures`，actNode 统计失败，observeNode 超过 3 次停止；`streamEvents` 传入 `recursionLimit = maxTurns * 3 + 10` |
+| 42 | 🔀 | **小模型上下文被工具 schema 污染导致语气偏移 / 误输出 JSON 解释** | qwen2.5:7b 看到 66 个工具 JSON schema（占上下文 19-25%）后，问候回复从自然对话变为"您可以告诉我需要使用哪个工具或功能"；写 C 代码时附带"在 JSON 格式中请求这个函数可能不太合适"的解释。根因：7B 模型指令跟随弱，上下文中的结构化信息（JSON schema）被模型关联到不相关输出 | 按模型规模分级暴露工具（7B → 15-20 个核心工具；70B+ → 完整 66 个）；精简工具 description；系统提示词补丁"不要在普通对话中提及 JSON 或工具" |
 
 
+
+
+
+## ⚠️ Windows bat 文件编写铁律（2026-06-28 实测）
+
+每次在 `.bat` 文件中撰写中文日志/输出时，必须遵守以下 3 条铁律。违反任意一条都会导致 CMD 解析错误——错误信息与真正原因完全无关（如 `... was unexpected at this time.` / `'raph.config.json' is not recognized`）。
+
+| # | 禁令 | 原因 | 替代方案 |
+|---|------|------|---------|
+| 1 | **禁用 Unicode box-drawing 字符**（`╔` `╗` `╚` `╝` `║` `⚠️` 等） | CMD 对多字节 UTF-8 控制字符解析不稳定，部分字节被截断当命令执行 | 使用 ASCII 分隔线 `=====`, 标签 `[OK]` `[FAIL]` |
+| 2 | **禁用 `type file \| findstr ...` 管道**（当 chcp=65001 时） | Pipe `\|` 子进程 + UTF-8 混合导致字符截断，`type lang...` 被吞成 `...raph` | `findstr /c:"keyword" filename > nul 2> nul` 直接读文件，不用 type+pipe |
+| 3 | **禁用 `chcp 65001`** | 已确认是 CMD 公认 bug——echo 中文后解析器失序，后续行被乱读（含 `if`、`else`、`...` 等） | **不设 chcp**，中文 Windows 默认 936 即可正常显示中文 |
+
+**额外注意**（不那么致命但曾踩过）：
+- `:::` 注释 → 一律改为 `REM`（`:::` 被 CMD 当非法 label 崩溃）
+- `if (...)` 多行块内 `echo` 含 `)` → 一律改用 `goto` 标签模式（`^)` 转义不可靠）
+- 文件保存编码推荐 **UTF-8 without BOM** + 无 `chcp` 声明，让系统默认 936 自然处理
 
 ## ⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)
 
@@ -683,6 +726,41 @@ node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 | 模块状态不一致 | 完工率 < 100% 但全部 done | 检查 module-registry.mjs 中各模块 status 字段 |
 | _test_detail.json 过期 | 测试详情只显示 318 条 | 运行 `npx vitest run` 刷新报告 → unified-sync 自动重新生成 |
 | JSON/API 数据不一致 | 页面显示与 API 返回不同 | 检查 transformJSONData() 兼容 pipeline.phases (v2.0) 和 mainLane (v1.x) |
+
+## 文档管理规范
+
+> 详见 `docs/55_MD文档管理方案选型与知识库体系设计.md`（9 方案对比 + Obsidian 九维度分析 + 反向索引规范）
+
+### 🔴 MD 文档拆分规则
+
+| 规则 | 说明 |
+|------|------|
+| 拆分阈值 | 单文件 ≥ 4000 行时触发拆分 |
+| 命名规范 | 主文件 → `XX_主题.md`；分册 → `XX_主题_更新02.md`（序号递增） |
+| 主文件职责 | ≤ 300 行精简版：目录大纲 + 最新 5-10 条 + 分册链接 |
+| 活跃分册 | 始终追加到**最后一个分册**；主文件明确标注"当前活跃分册" |
+| 封版分册 | 不可修改，只读归档 |
+
+### 🔍 反向索引维护
+
+> `docs/README.md` 维护反向索引表，用关键词快速定位文档位置
+
+| 规则 | 说明 |
+|------|------|
+| 新增文档 | 评估是否需要新增索引条目（5+ 行新内容 = 大概率需要） |
+| 删除/重命名 | 同步更新索引中的文件路径 |
+| 关键词去重 | 同一关键词合并到一行（多个位置用逗号分隔） |
+| 30 条上限 | 超过 30 条时按类别（🔧构建/🚀发布/🧠引擎/🤖模型/📐架构/📋规范）拆分子表 |
+
+### 推荐工具链
+
+| 场景 | 工具 | 说明 |
+|------|------|------|
+| 代码/Git 操作 | VS Code | 主编辑器，diff/merge/rebase 必备 |
+| 文档浏览 | Obsidian（可选） | 打开 `docs/` 文件夹，双向链接 + 知识图谱 |
+| 长期 AI 检索 | ChromaDB RAG（远期） | EasyAgent 内嵌文档语义搜索 |
+
+---
 
 ## 关键文件索引
 

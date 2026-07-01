@@ -1,0 +1,117 @@
+{"level":30,"time":1782835314822,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","msg":"使用本地缓存模型目录"}
+{"level":30,"time":1782835314823,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","msg":"配置加载完成"}
+{"level":30,"time":1782835314824,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","engine":"langgraph","source":"config","cli":"无","env":"无","configPath":"d:\\Work_Area\\AI\\Claude Code  CN\\engine.config.json","msg":"▶ Agent 引擎: LangGraph  |  来源: 配置文件 engine.config.json"}
+{"level":30,"time":1782835314824,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"read_file","msg":"工具已注册"}
+{"level":30,"time":1782835314824,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"write_file","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"edit_file","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"delete_file","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"list_dir","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"file_info","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"create_dir","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"move_file","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"batch_edit","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"grep","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"glob","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"web_search","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"web_fetch","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"exec","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_status","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_diff","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_log","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_branch","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_blame","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_commit","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"code_stats","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"run_tests","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"find_imports","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"find_definitions","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"lint_code","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"format_code","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"read_lints","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"type_check","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"read_config","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"package_run","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"env_info","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"project_overview","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"remember","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"recall","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"forget","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"start_server","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"preview_url","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"diff_files","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"ask_user","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"read_image","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"generate_image","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"screenshot","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"query_db","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"db_schema","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"knowledge_add","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"knowledge_search","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"knowledge_get","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"knowledge_list","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"knowledge_remove","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"delegate_task","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"list_subagents","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"install_runtime","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"sandbox_exec","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"sandbox_status","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"sandbox_cleanup","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_auto_commit","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_repo_map","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_stash","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_tag","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_cherry_pick","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"git_reflog","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"code_semantic_map","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"code_symbol_search","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"code_find_references","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"code_overview","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"code_file_structure","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"benchmark_load","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"benchmark_run","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"benchmark_report","msg":"工具已注册"}
+{"level":30,"time":1782835314826,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","tool":"benchmark_scan","msg":"工具已注册"}
+{"level":30,"time":1782835314827,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","msg":"开始初始化插件系统"}
+{"level":30,"time":1782835314832,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782373080208_f56p8","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314832,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314833,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782402989640_kbs6j","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314833,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314834,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782565152220_d46ye","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314834,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314836,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782565590857_v8dbt","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314836,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314837,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782565602570_lw49i","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314837,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314838,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782712813866_53f6p","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314838,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314839,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782712824587_2lxy1","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314839,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314841,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782712913472_tmatw","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314841,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314842,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782733968144_7fxuz","name":"集成测试自动化","msg":"开始执行自动化任务"}
+{"level":30,"time":1782835314842,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","task":"集成测试自动化","msg":"默认执行器: 无实际任务执行"}
+{"level":30,"time":1782835314842,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","path":"C:\\Users\\ht182\\.easyagent\\data\\automations.json","interval":30000,"msg":"自动化管理器已初始化"}
+{"level":30,"time":1782835314874,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","count":46,"msg":"已加载会话"}
+{"level":30,"time":1782835314874,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","msg":"会话管理器已初始化"}
+'docker' �����ڲ����ⲿ���Ҳ���ǿ����еĳ���
+���������ļ���
+{"level":40,"time":1782835314906,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","msg":"Docker 不可用: Command failed: docker version --format \"{{.Server.Version}}\"\n'docker' �����ڲ����ⲿ���Ҳ���ǿ����еĳ���\r\n���������ļ���\r\n"}
+{"level":30,"time":1782835314909,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782373080208_f56p8","runId":"run_1782835314828_m41oy","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314910,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782402989640_kbs6j","runId":"run_1782835314832_cvdku","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314911,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782565152220_d46ye","runId":"run_1782835314833_je0sk","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314913,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782565590857_v8dbt","runId":"run_1782835314834_nsid2","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314914,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782565602570_lw49i","runId":"run_1782835314836_p4s7g","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314915,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782712813866_53f6p","runId":"run_1782835314837_44a2c","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314916,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782712824587_2lxy1","runId":"run_1782835314838_oltzu","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314917,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782712913472_tmatw","runId":"run_1782835314839_2xhnx","status":"completed","msg":"任务执行完成"}
+{"level":30,"time":1782835314918,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","taskId":"auto_1782733968144_7fxuz","runId":"run_1782835314841_9xaag","status":"completed","msg":"任务执行完成"}
+{"level":40,"time":1782835314919,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","reason":"Command failed: docker version --format \"{{.Server.Version}}\"\n'docker' �����ڲ����ⲿ���Ҳ���ǿ����еĳ���\r\n���������ļ���\r\n","fallback":"本地进程 (Windows Windows_NT)","msg":"Docker 不可用，已降级为本地进程模式"}
+{"level":40,"time":1782835314923,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","version":"本地进程 (Windows Windows_NT)","msg":"Docker 不可用，沙箱已降级为本地进程模式"}
+{"level":40,"time":1782835314923,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","dir":"d:\\Work_Area\\AI\\Claude Code  CN\\packages\\server\\.easyagent\\plugins","msg":"插件目录不存在，跳过"}
+{"level":30,"time":1782835314923,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","count":0,"msg":"插件系统初始化完成"}
+╔══════════════════════════════════════════╗
+║        EasyAgent Server v0.6.22           ║
+║  HTTP:      http://localhost:3456        ║
+║  WebSocket: ws://localhost:3456/ws      ║
+╚══════════════════════════════════════════╝
+{"level":30,"time":1782835314927,"pid":12132,"hostname":"DESKTOP-N50UMBQ","name":"easyagent","port":3456,"host":"0.0.0.0","msg":"服务器已启动"}

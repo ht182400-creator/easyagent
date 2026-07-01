@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/frontend",
-  "version": "0.6.22",
+  "version": "0.6.23",
   "description": "EasyAgent 统一前端 - Web + Desktop 共享 UI 组件/页面/状态管理",
   "type": "module",
   "main": "./src/mountApp.tsx",
@@ -39,6 +39,7 @@
     "@vitejs/plugin-react": "^4.3.0",
     "@vitest/coverage-v8": "^1.6.0",
     "autoprefixer": "^10.4.0",
+    "happy-dom": "^20.10.6",
     "jsdom": "^24.0.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",

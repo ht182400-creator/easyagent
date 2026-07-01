@@ -7,6 +7,37 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.23] - 2026-07-01
+
+### Fixed
+- fix(lint): 修复剩余10个errors (prefer-const, no-unsafe-function-type, no-require-imports, no-misleading-character-class) + 51号文档 (ht182400-creator)
+- fix(lint): 修复12个测试文件中51处 no-empty 错误（catch块添加注释） (ht182400-creator)
+- fix(ci): package.json eslint 版本号与 pnpm-lock.yaml 对齐 (^9.15.0→^9.39.4, ^8.15.0→^8.62.0) (ht182400-creator)
+
+## [0.6.24] - 2026-06-29
+
+### Added
+- feat(langgraph): Phase D 完成 — WebSocket 实时节点高亮广播 (server + store)
+- feat(langgraph): SessionDetailModal — Checkpoint 详情弹窗 + 恢复对话 (Phase D)
+- feat(langgraph): 节点遍历动画 (langGraphStore.getScenarioTraversalPath)
+- test(frontend): LangGraph 前端组件测试 6 文件 92 用例 100% 通过 (happy-dom 环境)
+
+### Changed
+- refactor(langgraph): langGraphStore 新增 WebSocket 连接/断开/广播 + SCENARIO_PATHS
+- refactor(server): index.ts 新增 langgraphSubscriptions + broadcastLangGraphNode()
+- fix(frontend): FlowZoomModal 缩放公式 deltaY 符号修正
+
+## [0.6.23] - 2026-06-29
+
+### Added
+- feat(langgraph): Phase C 完成 — 前端可视化 (/langgraph 页面 + 4 组件 + Zustand Store)
+- feat(cli): EASYAGENT_ENGINE 环境变量支持 langgraph/legacy 引擎切换
+- feat(langgraph): GraphCanvas/MiniFlowGraph/ScenarioCard/FlowZoomModal 组件
+
+### Changed
+- refactor(frontend): App.tsx 新增 /langgraph 路由
+- refactor(frontend): Layout.tsx 侧边栏新增 LangGraph 入口
+
 ## [0.6.22] - 2026-06-28
 
 ### Fixed

@@ -77,6 +77,7 @@
 - **流式输出**: WebSocket + SSE 实时响应
 - **虚拟滚动**: react-window 处理大量消息列表
 - **自动化任务**: 定时/一次性任务，RRULE调度引擎，AI执行 + 历史追踪
+- **LangGraph 引擎**: 🆕 声明式有向图引擎 (StateGraph + Checkpoint)，双引擎可切换
 
 ## 🚀 快速开始
 
@@ -134,8 +135,9 @@ pnpm install
 
 # === 构建 ===
 cd packages/core && pnpm exec tsup       # 核心引擎 (70工具 + MCP + i18n)
+cd ../langgraph && pnpm exec tsup        # 🆕 LangGraph 工作流引擎 (StateGraph + Checkpoint)
 cd ../cli && pnpm exec tsup              # Ink CLI (React Terminal)
-cd ../server && pnpm exec tsup           # Web服务端 (增强WebSocket + 版本API)
+cd ../server && pnpm exec tsup           # Web服务端 (增强WebSocket + 双引擎 + 版本API)
 cd ../web && npx vite build              # Web Dashboard v4
 cd ../desktop && pnpm exec tsup && pnpm exec vite build  # 原生桌面版 (Vite + autoUpdater)
 
@@ -144,6 +146,7 @@ cd packages/cli && node dist/main.js           # Ink CLI (React Terminal UI)
 cd ../server && node dist/index.js             # Web服务端 (http://localhost:3456)
 cd ../web && npx vite --port 5173              # Web开发模式
 cd ../desktop && npx electron dist/main.js     # 原生桌面版
+cd ../langgraph && start-demo.bat              # 🆕 LangGraph Demo (http://localhost:3455)
 ```
 
 ### 快速验证
@@ -155,13 +158,16 @@ pnpm benchmark:dry
 # 核心测试 (629/629 通过)
 cd packages/core && npx vitest run
 
-# 服务端测试 (41/41 通过)
+# 服务端测试 (160/160 通过, 含 LangGraph 引擎适配)
 cd packages/server && npx vitest run
 
 # Desktop 测试 (127/127 通过)
 cd packages/desktop && npx vitest run
 
-# 全量测试 (806/806 通过)
+# LangGraph 测试 (57/57 通过)
+cd packages/langgraph && npx vitest run
+
+# 全量测试 (1469/1469 通过)
 pnpm test:all
 ```
 
@@ -182,38 +188,29 @@ easyagent/
 │   ├── core/              # 核心引擎 (✅ 196KB + DTS 43KB + 10/10 测试)
 │   │   ├── adapters/      # 模型适配器 (10个提供商 + 工厂)
 │   │   ├── agent/         # Agent引擎 (ReAct循环 + 流式)
-│   │   ├── tools/         # 工具系统 (70个内置工具，17分组: File/FileExtra/Search/Exec/Git/Code/Project/Quality/Preview/Media/Database/Knowledge/SubAgent/Memory)
-│   │   ├── mcp/           # MCP协议 (JSON-RPC over stdio) 客户端/管理器
-│   │   ├── plugins/       # 插件系统 (PluginManager + 生命周期 + 6内置技能)
-│   │   ├── im/            # IM适配器 (Telegram/飞书/企业微信) + IMManager
-│   │   ├── session/       # 会话管理 (SQLite + WAL模式)
-│   │   ├── config/        # 配置管理 + 模型动态注册表 🆕
-│   │   │   ├── ConfigManager.ts    # 配置管理器
-│   │   │   ├── ModelRegistry.ts    # 模型目录动态注册表
-│   │   │   └── ProviderPresets.ts  # 预设模型(兜底)
+│   │   ├── tools/         # 工具系统 (70个内置工具，17分组)
+│   │   ├── mcp/           # MCP协议 (JSON-RPC over stdio)
+│   │   ├── plugins/       # 插件系统 (PluginManager + 生命周期)
+│   │   ├── im/            # IM适配器 (Telegram/飞书/企业微信)
+│   │   ├── session/       # 会话管理 (SQLite + WAL)
+│   │   ├── config/        # 配置管理 + 模型动态注册表
 │   │   └── utils/         # 工具函数 (i18n/logger/encryption)
+│   ├── langgraph/         # 🆕 LangGraph 工作流引擎 (✅ 54KB ESM + DTS 26.5KB)
+│   │   ├── state/         # AgentState 定义 + Reducer
+│   │   ├── nodes/         # Think/Act/Observe 三节点
+│   │   ├── graph/         # StateGraph 编译 + 条件路由
+│   │   ├── memory/        # CheckpointSaver (SQLite) + Memory
+│   │   ├── bridge/        # Phase A: 与 core 桥接 (adapter/tool/factory)
+│   │   └── demo/          # Web 可视化 Demo (端口 3455)
 │   ├── cli/               # Ink CLI (✅ 14KB React Terminal)
-│   │   └── src/main.tsx   # Ink组件: Banner/MessageList/HelpPanel/StatusBar/InputBox/App + 10命令
-│   ├── server/            # Web服务端 REST+WS+Plugins+IM (✅ 29KB + 32 tests)
-│   │   ├── API: /api/* (REST) + ws:// (WebSocket 8事件) + /api/plugins + /api/im + /api/sandbox + /api/semantic
-│   │   └── __tests__/     # api.test.ts(18) + static-files.test.ts(6) + websocket.test.ts(5) = 32集成测试
+│   ├── server/            # Web服务端 REST+WS (✅ 621KB ESM, 双引擎切换)
+│   │   ├── src/langgraph/ # 🆕 Phase B: 引擎适配器 + 工厂 + Checkpoint API
+│   │   └── API: /api/* (REST) + ws:// (WebSocket 8事件) + /api/langgraph/sessions
 │   ├── web/               # Web Dashboard v4 WorkBuddy 风格 (✅ 306KB JS + 46KB CSS)
-│   │   ├── public/icons/  # 图标资源目录 (README.md 含清单)
-│   │   ├── stores/        # Zustand 10个Store: app/chat/provider/session/settings/tools/mcp/plugins/automation/knowledgeBase
-│   │   ├── components/Chat/ # MessageList(虚拟滚动)/ChatInput/ToolCallCard
-│   │   ├── components/Common/ # StatusBadge + Layout(分组导航/折叠/主题切换)
-│   │   └── pages/         # Dashboard(WorkBuddy风格+快捷入口+模板卡片+智能输入)/Chat/Settings/Sessions/Skills/IMSettings
 │   ├── desktop/           # Electron原生桌面版 (✅ 173KB JS + 16KB CSS)
-│   │   ├── src/main.ts   # Electron主进程 (Agent/IPC/菜单/托盘/全局快捷键)
-│   │   ├── src/preload.ts # contextBridge IPC桥接
-│   │   └── src/renderer/  # React原生UI (AppShell/Sidebar/TabBar/ContentRouter/StatusBar)
-├── docs/                  # 文档
-│   ├── 01_需求规格说明书_PRD.md
-│   ├── 02_架构设计文档_ADD.md
-│   ├── 03_测试案例文档.md
-│   ├── 05_Desktop_EXE打包标准流程.md
-│   ├── 06_版本发布与CI-CD流程指南.md 🆕
-│   └── 07_自动更新分发方案对比.md 🆕
+│   │   └── src/renderer/  # React原生UI (AppShell/Sidebar/TabBar/ChatView/StatusBar)
+│   ├── frontend/          # 🆕 共享前端组件 (Desktop + Web 共用)
+│   └── vscode/            # VS Code 扩展 (独立版本)
 ├── scripts/               # 工具脚本
 │   ├── sync-version.mjs   # 版本同步脚本 🆕
 │   └── release.mjs        # 发布自动化脚本 🆕
@@ -270,6 +267,13 @@ POST /api/chat                - 发送消息
 GET  /api/tools               - 工具列表
 ```
 
+#### LangGraph 引擎 API 🆕
+```
+GET  /api/langgraph/sessions          - Checkpoint 会话列表
+GET  /api/langgraph/sessions/:id      - 会话状态
+POST /api/langgraph/sessions/:id/resume - 从 Checkpoint 恢复
+```
+
 #### Plugins & Skills API
 ```
 GET    /api/plugins           - 插件列表
@@ -315,17 +319,20 @@ ws://localhost:3456/ws
 ## 🧪 测试
 
 ```bash
-# 运行所有测试 (806 tests)
+# 运行所有测试 (1469 tests)
 pnpm test:all
 
 # 运行核心模块测试 (629 tests)
 pnpm test:core
 
-# 运行服务端集成测试 (41 tests)
+# 运行服务端集成测试 (160 tests, 含 LangGraph 引擎)
 pnpm test:server
 
 # 运行 Desktop 测试 (127 tests)
 pnpm test:desktop
+
+# 运行 LangGraph 引擎测试 (57 tests)
+cd packages/langgraph && npx vitest run
 ```
 
 ## 🏗️ 技术栈
@@ -344,7 +351,7 @@ pnpm test:desktop
 | 数据库 | **better-sqlite3** (SQLite) | ⚠️ Node 24 需从源码编译 |
 | 加密 | AES-256-GCM | 密钥本地加密存储 |
 | 构建 | tsup + Vite | ESM 输出 |
-| 测试 | Vitest | 806/806 通过 (Core 629 + Server 41 + Desktop 127 + 双域知识库 9) |
+| 测试 | Vitest | Core 629 + Server 160 + Desktop 127 + LangGraph 57 + Frontend/Web/管线 396 = 1469 通过 |
 | 插件系统 | IPlugin/ISkill/PluginManager | 生命周期 + 钩子 |
 | IM适配器 | 原生 fetch (零外部依赖) | Telegram/飞书/企业微信 |
 

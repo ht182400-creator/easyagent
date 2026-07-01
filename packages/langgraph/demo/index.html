@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangGraph Agent — 有向图可视化面板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ==================== CSS 变量 ==================== */
+:root {
+  --bg-primary: #080c12;
+  --bg-secondary: #0e1419;
+  --bg-card: #111922;
+  --bg-card-hover: #17202a;
+  --bg-terminal: #060a0f;
+  --border-subtle: #1a2530;
+  --border-glow: #00e5ff33;
+  --text-primary: #dde4ec;
+  --text-secondary: #7a8b9e;
+  --text-muted: #4a5568;
+  --accent-cyan: #00e5ff;
+  --accent-green: #00ff88;
+  --accent-amber: #ffb74d;
+  --accent-red: #ff5252;
+  --accent-blue: #448aff;
+  --node-start: #8899aa;
+  --node-think: #00e5ff;
+  --node-route: #ffb74d;
+  --node-act: #ff5252;
+  --node-observe: #00ff88;
+  --node-end: #8899aa;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+
+  color-scheme: dark;
+}
+
+/* ==================== 基础重置 ==================== */
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-mono);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 背景纹理 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 229, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(255, 183, 77, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 网格点背景 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ==================== 布局 ==================== */
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* ==================== 头部 ==================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.header-left h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-left .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 300;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 20px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.08);
+}
+
+.btn--primary {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.btn--primary:hover {
+  background: rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.12);
+}
+
+.status-dot {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.status-dot::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 6px var(--accent-green);
+}
+
+.status-dot--busy::before {
+  background: var(--accent-amber);
+  box-shadow: 0 0 6px var(--accent-amber);
+  animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ==================== 图可视化面板 ==================== */
+.graph-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  margin-bottom: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.graph-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(0,0,0,0.2);
+}
+
+.graph-panel-header h2 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--accent-cyan);
+  letter-spacing: 0.04em;
+}
+
+.graph-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.graph-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.graph-svg-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.graph-svg-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* 边动画 */
+.edge-path {
+  fill: none;
+  stroke: #2a3a4a;
+  stroke-width: 2;
+  transition: stroke 0.4s ease;
+}
+
+.edge-path--active {
+  stroke: var(--accent-cyan);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 4px rgba(0,229,255,0.4));
+}
+
+.edge-path--conditional {
+  stroke-dasharray: 6 4;
+}
+
+.edge-path--dashed {
+  stroke-dasharray: 4 6;
+  stroke: #2a3a4a;
+  animation: dash-flow 2s linear infinite;
+}
+
+@keyframes dash-flow {
+  to { stroke-dashoffset: -20; }
+}
+
+.edge-arrow {
+  fill: #3a4a5a;
+  transition: fill 0.4s ease;
+}
+
+.edge-arrow--active {
+  fill: var(--accent-cyan);
+}
+
+.edge-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  fill: #8899aa;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(8,12,18,0.85);
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 节点 */
+.node-rect {
+  rx: 6;
+  ry: 6;
+  stroke-width: 2;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.node-rect:hover {
+  filter: brightness(1.3);
+}
+
+.node-rect--start { fill: #141e26; stroke: var(--node-start); }
+.node-rect--process { fill: #0e1a22; stroke: var(--node-think); }
+.node-rect--decision { fill: #1a1610; stroke: var(--node-route); }
+.node-rect--end { fill: #111a1e; stroke: var(--node-end); }
+
+.node-rect--highlight {
+  animation: node-glow 1.5s ease infinite;
+}
+
+@keyframes node-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(0,229,255,0.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(0,229,255,0.6)); }
+}
+
+.node-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--text-primary);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.node-desc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: #667788;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* ==================== 图例 ==================== */
+.legend {
+  display: flex;
+  gap: 20px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1.5px solid;
+}
+
+.legend-dot--process { border-color: var(--accent-cyan); background: rgba(0,229,255,0.1); }
+.legend-dot--decision { border-color: var(--accent-amber); background: rgba(255,183,77,0.1); }
+.legend-dot--cycle { border-color: transparent; border-bottom: 2px dashed var(--text-muted); border-radius: 0; width: 16px; }
+.legend-dot--conditional { border-color: transparent; border-bottom: 2px dashed var(--text-muted); border-radius: 0; width: 16px; }
+
+/* ==================== 场景卡片网格 ==================== */
+.scenarios-section {
+  margin-top: 24px;
+}
+
+.scenarios-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.scenarios-header h2 {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--accent-cyan);
+  letter-spacing: 0.04em;
+}
+
+.scenarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+  gap: 16px;
+}
+
+/* ==================== 卡片 ==================== */
+.scenario-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.scenario-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.scenario-card:hover {
+  border-color: #2a3a4a;
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.scenario-card:hover::before {
+  opacity: 1;
+}
+
+.scenario-card--running {
+  border-color: var(--accent-amber);
+  animation: border-pulse 1.5s ease infinite;
+}
+
+@keyframes border-pulse {
+  0%, 100% { border-color: var(--accent-amber); }
+  50% { border-color: var(--accent-cyan); }
+}
+
+.scenario-card--done {
+  border-color: rgba(0,255,136,0.2);
+}
+
+.scenario-card--error {
+  border-color: rgba(255,82,82,0.3);
+}
+
+/* 卡片头部 */
+.card-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0,229,255,0.05);
+}
+
+.card-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.card-path {
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.card-badge--idle {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+}
+
+.card-badge--running {
+  background: rgba(255,183,77,0.1);
+  color: var(--accent-amber);
+}
+
+.card-badge--done {
+  background: rgba(0,255,136,0.08);
+  color: var(--accent-green);
+}
+
+.card-badge--error {
+  background: rgba(255,82,82,0.1);
+  color: var(--accent-red);
+}
+
+/* ==================== 卡片内迷你有向流转图 ==================== */
+.card-flow-graph {
+  position: relative;
+  width: 100%;
+  height: 135px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0,229,255,0.02) 0%, transparent 70%);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-flow-graph svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* 迷你节点 */
+.mini-node-rect {
+  rx: 4;
+  ry: 4;
+  stroke-width: 1.5;
+  transition: all 0.3s ease;
+}
+
+.mini-node-rect--traversed {
+  filter: drop-shadow(0 0 3px rgba(0,229,255,0.4));
+}
+
+.mini-node-rect--dimmed {
+  fill: #0c1117;
+  stroke: #1a2530;
+  opacity: 0.5;
+}
+
+.mini-node-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  fill: #4a5568;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.mini-node-label--traversed {
+  fill: var(--text-primary);
+}
+
+/* 迷你边 */
+.mini-edge-path {
+  fill: none;
+  stroke: #1a2530;
+  stroke-width: 1.2;
+  opacity: 0.4;
+}
+
+.mini-edge-path--traversed {
+  stroke: var(--accent-cyan);
+  stroke-width: 1.8;
+  opacity: 1;
+  filter: drop-shadow(0 0 2px rgba(0,229,255,0.3));
+  animation: mini-edge-pulse 1.5s ease infinite;
+}
+
+.mini-edge-path--loop {
+  stroke-dasharray: 4 4;
+  animation: mini-dash-flow 1.5s linear infinite;
+}
+
+@keyframes mini-edge-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes mini-dash-flow {
+  to { stroke-dashoffset: -16; }
+}
+
+/* 迷你遍历序号徽标 */
+.mini-step-dot {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* 卡片流量图图例 */
+.card-flow-legend {
+  display: flex;
+  gap: 12px;
+  padding: 6px 12px;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.15);
+}
+
+.card-flow-legend span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-flow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.card-flow-dot--active {
+  background: rgba(0,229,255,0.3);
+  border: 1px solid var(--accent-cyan);
+}
+
+.card-flow-dot--dimmed {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #1a2530;
+}
+
+/* ==================== 流转图放大弹窗 ==================== */
+.flow-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(2, 5, 10, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.flow-zoom-overlay--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.flow-zoom-dialog {
+  position: relative;
+  width: 90vw;
+  max-width: 1100px;
+  height: 78vh;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 0 80px rgba(0, 229, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.flow-zoom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.flow-zoom-title {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flow-zoom-badge {
+  font-size: 0.65rem;
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: rgba(0, 229, 255, 0.1);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.flow-zoom-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flow-zoom-close:hover {
+  background: rgba(255, 82, 82, 0.12);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.flow-zoom-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.flow-zoom-body:active {
+  cursor: grabbing;
+}
+
+.flow-zoom-body svg {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  transition: transform 0.15s ease;
+  transform-origin: center center;
+}
+
+.flow-zoom-hint {
+  padding: 8px 20px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.flow-zoom-hint kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.flow-zoom-scale {
+  margin-left: auto;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+/* 迷你流转图悬停指示 */
+.card-flow-graph {
+  cursor: zoom-in;
+}
+
+.card-flow-graph:hover {
+  box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.04);
+}
+
+.card-flow-graph::after {
+  content: '🔍 点击放大';
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  font-family: var(--font-mono);
+}
+
+.card-flow-graph:hover::after {
+  opacity: 0.7;
+}
+
+/* 详情区滚动调整 */
+.card-detail--open {
+  max-height: 700px;
+}
+
+/* 卡片详情区 */
+.card-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.card-detail--open {
+  max-height: 600px;
+}
+
+.card-detail-inner {
+  padding: 0 20px 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* 终端输出 */
+.terminal-output {
+  background: var(--bg-terminal);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.terminal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.terminal-dot--r { background: #ff5252; }
+.terminal-dot--y { background: #ffb74d; }
+.terminal-dot--g { background: #00ff88; }
+
+.terminal-title {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.terminal-body {
+  padding: 12px;
+  font-size: 0.72rem;
+  line-height: 1.7;
+  max-height: 280px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+}
+
+.terminal-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.terminal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 2px;
+}
+
+.log-line {
+  display: flex;
+  gap: 10px;
+  padding: 2px 0;
+  align-items: baseline;
+}
+
+.log-time {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  min-width: 75px;
+}
+
+.log-node {
+  color: var(--accent-cyan);
+  font-size: 0.68rem;
+  flex-shrink: 0;
+  min-width: 80px;
+  text-align: right;
+}
+
+.log-msg {
+  color: var(--text-secondary);
+  flex: 1;
+  word-break: break-all;
+}
+
+.log-success { color: var(--accent-green); }
+.log-warning { color: var(--accent-amber); }
+.log-error { color: var(--accent-red); }
+.log-decision { color: var(--accent-blue); }
+
+/* 卡片结果摘要 */
+.result-summary {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0,255,136,0.03);
+  border: 1px solid rgba(0,255,136,0.1);
+  border-radius: 6px;
+}
+
+.result-stat {
+  text-align: center;
+}
+
+.result-stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-green);
+}
+
+.result-stat-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.result-output {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(0,229,255,0.03);
+  border-left: 2px solid var(--accent-cyan);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* 展开/收起按钮 */
+.expand-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  margin-top: 4px;
+}
+
+.expand-btn:hover {
+  color: var(--accent-cyan);
+}
+
+/* ==================== Toast 加载动画 ==================== */
+.spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--accent-cyan);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== 卡片入场动画 ==================== */
+.scenario-card {
+  opacity: 0;
+  animation: card-in 0.5s ease forwards;
+}
+
+.scenario-card:nth-child(1) { animation-delay: 0.05s; }
+.scenario-card:nth-child(2) { animation-delay: 0.12s; }
+.scenario-card:nth-child(3) { animation-delay: 0.19s; }
+.scenario-card:nth-child(4) { animation-delay: 0.26s; }
+.scenario-card:nth-child(5) { animation-delay: 0.33s; }
+.scenario-card:nth-child(6) { animation-delay: 0.40s; }
+.scenario-card:nth-child(7) { animation-delay: 0.47s; }
+.scenario-card:nth-child(8) { animation-delay: 0.54s; }
+.scenario-card:nth-child(9) { animation-delay: 0.61s; }
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 840px) {
+  .scenarios-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-svg-container {
+    height: 300px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- 头部 -->
+  <header class="header">
+    <div class="header-left">
+      <h1>◈ LangGraph Agent Control Panel</h1>
+      <div class="subtitle">有向图执行引擎可视化 · Directed Graph Visualization</div>
+    </div>
+    <div class="header-right">
+      <span id="statusDot" class="status-dot">就绪</span>
+      <button class="btn btn--primary" onclick="runAllScenarios()" id="btnRunAll">
+        ▶ 执行全部场景
+      </button>
+    </div>
+  </header>
+
+  <!-- 图可视化面板 -->
+  <div class="graph-panel">
+    <div class="graph-panel-header">
+      <h2>◈ 有向图结构</h2>
+      <div class="graph-meta" id="graphMeta">
+        <span>节点: —</span>
+        <span>边: —</span>
+        <span>环形: —</span>
+      </div>
+    </div>
+    <div class="graph-svg-container" id="graphContainer">
+      <svg id="graphSvg" viewBox="0 10 800 360" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot legend-dot--process"></span> 处理节点</span>
+      <span class="legend-item"><span class="legend-dot legend-dot--decision"></span> 路由决策</span>
+      <span class="legend-item"><span class="legend-dot legend-dot--cycle"></span> 循环边</span>
+      <span class="legend-item"><span class="legend-dot legend-dot--conditional"></span> 条件边</span>
+    </div>
+  </div>
+
+  <!-- 场景卡片 -->
+  <div class="scenarios-section">
+    <div class="scenarios-header">
+      <h2>◈ 执行场景</h2>
+      <span style="font-size:0.7rem;color:var(--text-muted);" id="scenarioCount">9 个场景</span>
+    </div>
+    <div class="scenarios-grid" id="scenarioGrid">
+      <!-- JS 动态渲染 -->
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 流转图放大弹窗 ==================== -->
+<div class="flow-zoom-overlay" id="flowZoomOverlay">
+  <div class="flow-zoom-dialog">
+    <div class="flow-zoom-header">
+      <div class="flow-zoom-title">
+        <span id="zoomTitle">有向流转图</span>
+        <span class="flow-zoom-badge" id="zoomBadge"></span>
+      </div>
+      <button class="flow-zoom-close" id="zoomClose" title="关闭 (ESC)">✕</button>
+    </div>
+    <div class="flow-zoom-body" id="zoomBody">
+      <!-- JS 动态渲染 SVG -->
+    </div>
+    <div class="flow-zoom-hint">
+      <span>🖱️ <kbd>滚轮</kbd> 缩放</span>
+      <span>🖱️ <kbd>拖拽</kbd> 平移</span>
+      <span><kbd>ESC</kbd> 关闭</span>
+      <span class="flow-zoom-scale" id="zoomScale">100%</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== 图数据 ====================
+const GRAPH_NODES = [
+  { id: 'START', label: 'START', type: 'start', x: 375, y: 40, w: 90, h: 50, desc: '用户输入' },
+  { id: 'think', label: 'think', type: 'process', x: 375, y: 130, w: 90, h: 56, desc: 'LLM 思考' },
+  { id: 'route', label: 'route', type: 'decision', x: 375, y: 240, w: 90, h: 56, desc: '条件路由' },
+  { id: 'observe', label: 'observe', type: 'process', x: 180, y: 130, w: 90, h: 56, desc: '观察结果' },
+  { id: 'act', label: 'act', type: 'process', x: 180, y: 240, w: 90, h: 56, desc: '执行工具' },
+  { id: 'END', label: 'END', type: 'end', x: 610, y: 240, w: 90, h: 50, desc: '结束' },
+];
+
+const GRAPH_EDGES = [
+  { from: 'START', to: 'think', type: 'solid', label: 'addEdge' },
+  { from: 'think', to: 'route', type: 'solid', label: 'addEdge' },
+  { from: 'route', to: 'act', type: 'conditional', label: '有 tool_calls', condition: '>0' },
+  { from: 'route', to: 'END', type: 'conditional', label: '无 tool_calls', condition: '=0' },
+  { from: 'act', to: 'observe', type: 'solid', label: 'addEdge' },
+  { from: 'observe', to: 'think', type: 'dashed', label: '循环', condition: '<maxTurns' },
+];
+
+const SCENARIOS = [
+  {
+    id:1, name:'纯文本对话', path:'START → think → END',
+    desc:'用户发送纯文本，LLM 直接回复，无工具调用', input:'"你好"', icon:'💬',
+    traversalPath: ['START', 'think', 'route', 'END'],
+    flowDesc: '单次直通 · 无循环',
+  },
+  {
+    id:2, name:'工具调用循环', path:'START → think → act → observe → think → END',
+    desc:'LLM 调用天气查询工具，act 执行后 observe 观察，最终自然语言回答', input:'"北京今天天气怎么样？"', icon:'🔧',
+    traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    keyEdges: [['route', 'act'], ['observe', 'think']],
+    flowDesc: '1 轮循环 · 工具→观察→再思考',
+  },
+  {
+    id:3, name:'多工具并行', path:'think → act(并行) → observe → think → END',
+    desc:'LLM 同时调用天气+时间工具，act 并行执行，验证并发能力', input:'"深圳天气和时间"', icon:'⚡',
+    traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    keyEdges: [['route', 'act'], ['observe', 'think']],
+    flowDesc: '1 轮循环 · 并行 2 工具',
+    parallelAct: true,
+  },
+  {
+    id:4, name:'maxTurns 安全终止', path:'think → act → observe (×3) → END',
+    desc:'maxTurns=3，LLM 持续请求工具但系统强制终止，防止死循环', input:'"开始无限循环"', icon:'🛡️',
+    traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    keyEdges: [['observe', 'think'], ['route', 'act']],
+    flowDesc: '3 轮循环 → maxTurns 截断',
+  },
+  {
+    id:5, name:'Checkpoint + Resume', path:'run → checkpoint → resume → 继续对话',
+    desc:'第一轮对话后自动保存 checkpoint，第二轮 resume 恢复上下文', input:'"记住我喜欢蓝色" → Resume', icon:'💾',
+    traversalPath: ['START', 'think', 'route', 'END', 'START', 'think', 'route', 'END'],
+    keyEdges: [['START', 'think'], ['route', 'END']],
+    flowDesc: '两段独立 · session 断点续传',
+    isResume: true,
+  },
+  {
+    id:6, name:'图结构可视化', path:'全部节点和边的关系',
+    desc:'完整展示有向图所有节点和边，清晰呈现环形控制流', input:'—', icon:'🗺️',
+    traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    keyEdges: [['route', 'act'], ['route', 'END'], ['observe', 'think']],
+    flowDesc: '全节点 · 条件分支 + 循环边',
+    isFullGraph: true,
+  },
+  {
+    id:7, name:'上下文摘要与压缩', path:'长对话 → 摘要压缩 → think → END',
+    desc:'模拟超长对话（200+条消息），MemoryManager 触发自动摘要压缩', input:'"继续讨论..." (含200条历史)', icon:'🧠',
+    traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    keyEdges: [['route', 'act'], ['observe', 'think']],
+    flowDesc: '1 轮循环 · 摘要压缩工具',
+  },
+  {
+    id:8, name:'工具失败自动重试', path:'think → act(失败) → observe → think(修正) → act(成功) → END',
+    desc:'工具第1次调用失败，系统自动检测并修正参数重试，最终成功', input:'"今天天气怎么样？"', icon:'🔄',
+    traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    keyEdges: [['route', 'act'], ['observe', 'think']],
+    flowDesc: '2 轮循环 · 失败→修正→重试成功',
+    retryAct: true,
+  },
+  {
+    id:9, name:'链式工具调用', path:'act(read_file) → observe → think → act(analyze_data) → END',
+    desc:'工具A输出 → 工具B输入，验证工具间数据传递的链式流转', input:'"读取用户数据并分析"', icon:'⛓️',
+    traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    keyEdges: [['route', 'act'], ['observe', 'think']],
+    flowDesc: '2 轮循环 · A输出→B输入链式',
+    chainAct: true,
+  },
+];
+
+// ==================== Graph 渲染 ====================
+function getNodePos(node) {
+  // 节点中心坐标
+  const cx = node.x + node.w / 2;
+  const cy = node.y + node.h / 2;
+  return { cx, cy, ...node };
+}
+
+function getPortOffset(node, targetSide) {
+  const n = getNodePos(node);
+  // 根据目标节点位置决定从哪个边出/入
+  return {
+    top:    { x: n.cx, y: n.y },
+    bottom: { x: n.cx, y: n.y + n.h },
+    left:   { x: n.x, y: n.cy },
+    right:  { x: n.x + n.w, y: n.cy },
+  };
+}
+
+function getEdgeDirection(from, to) {
+  const f = getNodePos(from);
+  const t = getNodePos(to);
+  const dx = t.cx - f.cx;
+  const dy = t.cy - f.cy;
+
+  // 垂直连线
+  if (Math.abs(dx) < 50) {
+    return dy > 0
+      ? { fromSide: 'bottom', toSide: 'top' }
+      : { fromSide: 'top', toSide: 'bottom' };
+  }
+  // 水平连线
+  return dx > 0
+    ? { fromSide: 'right', toSide: 'left' }
+    : { fromSide: 'left', toSide: 'right' };
+}
+
+function renderGraph() {
+  const svg = document.getElementById('graphSvg');
+  const ns = 'http://www.w3.org/2000/svg';
+
+  // 创建 defs（箭头标记）
+  let defs = svg.querySelector('defs');
+  if (!defs) {
+    defs = document.createElementNS(ns, 'defs');
+    svg.appendChild(defs);
+  }
+
+  // 箭头标记
+  const arrowColors = { solid: '#3a4a5a', conditional: '#4a3a1a', dashed: '#3a4a5a' };
+  const arrowActiveColors = { solid: '#00e5ff', conditional: '#ffb74d', dashed: '#00e5ff' };
+
+  Object.entries(arrowColors).forEach(([type, color]) => {
+    let marker = defs.querySelector(`#arrow-${type}`);
+    if (!marker) {
+      marker = document.createElementNS(ns, 'marker');
+      marker.id = `arrow-${type}`;
+      marker.setAttribute('markerWidth', '10');
+      marker.setAttribute('markerHeight', '7');
+      marker.setAttribute('refX', '10');
+      marker.setAttribute('refY', '3.5');
+      marker.setAttribute('orient', 'auto');
+      const path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', 'M0,0 L10,3.5 L0,7 Z');
+      path.setAttribute('fill', color);
+      path.classList.add('edge-arrow');
+      marker.appendChild(path);
+      defs.appendChild(marker);
+    }
+    // Active marker
+    let markerA = defs.querySelector(`#arrow-${type}-active`);
+    if (!markerA) {
+      markerA = document.createElementNS(ns, 'marker');
+      markerA.id = `arrow-${type}-active`;
+      markerA.setAttribute('markerWidth', '10');
+      markerA.setAttribute('markerHeight', '7');
+      markerA.setAttribute('refX', '10');
+      markerA.setAttribute('refY', '3.5');
+      markerA.setAttribute('orient', 'auto');
+      const path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', 'M0,0 L10,3.5 L0,7 Z');
+      path.setAttribute('fill', arrowActiveColors[type]);
+      path.classList.add('edge-arrow', 'edge-arrow--active');
+      markerA.appendChild(path);
+      defs.appendChild(markerA);
+    }
+  });
+
+  // 渲染边
+  GRAPH_EDGES.forEach((edge, i) => {
+    const fromNode = GRAPH_NODES.find(n => n.id === edge.from);
+    const toNode = GRAPH_NODES.find(n => n.id === edge.to);
+    if (!fromNode || !toNode) return;
+
+    const dir = getEdgeDirection(fromNode, toNode);
+    const fromPorts = getPortOffset(fromNode);
+    const toPorts = getPortOffset(toNode);
+    const fromP = fromPorts[dir.fromSide];
+    const toP = toPorts[dir.toSide];
+
+    // 生成路径
+    let d = '';
+    if (dir.fromSide === 'bottom' && dir.toSide === 'top') {
+      d = `M${fromP.x},${fromP.y} L${toP.x},${toP.y}`;
+    } else if (dir.fromSide === 'top' && dir.toSide === 'bottom') {
+      d = `M${fromP.x},${fromP.y} L${toP.x},${toP.y}`;
+    } else if (dir.fromSide === 'right' && dir.toSide === 'left') {
+      const midX = (fromP.x + toP.x) / 2;
+      d = `M${fromP.x},${fromP.y} C${midX},${fromP.y} ${midX},${toP.y} ${toP.x},${toP.y}`;
+    } else if (dir.fromSide === 'left' && dir.toSide === 'right') {
+      const midX = (fromP.x + toP.x) / 2;
+      d = `M${fromP.x},${fromP.y} C${midX},${fromP.y} ${midX},${toP.y} ${toP.x},${toP.y}`;
+    }
+
+    const group = document.createElementNS(ns, 'g');
+    group.setAttribute('data-edge', `${edge.from}→${edge.to}`);
+
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('marker-end', `url(#arrow-${edge.type})`);
+    path.setAttribute('data-marker', `arrow-${edge.type}`);
+    path.setAttribute('data-marker-active', `arrow-${edge.type}-active`);
+    path.classList.add('edge-path');
+    if (edge.type === 'conditional') path.classList.add('edge-path--conditional');
+    if (edge.type === 'dashed') path.classList.add('edge-path--dashed');
+    group.appendChild(path);
+
+    // 边标签 — 计算标签位置，避开所有节点矩形
+    let labelX, labelY;
+    if (dir.fromSide === 'right' && dir.toSide === 'left') {
+      // 水平边（右→左）：标签放在两个节点上方
+      labelX = (fromP.x + toP.x) / 2;
+      labelY = Math.min(fromNode.y, toNode.y) - 6;
+    } else if (dir.fromSide === 'left' && dir.toSide === 'right') {
+      // 水平边（左→右）：标签放在两个节点上方
+      labelX = (fromP.x + toP.x) / 2;
+      labelY = Math.min(fromNode.y, toNode.y) - 6;
+    } else {
+      // 垂直边：标签放在边中点偏上
+      labelX = (fromP.x + toP.x) / 2;
+      labelY = (fromP.y + toP.y) / 2 - 8;
+    }
+    const text = document.createElementNS(ns, 'text');
+    text.setAttribute('x', labelX);
+    text.setAttribute('y', labelY);
+    text.classList.add('edge-label');
+    text.textContent = edge.label;
+    group.appendChild(text);
+
+    svg.appendChild(group);
+  });
+
+  // 渲染节点
+  GRAPH_NODES.forEach(node => {
+    const group = document.createElementNS(ns, 'g');
+    group.setAttribute('data-node', node.id);
+    group.style.cursor = 'pointer';
+    group.addEventListener('click', () => highlightNode(node.id));
+
+    // 矩形
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', node.x);
+    rect.setAttribute('y', node.y);
+    rect.setAttribute('width', node.w);
+    rect.setAttribute('height', node.h);
+    rect.classList.add('node-rect', `node-rect--${node.type}`);
+
+    // 节点名（居中偏上）
+    const labelY = node.y + node.h / 2 - 5;
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('x', node.x + node.w / 2);
+    label.setAttribute('y', labelY);
+    label.classList.add('node-label');
+    label.textContent = node.label;
+
+    // 节点描述（居中偏下，在矩形内部）
+    const desc = document.createElementNS(ns, 'text');
+    desc.setAttribute('x', node.x + node.w / 2);
+    desc.setAttribute('y', node.y + node.h / 2 + 11);
+    desc.classList.add('node-desc');
+    desc.textContent = node.desc;
+
+    group.appendChild(rect);
+    group.appendChild(label);
+    group.appendChild(desc);
+    svg.appendChild(group);
+  });
+
+  // 更新元数据
+  document.getElementById('graphMeta').innerHTML = `
+    <span>节点: ${GRAPH_NODES.length}</span>
+    <span>边: ${GRAPH_EDGES.length}</span>
+    <span>环形: 是</span>
+  `;
+}
+
+function highlightNode(nodeId) {
+  // 高亮节点和相关边
+  const svg = document.getElementById('graphSvg');
+
+  // 重置所有
+  svg.querySelectorAll('.node-rect--highlight').forEach(r => r.classList.remove('node-rect--highlight'));
+  svg.querySelectorAll('.edge-path--active').forEach(e => {
+    e.classList.remove('edge-path--active');
+    e.setAttribute('marker-end', `url(#${e.dataset.marker})`);
+  });
+
+  // 高亮节点
+  const nodeGroup = svg.querySelector(`[data-node="${nodeId}"]`);
+  if (nodeGroup) {
+    nodeGroup.querySelector('.node-rect').classList.add('node-rect--highlight');
+  }
+
+  // 高亮相连边
+  svg.querySelectorAll('[data-edge]').forEach(edgeGroup => {
+    const [from, to] = edgeGroup.dataset.edge.split('→');
+    if (from === nodeId || to === nodeId) {
+      const path = edgeGroup.querySelector('path');
+      path.classList.add('edge-path--active');
+      path.setAttribute('marker-end', `url(#${path.dataset.markerActive})`);
+    }
+  });
+
+  // 3 秒后自动取消高亮
+  setTimeout(() => {
+    svg.querySelectorAll('.node-rect--highlight').forEach(r => r.classList.remove('node-rect--highlight'));
+    svg.querySelectorAll('.edge-path--active').forEach(e => {
+      e.classList.remove('edge-path--active');
+      e.setAttribute('marker-end', `url(#${e.dataset.marker})`);
+    });
+  }, 3000);
+}
+
+// 动画边流动 (observe→think 循环边)
+function animateLoopEdge() {
+  const svg = document.getElementById('graphSvg');
+  const loopEdges = svg.querySelectorAll('.edge-path--dashed');
+  loopEdges.forEach(edge => {
+    edge.style.strokeDashoffset = '0';
+  });
+}
+
+// ==================== 场景卡片渲染 ====================
+function renderScenarioCards() {
+  const grid = document.getElementById('scenarioGrid');
+  grid.innerHTML = '';
+
+  SCENARIOS.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+    card.id = `card-${s.id}`;
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-icon">${s.icon}</div>
+        <div class="card-meta">
+          <div class="card-title">#${s.id} ${s.name}</div>
+          <div class="card-path">${s.path}</div>
+          <div class="card-desc">${s.desc}</div>
+        </div>
+        <span class="card-badge card-badge--idle" id="badge-${s.id}">待执行</span>
+      </div>
+      <div class="card-flow-graph" id="flowGraph-${s.id}"></div>
+      <div class="card-flow-legend" id="flowLegend-${s.id}"></div>
+      <div class="card-detail" id="detail-${s.id}">
+        <div class="card-detail-inner" id="detailInner-${s.id}"></div>
+      </div>
+      <button class="expand-btn" id="expandBtn-${s.id}" onclick="toggleCard(${s.id})">
+        展开 ▾
+      </button>
+    `;
+
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.expand-btn')) return;
+      if (e.target.closest('.terminal-output')) return;
+      toggleCard(s.id);
+    });
+
+    grid.appendChild(card);
+
+    // 渲染迷你有向流转图
+    renderMiniFlowGraph(s);
+  });
+}
+
+// ==================== 迷你有向流转图渲染 ====================
+
+/** 迷你节点布局（映射到主图坐标系的相对位置） */
+const MINI_NODE_POS = {
+  START:   { cx: 375, cy: 30,  w: 56, h: 30, color: '#6b7b8d', label: '入口' },
+  think:   { cx: 375, cy: 110, w: 56, h: 34, color: '#00e5ff', label: 'LLM 思考' },
+  route:   { cx: 375, cy: 200, w: 56, h: 34, color: '#ffb74d', label: '条件路由' },
+  act:     { cx: 195, cy: 200, w: 56, h: 34, color: '#ff5252', label: '执行工具' },
+  observe: { cx: 195, cy: 110, w: 56, h: 34, color: '#00ff88', label: '观察结果' },
+  END:     { cx: 570, cy: 200, w: 56, h: 30, color: '#6b7b8d', label: '结束' },
+};
+
+/** 为单个场景渲染迷你有向流转图 */
+function renderMiniFlowGraph(scenario) {
+  const container = document.getElementById(`flowGraph-${scenario.id}`);
+  const legend = document.getElementById(`flowLegend-${scenario.id}`);
+  if (!container) return;
+
+  const path = scenario.traversalPath || [];
+
+  // 统计信息
+  const uniqueNodes = [...new Set(path)];
+  const loopCount = path.filter(n => n === 'observe').length;
+  const svgTag = `
+<svg viewBox="120 0 530 250" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+  ${renderMiniEdges(scenario)}
+  ${renderMiniNodes(scenario)}
+</svg>`;
+
+  container.innerHTML = svgTag;
+
+  // 点击流转图 → 放大弹窗
+  container.onclick = (e) => {
+    e.stopPropagation();
+    openFlowZoom(scenario);
+  };
+
+  // 图例
+  legend.innerHTML = `
+    <span><span class="card-flow-dot card-flow-dot--active"></span> 流转节点 ${uniqueNodes.length}个</span>
+    <span><span class="card-flow-dot card-flow-dot--dimmed"></span> 非流转节点</span>
+    ${loopCount > 0 ? `<span style="color:var(--accent-cyan);">↻ ${scenario.flowDesc}</span>` : `<span>${scenario.flowDesc}</span>`}
+  `;
+}
+
+/** 渲染迷你节点（所有节点都显示，遍历路径的节高亮） */
+function renderMiniNodes(scenario) {
+  const path = scenario.traversalPath || [];
+  const segments = computeSegments(path);
+
+  return Object.entries(MINI_NODE_POS).map(([id, p]) => {
+    const traverseCount = segments.filter(s => s.node === id).length;
+    const isTraversed = traverseCount > 0;
+
+    const x = p.cx - p.w / 2;
+    const y = p.cy - p.h / 2;
+    const lx = p.cx;
+    const ly = p.cy + 1;
+
+    // 节点矩形
+    const rectStr = `<rect x="${x}" y="${y}" width="${p.w}" height="${p.h}"
+      class="mini-node-rect ${isTraversed ? 'mini-node-rect--traversed' : 'mini-node-rect--dimmed'}"
+      ${isTraversed ? `fill="#0e1a22" stroke="${p.color}"` : ''}
+    />`;
+
+    // 节点标签
+    const labelStr = `<text x="${lx}" y="${ly - 1}" class="mini-node-label ${isTraversed ? 'mini-node-label--traversed' : ''}">
+      ${id === 'START' ? '▶ START' : id === 'END' ? 'END ■' : id}
+    </text>`;
+
+    // 遍历序号徽标：多次遍历的节点不显示 ×N（由拆分的箭头线体现）
+    let badgeStr = '';
+    if (traverseCount === 1 && isTraversed && id !== 'START' && id !== 'END') {
+      const idx = segments.find(s => s.node === id)?.step || '';
+      badgeStr = `<text x="${lx}" y="${ly + 11}" class="mini-step-dot" fill="${p.color}">${idx}</text>`;
+    }
+
+    return `<g>${rectStr}${labelStr}${badgeStr}</g>`;
+  }).join('\n');
+}
+
+/** 计算遍历序列中的边和步序号 */
+function computeSegments(path) {
+  const steps = [];
+  let stepNum = 0;
+  for (let i = 0; i < path.length; i++) {
+    // 给每个节点分配步骤号（START 不计数，END 不计数）
+    const node = path[i];
+    if (node !== 'START' && i < path.length - 1) stepNum++;
+    steps.push({ node, step: stepNum, isEnd: i === path.length - 1 });
+  }
+  return steps;
+}
+
+/** 渲染迷你边（每次流转画独立箭头线，带唯一序号） */
+function renderMiniEdges(scenario) {
+  const path = scenario.traversalPath || [];
+
+  // 所有可能的边（与主图一致）
+  const allEdges = [
+    { from: 'START', to: 'think',   type: 'solid' },
+    { from: 'think', to: 'route',   type: 'solid' },
+    { from: 'route', to: 'act',     type: 'conditional' },
+    { from: 'route', to: 'END',     type: 'conditional' },
+    { from: 'act',   to: 'observe', type: 'solid' },
+    { from: 'observe', to: 'think',  type: 'loop' },
+  ];
+
+  // 构建实际被遍历的 from→to 对集合（用于判断哪些边需要暗色背景）
+  const traversedPairSet = new Set();
+  for (let i = 0; i < path.length - 1; i++) {
+    traversedPairSet.add(`${path[i]}→${path[i + 1]}`);
+  }
+
+  // 分析每次流转：统计每对 from→to 的出现次数，预设均匀偏移
+  const pairCounts = {};
+  const pairNextIdx = {};
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = `${path[i]}→${path[i + 1]}`;
+    pairCounts[key] = (pairCounts[key] || 0) + 1;
+  }
+
+  /** 根据出现次数计算均匀偏移数组（间距 6px，对称分布） */
+  function computeOffsets(count) {
+    const spacing = 6;
+    if (count === 1) return [0];
+    const start = -(count - 1) * spacing / 2;
+    const offsets = [];
+    for (let i = 0; i < count; i++) offsets.push(start + i * spacing);
+    return offsets;
+  }
+  const pairOffsets = {};
+  for (const [key, cnt] of Object.entries(pairCounts)) {
+    pairOffsets[key] = computeOffsets(cnt);
+    pairNextIdx[key] = 0;
+  }
+
+  let html = '';
+
+  // 创建 defs 中的箭头标记
+  html += `<defs>
+    <marker id="mini-arrow-${scenario.id}" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <path d="M0,0 L6,2.5 L0,5 Z" fill="#00e5ff" opacity="0.8"/>
+    </marker>
+    <marker id="mini-arrow-dim-${scenario.id}" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <path d="M0,0 L6,2.5 L0,5 Z" fill="#1a2530" opacity="0.4"/>
+    </marker>
+  </defs>\n`;
+
+  // 第一遍：绘制未被遍历的边（暗色背景，展示完整图结构）
+  allEdges.forEach(edge => {
+    const fromPos = MINI_NODE_POS[edge.from];
+    const toPos = MINI_NODE_POS[edge.to];
+    if (!fromPos || !toPos) return;
+
+    // 跳过会被遍历边覆盖的边（由第二遍绘制）
+    if (traversedPairSet.has(`${edge.from}→${edge.to}`)) return;
+
+    const d = getMiniEdgePath(fromPos, toPos, edge.from, edge.to, 0, 0);
+    html += `<path d="${d}" class="mini-edge-path" marker-end="url(#mini-arrow-dim-${scenario.id})" />\n`;
+  });
+
+  // 第二遍：为每次流转绘制独立箭头线（偏移 + 唯一序号标签）
+  for (let i = 0; i < path.length - 1; i++) {
+    const stepNum = i + 1; // 唯一全局序号
+    const fromId = path[i];
+    const toId = path[i + 1];
+    const key = `${fromId}→${toId}`;
+
+    const fromPos = MINI_NODE_POS[fromId];
+    const toPos = MINI_NODE_POS[toId];
+    if (!fromPos || !toPos) continue;
+
+    // 获取当前边在该 from→to 对中的偏移
+    const offset = pairOffsets[key][pairNextIdx[key]++];
+
+    // 水平边偏移 y，垂直边偏移 x
+    const isVertical = Math.abs(toPos.cx - fromPos.cx) < 50;
+    const xOffset = isVertical ? offset : 0;
+    const yOffset = isVertical ? 0 : offset;
+
+    const d = getMiniEdgePath(fromPos, toPos, fromId, toId, xOffset, yOffset);
+
+    // 遍历的边使用高亮样式
+    html += `<path d="${d}" class="mini-edge-path mini-edge-path--traversed" marker-end="url(#mini-arrow-${scenario.id})" />\n`;
+
+    // 序号标签位置跟随偏移
+    const labelX = (fromPos.cx + toPos.cx) / 2 + xOffset;
+    const labelY = (fromPos.cy + toPos.cy) / 2 + yOffset - 4;
+    html += `<text x="${labelX}" y="${labelY}" class="mini-step-dot" fill="#00e5ff">${stepNum}</text>\n`;
+  }
+
+  return html;
+}
+
+/** 计算迷你边的 SVG 路径，支持偏移使重复边拆分为平行线 */
+function getMiniEdgePath(from, to, fromId, toId, xOffset = 0, yOffset = 0) {
+  const dx = to.cx - from.cx;
+  const dy = to.cy - from.cy;
+
+  // 垂直边：偏移 x 方向使多条线平行
+  if (Math.abs(dx) < 50) {
+    const fromY = dy > 0 ? from.cy + from.h / 2 : from.cy - from.h / 2;
+    const toY = dy > 0 ? to.cy - to.h / 2 : to.cy + to.h / 2;
+    return `M${from.cx + xOffset},${fromY} L${to.cx + xOffset},${toY}`;
+  }
+
+  // 水平边：偏移 y 方向使多条曲线平行
+  const fromX = dx > 0 ? from.cx + from.w / 2 : from.cx - from.w / 2;
+  const toX = dx > 0 ? to.cx - to.w / 2 : to.cx + to.w / 2;
+  const midX = (fromX + toX) / 2;
+  return `M${fromX},${from.cy + yOffset} C${midX},${from.cy + yOffset} ${midX},${to.cy + yOffset} ${toX},${to.cy + yOffset}`;
+}
+
+function toggleCard(id) {
+  const detail = document.getElementById(`detail-${id}`);
+  const btn = document.getElementById(`expandBtn-${id}`);
+  const isOpen = detail.classList.contains('card-detail--open');
+
+  if (isOpen) {
+    detail.classList.remove('card-detail--open');
+    btn.textContent = '展开 ▾';
+  } else {
+    detail.classList.add('card-detail--open');
+    btn.textContent = '收起 ▴';
+  }
+}
+
+// ==================== 执行场景 ====================
+let runningCount = 0;
+
+async function runScenario(id) {
+  const card = document.getElementById(`card-${id}`);
+  const badge = document.getElementById(`badge-${id}`);
+  const detailInner = document.getElementById(`detailInner-${id}`);
+  const detail = document.getElementById(`detail-${id}`);
+
+  // 状态：运行中
+  runningCount++;
+  updateStatus();
+  card.classList.add('scenario-card--running');
+  card.classList.remove('scenario-card--done', 'scenario-card--error');
+  badge.className = 'card-badge card-badge--running';
+  badge.innerHTML = '<span class="spinner"></span> 执行中...';
+
+  // 展开
+  detail.classList.add('card-detail--open');
+  document.getElementById(`expandBtn-${id}`).textContent = '收起 ▴';
+  detailInner.innerHTML = '<div style="color:var(--text-muted);padding:20px 0;text-align:center;"><span class="spinner"></span> 正在执行场景...</div>';
+
+  try {
+    const resp = await fetch(`/api/run/${id}`, { method: 'POST' });
+    const data = await resp.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    // 渲染结果
+    renderScenarioResult(id, data);
+
+    // 如果有实际路径，更新流转图
+    if (data.actualPath && Array.isArray(data.actualPath)) {
+      const scenario = SCENARIOS.find(s => s.id === id);
+      if (scenario) {
+        // 用实际路径覆盖预设路径重新渲染
+        const updatedScenario = { ...scenario, traversalPath: data.actualPath };
+        renderMiniFlowGraph(updatedScenario);
+      }
+    }
+
+    card.classList.add('scenario-card--done');
+    card.classList.remove('scenario-card--running');
+    badge.className = 'card-badge card-badge--done';
+    badge.textContent = `✅ ${data.duration}`;
+
+  } catch (err) {
+    card.classList.add('scenario-card--error');
+    card.classList.remove('scenario-card--running');
+    badge.className = 'card-badge card-badge--error';
+    badge.textContent = '❌ 失败';
+    detailInner.innerHTML = `<div style="color:var(--accent-red);padding:20px 0;">❌ 执行失败: ${err.message}</div>`;
+  } finally {
+    runningCount--;
+    updateStatus();
+  }
+}
+
+function renderScenarioResult(id, data) {
+  const inner = document.getElementById(`detailInner-${id}`);
+
+  // 结果摘要
+  const summaryHTML = data.turnCount > 0 ? `
+    <div class="result-summary">
+      <div class="result-stat">
+        <div class="result-stat-value">${data.turnCount}</div>
+        <div class="result-stat-label">轮次</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-value">${data.messageCount}</div>
+        <div class="result-stat-label">消息数</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-value">${data.duration}</div>
+        <div class="result-stat-label">耗时</div>
+      </div>
+    </div>
+  ` : '';
+
+  // 输出
+  const outputHTML = data.output ? `
+    <div class="result-output">${escapeHtml(data.output)}</div>
+  ` : '';
+
+  // 日志
+  const logsHTML = data.logs.length > 0 ? `
+    <div class="terminal-output">
+      <div class="terminal-header">
+        <span class="terminal-dot terminal-dot--r"></span>
+        <span class="terminal-dot terminal-dot--y"></span>
+        <span class="terminal-dot terminal-dot--g"></span>
+        <span class="terminal-title">执行日志 · ${data.logs.length} 条</span>
+      </div>
+      <div class="terminal-body">
+        ${data.logs.map(log => renderLogLine(log)).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  inner.innerHTML = summaryHTML + outputHTML + logsHTML;
+}
+
+function renderLogLine(log) {
+  const typeClass = {
+    enter: '',
+    info: 'log-success',
+    warn: 'log-warning',
+    exit: '',
+    decision: 'log-decision',
+    error: 'log-error',
+  }[log.type] || '';
+
+  return `
+    <div class="log-line">
+      <span class="log-node">[${log.node}]</span>
+      <span class="log-msg ${typeClass}">${escapeHtml(log.message)}</span>
+    </div>
+  `;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+async function runAllScenarios() {
+  const btn = document.getElementById('btnRunAll');
+  btn.disabled = true;
+  btn.textContent = '⏳ 执行中...';
+  updateStatus();
+
+  // 第 6 个场景（图结构）不需要调用 API，直接渲染结果
+  renderScenarioResult(6, {
+    id: 6, success: true, turnCount: 0, messageCount: 0,
+    output: '图结构数据已加载',
+    logs: GRAPH_NODES.map(n => ({
+      node: n.id,
+      type: 'info',
+      message: `${n.label}: ${n.desc}`,
+    })),
+    actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'END'],
+    duration: '0ms',
+  });
+  const card6 = document.getElementById('card-6');
+  card6.classList.add('scenario-card--done');
+  const badge6 = document.getElementById('badge-6');
+  badge6.className = 'card-badge card-badge--done';
+  badge6.textContent = '✅ 0ms';
+  // 自动展开详情
+  const detail6 = document.getElementById('detail-6');
+  if (detail6) detail6.classList.add('card-detail--open');
+  const btn6 = document.getElementById('expandBtn-6');
+  if (btn6) btn6.textContent = '收起 ▴';
+  // 更新流转图
+  const s6 = SCENARIOS.find(s => s.id === 6);
+  if (s6) renderMiniFlowGraph({ ...s6, traversalPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'END'] });
+
+  // 依次执行场景 1-5, 7-9 (跳过6-图结构)
+  for (let id = 1; id <= 5; id++) {
+    await runScenario(id);
+  }
+  for (let id = 7; id <= 9; id++) {
+    await runScenario(id);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ 重新执行全部';
+  updateStatus();
+}
+
+function updateStatus() {
+  const dot = document.getElementById('statusDot');
+  const badge = dot.querySelector('.badge-text');
+  if (runningCount > 0) {
+    dot.className = 'status-dot status-dot--busy';
+    dot.innerHTML = `执行中 (${runningCount})`;
+  } else {
+    dot.className = 'status-dot';
+    dot.textContent = '就绪';
+  }
+
+  // 更新场景计数
+  const doneCards = document.querySelectorAll('.scenario-card--done').length;
+  const runCards = document.querySelectorAll('.scenario-card--running').length;
+  document.getElementById('scenarioCount').textContent =
+    doneCards > 0 ? `${doneCards}/9 已完成` : '9 个场景';
+}
+
+// ==================== 流转图放大弹窗 ====================
+
+/** 当前缩放状态 */
+let zoomLevel = 1.0;
+let panX = 0;
+let panY = 0;
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let dragStartPanX = 0;
+let dragStartPanY = 0;
+
+/**
+ * 打开流转图放大弹窗
+ * @param {object} scenario - 场景数据（含 traversalPath 等信息）
+ */
+function openFlowZoom(scenario) {
+  const overlay = document.getElementById('flowZoomOverlay');
+  const body = document.getElementById('zoomBody');
+  const title = document.getElementById('zoomTitle');
+  const badge = document.getElementById('zoomBadge');
+
+  if (!overlay || !body) return;
+
+  // 设置标题
+  title.textContent = `#${scenario.id} ${scenario.name}`;
+  badge.textContent = scenario.flowDesc || '';
+
+  // 重置缩放和平移
+  zoomLevel = 1.0;
+  panX = 0;
+  panY = 0;
+  updateZoomTransform();
+  updateScaleDisplay();
+
+  // 渲染放大的 SVG（使用与迷你图相同的渲染逻辑，但 viewBox 更大）
+  const svgContent = buildZoomSvg(scenario);
+  body.innerHTML = svgContent;
+
+  // 显示遮罩
+  overlay.classList.add('flow-zoom-overlay--open');
+
+  // 阻止 body 滚动
+  document.body.style.overflow = 'hidden';
+}
+
+/**
+ * 关闭放大弹窗
+ */
+function closeFlowZoom() {
+  const overlay = document.getElementById('flowZoomOverlay');
+  if (!overlay) return;
+
+  overlay.classList.remove('flow-zoom-overlay--open');
+  document.body.style.overflow = '';
+  zoomLevel = 1.0;
+  panX = 0;
+  panY = 0;
+}
+
+/**
+ * 构建放大的 SVG（使用更大的 viewBox，给节点留呼吸空间）
+ */
+function buildZoomSvg(scenario) {
+  // 使用 renderMiniEdges 和 renderMiniNodes 的输出，但 viewBox 更大
+  // 需要把 scenario 的 id 临时处理好，因为 renderMiniEdges 内部用到 scenario.id
+  return `
+<svg viewBox="120 -30 530 290" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+     style="width:100%;max-width:900px;">
+  ${renderMiniEdges(scenario)}
+  ${renderMiniNodes(scenario)}
+</svg>`;
+}
+
+/**
+ * 更新 SVG 的 transform（缩放 + 平移）
+ */
+function updateZoomTransform() {
+  const body = document.getElementById('zoomBody');
+  if (!body) return;
+  const svg = body.querySelector('svg');
+  if (svg) {
+    svg.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+  }
+}
+
+/** 更新缩放百分比显示 */
+function updateScaleDisplay() {
+  const el = document.getElementById('zoomScale');
+  if (el) {
+    el.textContent = `${Math.round(zoomLevel * 100)}%`;
+  }
+}
+
+/**
+ * 处理滚轮缩放
+ */
+function handleZoomWheel(e) {
+  const overlay = document.getElementById('flowZoomOverlay');
+  if (!overlay || !overlay.classList.contains('flow-zoom-overlay--open')) return;
+
+  e.preventDefault();
+
+  const delta = e.deltaY > 0 ? -0.08 : 0.08;
+  const newZoom = Math.max(0.3, Math.min(3.0, zoomLevel + delta));
+
+  // 以鼠标位置为缩放中心
+  const body = document.getElementById('zoomBody');
+  if (body) {
+    const rect = body.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const scaleRatio = newZoom / zoomLevel;
+    panX = mx - scaleRatio * (mx - panX);
+    panY = my - scaleRatio * (my - panY);
+  }
+
+  zoomLevel = newZoom;
+  updateZoomTransform();
+  updateScaleDisplay();
+}
+
+/**
+ * 处理拖拽平移
+ */
+function handleZoomMouseDown(e) {
+  if (!document.getElementById('flowZoomOverlay').classList.contains('flow-zoom-overlay--open')) return;
+  isDragging = true;
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  dragStartPanX = panX;
+  dragStartPanY = panY;
+}
+
+function handleZoomMouseMove(e) {
+  if (!isDragging) return;
+  panX = dragStartPanX + (e.clientX - dragStartX);
+  panY = dragStartPanY + (e.clientY - dragStartY);
+  updateZoomTransform();
+}
+
+function handleZoomMouseUp() {
+  isDragging = false;
+}
+
+/** ESC 关闭 */
+function handleZoomKey(e) {
+  if (e.key === 'Escape') {
+    closeFlowZoom();
+  }
+}
+
+// 绑定全局事件
+document.addEventListener('wheel', handleZoomWheel, { passive: false });
+document.addEventListener('mousemove', handleZoomMouseMove);
+document.addEventListener('mouseup', handleZoomMouseUp);
+document.addEventListener('keydown', handleZoomKey);
+
+// ==================== 初始化 ====================
+document.addEventListener('DOMContentLoaded', () => {
+  renderGraph();
+  renderScenarioCards();
+  animateLoopEdge();
+
+  // 绑定放大弹窗关闭事件
+  const closeBtn = document.getElementById('zoomClose');
+  const overlay = document.getElementById('flowZoomOverlay');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeFlowZoom();
+    });
+  }
+  // 点击遮罩背景关闭
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeFlowZoom();
+    });
+  }
+
+  // 绑定放大弹窗的拖拽事件（在 zoomBody 上处理 mousedown）
+  const zoomBody = document.getElementById('zoomBody');
+  if (zoomBody) {
+    zoomBody.addEventListener('mousedown', handleZoomMouseDown);
+  }
+});
+</script>
+</body>
+</html>

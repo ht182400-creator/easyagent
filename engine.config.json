@@ -1,0 +1,7 @@
+{
+  "engine": "langgraph",
+  "langgraph": {
+    "maxTurns": 25,
+    "checkpointDb": "data/checkpoints.db"
+  }
+}
