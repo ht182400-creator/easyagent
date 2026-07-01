@@ -152,6 +152,7 @@ export const RunBenchmarkTool: ITool = {
         return {
           success: false,
           content: '没有已加载的 SWE-Bench 问题。请先使用 benchmark_load 加载数据集。',
+          error: '没有已加载的 SWE-Bench 问题',
         };
       }
 
@@ -226,6 +227,7 @@ export const BenchmarkReportTool: ITool = {
           success: false,
           content:
             '没有正在进行的评测会话。请先使用 benchmark_load 加载数据，再用 benchmark_run 运行评测。',
+          error: '没有正在进行的评测会话',
         };
       }
 

@@ -3,8 +3,8 @@ name: Shared Tests
 # ============================================================
 # 可复用测试工作流 — ci.yml 和 release.yml 的唯一真相来源
 #
-# 包含 7 个 job:
-#   test-core / test-server / test-desktop / coverage
+# 包含 9 个 job:
+#   test-core / test-server / test-desktop / test-langgraph / test-frontend / coverage
 #   test-pipeline / lint-and-format / build-check
 #
 # 被 ci.yml（push/PR）和 release.yml（tag/手动）引用
@@ -99,12 +99,9 @@ jobs:
           path: docs/pipeline/_vitest-desktop.json
           if-no-files-found: error
 
-  coverage:
-    name: Coverage Gate
-    needs:
-      - test-core
-      - test-server
-      - test-desktop
+  test-langgraph:
+    name: Test LangGraph
+    needs: test-core
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -117,14 +114,75 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build core + server
+      - name: Build core + langgraph
         run: |
           cd packages/core && npx tsup --dts
+          cd ../langgraph && npx tsup
+      - name: Run langgraph tests
+        run: cd packages/langgraph && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-langgraph
+          path: docs/pipeline/_vitest-langgraph.json
+          if-no-files-found: error
+
+  test-frontend:
+    name: Test Frontend
+    needs: test-core
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core
+        run: cd packages/core && npx tsup --dts
+      - name: Run frontend tests
+        run: cd packages/frontend && npx vitest run
+      - name: Upload vitest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-frontend
+          path: docs/pipeline/_vitest-frontend.json
+          if-no-files-found: error
+
+  coverage:
+    name: Coverage Gate
+    needs:
+      - test-core
+      - test-server
+      - test-desktop
+      - test-langgraph
+      - test-frontend
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core + server + langgraph
+        run: |
+          cd packages/core && npx tsup --dts
+          cd ../langgraph && npx tsup
           cd ../server && npx tsup
       - name: Core coverage check
         run: cd packages/core && npx vitest run --coverage
       - name: Server coverage check (Desktop excluded - code in frontend pkg)
         run: cd packages/server && npx vitest run --coverage
+      - name: LangGraph coverage check
+        run: cd packages/langgraph && npx vitest run --coverage
 
   test-pipeline:
     name: Pipeline Tests
@@ -177,6 +235,7 @@ jobs:
       - name: Build all packages
         run: |
           cd packages/core && npx tsup --dts
+          cd ../langgraph && npx tsup
           cd ../cli && npx tsup
           cd ../server && npx tsup
           cd ../desktop && npx tsup

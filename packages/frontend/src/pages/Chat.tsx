@@ -2,9 +2,9 @@
  * 升级版聊天页面 - 使用 Zustand Store + WebSocket 流式通信
  * 支持: 工具调用展示、模型切换、附件上传、历史会话查看
  */
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Trash2, Wifi, WifiOff, Loader2, ArrowLeft } from 'lucide-react';
+import { Trash2, Wifi, WifiOff, Loader2, ArrowLeft, Cpu } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useProviderStore } from '../stores/providerStore';
 import { useAppStore } from '../stores/appStore';
@@ -39,6 +39,9 @@ export default function ChatPage() {
   const connectionState = session?.connectionState || 'disconnected';
   const messages = session?.messages || [];
   const addNotification = useAppStore((s) => s.addNotification);
+
+  /** 当前后端 Agent 引擎类型 */
+  const [engineType, setEngineType] = useState<'legacy' | 'langgraph' | null>(null);
 
   const connectWebSocket = useChatStore((s) => s.connectWebSocket);
   const disconnectWebSocket = useChatStore((s) => s.disconnectWebSocket);
@@ -86,6 +89,19 @@ export default function ChatPage() {
       cancelled = true;
     };
   }, [urlSessionId, sessionId, clearMessages, addMessage]);
+
+  // 加载当前后端 Agent 引擎类型
+  useEffect(() => {
+    const baseUrl = getApiBase();
+    fetch(`${baseUrl}/api/engine-type`)
+      .then((r) => r.json())
+      .then((data: { engineType?: string }) => {
+        if (data?.engineType === 'langgraph' || data?.engineType === 'legacy') {
+          setEngineType(data.engineType);
+        }
+      })
+      .catch(() => { /* 静默失败，保持 null */ });
+  }, []);
 
   // 初始化：连接WebSocket + 加载提供商（历史会话不连WebSocket）
   useEffect(() => {
@@ -170,6 +186,19 @@ export default function ChatPage() {
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {connectionBadge()}
+            {engineType && (
+              <span
+                className={`flex items-center gap-1 text-[11px] font-mono px-1.5 py-0.5 rounded border ${
+                  engineType === 'langgraph'
+                    ? 'text-[#00e5ff] border-[#00e5ff]/30 bg-[rgba(0,229,255,0.05)]'
+                    : 'text-[#4a5568] border-[#1a2530] bg-[#111922]'
+                }`}
+                title={engineType === 'langgraph' ? '当前使用 LangGraph 引擎' : '当前使用 Legacy AgentEngine'}
+              >
+                <Cpu className="w-3 h-3" />
+                {engineType === 'langgraph' ? 'LangGraph' : 'Legacy'}
+              </span>
+            )}
             {messages.length > 0 && (
               <span className="text-xs text-gray-600">{messages.length} 条消息</span>
             )}

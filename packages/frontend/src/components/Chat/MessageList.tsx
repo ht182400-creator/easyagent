@@ -65,8 +65,8 @@ function estimateMessageHeight(msg: ChatMessage): number {
     h += msg.toolCalls.length * 95;
   }
 
-  // Token 用量行
-  if (msg.tokenUsage) h += 35;
+  // Token 用量行 + 耗时行
+  if (msg.tokenUsage || msg.duration !== undefined) h += 35;
 
   // 错误提示
   if (msg.error) h += 52;
@@ -97,6 +97,16 @@ function estimateItemHeight(item: ListItem): number {
 }
 
 // ===================== 子组件 =====================
+
+/**
+ * 格式化生成耗时
+ * - 不足 1 秒显示毫秒
+ * - 超过 1 秒显示秒（保留 1 位小数）
+ */
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
 
 /**
  * 单条消息气泡
@@ -146,11 +156,15 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
             </div>
           )}
 
-          {/* Token 用量 */}
-          {msg.tokenUsage && (
+          {/* Token 用量 + 耗时 */}
+          {(msg.tokenUsage || msg.duration !== undefined) && (
             <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-800 text-xs text-gray-600">
-              <span>输入: {msg.tokenUsage.input.toLocaleString()}</span>
-              <span>输出: {msg.tokenUsage.output.toLocaleString()}</span>
+              {msg.tokenUsage && (
+                <span>Tokens: {(msg.tokenUsage.total ?? msg.tokenUsage.input + msg.tokenUsage.output).toLocaleString()}</span>
+              )}
+              {msg.duration !== undefined && (
+                <span>耗时: {formatDuration(msg.duration)}</span>
+              )}
             </div>
           )}
         </div>

@@ -1,6 +1,9 @@
 /**
  * Vitest 配置 - Frontend 共享包测试
- * 覆盖 request/config/api/events/mountApp 等核心模块
+ * 覆盖 request/config/api/events/mountApp/langGraphStore 等核心模块
+ * 
+ * v0.6.22+ 使用 happy-dom 替代 jsdom，解决 pnpm workspace 中 React hooks
+ * 模块重复实例问题（jsdom 下 render() 和组件使用不同 React 实例）。
  */
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
@@ -10,7 +13,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     include: ['src/__tests__/**/*.test.{ts,tsx}'],
-    environment: 'jsdom',
+    environment: 'happy-dom',
     globals: true,
     testTimeout: 10000,
     reporters: ['default', 'json'],
@@ -18,13 +21,6 @@ export default defineConfig({
       json: '../../docs/pipeline/_vitest-frontend.json',
     },
     css: false,
-    // 去重 React 实例: pnpm workspace 中 frontend 依赖 React + vitest 自带的 jsdom
-    // 确保测试时只有一个 React 副本，否则 useLayoutEffect 等 hooks 会报 null
-    server: {
-      deps: {
-        inline: ['react', 'react-dom', 'react-dom/client'],
-      },
-    },
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
@@ -43,11 +39,10 @@ export default defineConfig({
       },
     },
   },
-  // 确保 vite 只用一个 React 副本
+  // pnpm workspace 中确保 React 单例
   resolve: {
     dedupe: ['react', 'react-dom'],
     alias: {
-      // frontend 内部 @/ 应指向自己的 src/
       '@': resolve(__dirname, 'src'),
     },
   },

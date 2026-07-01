@@ -12,13 +12,14 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    // 开发模式下代理 API 请求到后端（端口可通过 API_PORT 环境变量覆盖）
     proxy: {
       '/api': {
-        target: 'http://localhost:3456',
+        target: `http://localhost:${process.env.API_PORT || '3456'}`,
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:3456',
+        target: `ws://localhost:${process.env.API_PORT || '3456'}`,
         ws: true,
       },
     },

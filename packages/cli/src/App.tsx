@@ -43,6 +43,21 @@ import {
   logger,
 } from '@easyagent/core';
 
+/**
+ * 加载 LangGraph 引擎（按需动态导入，避免 CLI 启动时强制加载）
+ */
+async function getLangGraphAgent(provider: any, toolRegistry: ToolRegistry, options: Record<string, unknown>) {
+  const { createLangGraphAgent } = await import('@easyagent/langgraph');
+  return createLangGraphAgent(provider, toolRegistry, {
+    model: options.model as string,
+    maxTurns: options.maxTurns as number,
+    sessionId: (options.sessionId as string) || `cli_${Date.now()}`,
+  });
+}
+
+/** 引擎类型 */
+const ENGINE_TYPE = (process.env.EASYAGENT_ENGINE || 'legacy') as 'legacy' | 'langgraph';
+
 /** 全局计数器 */
 let msgCounter = 0;
 const nextId = (): string => `msg_${++msgCounter}_${Date.now()}`;
@@ -141,17 +156,38 @@ export const App: FC<AppProps> = ({ initInfo }) => {
         toolRegistry.registerAll(getAllBuiltinTools());
 
         const sessionManager = new SessionManager();
-        const agent = new AgentEngine(provider, toolRegistry, sessionManager, {
+        const agentOptions = {
           provider: config.currentModel.provider,
           model: config.currentModel.model,
           maxTurns: config.agent.maxTurns,
           temperature: config.agent.temperature,
-        });
+          sessionId: `cli_${Date.now()}`,
+        };
+
+        // 双引擎切换：通过 EASYAGENT_ENGINE 环境变量控制
+        let agent: AgentEngine | Awaited<ReturnType<typeof getLangGraphAgent>>;
+        const engineLabel = ENGINE_TYPE === 'langgraph' ? 'LangGraph' : 'Legacy';
+
+        if (ENGINE_TYPE === 'langgraph') {
+          agent = await getLangGraphAgent(provider, toolRegistry, agentOptions);
+        } else {
+          agent = new AgentEngine(provider, toolRegistry, sessionManager, {
+            provider: agentOptions.provider,
+            model: agentOptions.model,
+            maxTurns: agentOptions.maxTurns,
+            temperature: agentOptions.temperature,
+          });
+        }
+
+        // 引擎日志提示
+        if (ENGINE_TYPE === 'langgraph') {
+          addMsg('system', `🔀 使用 LangGraph 引擎`);
+        }
 
         const msgId = addMsg('assistant', '', true);
 
         await agent.run(text, {
-          sessionId: `cli_${Date.now()}`,
+          sessionId: agentOptions.sessionId,
           onPartialResponse: (chunk: string) => {
             setMessages((prev) => {
               const msgs = [...prev];

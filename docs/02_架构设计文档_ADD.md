@@ -1,6 +1,6 @@
 # EasyAgent - 架构设计文档 (ADD)
 
-> 版本: v5.4 | 日期: 2026-06-20 | 更新: +版本控制系统架构 + version.json + CHANGELOG + 版本API + 发布脚本 + 仓库修正
+> 版本: v5.7 | 日期: 2026-06-29 | 更新: +LangGraph 双引擎架构 + 前端可视化 + WebSocket 实时高亮 + Checkpoint UI + CLI 引擎切换 (Phase A/B/C/D 全部完成)
 
 ---
 
@@ -20,11 +20,19 @@
 │  ┌────┴────────────┴──────────────┴───────────────────┴─────────┐ │
 │  │                     Core Engine (核心引擎)                    │ │
 │  │  ┌──────────┐ ┌───────────┐ ┌──────────────┐ ┌────────────┐  │ │
-│  │  │  Agent   │ │   Tool    │ │   Session    │ │  Plugins   │  │ │
-│  │  │  Engine  │ │  System   │ │   Manager    │ │  Manager   │  │ │
-│  │  │(ReAct循环)│ │(70 tools) │ │  (SQLite)   │ │(6 builtin) │  │ │
-│  │  └────┬─────┘ └─────┬─────┘ └──────┬───────┘ └─────┬──────┘  │ │
-│  │       │             │              │               │         │ │
+│  │  │ 双 Agent │ │   Tool    │ │   Session    │ │  Plugins   │  │ │
+│  │  │  引擎    │ │  System   │ │   Manager    │ │  Manager   │  │ │
+│  │  │┌────────┐│ │(70 tools) │ │  (SQLite)   │ │(6 builtin) │  │ │
+│  │  ││AgentEng││ │           │ │              │ │            │  │ │
+│  │  ││(ReAct) ││ └─────┬─────┘ └──────┬───────┘ └─────┬──────┘  │ │
+│  │  │├────────┤│       │             │               │         │ │
+│  │  ││LangGrph││       │             │               │         │ │
+│  │  ││(State) ││       │             │               │         │ │
+│  │  │└──┬─────┘│       │             │               │         │ │
+│  │  └────┼──────┘       │             │               │         │ │
+│  │       │  EASYAGENT   │             │               │         │ │
+│  │       │  _ENGINE     │             │               │         │ │
+│  │       │  env var     │             │               │         │ │
 │  │  ┌────┴─────────────┴──────────────┴───────────────┴──────┐  │ │
 │  │  │              Model Adapter Layer (模型适配器层)          │  │ │
 │  │  │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ │  │ │
@@ -91,7 +99,11 @@ interface IModelAdapter {
 | MiniMax  | OpenAI兼容 | `https://api.minimax.chat/v1`                                        |
 | Ollama   | OpenAI兼容 | `http://localhost:11434/v1`                                          |
 
-### 3.2 Agent Engine（智能体引擎）
+### 3.2 Agent Engine（智能体引擎 — v5.5 双引擎架构）
+
+EasyAgent v5.5 支持**双引擎可切换**架构，通过 `EASYAGENT_ENGINE` 环境变量控制（默认 `legacy`）：
+
+#### 3.2.1 引擎一：AgentEngine (Legacy — ReAct 循环)
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -99,7 +111,7 @@ interface IModelAdapter {
 │                                                    │
 │  ┌────────┐    ┌──────────┐    ┌──────────────┐  │
 │  │ THINK  │───▶│   ACT    │───▶│ Tool Executor│  │
-│  │ (LLM)  │◀───│ (Tools)  │◀───│ (31 tools)  │  │
+│  │ (LLM)  │◀───│ (Tools)  │◀───│ (70 tools)  │  │
 │  └────────┘    └──────────┘    └──────────────┘  │
 │       │              │                             │
 │       ▼              ▼                             │
@@ -113,6 +125,57 @@ interface IModelAdapter {
 │  - User interruption (AbortSignal)                 │
 │  - onPartialResponse 流式回调                      │
 └──────────────────────────────────────────────────┘
+```
+
+#### 3.2.2 引擎二：LangGraphAgent (🆕 — StateGraph 声明式)
+
+```
+┌──────────────────────────────────────────────────┐
+│         LangGraph StateGraph (声明式有向图)         │
+│                                                    │
+│  ┌──────────┐       ┌──────────┐                  │
+│  │  think   │──条件─▶│   act    │                  │
+│  │  Node    │  路由  │   Node   │                  │
+│  │(LLM调用) │       │(工具执行)│                  │
+│  └────┬─────┘       └────┬─────┘                  │
+│       │                  │                         │
+│       │    ┌─────────────┘                         │
+│       ▼    ▼                                       │
+│  ┌─────────────────┐                              │
+│  │  observe Node    │◀──── checkpoint 持久化        │
+│  │  (结果处理)      │      (SQLite)                 │
+│  └────────┬────────┘                              │
+│           │                                        │
+│           ▼                                        │
+│     ┌──────────┐                                   │
+│     │  END     │  条件: finish_reason=stop          │
+│     └──────────┘  或 maxTurns >= 25               │
+│                                                    │
+│  特性:                                              │
+│  - 原生持久化 (Checkpoint) → 中断恢复               │
+│  - 条件路由 (routeAfterThink)                       │
+│  - 可扩展 → 子图 / 并行节点 / 多 Agent 协作          │
+└──────────────────────────────────────────────────┘
+```
+
+#### 3.2.3 引擎切换机制
+
+```
+EASYAGENT_ENGINE env var ('legacy' | 'langgraph')
+              │
+    ┌─────────▼──────────┐
+    │  engineFactory.ts   │  ← packages/server/src/langgraph/
+    │  getEngineType()    │     createAgent() 工厂函数
+    │  createAgent(...)   │
+    └───┬──────────┬──────┘
+        │          │
+ legacy │          │ langgraph
+┌───────▼──┐  ┌───▼──────────────┐
+│AgentEngine│  │LangGraphAdapter   │  ← 事件映射适配器
+│ (core)    │  │  ↓               │    tool_call → tool_start
+│ 直接使用  │  │LangGraphAgent     │    tool_result → tool_end
+└───────────┘  │  + Checkpoint API│
+               └──────────────────┘
 ```
 
 ### 3.3 Tool System（工具系统 - 70 tools, 17 分组）
@@ -572,8 +635,18 @@ easyagent/
 ├── packages/
 │   ├── core/                    # 核心引擎包 (196KB + DTS 43KB)
 │   │   ├── src/
-│   │   │   ├── agent/           # Agent引擎
+│   │   │   ├── agent/           # Agent引擎 (Legacy)
 │   │   │   │   └── AgentEngine.ts     # ReAct循环 + 流式 + 工具调用
+│   ├── langgraph/               # 🆕 LangGraph 工作流引擎 (54KB ESM + DTS 26.5KB)
+│   │   ├── src/
+│   │   │   ├── state/AgentState.ts    # 图状态定义 + Reducer
+│   │   │   ├── nodes/                 # Think/Act/Observe 三节点
+│   │   │   ├── graph/agentGraph.ts    # StateGraph 编译 + 条件路由
+│   │   │   ├── memory/Checkpointer.ts # SQLite Checkpoint 持久化
+│   │   │   ├── bridge/                # Phase A: 与 core 桥接
+│   │   │   ├── Agent.ts               # 对外主类
+│   │   │   └── index.ts               # 公共导出
+│   │   └── demo/index.html            # Web 可视化 Demo (端口 3455)
 │   │   │   ├── adapters/        # 模型适配器 (10家提供商)
 │   │   │   │   ├── BaseAdapter.ts / AdapterFactory.ts
 │   │   │   │   ├── OpenAICompatibleAdapter.ts
@@ -632,10 +705,30 @@ easyagent/
 │   ├── cli/                     # Ink CLI (14KB)
 │   │   └── src/main.tsx         # Banner/ChatView/StatusBar/HelpPanel
 │   │
-│   ├── server/                  # Web服务端 (20KB)
-│   │   └── src/index.ts         # REST + WS + Plugins + IM API
+│   ├── server/                  # Web服务端 (621KB ESM, 双引擎)
+│   │   ├── src/
+│   │   │   ├── index.ts           # REST + WS + Plugins + IM API
+│   │   │   └── langgraph/         # 🆕 Phase B: 引擎适配器 + 工厂 + Checkpoint API
+│   │   │       ├── agentAdapter.ts  # LangGraphAgent → AgentEngine 适配器
+│   │   │       ├── engineFactory.ts # createAgent() 双引擎工厂
+│   │   │       └── index.ts         # 公共导出
 │   │
 │   ├── frontend/                # 共享前端组件 (Desktop+Web 共用) 🆕
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   │   ├── LangGraph/       # 🆕 Phase C/D: 有向图可视化组件
+│   │   │   │   │   ├── GraphCanvas.tsx   # 主图 SVG 画布 (节点+边+高亮)
+│   │   │   │   │   ├── MiniFlowGraph.tsx # 迷你流转图 (卡片内)
+│   │   │   │   │   ├── ScenarioCard.tsx  # 场景卡片 + 终端日志
+│   │   │   │   │   ├── FlowZoomModal.tsx # 放大弹窗 (缩放/拖拽)
+│   │   │   │   │   ├── SessionDetailModal.tsx # 🆕 Phase D: Checkpoint 详情弹窗
+│   │   │   │   │   ├── types.ts          # 共享类型定义
+│   │   │   │   │   └── index.ts          # 桶导出
+│   │   │   │   └── ...
+│   │   │   ├── pages/
+│   │   │   │   └── LangGraph.tsx    # 🆕 Phase C/D: /langgraph 页面入口 (含 WebSocket 生命周期)
+│   │   │   └── stores/
+│   │   │       └── langGraphStore.ts# 🆕 Phase C/D: Zustand 状态管理 + WebSocket 连接 + 遍历动画
 │   │   ├── src/                 # React 组件/页面/stores/样式
 │   │   │   ├── components/      # 共享 UI 组件 (Chat/Settings/Layout)
 │   │   │   ├── pages/           # 页面入口
@@ -857,13 +950,16 @@ onUpdateStatus → 状态展示:
 
 ## 六、数据流设计
 
-### 6.1 Agent对话流 (多通道)
+### 6.1 Agent对话流 (多通道, 双引擎)
 
 ```
 User Input → CLI/Web/Desktop/IM → SessionManager
-  → AgentLoop → ModelAdapter → LLM API
-    → [Tool Call?] → ToolExecutor → Result
-      → AgentLoop (继续循环)
+  → engineFactory.createAgent()  ← EASYAGENT_ENGINE 决定
+    ├─ [legacy] AgentLoop → ModelAdapter → LLM API
+    │    → [Tool Call?] → ToolExecutor → Result → AgentLoop
+    └─ [langgraph] LangGraphAgent.run()
+         → thinkNode → routeAfterThink → actNode → observeNode
+           → [checkpoint 持久化] → 循环或终止
   → Final Response → SessionManager → CLI/Web/Desktop/IM → User
 ```
 
@@ -872,7 +968,7 @@ User Input → CLI/Web/Desktop/IM → SessionManager
 ```
 Telegram/飞书/微信 → IMAdapter.poll/webhook
   → IMManager.messageHandler
-    → SessionManager → AgentEngine → Stream Response
+    → SessionManager → engineFactory.createAgent() → Stream Response
     → IMAdapter.sendStreamingMessage → Telegram/飞书/微信
 ```
 
@@ -893,13 +989,15 @@ AgentLoop → MCPClient → MCP Server (stdio/HTTP)
   → listTools/callTool → Result → AgentLoop
 ```
 
-### 5.5 WebSocket 流式通信
+### 5.5 WebSocket 流式通信 (双引擎兼容)
 
 ```
 Web Client → ws://server/ws → subscribe(chatId)
-  → chat message → AgentEngine.run(onPartialResponse)
+  → chat message → engineFactory.createAgent()
+    ├─ [legacy] AgentEngine.run(onPartialResponse)
+    └─ [langgraph] LangGraphAdapter.runStream(onPartialResponse)
     → text_delta → ws.send → Web UI 实时渲染
-    → tool_use/tool_result → ws.send → ToolCallCard 展示
+    → tool_start/tool_end → ws.send → ToolCallCard 展示
     → token_usage → ws.send → Token 统计更新
     → done → ws.send → 对话完成
 ```

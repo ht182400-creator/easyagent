@@ -184,8 +184,12 @@ function toggleDebugLog(enable?: boolean): void {
 
 // ==================== 内嵌后端服务器 ====================
 
-/** API 服务器端口 */
-const API_PORT = 3456;
+/** 
+ * API 服务器端口
+ * 可通过环境变量 API_PORT 覆盖，默认 3456
+ * 示例：set API_PORT=3460 && pnpm start
+ */
+const API_PORT = parseInt(process.env.API_PORT || '3456', 10);
 
 /**
  * 启动内嵌 Express 后端服务

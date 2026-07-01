@@ -1,7 +1,7 @@
 {
-  "version": "0.6.22",
+  "version": "0.6.23",
   "codename": "",
-  "releaseDate": "2026-06-28",
+  "releaseDate": "2026-07-01",
   "electronVersion": "30.0.0",
   "nodeVersion": ">=18.0.0"
 }

@@ -17,5 +17,6 @@
     "sourceMap": true,
     "composite": true
   },
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "include": ["src/**/*.ts", "scripts/**/*.mjs", "_release.mjs", "_upload_release.mjs"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "packages"]
 }

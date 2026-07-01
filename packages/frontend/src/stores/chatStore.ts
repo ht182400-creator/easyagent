@@ -32,7 +32,9 @@ export interface ChatMessage {
   /** 是否为流式输出中 */
   isStreaming?: boolean;
   /** Token用量 */
-  tokenUsage?: { input: number; output: number };
+  tokenUsage?: { input: number; output: number; total: number };
+  /** 生成耗时 (ms) */
+  duration?: number;
   /** 错误信息 */
   error?: string;
 }
@@ -364,6 +366,7 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
     case 'text_done': {
       const session = store.sessions[sessionId];
       const finalContent = session?.streamingText || '';
+      const duration = data.duration as number | undefined;
       if (finalContent) {
         // 如果最后一条消息在流式输出，更新它; 否则创建新消息
         const messages = session?.messages || [];
@@ -372,6 +375,7 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
           store.updateMessage(sessionId, lastMsg.id, {
             content: finalContent,
             isStreaming: false,
+            duration,
           });
         } else {
           store.addMessage(sessionId, {
@@ -380,6 +384,7 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
             content: finalContent,
             timestamp: Date.now(),
             isStreaming: false,
+            duration,
           });
         }
       }
