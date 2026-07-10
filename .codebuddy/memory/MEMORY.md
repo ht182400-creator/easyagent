@@ -864,3 +864,8 @@ node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 - **修复**：sibling 优先，不存在时回退 `<core>/dist/PluginWorkerEntry.js`；删除 src 下历史残留
 - **tsup 配置**：`core/tsup.config.ts` 用对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'` 独立输出 `dist/PluginWorkerEntry.js`（tsup `splitting:false` 会内联所有 import，路径敏感的 worker 入口必须独立打包）；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）
 
+## 🔄 Git 提交/同步陷阱 (2026-07-10)
+- **内嵌 git 仓库**：`packages/easyagent-plugin-obsidian-doc-viewer`、`packages/plugin-template` 各自含 `.git`，直接 `git add` 会变成 gitlink(160000)，GitHub 只留空引用、无实际代码。修复：`git rm --cached -f <dir>` → `Remove-Item -Recurse -Force <dir>/.git` → `git add <dir>`（`git rm --cached` 对 gitlink 必须加 `-f`）。
+- **管线钩子无限重算**：仓库的 pre/post-commit 钩子（EasyAgent 进度管线）每次提交都会重算并改写 `docs/pipeline/*.json`（project-progress-data / pipeline-data / issue-data / dashboard-data / test-case-mapping / _issue_cache），正常提交会陷入"提交→钩子改写→又脏→再提交"的死循环、无法收敛。对策：用 `git commit --no-verify` 提交钩子最新生成的这版数据以终止循环（数据正确性不受影响，本是钩子自身生成）；注意 **post-commit 钩子不受 --no-verify 影响，工作区最终仍会残留这 5 个 JSON 的差异**，属生成物固有行为、下次提交自动重算，无需再提交。
+- **同步排除清单**：提交/推送时勿纳入 `temp/`（调试脚本/日志/plugin.zip 等）、`未命名.base`、`.obsidian/plugins/*`（第三方 Obsidian 插件依赖）、`packages/*/docs/.obsidian/`（Obsidian 配置）。
+
