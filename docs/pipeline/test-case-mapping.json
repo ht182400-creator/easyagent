@@ -1,11 +1,11 @@
 {
   "_meta": {
-    "generatedAt": "2026-07-01T14:37:00.000Z",
-    "totalTestFiles": 50,
-    "totalTestCases": 1326,
-    "unmappedCases": 76,
-    "projectRoot": "/home/runner/work/easyagent/easyagent",
-    "source": "module-registry.mjs (统一注册表) + 手动更新 PluginMarket 测试"
+    "generatedAt": "2026-07-10T15:59:29.273Z",
+    "totalTestFiles": 48,
+    "totalTestCases": 1514,
+    "unmappedCases": 317,
+    "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
+    "source": "module-registry.mjs (统一注册表)"
   },
   "modules": {
     "f1": {
@@ -123,11 +123,11 @@
     },
     "f8": {
       "moduleId": "f8",
-      "totalCases": 241,
+      "totalCases": 192,
       "subModules": {
         "server": {
           "name": "Web Dashboard v4·服务器",
-          "cases": 149,
+          "cases": 100,
           "files": [
             {
               "path": "packages/server/src/__tests__/api.test.ts",
@@ -148,14 +148,6 @@
             {
               "path": "packages/server/src/__tests__/websocket.test.ts",
               "cases": 5
-            },
-            {
-              "path": "packages/server/src/__tests__/plugin-market-service.test.ts",
-              "cases": 32
-            },
-            {
-              "path": "packages/server/src/__tests__/plugin-market-api.test.ts",
-              "cases": 18
             }
           ]
         },
@@ -408,15 +400,15 @@
     },
     "b1b": {
       "moduleId": "b1b",
-      "totalCases": 45,
+      "totalCases": 47,
       "subModules": {
         "core": {
           "name": "PluginManager 沙箱",
-          "cases": 45,
+          "cases": 47,
           "files": [
             {
               "path": "packages/core/src/__tests__/plugin-sandbox.test.ts",
-              "cases": 45
+              "cases": 47
             }
           ]
         }
@@ -479,19 +471,27 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 76,
+      "totalCases": 317,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 76,
+          "cases": 317,
           "files": [
             {
               "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",
-              "cases": 0
+              "cases": 37
             },
             {
               "path": "packages/desktop/src/__tests__/main/auto-updater-state.test.ts",
               "cases": 37
+            },
+            {
+              "path": "packages/easyagent-plugin-obsidian-doc-viewer/tests/graphbuilder.test.ts",
+              "cases": 2
+            },
+            {
+              "path": "packages/easyagent-plugin-obsidian-doc-viewer/tests/wikilinkparser.test.ts",
+              "cases": 10
             },
             {
               "path": "packages/frontend/src/__tests__/api.test.ts",
@@ -506,12 +506,72 @@
               "cases": 11
             },
             {
+              "path": "packages/frontend/src/__tests__/langgraph/flowzoommodal.test.tsx",
+              "cases": 11
+            },
+            {
+              "path": "packages/frontend/src/__tests__/langgraph/graphcanvas.test.tsx",
+              "cases": 8
+            },
+            {
+              "path": "packages/frontend/src/__tests__/langgraph/langgraphpage.test.tsx",
+              "cases": 7
+            },
+            {
+              "path": "packages/frontend/src/__tests__/langgraph/langgraphstore.test.ts",
+              "cases": 16
+            },
+            {
+              "path": "packages/frontend/src/__tests__/langgraph/miniflowgraph.test.tsx",
+              "cases": 10
+            },
+            {
+              "path": "packages/frontend/src/__tests__/langgraph/scenariocard.test.tsx",
+              "cases": 11
+            },
+            {
               "path": "packages/frontend/src/__tests__/mountapp.test.tsx",
-              "cases": 0
+              "cases": 5
+            },
+            {
+              "path": "packages/frontend/src/__tests__/pluginsstore.test.ts",
+              "cases": 8
             },
             {
               "path": "packages/frontend/src/__tests__/request.test.ts",
               "cases": 11
+            },
+            {
+              "path": "packages/langgraph/__tests__/agent-class.test.ts",
+              "cases": 10
+            },
+            {
+              "path": "packages/langgraph/__tests__/agent.test.ts",
+              "cases": 7
+            },
+            {
+              "path": "packages/langgraph/__tests__/demo-run.test.ts",
+              "cases": 24
+            },
+            {
+              "path": "packages/langgraph/__tests__/integration.test.ts",
+              "cases": 9
+            },
+            {
+              "path": "packages/langgraph/__tests__/persistence.test.ts",
+              "cases": 7
+            },
+            {
+              "path": "packages/server/src/__tests__/langgraph-engine.test.ts",
+              "cases": 9
+            },
+            {
+              "path": "packages/server/src/__tests__/plugin-market-api.test.ts",
+              "cases": 18
+            },
+            {
+              "path": "packages/server/src/__tests__/plugin-market-service.test.ts",
+              "cases": 32
             },
             {
               "path": "packages/web/src/__tests__/main.test.ts",

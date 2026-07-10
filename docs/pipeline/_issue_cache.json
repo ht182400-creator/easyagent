@@ -1,56 +1,72 @@
 {
   "snapshots": {
     "2026-06-18.md": {
-      "mtimeMs": 1782649180669.4524,
-      "size": 38785
+      "mtimeMs": 1782351389278.0105,
+      "size": 39380
     },
     "2026-06-19.md": {
-      "mtimeMs": 1782649180670.0222,
-      "size": 51725
+      "mtimeMs": 1782351389281.3894,
+      "size": 52324
     },
     "2026-06-20.md": {
-      "mtimeMs": 1782649180670.0222,
-      "size": 51219
+      "mtimeMs": 1782351389286.6287,
+      "size": 51846
     },
     "2026-06-21.md": {
-      "mtimeMs": 1782649180670.0222,
-      "size": 28450
+      "mtimeMs": 1782351389286.6287,
+      "size": 28943
     },
     "2026-06-22.md": {
-      "mtimeMs": 1782649180670.0222,
-      "size": 30785
+      "mtimeMs": 1782351696871.4006,
+      "size": 31098
     },
     "2026-06-23.md": {
-      "mtimeMs": 1782649180670.3977,
-      "size": 50713
+      "mtimeMs": 1782351696871.4006,
+      "size": 51404
     },
     "2026-06-24.md": {
-      "mtimeMs": 1782649180670.3977,
-      "size": 21688
+      "mtimeMs": 1782350684375.0806,
+      "size": 22061
     },
     "2026-06-25.md": {
-      "mtimeMs": 1782649180670.3977,
-      "size": 36379
+      "mtimeMs": 1782403350638.9138,
+      "size": 36906
     },
     "2026-06-26.md": {
-      "mtimeMs": 1782649180670.3977,
-      "size": 75734
+      "mtimeMs": 1782488919222.1382,
+      "size": 76816
     },
     "2026-06-27.md": {
-      "mtimeMs": 1782649180671.3977,
-      "size": 52672
+      "mtimeMs": 1782576915699.6123,
+      "size": 53395
     },
     "2026-06-28.md": {
-      "mtimeMs": 1782649180671.3977,
-      "size": 16040
+      "mtimeMs": 1782872731099.0706,
+      "size": 32618
+    },
+    "2026-06-29.md": {
+      "mtimeMs": 1782872731100.0789,
+      "size": 48533
+    },
+    "2026-06-30.md": {
+      "mtimeMs": 1782872731101.068,
+      "size": 6879
+    },
+    "2026-07-01.md": {
+      "mtimeMs": 1782920760542.5059,
+      "size": 41627
+    },
+    "2026-07-02.md": {
+      "mtimeMs": 1783006086579.855,
+      "size": 11199
     },
     "MEMORY.md": {
-      "mtimeMs": 1782649180671.3977,
-      "size": 52260
+      "mtimeMs": 1783003747880.521,
+      "size": 71761
     },
     "README.md": {
-      "mtimeMs": 1782649180671.3977,
-      "size": 736
+      "mtimeMs": 1782176165708.7427,
+      "size": 759
     }
   },
   "fileResults": {
@@ -10030,7 +10046,912 @@
         ]
       }
     ],
-    "2026-06-28.md": [],
+    "2026-06-28.md": [
+      {
+        "moduleId": "f11",
+        "date": "2026-06-28",
+        "title": "LangGraph 测试完善 & Checkpointer 修复 (21:29 ~ 21:35)",
+        "problem": "LangGraph 测试完善 & Checkpointer 修复 (21:29 ~ 21:35)",
+        "solution": "`SqliteCheckpointer` 从 `implements BaseCheckpointSaver` 改为 `extends BaseCheckpointSaver` — 基类是 abstract class，`implements` 不会继承 `getNextVersion` 方法，导致；所有方法改为 async（`getTuple`/`list`/`put`/`putWrites` 返回 Promise）；`getLatestState` 从原始 checkpoint JSON 中提取 `channel_values`，解决 resume 时状态格式不匹配问题；`list` 方法改为 `async *list`（async generator），移除内部 `asyncGeneratorFromArray` 辅助函数",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-28",
+        "title": "边标签被节点压住修复 (23:11)",
+        "problem": "：边标签 Y 坐标用 `(fromP.y + toP.y) / 2`，以下两类情况标签落入了节点矩形内：",
+        "solution": "1. 循环边标签：`labelY = min(fromP.y, toP.y) - 30`（放到 think 上方 30px） 2. 水平边标签（左↔右）：`labelY = min(fromNode.y, toNode.y) - 6`（放到节点顶部上方 6px）；关键教训: 边标签计算必须引用 fromNode/toNode 的实际 Y 边界，而不是端口 Y 坐标",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-06-28",
+        "title": "checkpoint 序列化导致 getType() 报错修复 (23:26)",
+        "problem": "：LangGraph 的 SqliteCheckpointer 使用 JSON.stringify/parse 保存/恢复 State，messages 数组中的 BaseMessage 实例（AIMessage/HumanMessage 等）变成**普通 JS 对象**，丢失了 prototype 上的 getType() 方法",
+        "solution": "1. 新建 `src/graph/messageUtils.ts` — 统一的消息类型判断工具；`getMessageType(msg)`：优先调 getType()，否则读 .type 属性，再兜底 constructor.name；`hasToolCalls(msg)`：安全读取 tool_calls；`getToolCallId(msg)`、`getMessageContent(msg)`：兼容两种格式 2. 所有 `msg.getType()` → `getMessageType(msg)` 3. `toChatMessages` 重写：用 hasToolCalls/getToolCallId 替代 'tool_calls' in msg 检查 4. `routeAfterThink`：`instanceof AIMessage` → `getMessageType() === 'ai' && hasToolCalls()`；关键教训: 任何使用 LangGraph checkpoint 的系统，消息处理代码必须兼容\"类实例\"和\"普通对象\"两种格式",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f7",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-28",
+        "title": "checkpoint 序列化导致 getType() 报错修复 (23:26)",
+        "problem": "：LangGraph 的 SqliteCheckpointer 使用 JSON.stringify/parse 保存/恢复 State，messages 数组中的 BaseMessage 实例（AIMessage/HumanMessage 等）变成**普通 JS 对象**，丢失了 prototype 上的 getType() 方法",
+        "solution": "1. 新建 `src/graph/messageUtils.ts` — 统一的消息类型判断工具；`getMessageType(msg)`：优先调 getType()，否则读 .type 属性，再兜底 constructor.name；`hasToolCalls(msg)`：安全读取 tool_calls；`getToolCallId(msg)`、`getMessageContent(msg)`：兼容两种格式 2. 所有 `msg.getType()` → `getMessageType(msg)` 3. `toChatMessages` 重写：用 hasToolCalls/getToolCallId 替代 'tool_calls' in msg 检查 4. `routeAfterThink`：`instanceof AIMessage` → `getMessageType() === 'ai' && hasToolCalls()`；关键教训: 任何使用 LangGraph checkpoint 的系统，消息处理代码必须兼容\"类实例\"和\"普通对象\"两种格式",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f7",
+          "f11"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-06-28",
+        "title": "checkpoint 序列化导致 getType() 报错修复 (23:26)",
+        "problem": "：LangGraph 的 SqliteCheckpointer 使用 JSON.stringify/parse 保存/恢复 State，messages 数组中的 BaseMessage 实例（AIMessage/HumanMessage 等）变成**普通 JS 对象**，丢失了 prototype 上的 getType() 方法",
+        "solution": "1. 新建 `src/graph/messageUtils.ts` — 统一的消息类型判断工具；`getMessageType(msg)`：优先调 getType()，否则读 .type 属性，再兜底 constructor.name；`hasToolCalls(msg)`：安全读取 tool_calls；`getToolCallId(msg)`、`getMessageContent(msg)`：兼容两种格式 2. 所有 `msg.getType()` → `getMessageType(msg)` 3. `toChatMessages` 重写：用 hasToolCalls/getToolCallId 替代 'tool_calls' in msg 检查 4. `routeAfterThink`：`instanceof AIMessage` → `getMessageType() === 'ai' && hasToolCalls()`；关键教训: 任何使用 LangGraph checkpoint 的系统，消息处理代码必须兼容\"类实例\"和\"普通对象\"两种格式",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f3",
+          "f7",
+          "f11"
+        ]
+      }
+    ],
+    "2026-06-29.md": [
+      {
+        "moduleId": "f4",
+        "date": "2026-06-29",
+        "title": "项目端口统一规划 + LangGraph Demo 端口冲突修复",
+        "problem": "项目端口统一规划 + LangGraph Demo 端口冲突修复",
+        "solution": "LangGraph Demo 端口：3456 → 3455；`packages/langgraph/scripts/demo-server.ts` — PORT 3456→3455；`packages/langgraph/start-demo.bat` — echo 输出端口号；`packages/langgraph/docs/05_启动与执行指南_新手向.md` — 5处文档端口引用",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-06-29",
+        "title": "Phase C/D 联调验证 — POST /api/run/:id 端点缺失修复 (2026-06",
+        "problem": "Phase C/D 联调验证 — POST /api/run/:id 端点缺失修复 (2026-06-29 21:35)",
+        "solution": "在 `packages/server/src/index.ts` 的 LangGraph API 和插件 API 之间，新增： 1. **`SCENARIO_RESULTS`** 预设数据对象（9 个场景，每个含 turnCount/messageCount/duration/output/logs/actualPath） 2. **`POST /api/run/:id`** 端点：；解析 `scenarioId` → 查找 `SCENARIO_RESULTS`；Phase D: 执行期间通过 `broadcastLangGraphNode()` 模拟节点遍历广播（200ms 间隔）；场景不存在时返回 404",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-06-29",
+        "title": "Phase C/D 联调验证 — POST /api/run/:id 端点缺失修复 (2026-06",
+        "problem": "Phase C/D 联调验证 — POST /api/run/:id 端点缺失修复 (2026-06-29 21:35)",
+        "solution": "在 `packages/server/src/index.ts` 的 LangGraph API 和插件 API 之间，新增： 1. **`SCENARIO_RESULTS`** 预设数据对象（9 个场景，每个含 turnCount/messageCount/duration/output/logs/actualPath） 2. **`POST /api/run/:id`** 端点：；解析 `scenarioId` → 查找 `SCENARIO_RESULTS`；Phase D: 执行期间通过 `broadcastLangGraphNode()` 模拟节点遍历广播（200ms 间隔）；场景不存在时返回 404",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-29",
+        "title": "修复：流转图点击放大 + 模式选择器 (2026-06-29 21:47)",
+        "problem": "：ScenarioCard 的 `onClick` 绑在整个卡片上（触发展开/收起详情），迷你流转图区域点击事件冒泡到卡片层 → 永远到不了 FlowZoomModal",
+        "solution": "详见原文",
+        "status": "pending",
+        "_tagModuleIds": [
+          "f7",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-29",
+        "title": "修复：流转图点击放大 + 模式选择器 (2026-06-29 21:47)",
+        "problem": "：ScenarioCard 的 `onClick` 绑在整个卡片上（触发展开/收起详情），迷你流转图区域点击事件冒泡到卡片层 → 永远到不了 FlowZoomModal",
+        "solution": "详见原文",
+        "status": "pending",
+        "_tagModuleIds": [
+          "f7",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-06-29",
+        "title": "修复：流转图点击放大 + 模式选择器 (2026-06-29 21:47)",
+        "problem": "修复：流转图点击放大 + 模式选择器 (2026-06-29 21:47)",
+        "solution": "**ScenarioCard.tsx**:；新增 `onFlowClick?: (scenario: Scenario) => void` prop；迷你流转图区域添加 `onClick={(e) => { e.stopPropagation(); onFlowClick?.(scenario); }}` → 阻止冒泡，触发放大弹窗；**LangGraph.tsx**: 1. 模式选择器 UI（3 张卡片，选择前显示）： 2. 模式状态栏 → 选择后显示当前模式 + \"切换模式\" 按钮（重置状态回选择器） 3. `onFlowClick` 传给 ScenarioCard → 点击流转图触发 FlowZoomModal 放大弹窗",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-29",
+        "title": "修复：流转图点击放大 + 模式选择器 (2026-06-29 21:47)",
+        "problem": "修复：流转图点击放大 + 模式选择器 (2026-06-29 21:47)",
+        "solution": "**ScenarioCard.tsx**:；新增 `onFlowClick?: (scenario: Scenario) => void` prop；迷你流转图区域添加 `onClick={(e) => { e.stopPropagation(); onFlowClick?.(scenario); }}` → 阻止冒泡，触发放大弹窗；**LangGraph.tsx**: 1. 模式选择器 UI（3 张卡片，选择前显示）： 2. 模式状态栏 → 选择后显示当前模式 + \"切换模式\" 按钮（重置状态回选择器） 3. `onFlowClick` 传给 ScenarioCard → 点击流转图触发 FlowZoomModal 放大弹窗",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-06-29",
+        "title": "修复：独立 Demo iframe 内嵌 + FlowZoomModal 滚轮缩放 (2026-06",
+        "problem": "：`handleWheel` 函数定义在第 53 行，但 `onWheel={handleWheel}` 从未绑定到任何 DOM 元素",
+        "solution": "**FlowZoomModal.tsx**: 1. 内容区 div (`bodyRef`) 添加 `onWheel={handleWheel}` — 核心修复 2. 移除外层 `<svg>` 包装，直接使用 `<MiniFlowGraph>` — 避免 SVG 嵌套 3. 拖拽时 transition 设为 `none` 防止延迟，其他时 `transform 0.15s ease` 4. 删除不再需要的 `renderZoomContent` 函数；**LangGraph.tsx**: 1. 删除 `window.open('http://localhost:3455')` → 改为同窗口 iframe 内嵌 2. 页面布局重构：选择模式后 → 上 Frame（功能区：模式名 + 执行/刷新按钮 + 切换模式） + 下 Frame（内容区）；`demo-web` → iframe `http://localhost:3455` (sandbox: allow-scripts allow-same-origin allow-forms) + 启动提示；`integrated` / `demo-terminal` → 原有图 + 卡片 + 会话 3. Demo 功能区新增\"刷新 Demo\"按钮 → 重新加载 iframe 4. 模式选择器描述更新：\"新标签页打开\" → \"同窗口 iframe 内嵌\"",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f6"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-06-29",
+        "title": "修复：独立 Demo iframe 内嵌 + FlowZoomModal 滚轮缩放 (2026-06",
+        "problem": "：`handleWheel` 函数定义在第 53 行，但 `onWheel={handleWheel}` 从未绑定到任何 DOM 元素",
+        "solution": "**FlowZoomModal.tsx**: 1. 内容区 div (`bodyRef`) 添加 `onWheel={handleWheel}` — 核心修复 2. 移除外层 `<svg>` 包装，直接使用 `<MiniFlowGraph>` — 避免 SVG 嵌套 3. 拖拽时 transition 设为 `none` 防止延迟，其他时 `transform 0.15s ease` 4. 删除不再需要的 `renderZoomContent` 函数；**LangGraph.tsx**: 1. 删除 `window.open('http://localhost:3455')` → 改为同窗口 iframe 内嵌 2. 页面布局重构：选择模式后 → 上 Frame（功能区：模式名 + 执行/刷新按钮 + 切换模式） + 下 Frame（内容区）；`demo-web` → iframe `http://localhost:3455` (sandbox: allow-scripts allow-same-origin allow-forms) + 启动提示；`integrated` / `demo-terminal` → 原有图 + 卡片 + 会话 3. Demo 功能区新增\"刷新 Demo\"按钮 → 重新加载 iframe 4. 模式选择器描述更新：\"新标签页打开\" → \"同窗口 iframe 内嵌\"",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f6"
+        ]
+      }
+    ],
+    "2026-06-30.md": [],
+    "2026-07-01.md": [
+      {
+        "moduleId": "f2",
+        "date": "2026-07-01",
+        "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
+        "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
+        "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f8",
+          "f9",
+          "f11",
+          "p5c",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f3",
+        "date": "2026-07-01",
+        "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
+        "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
+        "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f8",
+          "f9",
+          "f11",
+          "p5c",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-07-01",
+        "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
+        "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
+        "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f8",
+          "f9",
+          "f11",
+          "p5c",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-07-01",
+        "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
+        "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
+        "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f8",
+          "f9",
+          "f11",
+          "p5c",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-07-01",
+        "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
+        "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
+        "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f8",
+          "f9",
+          "f11",
+          "p5c",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "p5c",
+        "date": "2026-07-01",
+        "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
+        "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
+        "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f8",
+          "f9",
+          "f11",
+          "p5c",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "b2a",
+        "date": "2026-07-01",
+        "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
+        "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
+        "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f3",
+          "f8",
+          "f9",
+          "f11",
+          "p5c",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-07-01",
+        "title": "Doc_project 功能修复 (19:52-20:05)",
+        "problem": ": 用户反馈 6 项问题：打开目录无效、树形结构、图谱节点预览错误、搜索不支持内容、硬编码数据、设置无效。",
+        "solution": "1. 使用 File System Access API 实现真实目录打开 (`src/services/fileLoader.ts`) 2. 目录树按资源管理器风格仅展示 `.md` 文件和包含 MD 的目录 3. 修复 WikiLink 相对路径解析 (`wikiLinkParser.ts`) 4. 搜索改为标题 + 内容全文搜索，结果卡片高亮 (`searchIndex.ts` + `SearchPanel.tsx`) 5. 移除自动加载示例数据，改为设置中手动加载 6. 新增 `SettingsModal.tsx` 设置面板 7. 图谱增加「全局 / 关联」双模式切换；验证: `npx tsc --noEmit` 通过，12 个单元测试通过，`npx vite build` 成功，开发服务器在 5184 运行。；文档更新: `Doc_project/README.md`、`docs/00_项目规划.md`、`docs/02_开发指南.md`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-07-01",
+        "title": "Doc_project 功能修复 (19:52-20:05)",
+        "problem": ": 用户反馈 6 项问题：打开目录无效、树形结构、图谱节点预览错误、搜索不支持内容、硬编码数据、设置无效。",
+        "solution": "1. 使用 File System Access API 实现真实目录打开 (`src/services/fileLoader.ts`) 2. 目录树按资源管理器风格仅展示 `.md` 文件和包含 MD 的目录 3. 修复 WikiLink 相对路径解析 (`wikiLinkParser.ts`) 4. 搜索改为标题 + 内容全文搜索，结果卡片高亮 (`searchIndex.ts` + `SearchPanel.tsx`) 5. 移除自动加载示例数据，改为设置中手动加载 6. 新增 `SettingsModal.tsx` 设置面板 7. 图谱增加「全局 / 关联」双模式切换；验证: `npx tsc --noEmit` 通过，12 个单元测试通过，`npx vite build` 成功，开发服务器在 5184 运行。；文档更新: `Doc_project/README.md`、`docs/00_项目规划.md`、`docs/02_开发指南.md`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f15",
+        "date": "2026-07-01",
+        "title": "Doc_project 功能修复 (19:52-20:05)",
+        "problem": ": 用户反馈 6 项问题：打开目录无效、树形结构、图谱节点预览错误、搜索不支持内容、硬编码数据、设置无效。",
+        "solution": "1. 使用 File System Access API 实现真实目录打开 (`src/services/fileLoader.ts`) 2. 目录树按资源管理器风格仅展示 `.md` 文件和包含 MD 的目录 3. 修复 WikiLink 相对路径解析 (`wikiLinkParser.ts`) 4. 搜索改为标题 + 内容全文搜索，结果卡片高亮 (`searchIndex.ts` + `SearchPanel.tsx`) 5. 移除自动加载示例数据，改为设置中手动加载 6. 新增 `SettingsModal.tsx` 设置面板 7. 图谱增加「全局 / 关联」双模式切换；验证: `npx tsc --noEmit` 通过，12 个单元测试通过，`npx vite build` 成功，开发服务器在 5184 运行。；文档更新: `Doc_project/README.md`、`docs/00_项目规划.md`、`docs/02_开发指南.md`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f4",
+          "f15"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-07-01",
+        "title": "Doc_project 打开目录无反馈修复 (20:22)",
+        "problem": ": 选择目录后页面无反馈。根因是选中 `Claude Code CN` 这类大目录时，`fileLoader` 会遍历 `node_modules`、`.git` 等所有子目录并读取文件，导致长时间无响应且 UI 没有加载提示。",
+        "solution": "1. `src/services/fileLoader.ts` 新增 `SKIP_DIRS` 黑名单 (node_modules, .git, dist 等)，跳过无关目录 2. 新增 `MAX_FILES = 5000` 上限，防止大目录卡死 3. 增加进度回调 `onProgress`，每扫描 10 个文件更新一次提示 4. `src/stores/docStore.ts` 新增 `loadingText` 状态，把进度透传到 UI 5. `src/App.tsx` 新增全局加载遮罩，显示当前扫描进度 6. 单文件读取失败时跳过并输出 warning，不中断整个扫描流程；验证: `npx tsc --noEmit` 通过，12 个测试通过；后续修正 (20:30): 用户指出不应跳过无关目录（node_modules 等也可能有 .md）。删除了 SKIP_DIRS 黑名单，改为遍历全部目录。",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f13"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-07-01",
+        "title": "Doc_project 修复 Markdown 链接解析 (21:05)",
+        "problem": ": 用户发现 50+ 文档在关系图谱中大多显示为孤立节点，无关联。 [根因] : `src/services/wikiLinkParser.ts` 只解析 Obsidian 风格 `[[WikiLink]]`，但项目文档实际使用的是标准 Markdown 链接 `[文本](./路径.md)`，导致所有内部链接被遗漏。",
+        "solution": "扩展 `extractWikiLinks`：；同时支持 `[[WikiLink]]` 和 `[文本](./路径.md)` / `[文本](路径.md)`；自动过滤代码块、行内代码、图片链接、锚点链接、外部 URL / 邮件 / 电话等；无扩展名目标自动补全 `.md`；对 `docs/37_双重构建体系详解_Desktop与Web.md` 实测提取到 5 个内部链接（如 `./14_构建前必检清单.md`）；`npx tsc --noEmit` 通过；已清缓存 + `--force` 重启 Vite，http://localhost:5184 就绪；改动文件: `src/services/wikiLinkParser.ts`；效果: 文档之间的 Markdown 内部链接现在会被正确解析，关系图谱应出现大量连线",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-07-01",
+        "title": "Doc_project 修复 Markdown 链接解析 (21:05)",
+        "problem": ": 用户发现 50+ 文档在关系图谱中大多显示为孤立节点，无关联。 [根因] : `src/services/wikiLinkParser.ts` 只解析 Obsidian 风格 `[[WikiLink]]`，但项目文档实际使用的是标准 Markdown 链接 `[文本](./路径.md)`，导致所有内部链接被遗漏。",
+        "solution": "扩展 `extractWikiLinks`：；同时支持 `[[WikiLink]]` 和 `[文本](./路径.md)` / `[文本](路径.md)`；自动过滤代码块、行内代码、图片链接、锚点链接、外部 URL / 邮件 / 电话等；无扩展名目标自动补全 `.md`；对 `docs/37_双重构建体系详解_Desktop与Web.md` 实测提取到 5 个内部链接（如 `./14_构建前必检清单.md`）；`npx tsc --noEmit` 通过；已清缓存 + `--force` 重启 Vite，http://localhost:5184 就绪；改动文件: `src/services/wikiLinkParser.ts`；效果: 文档之间的 Markdown 内部链接现在会被正确解析，关系图谱应出现大量连线",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-07-01",
+        "title": "Doc_project 修复 Markdown 链接解析 (21:05)",
+        "problem": ": 用户发现 50+ 文档在关系图谱中大多显示为孤立节点，无关联。 [根因] : `src/services/wikiLinkParser.ts` 只解析 Obsidian 风格 `[[WikiLink]]`，但项目文档实际使用的是标准 Markdown 链接 `[文本](./路径.md)`，导致所有内部链接被遗漏。",
+        "solution": "扩展 `extractWikiLinks`：；同时支持 `[[WikiLink]]` 和 `[文本](./路径.md)` / `[文本](路径.md)`；自动过滤代码块、行内代码、图片链接、锚点链接、外部 URL / 邮件 / 电话等；无扩展名目标自动补全 `.md`；对 `docs/37_双重构建体系详解_Desktop与Web.md` 实测提取到 5 个内部链接（如 `./14_构建前必检清单.md`）；`npx tsc --noEmit` 通过；已清缓存 + `--force` 重启 Vite，http://localhost:5184 就绪；改动文件: `src/services/wikiLinkParser.ts`；效果: 文档之间的 Markdown 内部链接现在会被正确解析，关系图谱应出现大量连线",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-07-01",
+        "title": "Doc_project 修复 Markdown 链接解析 (21:05)",
+        "problem": ": 用户发现 50+ 文档在关系图谱中大多显示为孤立节点，无关联。 [根因] : `src/services/wikiLinkParser.ts` 只解析 Obsidian 风格 `[[WikiLink]]`，但项目文档实际使用的是标准 Markdown 链接 `[文本](./路径.md)`，导致所有内部链接被遗漏。",
+        "solution": "扩展 `extractWikiLinks`：；同时支持 `[[WikiLink]]` 和 `[文本](./路径.md)` / `[文本](路径.md)`；自动过滤代码块、行内代码、图片链接、锚点链接、外部 URL / 邮件 / 电话等；无扩展名目标自动补全 `.md`；对 `docs/37_双重构建体系详解_Desktop与Web.md` 实测提取到 5 个内部链接（如 `./14_构建前必检清单.md`）；`npx tsc --noEmit` 通过；已清缓存 + `--force` 重启 Vite，http://localhost:5184 就绪；改动文件: `src/services/wikiLinkParser.ts`；效果: 文档之间的 Markdown 内部链接现在会被正确解析，关系图谱应出现大量连线",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-07-01",
+        "title": "Doc_project 修复 Markdown 链接解析 (21:05)",
+        "problem": ": 用户发现 50+ 文档在关系图谱中大多显示为孤立节点，无关联。 [根因] : `src/services/wikiLinkParser.ts` 只解析 Obsidian 风格 `[[WikiLink]]`，但项目文档实际使用的是标准 Markdown 链接 `[文本](./路径.md)`，导致所有内部链接被遗漏。",
+        "solution": "扩展 `extractWikiLinks`：；同时支持 `[[WikiLink]]` 和 `[文本](./路径.md)` / `[文本](路径.md)`；自动过滤代码块、行内代码、图片链接、锚点链接、外部 URL / 邮件 / 电话等；无扩展名目标自动补全 `.md`；对 `docs/37_双重构建体系详解_Desktop与Web.md` 实测提取到 5 个内部链接（如 `./14_构建前必检清单.md`）；`npx tsc --noEmit` 通过；已清缓存 + `--force` 重启 Vite，http://localhost:5184 就绪；改动文件: `src/services/wikiLinkParser.ts`；效果: 文档之间的 Markdown 内部链接现在会被正确解析，关系图谱应出现大量连线",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-07-01",
+        "title": "Doc_project 修复 Markdown 链接解析 (21:05)",
+        "problem": ": 用户发现 50+ 文档在关系图谱中大多显示为孤立节点，无关联。 [根因] : `src/services/wikiLinkParser.ts` 只解析 Obsidian 风格 `[[WikiLink]]`，但项目文档实际使用的是标准 Markdown 链接 `[文本](./路径.md)`，导致所有内部链接被遗漏。",
+        "solution": "扩展 `extractWikiLinks`：；同时支持 `[[WikiLink]]` 和 `[文本](./路径.md)` / `[文本](路径.md)`；自动过滤代码块、行内代码、图片链接、锚点链接、外部 URL / 邮件 / 电话等；无扩展名目标自动补全 `.md`；对 `docs/37_双重构建体系详解_Desktop与Web.md` 实测提取到 5 个内部链接（如 `./14_构建前必检清单.md`）；`npx tsc --noEmit` 通过；已清缓存 + `--force` 重启 Vite，http://localhost:5184 就绪；改动文件: `src/services/wikiLinkParser.ts`；效果: 文档之间的 Markdown 内部链接现在会被正确解析，关系图谱应出现大量连线",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f9",
+          "f4",
+          "f13",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-07-01",
+        "title": "插件市场 manifest 准入校验 Bug 修复 (22:56-23:05)",
+        "problem": "插件市场 manifest 准入校验 Bug 修复 (22:56-23:05)",
+        "solution": "`PluginMarketService.ts` 行178-184: 新增 `if (!manifest) { logger.info(...); continue; }` — 无 manifest.json 的仓库跳过不显示；`plugin-market-service.test.ts`: 新增测试用例 \"应跳过无 manifest.json 的仓库（非有效 EasyAgent 插件）\" → 32/32 通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "插件市场 manifest 准入校验 Bug 修复 (22:56-23:05)",
+        "problem": "插件市场 manifest 准入校验 Bug 修复 (22:56-23:05)",
+        "solution": "`PluginMarketService.ts` 行178-184: 新增 `if (!manifest) { logger.info(...); continue; }` — 无 manifest.json 的仓库跳过不显示；`plugin-market-service.test.ts`: 新增测试用例 \"应跳过无 manifest.json 的仓库（非有效 EasyAgent 插件）\" → 32/32 通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-07-01",
+        "title": "插件市场 manifest 准入校验 Bug 修复 (22:56-23:05)",
+        "problem": "插件市场 manifest 准入校验 Bug 修复 (22:56-23:05)",
+        "solution": "`PluginMarketService.ts` 行178-184: 新增 `if (!manifest) { logger.info(...); continue; }` — 无 manifest.json 的仓库跳过不显示；`plugin-market-service.test.ts`: 新增测试用例 \"应跳过无 manifest.json 的仓库（非有效 EasyAgent 插件）\" → 32/32 通过",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 点击安装后只有旋转图标，无文字进度（\"下载中 X%\"等） [根因] : `initPluginProgressListener()` 定义了 handler 但未订阅 WebSocket/事件总线，实际上从未收到 `plugin:install:progress` 消息",
+        "solution": "复用 `chatStore` 已有的全局 WebSocket 和事件总线 — `chatStore.ts` 新增 `case 'plugin:install:progress': emit(...)` 转发 → `pluginsStore.ts` 中 `on('plugin:install:progress')` 真正订阅 → `App.tsx` useEffect 挂载监听器；测试: 新增 5 用例，frontend 12 文件 110/110 通过 ✅",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f13",
+          "b1a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 点击安装后只有旋转图标，无文字进度（\"下载中 X%\"等） [根因] : `initPluginProgressListener()` 定义了 handler 但未订阅 WebSocket/事件总线，实际上从未收到 `plugin:install:progress` 消息",
+        "solution": "复用 `chatStore` 已有的全局 WebSocket 和事件总线 — `chatStore.ts` 新增 `case 'plugin:install:progress': emit(...)` 转发 → `pluginsStore.ts` 中 `on('plugin:install:progress')` 真正订阅 → `App.tsx` useEffect 挂载监听器；测试: 新增 5 用例，frontend 12 文件 110/110 通过 ✅",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f13",
+          "b1a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 点击安装后只有旋转图标，无文字进度（\"下载中 X%\"等） [根因] : `initPluginProgressListener()` 定义了 handler 但未订阅 WebSocket/事件总线，实际上从未收到 `plugin:install:progress` 消息",
+        "solution": "复用 `chatStore` 已有的全局 WebSocket 和事件总线 — `chatStore.ts` 新增 `case 'plugin:install:progress': emit(...)` 转发 → `pluginsStore.ts` 中 `on('plugin:install:progress')` 真正订阅 → `App.tsx` useEffect 挂载监听器；测试: 新增 5 用例，frontend 12 文件 110/110 通过 ✅",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f13",
+          "b1a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b1a",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 点击安装后只有旋转图标，无文字进度（\"下载中 X%\"等） [根因] : `initPluginProgressListener()` 定义了 handler 但未订阅 WebSocket/事件总线，实际上从未收到 `plugin:install:progress` 消息",
+        "solution": "复用 `chatStore` 已有的全局 WebSocket 和事件总线 — `chatStore.ts` 新增 `case 'plugin:install:progress': emit(...)` 转发 → `pluginsStore.ts` 中 `on('plugin:install:progress')` 真正订阅 → `App.tsx` useEffect 挂载监听器；测试: 新增 5 用例，frontend 12 文件 110/110 通过 ✅",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f13",
+          "b1a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 点击安装后只有旋转图标，无文字进度（\"下载中 X%\"等） [根因] : `initPluginProgressListener()` 定义了 handler 但未订阅 WebSocket/事件总线，实际上从未收到 `plugin:install:progress` 消息",
+        "solution": "复用 `chatStore` 已有的全局 WebSocket 和事件总线 — `chatStore.ts` 新增 `case 'plugin:install:progress': emit(...)` 转发 → `pluginsStore.ts` 中 `on('plugin:install:progress')` 真正订阅 → `App.tsx` useEffect 挂载监听器；测试: 新增 5 用例，frontend 12 文件 110/110 通过 ✅",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f13",
+          "b1a",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": `GitHub 下载失败 (415): Unsupported Media Type` [根因] : `githubClient.ts` 的 `requestBuffer()` 设了 `Accept: 'application/octet-stream'`，GitHub 的 `/zipball/{ref}` 端点不认该值",
+        "solution": "移除 Accept header，让 fetch 用默认值；GitHub 会 302 重定向到 `codeload.github.com` 返回 zip；口诀: `request()`（JSON API）不设 Accept → 正常；`requestBuffer()`（下载）设了 `octet-stream` → 反而不行",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": `GitHub 下载失败 (415): Unsupported Media Type` [根因] : `githubClient.ts` 的 `requestBuffer()` 设了 `Accept: 'application/octet-stream'`，GitHub 的 `/zipball/{ref}` 端点不认该值",
+        "solution": "移除 Accept header，让 fetch 用默认值；GitHub 会 302 重定向到 `codeload.github.com` 返回 zip；口诀: `request()`（JSON API）不设 Accept → 正常；`requestBuffer()`（下载）设了 `octet-stream` → 反而不行",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": `GitHub 下载失败 (415): Unsupported Media Type` [根因] : `githubClient.ts` 的 `requestBuffer()` 设了 `Accept: 'application/octet-stream'`，GitHub 的 `/zipball/{ref}` 端点不认该值",
+        "solution": "移除 Accept header，让 fetch 用默认值；GitHub 会 302 重定向到 `codeload.github.com` 返回 zip；口诀: `request()`（JSON API）不设 Accept → 正常；`requestBuffer()`（下载）设了 `octet-stream` → 反而不行",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 详情页 README 显示为原始 Markdown 源码（`# 标题`、`**加粗**` 未解析） [根因] : `getReadmeHtml()` 用 `Accept: 'application/vnd.github.html+json'` + `res.json()` 解析。但 GitHub 该 content-type 实际返回**顶层裸 HTML 字符串**（`<div id=\"readme\"...`），不是 JSON 包装，`res.json()` 抛 SyntaxError → catch 返",
+        "solution": "重写 `getReadmeHtml()` 绕过 `request<T>()`，直接用 `res.text()` → 拿到 11555B 完整 HTML；教训: GitHub 的 `+json` 媒体类型不一定返回 JSON；用真实 fetch 探测比看文档可靠",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 详情页 README 显示为原始 Markdown 源码（`# 标题`、`**加粗**` 未解析） [根因] : `getReadmeHtml()` 用 `Accept: 'application/vnd.github.html+json'` + `res.json()` 解析。但 GitHub 该 content-type 实际返回**顶层裸 HTML 字符串**（`<div id=\"readme\"...`），不是 JSON 包装，`res.json()` 抛 SyntaxError → catch 返",
+        "solution": "重写 `getReadmeHtml()` 绕过 `request<T>()`，直接用 `res.text()` → 拿到 11555B 完整 HTML；教训: GitHub 的 `+json` 媒体类型不一定返回 JSON；用真实 fetch 探测比看文档可靠",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 详情页 README 显示为原始 Markdown 源码（`# 标题`、`**加粗**` 未解析） [根因] : `getReadmeHtml()` 用 `Accept: 'application/vnd.github.html+json'` + `res.json()` 解析。但 GitHub 该 content-type 实际返回**顶层裸 HTML 字符串**（`<div id=\"readme\"...`），不是 JSON 包装，`res.json()` 抛 SyntaxError → catch 返",
+        "solution": "重写 `getReadmeHtml()` 绕过 `request<T>()`，直接用 `res.text()` → 拿到 11555B 完整 HTML；教训: GitHub 的 `+json` 媒体类型不一定返回 JSON；用真实 fetch 探测比看文档可靠",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 安装后日志 `Cannot find module '.../core/dist/PluginWorkerEntry.js'`，UI 卡在\"准备中…\" [根因] : `PluginSandbox.ts:125` 用 `resolve(__dirname, 'PluginWorkerEntry.js')` 加载 worker；tsup `splitting: false` 把 PluginSandbox 内联到 `dist/index.js`（`__dirname` = `dist/`），但 entry 配置里从未包含 `PluginWorkerEntry.",
+        "solution": "`core/tsup.config.ts` 加对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'`，输出到 `dist/PluginWorkerEntry.js`；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）；教训: tsup `splitting: false` 会内联所有 import 子模块，任何**路径敏感**代码（worker 入口、native binding 等）必须独立打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f6",
+          "f10",
+          "f11",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 安装后日志 `Cannot find module '.../core/dist/PluginWorkerEntry.js'`，UI 卡在\"准备中…\" [根因] : `PluginSandbox.ts:125` 用 `resolve(__dirname, 'PluginWorkerEntry.js')` 加载 worker；tsup `splitting: false` 把 PluginSandbox 内联到 `dist/index.js`（`__dirname` = `dist/`），但 entry 配置里从未包含 `PluginWorkerEntry.",
+        "solution": "`core/tsup.config.ts` 加对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'`，输出到 `dist/PluginWorkerEntry.js`；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）；教训: tsup `splitting: false` 会内联所有 import 子模块，任何**路径敏感**代码（worker 入口、native binding 等）必须独立打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f6",
+          "f10",
+          "f11",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 安装后日志 `Cannot find module '.../core/dist/PluginWorkerEntry.js'`，UI 卡在\"准备中…\" [根因] : `PluginSandbox.ts:125` 用 `resolve(__dirname, 'PluginWorkerEntry.js')` 加载 worker；tsup `splitting: false` 把 PluginSandbox 内联到 `dist/index.js`（`__dirname` = `dist/`），但 entry 配置里从未包含 `PluginWorkerEntry.",
+        "solution": "`core/tsup.config.ts` 加对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'`，输出到 `dist/PluginWorkerEntry.js`；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）；教训: tsup `splitting: false` 会内联所有 import 子模块，任何**路径敏感**代码（worker 入口、native binding 等）必须独立打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f6",
+          "f10",
+          "f11",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 安装后日志 `Cannot find module '.../core/dist/PluginWorkerEntry.js'`，UI 卡在\"准备中…\" [根因] : `PluginSandbox.ts:125` 用 `resolve(__dirname, 'PluginWorkerEntry.js')` 加载 worker；tsup `splitting: false` 把 PluginSandbox 内联到 `dist/index.js`（`__dirname` = `dist/`），但 entry 配置里从未包含 `PluginWorkerEntry.",
+        "solution": "`core/tsup.config.ts` 加对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'`，输出到 `dist/PluginWorkerEntry.js`；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）；教训: tsup `splitting: false` 会内联所有 import 子模块，任何**路径敏感**代码（worker 入口、native binding 等）必须独立打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f6",
+          "f10",
+          "f11",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 安装后日志 `Cannot find module '.../core/dist/PluginWorkerEntry.js'`，UI 卡在\"准备中…\" [根因] : `PluginSandbox.ts:125` 用 `resolve(__dirname, 'PluginWorkerEntry.js')` 加载 worker；tsup `splitting: false` 把 PluginSandbox 内联到 `dist/index.js`（`__dirname` = `dist/`），但 entry 配置里从未包含 `PluginWorkerEntry.",
+        "solution": "`core/tsup.config.ts` 加对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'`，输出到 `dist/PluginWorkerEntry.js`；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）；教训: tsup `splitting: false` 会内联所有 import 子模块，任何**路径敏感**代码（worker 入口、native binding 等）必须独立打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f6",
+          "f10",
+          "f11",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-07-01",
+        "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
+        "problem": ": 安装后日志 `Cannot find module '.../core/dist/PluginWorkerEntry.js'`，UI 卡在\"准备中…\" [根因] : `PluginSandbox.ts:125` 用 `resolve(__dirname, 'PluginWorkerEntry.js')` 加载 worker；tsup `splitting: false` 把 PluginSandbox 内联到 `dist/index.js`（`__dirname` = `dist/`），但 entry 配置里从未包含 `PluginWorkerEntry.",
+        "solution": "`core/tsup.config.ts` 加对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'`，输出到 `dist/PluginWorkerEntry.js`；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）；教训: tsup `splitting: false` 会内联所有 import 子模块，任何**路径敏感**代码（worker 入口、native binding 等）必须独立打包",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f6",
+          "f10",
+          "f11",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-07-01",
+        "title": "插件函数式签名兼容 (23:25-23:30)",
+        "problem": "插件函数式签名兼容 (23:25-23:30)",
+        "solution": "1. **`PluginWorkerEntry.ts:83-95`**：增加 `if (typeof exported === 'function')` 分支；调用 `exported(sandboxContext)` 让函数式插件注册工具/技能/钩子；用 `manifest` 回填 `name/version/description`（函数式插件自身不带元信息） 2. **`PluginSandbox.ts:188-198`**：把 `manifest.{name,version,description,author}` 一并作为 `init` RPC 消息体传给 worker 3. **`PluginWorkerEntry.ts:23-29`**：增加 `PluginMeta` 类型和 `MainMessage` 扩展 4. **`PluginSandbox.ts:122-138`**：workerEntryPath 解析增强 — 优先用同目录 `PluginWorkerEntry.js`（生产），不存在则回退 `<core>/dist/PluginWorkerEntry.js`（vitest 跑 src 时 `_ 5. **删除 `src/plugins/PluginWorkerEntry.js`**（6.25 的历史残留，6.4KB，会被 vitest 错误地加载，掩盖真实新代码）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "插件函数式签名兼容 (23:25-23:30)",
+        "problem": "插件函数式签名兼容 (23:25-23:30)",
+        "solution": "1. **`PluginWorkerEntry.ts:83-95`**：增加 `if (typeof exported === 'function')` 分支；调用 `exported(sandboxContext)` 让函数式插件注册工具/技能/钩子；用 `manifest` 回填 `name/version/description`（函数式插件自身不带元信息） 2. **`PluginSandbox.ts:188-198`**：把 `manifest.{name,version,description,author}` 一并作为 `init` RPC 消息体传给 worker 3. **`PluginWorkerEntry.ts:23-29`**：增加 `PluginMeta` 类型和 `MainMessage` 扩展 4. **`PluginSandbox.ts:122-138`**：workerEntryPath 解析增强 — 优先用同目录 `PluginWorkerEntry.js`（生产），不存在则回退 `<core>/dist/PluginWorkerEntry.js`（vitest 跑 src 时 `_ 5. **删除 `src/plugins/PluginWorkerEntry.js`**（6.25 的历史残留，6.4KB，会被 vitest 错误地加载，掩盖真实新代码）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-07-01",
+        "title": "插件函数式签名兼容 (23:25-23:30)",
+        "problem": "插件函数式签名兼容 (23:25-23:30)",
+        "solution": "1. **`PluginWorkerEntry.ts:83-95`**：增加 `if (typeof exported === 'function')` 分支；调用 `exported(sandboxContext)` 让函数式插件注册工具/技能/钩子；用 `manifest` 回填 `name/version/description`（函数式插件自身不带元信息） 2. **`PluginSandbox.ts:188-198`**：把 `manifest.{name,version,description,author}` 一并作为 `init` RPC 消息体传给 worker 3. **`PluginWorkerEntry.ts:23-29`**：增加 `PluginMeta` 类型和 `MainMessage` 扩展 4. **`PluginSandbox.ts:122-138`**：workerEntryPath 解析增强 — 优先用同目录 `PluginWorkerEntry.js`（生产），不存在则回退 `<core>/dist/PluginWorkerEntry.js`（vitest 跑 src 时 `_ 5. **删除 `src/plugins/PluginWorkerEntry.js`**（6.25 的历史残留，6.4KB，会被 vitest 错误地加载，掩盖真实新代码）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6",
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "PluginMarket 安装进度卡\"准备中\" — WebSocket 未建立导致前端无响应 (23",
+        "problem": ": 后端日志显示安装流程全成功（\"安装完成\"、\"插件已注册到 PluginManager\"），但前端 `/plugins` 页面按钮始终卡在\"准备中…\"，一直不切换为\"已安装\"。 [根因] : 前端 `PluginsMarket.tsx` 的安装进度完全依赖 WebSocket 推送 `plugin:install:progress` 事件。但 `chatStore` 的 WebSocket 是**懒加载**的——只有用户进入\"对话\"页面时才 `new WebSocket(url)`。在 `/plugins` 页面安装时 WebSocket 根本没建立，后端广播的进度事件无人接收，`；`packages/frontend/src/stores/pluginsStore.ts`: `installPlugin()` 新增 HTTP 轮询兜底 `pollInstallJob()`（每 1s 轮询 `GET /api/plugins/install/:jobId`，最多 60s），将进度通过同一 `updateInstallProgress()` 路径推入 store；`updateInstallProgress()` 在 `done`/`error` 终态后清理 `installProgress` Map 中对应条目（避免残留记录永久锁定 UI）；`done` 时自动将新插件追加到 `installed` 列表（此前只更新了 `marketplace[].installed`）；测试: `pluginsStore.test.ts` 新增 2 用例（终态清理 + 自动追加），7/7 通过；frontend 全量 112/112；文档更新: `docs/58_` 新增 §9.4 排障章节；`MEMORY.md` 新增陷阱 #43；`docs/03_` 更新测试数 1633→1635；范围: [🌐 Web专属]",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-01",
+        "title": "插件市场显示\"已安装\"但按钮仍提示安装 (23:46)",
+        "problem": ": 截图显示 `obsidian-doc-viewer` 已经在\"已安装插件\"列表（带绿色\"已启用\"标签），但\"社区插件市场\"标签下的对应卡片仍显示\"使用\"按钮而非\"已安装\"徽标。 [根因] : `fetchInstalled` 把 `id` 字段回填为 `local:<name>` 形式（兼容 id 缺失的本地插件），而 `fetchMarketplace` 注入\"已安装\"状态时只按 `installedIds.has(p.id)` 严格匹配。marketplace 接口返回的 `p.id` 是 `obsidian-doc-viewer`，与 `local:obsidian-doc-；`packages/frontend/src/stores/pluginsStore.ts:188-203` `fetchMarketplace` 改用 `installedNames` Set 兼容 `id` 和 `name` 两种匹配形式（`installedIds.has(p.id) || installedNames.has(p.id) || installedNames.has(p.na；测试: `pluginsStore.test.ts` 新增 1 用例（`fetchMarketplace` 应通过 name 匹配已安装插件），共 8/8 通过。；教训: 数据合并/去重场景下，单一字段匹配（尤其是 `id` 形式可能被人改写的情况下）极易踩坑。应同时按多个稳定字段匹配（id + name），或统一规范化 id 形式。",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
+      }
+    ],
+    "2026-07-02.md": [
+      {
+        "moduleId": "f7",
+        "date": "2026-07-02",
+        "title": "双缓存问题彻底修复 (22:48)",
+        "problem": "双缓存问题彻底修复 (22:48)",
+        "solution": "| 文件 | 改动 | |------|------| | `githubClient.ts` | 新增 `RELEASE_CACHE_TTL=5min`；`getLatestRelease`/`getManifest` 新增 `skipCache` 参数；`getCache` 支持自定义 TTL | | `PluginMarketService.ts` | `listMarket(forceRefresh=true)` 先调 `client.clearCache()` 再 `{skipCache:true}` 传到 `searchPluginRepos`/`getLatestRelease`/` | `PluginMarketService.ts` | `executeInstall` 的 `getLatestRelease` 传 `skipCache=true`（安装时必须拿最新版） | | `index.ts` | 新增 `POST /api/plugins/market/refresh` 端点 |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-02",
+        "title": "双缓存问题彻底修复 (22:48)",
+        "problem": "双缓存问题彻底修复 (22:48)",
+        "solution": "| 文件 | 改动 | |------|------| | `githubClient.ts` | 新增 `RELEASE_CACHE_TTL=5min`；`getLatestRelease`/`getManifest` 新增 `skipCache` 参数；`getCache` 支持自定义 TTL | | `PluginMarketService.ts` | `listMarket(forceRefresh=true)` 先调 `client.clearCache()` 再 `{skipCache:true}` 传到 `searchPluginRepos`/`getLatestRelease`/` | `PluginMarketService.ts` | `executeInstall` 的 `getLatestRelease` 传 `skipCache=true`（安装时必须拿最新版） | | `index.ts` | 新增 `POST /api/plugins/market/refresh` 端点 |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-07-02",
+        "title": "双缓存问题彻底修复 (22:48)",
+        "problem": "双缓存问题彻底修复 (22:48)",
+        "solution": "| 文件 | 改动 | |------|------| | `githubClient.ts` | 新增 `RELEASE_CACHE_TTL=5min`；`getLatestRelease`/`getManifest` 新增 `skipCache` 参数；`getCache` 支持自定义 TTL | | `PluginMarketService.ts` | `listMarket(forceRefresh=true)` 先调 `client.clearCache()` 再 `{skipCache:true}` 传到 `searchPluginRepos`/`getLatestRelease`/` | `PluginMarketService.ts` | `executeInstall` 的 `getLatestRelease` 传 `skipCache=true`（安装时必须拿最新版） | | `index.ts` | 新增 `POST /api/plugins/market/refresh` 端点 |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "p5b",
+        "date": "2026-07-02",
+        "title": "双缓存问题彻底修复 (22:48)",
+        "problem": "双缓存问题彻底修复 (22:48)",
+        "solution": "| 文件 | 改动 | |------|------| | `githubClient.ts` | 新增 `RELEASE_CACHE_TTL=5min`；`getLatestRelease`/`getManifest` 新增 `skipCache` 参数；`getCache` 支持自定义 TTL | | `PluginMarketService.ts` | `listMarket(forceRefresh=true)` 先调 `client.clearCache()` 再 `{skipCache:true}` 传到 `searchPluginRepos`/`getLatestRelease`/` | `PluginMarketService.ts` | `executeInstall` 的 `getLatestRelease` 传 `skipCache=true`（安装时必须拿最新版） | | `index.ts` | 新增 `POST /api/plugins/market/refresh` 端点 |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10",
+          "f14",
+          "p5b"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-07-02",
+        "title": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
+        "problem": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
+        "solution": "| 文件 | 改动 | |------|------| | `PluginMarketService.ts` | `checkAllUpdates()` 入口加 `client.clearCache()`；循环内 `getLatestRelease(p.id, true)` | | `pluginsStore.ts` | `updateInstallProgress` 的 `done` 分支末尾追加 `void get().fetchInstalled().then(() => get().checkUpdates())` |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-02",
+        "title": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
+        "problem": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
+        "solution": "| 文件 | 改动 | |------|------| | `PluginMarketService.ts` | `checkAllUpdates()` 入口加 `client.clearCache()`；循环内 `getLatestRelease(p.id, true)` | | `pluginsStore.ts` | `updateInstallProgress` 的 `done` 分支末尾追加 `void get().fetchInstalled().then(() => get().checkUpdates())` |",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f10"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-07-02",
+        "title": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
+        "problem": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
+        "solution": "上游修了别忘了所有调用点；`checkAllUpdates` 和 `listMarket` 是两个独立入口，都需要 `skipCache`；前端 store 不会自动反映 disk 变化: 任何 `install/uninstall/update` 终态后必须主动 `fetchInstalled()` 同步；不能只更新 `marketplace` 不更新 `installed`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-07-02",
+        "title": "卸载后刷新插件又出现 (幽灵插件) → 卸载链 3 处 Bug 修复 (23:03)",
+        "problem": "卸载后刷新插件又出现 (幽灵插件) → 卸载链 3 处 Bug 修复 (23:03)",
+        "solution": "1. 精确匹配 manifest.name 2. pluginId 解析：`nameOrId.split('/').pop()` 当 manifest.name 找 3. 兜底遍历：匹配 `value.plugin.name` 或 `value.sourcePath` 的 basename async unloadPlugin(nameOrId: string): Promise<void> { let loaded = this.plugins.get(nameOrId); if (!loaded) { const candidate = nameOrId.includes('/') ? nameOrId.split('/').pop() : null; if (candidate) { loaded = this.plugins.get(candidate); if (loaded) nameOrId = candidate; } if (!loaded) { for (const [key, value] of this.plugins.entries()) { if (value.plugin.name === nameOrId) { loaded = value; nameOrId = key; break; } const short = nameOrId.includes('/') ? nameOrId.split('/').pop() : null; if (short && value.plugin.name === short) { loaded = value; nameOrId = key; break; } if (value.sourcePath) { const parts = value.sourcePath.split(/[\\\\/]/); const base = parts[parts.length - 1] || ''; if (short && base === short) { loaded = value; nameOrId = key; break; } if (base === nameOrId) { loaded = value; nameOrId = key; break; } // ... 后续 this.plugins.delete(name)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-07-02",
+        "title": "卸载后刷新插件又出现 (幽灵插件) → 卸载链 3 处 Bug 修复 (23:03)",
+        "problem": "卸载后刷新插件又出现 (幽灵插件) → 卸载链 3 处 Bug 修复 (23:03)",
+        "solution": "1. 精确匹配 manifest.name 2. pluginId 解析：`nameOrId.split('/').pop()` 当 manifest.name 找 3. 兜底遍历：匹配 `value.plugin.name` 或 `value.sourcePath` 的 basename async unloadPlugin(nameOrId: string): Promise<void> { let loaded = this.plugins.get(nameOrId); if (!loaded) { const candidate = nameOrId.includes('/') ? nameOrId.split('/').pop() : null; if (candidate) { loaded = this.plugins.get(candidate); if (loaded) nameOrId = candidate; } if (!loaded) { for (const [key, value] of this.plugins.entries()) { if (value.plugin.name === nameOrId) { loaded = value; nameOrId = key; break; } const short = nameOrId.includes('/') ? nameOrId.split('/').pop() : null; if (short && value.plugin.name === short) { loaded = value; nameOrId = key; break; } if (value.sourcePath) { const parts = value.sourcePath.split(/[\\\\/]/); const base = parts[parts.length - 1] || ''; if (short && base === short) { loaded = value; nameOrId = key; break; } if (base === nameOrId) { loaded = value; nameOrId = key; break; } // ... 后续 this.plugins.delete(name)",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10",
+          "b3b"
+        ]
+      }
+    ],
     "MEMORY.md": [
       {
         "moduleId": "f9",
@@ -10042,9 +10963,20 @@
         "_tagModuleIds": [
           "f9"
         ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "",
+        "title": "🧩 修复汇总 (2026-07-02)",
+        "problem": "🧩 修复汇总 (2026-07-02)",
+        "solution": "sibling 优先，不存在时回退 `<core>/dist/PluginWorkerEntry.js`；删除 src 下历史残留；tsup 配置: `core/tsup.config.ts` 用对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'` 独立输出 `dist/PluginWorkerEntry.js`（tsup `s",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f10"
+        ]
       }
     ],
     "README.md": []
   },
-  "generatedAt": "2026-06-28T12:19:43.256Z"
+  "generatedAt": "2026-07-10T15:59:29.359Z"
 }
