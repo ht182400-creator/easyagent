@@ -435,12 +435,37 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
   /**
    * 卸载插件（同时关闭对应的沙箱）
    */
-  async unloadPlugin(name: string): Promise<void> {
-    const loaded = this.plugins.get(name);
+  async unloadPlugin(nameOrId: string): Promise<string | null> {
+    // 1. 优先按 manifest.name 精确查找
+    let loaded = this.plugins.get(nameOrId);
+    // 2. 退化匹配：尝试从 owner/repo 形式（pluginId）解析 repo 名
     if (!loaded) {
-      logger.warn({ plugin: name }, '插件未加载，无法卸载');
-      return;
+      const candidate = nameOrId.includes('/') ? nameOrId.split('/').pop() : null;
+      if (candidate) {
+        loaded = this.plugins.get(candidate);
+        if (loaded) nameOrId = candidate;
+      }
     }
+    // 3. 兜底：遍历 value，匹配 value.plugin.name 或 value.sourcePath 的 basename
+    if (!loaded) {
+      for (const [key, value] of this.plugins.entries()) {
+        if (value.plugin.name === nameOrId) { loaded = value; nameOrId = key; break; }
+        const short = nameOrId.includes('/') ? nameOrId.split('/').pop() : null;
+        if (short && value.plugin.name === short) { loaded = value; nameOrId = key; break; }
+        if (value.sourcePath) {
+          const parts = value.sourcePath.split(/[\\/]/);
+          const base = parts[parts.length - 1] || '';
+          if (short && base === short) { loaded = value; nameOrId = key; break; }
+          if (base === nameOrId) { loaded = value; nameOrId = key; break; }
+        }
+      }
+    }
+    if (!loaded) {
+      logger.warn({ plugin: nameOrId }, '插件未加载，无法卸载');
+      return null;
+    }
+    const name = nameOrId;
+
 
     // 如果使用沙箱模式，先关闭沙箱
     const sandbox = this.sandboxes.get(name);
@@ -495,6 +520,7 @@ export class PluginManager extends EventEmitter<PluginManagerEvents> {
     this.loadModeMap.delete(name);
     this.emit('pluginUnloaded', name);
     logger.info({ plugin: name }, '插件已卸载');
+    return name;
   }
 
   /**

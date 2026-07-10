@@ -748,4 +748,56 @@ describe('PluginManager - 沙箱错误处理', () => {
     await pm.loadPlugin(pluginDir); // 重复加载不抛错
     expect(pm.listPlugins().length).toBe(1);
   });
+
+  it('函数式插件（export default function）应能加载并注册工具', async () => {
+    // 兼容旧风格 / 简单插件：default export 是个函数 (context) => context.registerTool(...)
+    const pluginDir = createTestPlugin(tmpDir, 'fn-plugin', {
+      'manifest.json': JSON.stringify({
+        name: 'fn-plugin',
+        version: '0.1.0',
+        description: 'Function-style plugin',
+        main: 'index.js',
+      }),
+      'index.js': `
+        export default async function plugin(context) {
+          context.registerTool({
+            name: 'fn-tool',
+            description: 'A tool from a function-style plugin',
+            parameters: { type: 'object', properties: {} },
+            async execute() { return 'ok'; },
+          });
+        }
+      `,
+    });
+
+    const { ToolRegistry } = await import('../tools/ToolRegistry.js');
+    const pm = new PluginManager();
+    const registry = new ToolRegistry();
+    pm.setToolRegistry(registry);
+
+    const plugin = await pm.loadPlugin(pluginDir);
+    expect(plugin.name).toBe('fn-plugin');
+    expect(plugin.version).toBe('0.1.0');
+
+    // 工具应已通过 sandboxContext.registerTool 注册到 worker 内部，
+    // 并经 getTools RPC 取回注册到主进程的 ToolRegistry
+    const tools = await pm.getSandbox('fn-plugin')!.getTools();
+    expect(tools.length).toBe(1);
+    expect(tools[0].name).toBe('fn-tool');
+  });
+
+  it('非函数非对象导出应抛出明确错误', async () => {
+    const pluginDir = createTestPlugin(tmpDir, 'bad-export', {
+      'manifest.json': JSON.stringify({
+        name: 'bad-export',
+        version: '0.1.0',
+        description: 'Bad export',
+        main: 'index.js',
+      }),
+      'index.js': `export default 42;`,
+    });
+
+    const pm = new PluginManager();
+    await expect(pm.loadPlugin(pluginDir)).rejects.toThrow('插件模块必须导出插件对象或插件函数');
+  });
 });

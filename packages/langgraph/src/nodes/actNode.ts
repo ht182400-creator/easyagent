@@ -174,6 +174,33 @@ async function executeSingleTool(
       ),
     ]);
 
+    // 防御性兜底：executor.execute 契约要求返回 ToolResult，但插件/旧工具可能返回
+    // 半结构化结果（字符串或裸对象）。若发现 success 字段缺失但 content 是字符串，
+    // 视为"成功但接口不规范"，避免 LLM 进入"工具失败"→反思 的无意义循环。
+    if (typeof result !== 'object' || result === null) {
+      log.warn(`工具返回非对象: ${name}`, { type: typeof result, args });
+      return new ToolMessage({
+        tool_call_id: callId,
+        name,
+        content: typeof result === 'string' ? result : String(result ?? ''),
+      });
+    }
+    if (typeof result.success !== 'boolean') {
+      log.warn(`工具返回缺少 success 字段: ${name}`, { resultKeys: Object.keys(result), args });
+      // 视为成功：把 content 透传回去，并附加结构提示
+      const contentStr =
+        typeof result.content === 'string'
+          ? result.content
+          : (result.content == null ? '' : String(result.content));
+      return new ToolMessage({
+        tool_call_id: callId,
+        name,
+        content: contentStr
+          ? `${contentStr}\n\n[系统提示] 该工具未遵守 ITool.execute 契约（缺少 success 字段），结果已按成功处理。`
+          : `[系统提示] 工具 "${name}" 未返回标准 ToolResult 格式。请联系插件作者修复。`,
+      });
+    }
+
     if (result.success) {
       log.debug(`工具执行成功: ${name}`, { contentLen: result.content.length });
       return new ToolMessage({

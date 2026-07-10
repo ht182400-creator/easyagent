@@ -70,12 +70,12 @@ function mapLangGraphToAgentEngineEvent(lgEvent: LGAgentEvent): UnifiedAgentEven
     }
 
     case 'tool_call': {
-      const data = lgEvent.data as { name?: string; input?: unknown } | undefined;
-      const now = Date.now();
+      const data = lgEvent.data as { toolCallId?: string; name?: string; input?: unknown } | undefined;
       return {
         // 映射为 AgentEngine 兼容事件类型
         type: 'tool_start',
-        toolCallId: `lg_tool_${now}`,
+        // 使用 LangGraph 透传的 run_id，确保 tool_result 能匹配上
+        toolCallId: data?.toolCallId || `lg_tool_start_${Date.now()}`,
         toolName: data?.name || 'unknown',
         input: data?.input || {},
         // 保留 toolCalls 格式供 automation executor 使用
@@ -87,13 +87,15 @@ function mapLangGraphToAgentEngineEvent(lgEvent: LGAgentEvent): UnifiedAgentEven
 
     case 'tool_result': {
       const data = lgEvent.data as {
+        toolCallId?: string;
         name?: string;
         output?: { success?: boolean; content?: string; error?: string };
       } | undefined;
       return {
         // 映射为 AgentEngine 兼容事件类型
         type: 'tool_end',
-        toolCallId: `lg_tool_result_${Date.now()}`,
+        // 与 tool_call 事件使用同一 toolCallId，前端才能配对
+        toolCallId: data?.toolCallId || `lg_tool_end_${Date.now()}`,
         toolName: data?.name || 'unknown',
         output: data?.output?.content || '',
         error: data?.output?.error || null,
@@ -221,6 +223,34 @@ export class LangGraphAgentAdapter {
       // 触发完成事件
       this.emit({ type: 'done', data: { sessionId: this.lastSessionId } });
 
+      // 兜底：如果 stream 全程未产出任何文本增量（如底层 LLM 非流式），
+      // 尝试从 Agent 的 checkpoint 中提取最终回复，通过 onPartialResponse 发给前端
+      if (chunkCount === 0 && options.onPartialResponse) {
+        try {
+          const state = await this.agent.getState(this.lastSessionId);
+          if (state) {
+            const finalResponse = (state.finalResponse as string) || '';
+            if (finalResponse) {
+              options.onPartialResponse(finalResponse);
+              fullResponse = finalResponse;
+            } else {
+              // finalResponse 也可能为空，尝试从消息中提取
+              const messages = state.messages as Array<Record<string, unknown>> | undefined;
+              const lastMsg = messages?.[messages.length - 1];
+              if (lastMsg) {
+                const content = extractTextContent(lastMsg);
+                if (content) {
+                  options.onPartialResponse(content);
+                  fullResponse = content;
+                }
+              }
+            }
+          }
+        } catch {
+          // 兜底失败静默处理
+        }
+      }
+
       return fullResponse;
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
@@ -309,4 +339,31 @@ export class LangGraphAgentAdapter {
       }
     }
   }
+}
+
+/**
+ * 从 checkpoint 消息对象中提取文本内容
+ * 兼容 LangChain 序列化格式 (kwargs.content) 和普通对象 (content)
+ */
+function extractTextContent(msg: Record<string, unknown>): string {
+  // 优先从 kwargs.content 提取（LangChain 序列化格式）
+  if (msg.kwargs && typeof msg.kwargs === 'object') {
+    const kwargs = msg.kwargs as Record<string, unknown>;
+    if (typeof kwargs.content === 'string') return kwargs.content;
+    if (Array.isArray(kwargs.content)) {
+      return (kwargs.content as Array<Record<string, unknown>>)
+        .filter((b) => b.type === 'text')
+        .map((b) => (b.text as string) || '')
+        .join('');
+    }
+  }
+  // 兜底：直接从 content 提取
+  if (typeof msg.content === 'string') return msg.content;
+  if (Array.isArray(msg.content)) {
+    return (msg.content as Array<Record<string, unknown>>)
+      .filter((b) => b.type === 'text')
+      .map((b) => (b.text as string) || '')
+      .join('');
+  }
+  return '';
 }

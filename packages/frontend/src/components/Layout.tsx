@@ -26,8 +26,11 @@ import {
   Activity,
   FileText,
   GitBranch,
+  Puzzle,
+  PanelRightClose,
 } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
+import { useUIStore } from '../stores/uiStore';
 import { getApiBase } from '../request';
 
 /** 导航分组定义 */
@@ -48,6 +51,7 @@ const navGroups = [
       { path: '/sessions', icon: History, label: '会话' },
       { path: '/tools', icon: Wrench, label: '工具' },
       { path: '/skills', icon: Sparkles, label: '技能' },
+      { path: '/plugins', icon: Puzzle, label: '插件市场' },
     ],
   },
   {
@@ -77,6 +81,12 @@ export default function Layout({ children }: { children: ReactNode }) {
     notifications,
     removeNotification,
   } = useAppStore();
+  const {
+    rightPanelVisible,
+    rightPanelUrl,
+    rightPanelTitle,
+    closeRightPanel,
+  } = useUIStore();
   const location = useLocation();
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [appVersion, setAppVersion] = useState('v0.4.1');
@@ -232,6 +242,38 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="p-6 lg:p-8">{children}</div>
         </main>
       </div>
+
+      {/* ======== 右侧面板 (文档浏览器等) ======== */}
+      {rightPanelVisible && (
+        <div
+          className="flex flex-col border-l border-white/[0.06] bg-[#0c0e12] transition-all duration-300 ease-out-expo"
+          style={{ width: 'min(50vw, 700px)', minWidth: '360px' }}
+        >
+          {/* 面板头部 */}
+          <div className="flex items-center justify-between h-11 px-4 border-b border-white/[0.06] shrink-0">
+            <span className="text-sm font-medium text-gray-300 truncate">
+              {rightPanelTitle || '文档浏览器'}
+            </span>
+            <button
+              onClick={closeRightPanel}
+              className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors text-gray-500 hover:text-gray-300"
+              title="关闭面板"
+            >
+              <PanelRightClose className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* iframe 内容 */}
+          <div className="flex-1 relative">
+            <iframe
+              src={rightPanelUrl}
+              className="absolute inset-0 w-full h-full border-0"
+              title="文档浏览器"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            />
+          </div>
+        </div>
+      )}
 
       {/* ======== 通知浮层 ======== */}
       {notifications.length > 0 && (

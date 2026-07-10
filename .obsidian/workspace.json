@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "history_202606270002.md",
+                "file": "CHANGELOG.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "history_202606270002"
+              "title": "CHANGELOG"
             }
           }
         ]
@@ -180,17 +180,28 @@
       "daily-notes:打开/创建今天的日记": false,
       "templates:插入模板": false,
       "command-palette:打开命令面板": false,
-      "bases:新建数据库": false
+      "bases:新建数据库": false,
+      "templater-obsidian:Templater": false,
+      "obsidian-excalidraw-plugin:新建绘图文件": false
     }
   },
-  "active": "e54cb5c6c8335b80",
+  "active": "74bf28dfb41b5938",
   "lastOpenFiles": [
-    "packages/core/dist/index-Bbn5tFrB.d.ts",
-    "packages/core/dist/adapters/index.d.ts",
-    "packages/core/dist/tools/index.d.ts",
-    "packages/core/dist/index.d.ts",
-    "packages/core/tsup.config.bundled_kxoc8lbewi.mjs",
-    "docs/pipeline/latest.yml",
+    "未命名.base",
+    "Excalidraw/Drawing 2026-07-01 10.49.08.excalidraw.md",
+    "docs/57_EasyAgent_vs_Odysseus_对比评审_GLM模型视角.md",
+    "CHANGELOG.md",
+    "Excalidraw",
+    "history_202606270002.md",
+    "docs/56_EasyAgent_vs_Odysseus_深度对比评审与改进建议.md",
+    "temp/_list_and_delete_assets.mjs",
+    "temp/_list_old_assets.ps1",
+    "packages/desktop/release/latest.yml",
+    "packages/desktop/release/builder-debug.yml",
+    "packages/desktop/release/EasyAgent-0.6.23-win-x64.exe.blockmap",
+    "packages/desktop/release/__uninstaller-nsis-@easyagentdesktop.exe",
+    "packages/desktop/release/EasyAgent-0.6.23-win-x64.exe",
+    "packages/desktop/release/@easyagentdesktop-0.6.23-x64.nsis.7z",
     "docs/00_新手上手指南.md",
     "packages/desktop/node_modules/@electron/notarize/node_modules/fs-extra/README.md"
   ]

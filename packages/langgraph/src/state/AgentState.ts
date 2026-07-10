@@ -67,6 +67,15 @@ export const AgentState = Annotation.Root({
     default: () => 0,
   }),
 
+  /**
+   * 连续相同工具调用次数，用于防止 LLM 重复调用同一工具进入无限循环。
+   * 当用户消息触发新的工具调用链时重置为 0。
+   */
+  consecutiveIdenticalToolCalls: Annotation<number>({
+    reducer: (_, next) => next,
+    default: () => 0,
+  }),
+
   // ==================== 系统配置 ====================
 
   /**

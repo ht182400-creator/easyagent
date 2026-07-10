@@ -1,11 +1,11 @@
 {
   "_meta": {
-    "generatedAt": "2026-06-28T12:19:43.206Z",
-    "totalTestFiles": 48,
-    "totalTestCases": 1271,
+    "generatedAt": "2026-07-01T14:37:00.000Z",
+    "totalTestFiles": 50,
+    "totalTestCases": 1326,
     "unmappedCases": 76,
     "projectRoot": "/home/runner/work/easyagent/easyagent",
-    "source": "module-registry.mjs (统一注册表)"
+    "source": "module-registry.mjs (统一注册表) + 手动更新 PluginMarket 测试"
   },
   "modules": {
     "f1": {
@@ -123,11 +123,11 @@
     },
     "f8": {
       "moduleId": "f8",
-      "totalCases": 192,
+      "totalCases": 241,
       "subModules": {
         "server": {
           "name": "Web Dashboard v4·服务器",
-          "cases": 100,
+          "cases": 149,
           "files": [
             {
               "path": "packages/server/src/__tests__/api.test.ts",
@@ -148,6 +148,14 @@
             {
               "path": "packages/server/src/__tests__/websocket.test.ts",
               "cases": 5
+            },
+            {
+              "path": "packages/server/src/__tests__/plugin-market-service.test.ts",
+              "cases": 32
+            },
+            {
+              "path": "packages/server/src/__tests__/plugin-market-api.test.ts",
+              "cases": 18
             }
           ]
         },

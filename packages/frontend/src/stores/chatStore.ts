@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { emit } from '../events';
 import { getWsBase } from '../request';
+import { useUIStore } from './uiStore';
 
 /** 从核心类型库导入共享类型，替代本地重复定义 */
 import type { MessageRole } from '@easyagent/core/types';
@@ -396,7 +397,20 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
       // AI 开始调用工具
       const lastMessages = store.sessions[sessionId]?.messages || [];
       const lastMsg = lastMessages[lastMessages.length - 1];
-      const msgId = lastMsg?.role === 'assistant' ? lastMsg.id : genId();
+      let msgId: string;
+      // 如果最后一条消息是 assistant，复用其 ID；否则先创建一个占位 assistant 消息
+      if (lastMsg?.role === 'assistant') {
+        msgId = lastMsg.id;
+      } else {
+        msgId = genId();
+        store.addMessage(sessionId, {
+          id: msgId,
+          role: 'assistant',
+          content: '',
+          timestamp: Date.now(),
+          isStreaming: true,
+        });
+      }
 
       store.addToolCall(sessionId, msgId, {
         toolCallId: data.toolCallId as string,
@@ -429,6 +443,16 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
       break;
     }
 
+    case 'open_panel': {
+      // 服务器通知前端打开右侧面板（如文档浏览器）
+      const url = data.url as string;
+      const title = (data.title as string) || '';
+      if (url) {
+        useUIStore.getState().openRightPanel(url, title);
+      }
+      break;
+    }
+
     case 'error': {
       store.addMessage(sessionId, {
         id: genId(),
@@ -453,6 +477,12 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
     case 'automation_stopped': {
       // 转发自动化事件到共享事件总线，供 automationStore 消费
       emit(data.type as string, data);
+      break;
+    }
+
+    case 'plugin:install:progress': {
+      // 转发插件安装进度到共享事件总线，供 pluginsStore 消费
+      emit('plugin:install:progress', data);
       break;
     }
 

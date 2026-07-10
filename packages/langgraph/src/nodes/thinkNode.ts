@@ -15,6 +15,14 @@ import { getMessageType, getMessageContent, hasToolCalls, getToolCallId } from '
 /** thinkNode 模块 Logger */
 const log = new Logger('thinkNode');
 
+/**
+ * 连续重复工具调用最大容忍次数。
+ * 首次调用不计数；第 1 次重复 consecutiveIdenticalCalls=1，第 2 次=2，以此类推。
+ * 当 consecutiveIdenticalCalls > MAX_IDENTICAL_TOOL_CALLS 时终止循环。
+ * 设 0 = 只允许首次调用，第 1 次重复即拦截。
+ */
+const MAX_IDENTICAL_TOOL_CALLS = 0;
+
 // 类型依赖最小化：只声明需要的接口
 export interface ThinkNodeConfig {
   /** 
@@ -175,7 +183,60 @@ export function createThinkNode(config: ThinkNodeConfig) {
         usage: response.usage,
       });
 
-      // 4. 构建 AIMessage
+      // 4. 检测重复工具调用（防 LLM 无限循环）：
+      //    如果当前 tool_calls 与上一条 AI 消息的 tool_calls 完全相同，
+      //    则递增重复计数；超过阈值后强制终止循环。
+      const currentToolCount = response.toolCalls?.length || 0;
+      let consecutiveIdenticalCalls = 0;
+      if (currentToolCount > 0) {
+        // 向上查找最近一条 AI 消息
+        const lastAiMsg = [...state.messages].reverse().find(m => getMessageType(m) === 'ai');
+        if (lastAiMsg && hasToolCalls(lastAiMsg)) {
+          const lastRawToolCalls = (lastAiMsg as unknown as Record<string, unknown>).tool_calls as Array<Record<string, unknown>>;
+          // 比较当前与上轮的工具调用（名称 + 参数）
+          const isIdentical = response.toolCalls!.length === lastRawToolCalls.length &&
+            response.toolCalls!.every((tc, i) => {
+              const last = lastRawToolCalls[i];
+              const lastArgs = typeof last.args === 'string' ? last.args : JSON.stringify(last.args ?? {});
+              return tc.function.name === (last.name as string) &&
+                     tc.function.arguments === lastArgs;
+            });
+          if (isIdentical) {
+            consecutiveIdenticalCalls = (state.consecutiveIdenticalToolCalls ?? 0) + 1;
+            log.warn('检测到重复工具调用', {
+              toolName: response.toolCalls![0].function.name,
+              count: consecutiveIdenticalCalls,
+              maxAllowed: MAX_IDENTICAL_TOOL_CALLS,
+            });
+          }
+        }
+      }
+
+      // 仅当计数 > 阈值时才拦截（避免 MAX=0 时误拦截首次正常调用）
+      if (consecutiveIdenticalCalls > MAX_IDENTICAL_TOOL_CALLS) {
+        log.warn('重复工具调用次数超限，强制终止循环', {
+          toolName: response.toolCalls?.[0]?.function.name,
+          consecutiveIdenticalCalls,
+        });
+        // 仍需构建 AIMessage 记录本轮操作，但强制结束循环
+        const aiMessage = new AIMessage({
+          content: response.content || '',
+          tool_calls: response.toolCalls?.map((tc) => ({
+            id: tc.id,
+            name: tc.function.name,
+            args: safeJsonParse(tc.function.arguments),
+          })),
+        });
+        return {
+          messages: [aiMessage],
+          turnCount: state.turnCount + 1,
+          shouldContinue: false,
+          consecutiveIdenticalToolCalls: consecutiveIdenticalCalls,
+          finalResponse: `检测到连续 ${consecutiveIdenticalCalls} 次相同的工具调用 (${response.toolCalls?.[0]?.function.name})，已自动终止循环以避免重复执行。`,
+        };
+      }
+
+      // 5. 构建 AIMessage
       const aiMessage = new AIMessage({
         content: response.content || '',
         tool_calls: response.toolCalls?.map((tc) => ({
@@ -185,8 +246,8 @@ export function createThinkNode(config: ThinkNodeConfig) {
         })),
       });
 
-      const hasToolCalls = response.toolCalls && response.toolCalls.length > 0;
-      if (hasToolCalls) {
+      const hasToolCallsInResponse = response.toolCalls && response.toolCalls.length > 0;
+      if (hasToolCallsInResponse) {
         log.info('LLM 返回 tool_calls', {
           tools: response.toolCalls!.map(tc => ({ name: tc.function.name, argsLen: tc.function.arguments.length })),
         });
@@ -199,9 +260,11 @@ export function createThinkNode(config: ThinkNodeConfig) {
         turnCount: state.turnCount + 1,
         totalInputTokens: response.usage?.inputTokens ?? 0,
         totalOutputTokens: response.usage?.outputTokens ?? 0,
+        // 传递重复调用计数：无 tool_calls 时重置，有 tool_calls 时保留
+        consecutiveIdenticalToolCalls: hasToolCallsInResponse ? consecutiveIdenticalCalls : 0,
       };
 
-      log.exit({ turnCount: state.turnCount + 1, hasToolCalls });
+      log.exit({ turnCount: state.turnCount + 1, hasToolCalls: hasToolCallsInResponse });
       return result;
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);

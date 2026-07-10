@@ -1,0 +1,22 @@
+{
+  "$schema": "https://easyagent.dev/schemas/plugin-manifest.json",
+  "name": "obsidian-doc-viewer",
+  "version": "0.1.0",
+  "description": "Obsidian-like Markdown document viewer with graph and search",
+  "main": "plugin.js",
+  "author": "ht182400-creator",
+  "license": "MIT",
+  "repository": "https://github.com/ht182400-creator/easyagent-plugin-obsidian-doc-viewer",
+  "keywords": ["viewer", "markdown", "graph", "obsidian"],
+  "engines": {
+    "easyagent": ">=0.6.23",
+    "node": ">=18.0.0"
+  },
+  "permissions": {
+    "filesystem": { "read": ["**/*.md"], "write": false },
+    "network": { "domains": [], "allowAll": false },
+    "shell": false,
+    "notifications": false,
+    "clipboard": false
+  }
+}

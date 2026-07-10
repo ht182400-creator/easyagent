@@ -15,6 +15,7 @@ import KnowledgeBase from './pages/KnowledgeBase';
 import Automation from './pages/Automation';
 import TokenUsage from './pages/TokenUsage';
 import SkillsPage from './pages/Skills';
+import PluginsMarket from './pages/PluginsMarket';
 import IMSettings from './pages/IMSettings';
 import SandboxPage from './pages/Sandbox';
 import SemanticPage from './pages/Semantic';
@@ -23,6 +24,7 @@ import LangGraphPage from './pages/LangGraph';
 import { useAppStore, initializeTheme } from './stores/appStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useConfig } from './config';
+import { initPluginProgressListener } from './stores/pluginsStore';
 
 export default function App() {
   const { apiBase, isDesktop } = useConfig();
@@ -39,6 +41,11 @@ export default function App() {
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
+
+  // 注册插件安装进度监听器（订阅 chatStore 通过事件总线转发的 WebSocket 事件）
+  useEffect(() => {
+    return initPluginProgressListener();
+  }, []);
 
   // 检测后端服务连接
   useEffect(() => {
@@ -99,6 +106,7 @@ export default function App() {
         <Route path="/automation" element={<Automation />} />
         <Route path="/token-usage" element={<TokenUsage />} />
         <Route path="/skills" element={<SkillsPage />} />
+        <Route path="/plugins" element={<PluginsMarket />} />
         <Route path="/im" element={<IMSettings />} />
         <Route path="/sandbox" element={<SandboxPage />} />
         <Route path="/semantic" element={<SemanticPage />} />

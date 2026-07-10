@@ -550,6 +550,9 @@ export class LangGraphAgent {
         return {
           type: 'tool_call',
           data: {
+            // 透传 LangChain 的 run_id 作为工具调用唯一 ID，
+            // 供前端的 tool_call/tool_result 事件配对使用
+            toolCallId: (event.run_id as string) || `tool_start_${now.getTime()}`,
             name: (event as Record<string, unknown>).name || 'unknown',
             input: event.data,
           },
@@ -560,6 +563,9 @@ export class LangGraphAgent {
         return {
           type: 'tool_result',
           data: {
+            // 同一 run_id 必须与 on_tool_start 保持一致，
+            // 否则前端的 tool_result 找不到对应 toolCall 无法更新工具卡片
+            toolCallId: (event.run_id as string) || `tool_end_${now.getTime()}`,
             name: (event as Record<string, unknown>).name || 'unknown',
             output: (event.data as Record<string, unknown>)?.output,
           },

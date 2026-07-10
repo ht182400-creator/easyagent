@@ -57,6 +57,9 @@ import {
 } from '@easyagent/core';
 import type { AnyIMConfig, IMPlatform, IMMessage } from '@easyagent/core';
 
+// ========== 插件市场服务 ==========
+import { getPluginMarketService, type MarketPlugin, type InstallJob } from './services/PluginMarketService.js';
+
 // ========== LangGraph 引擎集成 (Phase B) ==========
 import { getEngineType, createAgent, isLangGraphAdapter, parseCliEngineArg, resolveEngineSource } from './langgraph/index.js';
 import type { EngineType, AgentInstance, EngineSource } from './langgraph/index.js';
@@ -220,9 +223,12 @@ export async function createApp(options: CreateAppOptions = {}) {
     logger.info({ count: disabledToolNames.length }, '已加载禁用的工具列表');
   }
 
+  // 统一插件目录（用户级别，跨项目共享）
+  const pluginsDir = join(homedir(), '.easyagent', 'plugins');
+
   // 初始化插件管理器 (关联 ToolRegistry)
   const pluginManager = getPluginManager({
-    userPluginsDir: join(process.cwd(), '.easyagent', 'plugins'),
+    userPluginsDir: pluginsDir,
   });
   pluginManager.setToolRegistry(toolRegistry);
   // 异步初始化插件（不阻塞服务启动）
@@ -555,7 +561,8 @@ export async function createApp(options: CreateAppOptions = {}) {
   /** 安全 HTTP 头中间件：防止常见 Web 攻击 */
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
+    // 允许同源内嵌（文档浏览器需要在 iframe 中加载），其他来源拒绝
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -587,6 +594,25 @@ export async function createApp(options: CreateAppOptions = {}) {
       memory: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
       timestamp: new Date().toISOString(),
     });
+  });
+
+  /** 开发调试：模拟 open-doc-viewer 工具结果，向所有订阅的客户端发送 open_panel */
+  app.post('/api/test/open-panel', (_req, res) => {
+    const panelUrl = `http://localhost:${PORT}/doc-viewer/`;
+    let sent = 0;
+    for (const [ws, sid] of wsSubscriptions.entries()) {
+      if (ws.readyState === 1) {
+        safeSend(ws, {
+          type: 'open_panel',
+          panelType: 'doc-viewer',
+          url: panelUrl,
+          title: '文档浏览器',
+        });
+        sent++;
+      }
+    }
+    logger.info({ sent, url: panelUrl }, '[TEST] 已广播 open_panel');
+    res.json({ ok: true, sent, url: panelUrl });
   });
 
   /** 获取版本信息 + 更新日志 */
@@ -1985,16 +2011,38 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   /** 获取插件列表 */
   app.get('/api/plugins', (_req, res) => {
-    const plugins = pluginManager.listPlugins().map((p) => ({
-      name: p.plugin.name,
-      version: p.plugin.version,
-      description: p.plugin.description,
-      author: p.plugin.author,
-      enabled: p.enabled,
-      sourcePath: p.sourcePath,
-      loadedAt: p.loadedAt,
-      error: p.error,
-    }));
+    // 根据 sourcePath 反查 installed.json 补全 id（owner/repo 形式）
+    // 这样前端卸载时能拿到正确的 pluginId，而不是用 local:<name> 兜底
+    const installed = marketService.getInstalledPlugins();
+    const installedByPath = new Map<string, { id: string; version: string; installedAt: string; source: string }>();
+    const installedByName = new Map<string, { id: string; version: string; installedAt: string; source: string }>();
+    for (const p of installed) {
+      // 用 sourcePath 末尾目录名匹配
+      const segs = p.localPath.split(/[\\/]/);
+      const dirName = segs[segs.length - 1] || '';
+      if (dirName) installedByPath.set(dirName, p);
+      if (p.name) installedByName.set(p.name, p);
+    }
+
+    const plugins = pluginManager.listPlugins().map((p) => {
+      // 用 sourcePath basename 优先匹配，再退到 plugin.name
+      const segs = (p.sourcePath || '').split(/[\\/]/);
+      const dirName = segs[segs.length - 1] || '';
+      const matched = installedByPath.get(dirName) || installedByName.get(p.plugin.name);
+      return {
+        id: matched?.id || (dirName ? `local:${p.plugin.name}` : `local:${p.plugin.name}`),
+        name: p.plugin.name,
+        version: p.plugin.version,
+        description: p.plugin.description,
+        author: p.plugin.author,
+        enabled: p.enabled,
+        sourcePath: p.sourcePath,
+        loadedAt: p.loadedAt,
+        installedAt: matched?.installedAt,
+        source: matched?.source || 'local',
+        error: p.error,
+      };
+    });
     res.json(plugins);
   });
 
@@ -2006,7 +2054,6 @@ export async function createApp(options: CreateAppOptions = {}) {
         return res.status(400).json({ error: '缺少 path 参数' });
       }
       // 安全检查：插件路径必须限定在用户插件目录内
-      const pluginsDir = join(process.cwd(), '.easyagent', 'plugins');
       const resolvedPluginPath = resolve(pluginPath);
       if (!resolvedPluginPath.startsWith(pluginsDir)) {
         return res.status(403).json({ error: '安全限制: 插件必须位于 .easyagent/plugins 目录内' });
@@ -2046,6 +2093,122 @@ export async function createApp(options: CreateAppOptions = {}) {
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
+  });
+
+  // ========== 插件市场 API (P0) ==========
+
+  const marketService = getPluginMarketService(pluginsDir);
+
+  // 安装完成后自动注册到 PluginManager
+  marketService.setPluginLoadCallback(async (pluginDir: string) => {
+    try {
+      await pluginManager.loadPlugin(pluginDir);
+      logger.info(`[Plugins] 已自动加载第三方插件: ${pluginDir}`);
+    } catch (err) {
+      logger.error(`[Plugins] 自动加载插件失败 ${pluginDir}: ${(err as Error).message}`);
+    }
+  });
+
+  // 卸载时从 PluginManager 移除
+  marketService.setPluginUnloadCallback(async (nameOrId: string) => {
+    try {
+      const actualName = await pluginManager.unloadPlugin(nameOrId);
+      logger.info(`[Plugins] 已从 PluginManager 卸载: ${nameOrId}${actualName ? ` (实际 name: ${actualName})` : ''}`);
+      return actualName;
+    } catch (err) {
+      logger.warn(`[Plugins] 从 PluginManager 卸载失败 ${nameOrId}: ${(err as Error).message}`);
+      return null;
+    }
+  });
+
+  /** 获取插件市场列表 */
+  app.get('/api/plugins/market', async (req, res) => {
+    try {
+      const forceRefresh = req.query.refresh === 'true';
+      const plugins = await marketService.listMarket(forceRefresh);
+      res.json(plugins);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  /** 强制刷新插件市场缓存（清除磁盘 + 内存缓存，下次 GET /api/plugins/market 将重新拉取） */
+  app.post('/api/plugins/market/refresh', (_req, res) => {
+    try {
+      marketService.clearMarketCache();
+      res.json({ success: true, message: '市场缓存已清除，请重新请求 /api/plugins/market?refresh=true 获取最新数据' });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  /** 获取插件详情 + README */
+  app.get('/api/plugins/market/:id', async (req, res) => {
+    try {
+      const pluginId = decodeURIComponent(req.params.id);
+      const detail = await marketService.getPluginDetail(pluginId);
+      res.json(detail);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  /** 安装插件 */
+  app.post('/api/plugins/install', async (req, res) => {
+    try {
+      const { pluginId, version } = req.body;
+      if (!pluginId) {
+        return res.status(400).json({ error: '缺少 pluginId 参数' });
+      }
+      const jobId = await marketService.installPlugin(pluginId, version);
+      res.json({ jobId });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  /** 查询安装进度 */
+  app.get('/api/plugins/install/:jobId', (req, res) => {
+    const job = marketService.getInstallProgress(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({ error: '安装任务不存在' });
+    }
+    res.json(job);
+  });
+
+  /** 卸载插件（市场安装的插件） */
+  app.post('/api/plugins/uninstall/:id', async (req, res) => {
+    try {
+      const pluginId = decodeURIComponent(req.params.id);
+      await marketService.uninstallPlugin(pluginId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  /** 检查插件更新 */
+  app.post('/api/plugins/update-check', async (_req, res) => {
+    try {
+      const updates = await marketService.checkAllUpdates();
+      // 转换为数组格式便于前端消费
+      const result = Array.from(updates.entries()).map(([id, latestVersion]) => ({
+        id,
+        latestVersion,
+        hasUpdate: latestVersion !== null,
+      }));
+      res.json({ updates: result });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  /** 安全模式 */
+  app.post('/api/plugins/safe-mode', (req, res) => {
+    // 安全模式状态由前端管理，后端提供切换端点
+    const { enabled } = req.body;
+    // 存储到内存或文件
+    res.json({ safeMode: enabled });
   });
 
   /** 获取技能列表（含激活状态和自定义技能） */
@@ -3072,6 +3235,60 @@ export async function createApp(options: CreateAppOptions = {}) {
     res.status(404).json({ error: `API端点不存在: ${_req.method} ${_req.path}` });
   });
 
+
+
+  // ========== 文档浏览器 (Doc_project) 静态文件 ==========
+  // 查找顺序（方案 D: 优先插件安装目录 > 开发调试降级）：
+  // 1. ~/.easyagent/plugins/<any-plugin>/dist/            （CI 构建产物，按已安装插件动态扫描）
+  // 2. ~/.easyagent/plugins/<any-plugin>/                  （dist.zip 解压到根目录）
+  // 3. Doc_project/dist                                  （开发调试降级）
+  // 注意：插件目录名是 GitHub 仓库名（带前缀），不能硬编码 obsidian-doc-viewer
+  const pluginsBaseDir = join(homedir(), '.easyagent', 'plugins');
+  let docViewerDistPath = '';
+  let docViewerSource = '未找到';
+  if (existsSync(pluginsBaseDir)) {
+    const { readdirSync } = await import('node:fs');
+    for (const name of readdirSync(pluginsBaseDir)) {
+      // 跳过元数据目录
+      if (name === '.cache' || name.startsWith('.')) continue;
+      const dir = join(pluginsBaseDir, name);
+      const distPath = join(dir, 'dist');
+      if (existsSync(join(distPath, 'index.html'))) {
+        docViewerDistPath = distPath;
+        docViewerSource = `已安装插件: ${name}`;
+        break;
+      }
+      if (existsSync(join(dir, 'index.html'))) {
+        docViewerDistPath = dir;
+        docViewerSource = `已安装插件(平铺): ${name}`;
+        break;
+      }
+    }
+  }
+  if (!docViewerDistPath) {
+    const fallback = resolve(__dirname, '..', '..', '..', '..', 'Doc_project', 'dist', 'index.html');
+    if (existsSync(fallback)) {
+      docViewerDistPath = resolve(__dirname, '..', '..', '..', '..', 'Doc_project', 'dist');
+      docViewerSource = 'Doc_project 开发降级';
+    }
+  }
+
+  if (docViewerDistPath) {
+    app.use('/doc-viewer', express.static(docViewerDistPath));
+    app.get('/doc-viewer/*', (_req, res) => {
+      const indexPath = join(docViewerDistPath, 'index.html');
+      if (existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send('Doc Viewer Not Found');
+      }
+    });
+    logger.info({ path: docViewerDistPath, source: docViewerSource }, '文档浏览器静态文件已托管');
+  } else {
+    logger.warn('文档浏览器 dist/ 未找到，请安装 obsidian-doc-viewer 插件（方案 D）或确保 D:\\Work_Area\\AI\\Doc_project\\dist 存在');
+  }
+
+
   if (existsSync(webDistPath)) {
     app.use(express.static(webDistPath));
     // SPA fallback: 非 API 路径返回 index.html
@@ -3153,6 +3370,33 @@ export async function createApp(options: CreateAppOptions = {}) {
       safeSend(ws, payload);
     }
   }
+
+  /**
+   * 广播插件安装进度到所有 WebSocket 客户端
+   *
+   * @param job - 安装任务信息
+   */
+  function broadcastPluginInstallProgress(job: InstallJob): void {
+    const payload = JSON.stringify({
+      type: 'plugin:install:progress',
+      jobId: job.jobId,
+      pluginId: job.pluginId,
+      progress: job.progress,
+      status: job.status,
+      message: job.error || undefined,
+      timestamp: Date.now(),
+    });
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(payload);
+      }
+    });
+  }
+
+  // 注册插件安装进度回调
+  marketService.onProgress((job) => {
+    broadcastPluginInstallProgress(job);
+  });
 
   wss.on('connection', (ws: WebSocket, req) => {
     // WebSocket 基本认证：通过 query token 或 header 进行简单校验
@@ -3239,13 +3483,26 @@ export async function createApp(options: CreateAppOptions = {}) {
                   break;
                 }
 
-                case 'tool_end': {
+                case 'tool_result': {
+                  const toolResultData = event.data as { toolCallId?: string; name?: string; output?: string } | undefined;
                   safeSend(ws, {
                     type: 'tool_result',
-                    toolCallId: event.toolCallId,
-                    output: event.output || '',
+                    toolCallId: toolResultData?.toolCallId,
+                    output: toolResultData?.output || '',
                     error: event.error || null,
                   });
+
+                  // 文档浏览器工具执行成功后，通知前端打开右侧面板
+                  if (toolResultData?.name === 'open-doc-viewer' && !event.error) {
+                    const panelUrl = `http://localhost:${PORT}/doc-viewer/`;
+                    safeSend(ws, {
+                      type: 'open_panel',
+                      panelType: 'doc-viewer',
+                      url: panelUrl,
+                      title: '文档浏览器',
+                    });
+                    logger.info({ url: panelUrl }, '通知前端打开文档浏览器面板');
+                  }
                   break;
                 }
 

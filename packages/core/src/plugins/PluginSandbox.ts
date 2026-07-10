@@ -37,6 +37,7 @@
 import { Worker } from 'worker_threads';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 import { logger } from '../utils/logger.js';
 import type { PluginManifest } from './PluginManifest.js';
 import type { PluginPermissions } from './PluginPermission.js';
@@ -120,9 +121,19 @@ export class PluginSandbox {
       ...config,
     };
     // 计算 Worker 入口文件的绝对路径
+    // 约定：PluginWorkerEntry.js 必须存在于 sandbox.js **同目录**的 dist/ 顶层。
+    // 原因：tsup `splitting:false` 把 PluginSandbox 内联到 dist/index.js，
+    // 此处 `__dirname` = `<core>/dist/`，因此输出文件是 `dist/PluginWorkerEntry.js`。
+    // 测试环境下 vitest 直接跑 src/，__dirname 变为 `src/plugins/`，此时回退到 dist。
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    this.workerEntryPath = resolve(__dirname, 'PluginWorkerEntry.js');
+    const siblingPath = resolve(__dirname, 'PluginWorkerEntry.js');
+    if (existsSync(siblingPath)) {
+      this.workerEntryPath = siblingPath;
+    } else {
+      // 测试环境回退：从 src/plugins/ 往上找 packages/core/dist/PluginWorkerEntry.js
+      this.workerEntryPath = resolve(__dirname, '..', '..', 'dist', 'PluginWorkerEntry.js');
+    }
   }
 
   // ===================== 生命周期 =====================
@@ -185,10 +196,16 @@ export class PluginSandbox {
         }
       });
 
-      // 发送 init 消息
+      // 发送 init 消息（同时把 manifest 传给 worker，用于函数式 plugin 的元信息回填）
       const entryPath = resolve(this.config.pluginDir, this.config.manifest.main);
       const result = (await this.sendRpc('init', {
         pluginPath: entryPath,
+        manifest: {
+          name: this.config.manifest.name,
+          version: this.config.manifest.version,
+          description: this.config.manifest.description,
+          author: this.config.manifest.author,
+        },
       })) as SandboxInitResult;
 
       this.pluginInfo = result;
@@ -321,11 +338,18 @@ export class PluginSandbox {
       group: def.group as string | undefined,
       async execute(params, context) {
         logger.info({ tool: def.name }, '沙箱代理执行工具');
-        return sandbox.sendRpc('executeTool', {
+        const raw = (await sandbox.sendRpc('executeTool', {
           toolName: def.name,
           params,
           context,
-        }) as Promise<ToolResult>;
+        })) as unknown;
+
+        // 兜底规范化：将插件返回的任意形态强制转成 ToolResult。
+        // 原因：ITool.execute 契约要求返回 { success, content, error }，
+        // 但部分旧插件/示例直接 return string 或 undefined。
+        // 不规范化会导致 actNode 误判为"工具执行失败: 未知错误"，
+        // 进而让 LLM 进入无意义的反思循环。
+        return normalizePluginResult(def.name as string, raw);
       },
     };
   }
@@ -338,4 +362,67 @@ export class PluginSandbox {
  */
 export function createSandbox(config: SandboxConfig): PluginSandbox {
   return new PluginSandbox(config);
+}
+
+// ===================== 工具函数 =====================
+
+/**
+ * 将插件工具的返回值规范化为 ToolResult
+ *
+ * 背景：ITool.execute 契约要求返回 { success: boolean; content: string; error?: string }，
+ * 但部分旧插件/示例直接 return string 或 return undefined/null。
+ * 不规范化会触发以下连锁错误：
+ *   1. actNode.ts 看到 result.success === undefined（falsy）→ 走"失败"分支
+ *   2. 显示 "工具执行失败: 未知错误"（result.error 也没有）
+ *   3. LLM 反思时看到"工具不可用"→ 走无意义的 think→act→observe 循环
+ *
+ * @param toolName - 工具名（仅用于日志）
+ * @param raw - 插件实际返回值
+ * @returns 标准 ToolResult
+ */
+function normalizePluginResult(toolName: string, raw: unknown): ToolResult {
+  // 标准形态：完整 ToolResult
+  if (raw && typeof raw === 'object' && typeof (raw as ToolResult).success === 'boolean') {
+    const r = raw as ToolResult;
+    return {
+      success: r.success,
+      content: typeof r.content === 'string' ? r.content : (r.content == null ? '' : String(r.content)),
+      error: r.error,
+      metadata: r.metadata,
+    };
+  }
+
+  // 半结构形态：{ content: string } 没有 success 字段
+  if (raw && typeof raw === 'object' && 'content' in (raw as Record<string, unknown>)) {
+    const r = raw as { content: unknown; error?: unknown };
+    return {
+      success: true,
+      content: typeof r.content === 'string' ? r.content : String(r.content ?? ''),
+      error: typeof r.error === 'string' ? r.error : undefined,
+    };
+  }
+
+  // 字符串形态：旧插件/示例直接 return 字符串
+  if (typeof raw === 'string') {
+    return {
+      success: true,
+      content: raw,
+    };
+  }
+
+  // null/undefined 或其它异常形态：当作空成功
+  if (raw == null) {
+    logger.warn({ tool: toolName, raw: 'null/undefined' }, '插件返回空值，已规范化为空成功结果');
+    return {
+      success: true,
+      content: '',
+    };
+  }
+
+  // 其它（number/boolean/object 等无法识别的形态）：序列化为字符串
+  logger.warn({ tool: toolName, rawType: typeof raw }, '插件返回非标准形态，已强制序列化为字符串');
+  return {
+    success: true,
+    content: typeof raw === 'string' ? raw : JSON.stringify(raw),
+  };
 }

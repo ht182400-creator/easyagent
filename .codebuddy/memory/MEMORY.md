@@ -5,9 +5,9 @@
 ## 目录
 
 - [项目概述](#项目概述) | [编码规范](#编码规范) | [核心规则](#核心规则)
-- [测试数据同步约束](#-测试数据同步约束v10-2026-06-25) | [日志优先排查原则](#-日志优先排查原则v10-2026-06-26)
+- [修复汇总集中记录规则](#-修复汇总集中记录规则v10-2026-07-02) | [测试数据同步约束](#-测试数据同步约束v10-2026-06-25) | [日志优先排查原则](#-日志优先排查原则v10-2026-06-26)
 - [调试日志强制规范](#-调试日志强制规范v10-2026-06-26) | [Memory 记录格式](#memory-记录格式约定v11-2026-06-25-强化)
-- [关键陷阱清单 (40条)](#关键陷阱清单) | [Web↔Desktop 代码隔离](#-web--desktop-代码隔离约束)
+- [关键陷阱清单 (47条)](#关键陷阱清单) | [Web↔Desktop 代码隔离](#-web--desktop-代码隔离约束)
 - [标准化打包流水线](#标准化打包流水线) | [Server + Web 启动](#server--web-启动)
 - [测试命令](#测试命令) | [SWE-bench](#swe-bench-评测基准-p0-2-已完成) | [Node.js 版本限制](#nodejs-版本限制-p0-1-已完成)
 - [管线模块 v2.1 动态化架构](#管线模块-v21-动态化架构-2026-06-23) | [管线数据完整更新工作流](#-管线数据完整更新工作流-v20-2026-06-26)
@@ -17,7 +17,7 @@
 
 ## 项目概述
 - **项目**: EasyAgent - 集成中国主流大模型的开源 AI 编程助手
-- **版本**: v0.6.24 (1578 用例, 1503+75, 99.9% 通过率, 32/32 模块 + 6阶段, 综合评分 100, CI 9/9 jobs ✅)
+- **版本**: v0.6.25 (方案 D CI/CD 落地, 插件市场自动构建)
 - **优化完成度**: 17/18 (94%) — P0+P1+P2+P3 全部完成，仅 #16 Vite Library Mode 延期
 - **统一数据源**: `docs/pipeline/lib/module-registry.mjs` → `scripts/unified-sync.mjs` → `test-case-mapping.json` + `pipeline-data.json`(5.7KB) + `dashboard-data.json`(独立文件) → API → 前端
 - **管线模块添加**: 见 `docs/43_管线模块添加标准流程.md`（v1.1 补丁: 可操作性 60%→90%）
@@ -128,6 +128,26 @@ node --test docs/pipeline/__tests__/pipeline-config.test.mjs
 - 每日日志 (`YYYY-MM-DD.md`) 是追加式日志，**严禁覆盖或删减已有内容**
 - MEMORY.md 可就地更新保持精简
 - 反例：2026-06-19 事故，使用 `write_to_file` 覆盖 575 行日志为 25 行摘要
+
+### 🔴 修复汇总集中记录规则（v1.0, 2026-07-02）
+
+**强制规则**：每次完成 bug 修复、架构决策、问题排查后，**必须**将修复摘要追加到 `docs/修复汇总.md`：
+
+| 步骤 | 操作 |
+|------|------|
+| 1 | 完成修复相关工作（代码改动 + 测试验证 + 文档更新） |
+| 2 | 将修复摘要按 `## YYYY-MM-DD HH:MM — 简短标题` 格式追加到 `docs/修复汇总.md` |
+| 3 | 摘要需包含：现象、根因（表格或列表）、修复（表格或列表）、关联（MEMORY 陷阱编号/文档引用） |
+| 4 | 从新到旧排列（最新修复在最上面，紧接文件标题之后） |
+
+**文件位置**：`docs/修复汇总.md`（单一文件，持续追加）
+
+**与 MEMORY.md 的关系**：
+- `MEMORY.md` 的关键陷阱清单：**简表**（一行一条，便于快速扫描）
+- `docs/修复汇总.md`：**详表**（带日期时间标题，完整上下文）
+- 两者互补——MEMORY 查"有哪些陷阱"，修复汇总查"某天修了什么/how"
+
+**反例**：❌ 修复完只在 daily memory 记录 → 后续查找需要翻多个日期文件 → 信息碎片化。
 
 ### 🔴 日志优先排查原则（v1.0, 2026-06-26）
 
@@ -279,6 +299,19 @@ EASYAGENT_DEBUG=1 ./build.sh
 | 40 | 🖥️ | **LangGraph checkpoint 序列化导致 BaseMessage 丢失原型方法** | `state.messages[0]?.getType is not a function` — SqliteCheckpointer 用 JSON.stringify/parse 持久化 State，messages 数组中的 AIMessage/HumanMessage 等实例转为普通 JS 对象，丢失 getType() 等 prototype 方法。同样影响 `instanceof AIMessage` 判断（checkpoint 还原后为 false）、`tool_calls` 属性存取方式 | 所有消息处理代码统一使用 `getMessageType(msg)` 工具函数（优先调 getType()，否则读 .type 属性，兜底 constructor.name）；`toChatMessages()` 用 hasToolCalls/getToolCallId 替代原始属性检查；参考 `packages/langgraph/src/graph/messageUtils.ts` |
 | 41 | 🔀 | **LangGraph 普通聊天误暴露 benchmark 工具导致死循环** | 普通问候却反复调用 benchmark_load/run/report，最终 `Recursion limit of 25 reached`。根因：系统提示词未约束工具使用；AgentFactory 把 69 个工具全量下发（含 benchmark_*）；observeNode 失败后无条件继续；recursionLimit 与 maxTurns 单位不一致 | 系统提示词明确"普通聊天不调用工具"；AgentFactory 过滤 `benchmark_*`；AgentState 增加 `consecutiveFailures`，actNode 统计失败，observeNode 超过 3 次停止；`streamEvents` 传入 `recursionLimit = maxTurns * 3 + 10` |
 | 42 | 🔀 | **小模型上下文被工具 schema 污染导致语气偏移 / 误输出 JSON 解释** | qwen2.5:7b 看到 66 个工具 JSON schema（占上下文 19-25%）后，问候回复从自然对话变为"您可以告诉我需要使用哪个工具或功能"；写 C 代码时附带"在 JSON 格式中请求这个函数可能不太合适"的解释。根因：7B 模型指令跟随弱，上下文中的结构化信息（JSON schema）被模型关联到不相关输出 | 按模型规模分级暴露工具（7B → 15-20 个核心工具；70B+ → 完整 66 个）；精简工具 description；系统提示词补丁"不要在普通对话中提及 JSON 或工具" |
+| 43 | 🌐 | **插件市场页面安装进度卡"准备中"（WebSocket 未建立）** | 后端安装流程全部成功（日志"安装完成"），但前端 `/plugins` 页面按钮永远显示"准备中…"。根因：WebSocket 在 chatStore 中懒加载（仅进入对话页面时建立），/plugins 页面不会触发连接 → 后端广播的 `plugin:install:progress` 事件无人接收 → `installProgress` Map 永远 pending | HTTP 轮询兜底（`pollInstallJob` 每 1s 轮询 `/api/plugins/install/:jobId`，最多 60s）；终态（done/error）自动清理 progress 条目避免 UI 锁定；done 时自动追加到 installed 列表 |
+| 44 | 🌐 | **"已安装插件"列表含某插件，但"社区插件市场"仍显示"使用"按钮** | `fetchInstalled` 把 id 改写为 `local:<name>` 形式以兼容本地插件，而 `fetchMarketplace` 注入"已安装"状态时仅按 `installedIds.has(p.id)` 严格匹配。marketplace 返回的 id 是 `obsidian-doc-viewer`，与 `local:obsidian-doc-viewer` 永远不等 → 按钮全部错误显示"使用" | `fetchMarketplace` 改用 `installedNames` Set 同时按 id 和 name 匹配（兼容两种 id 形式） |
+| 45 | 🔀 | **`fetch failed` 与 `Failed to fetch` 是两种不同的错误字符串** | Chrome/Node.js 版本升级后错误信息变更：旧版抛 `'Failed to fetch'`，Chrome 100+ / Node 22+ 抛 `'fetch failed'`（更短）。`request.ts:125` 仅匹配旧版字符串 → 新版环境重试逻辑永不生效 → 第一次失败就直接显示错误 | 错误匹配兼容两种字符串：`error.message === 'Failed to fetch' \|\| error.message === 'fetch failed'` |
+| 46 | 🔀 | **Ollama 未启动导致 AI 回复显示 "fetch failed" 且原因不明** | 用户发消息后 AI 回复"错误: fetch failed"，耗时很短（~500ms）。根因：默认 provider 是 Ollama（`localhost:11434`），服务未启动 → Node.js fetch 抛 `ECONNREFUSED` → 错误信息透传到前端。前端仅显示通用错误，不区分是后端宕机还是上游 LLM 不可达 | 1) 前端区分后端宕机（HTTP 503/ECONNREFUSED）vs 上游 LLM 不可达（fetch failed 来自适配器层）；2) 后端 adapter 层 catch 时判断 URL 端口并给出友好提示（如"Ollama 服务未启动，请运行 ollama serve"）；3) `/api/config` 可快速诊断当前 provider 状态 |
+| 47 | 🔀 | **插件 `execute` 返回 string 而非 ToolResult → "工具执行失败: 未知错误" → LLM 无意义反思循环** | 插件模板和示例都教 `return "string"`，但 `ITool.execute` 契约要求 `Promise<ToolResult>`（`{success, content, error}`）。PluginSandbox.createProxyTool 直接 `as Promise<ToolResult>` 透传无规范化 → actNode 看到 `result.success` 为 `undefined`（falsy）→ 走 line 189 失败分支 → `result.error \|\| '未知错误'` 兜底 → LLM 收到"工具失败"反馈 → 进入 144s 无意义 think→act→observe 循环，最终给一段 282 字"反思"回复 | **四层防御**：(1) 修复示例 plugin.js/plugin-template 改用 `{success, content}` 返回；(2) `PluginSandbox.normalizePluginResult()` 兜底 4 种形态（标准/半结构/字符串/null）强制规范为 ToolResult；(3) `actNode.executeSingleTool` 检测 `result.success` 缺失时按成功处理 + 附加"系统提示"；(4) 错误前缀改为可识别形式（如 `[系统提示] 工具 X 未返回标准 ToolResult 格式`）便于 LLM 区分 |
+| 48 | 🔀 | **LLM 非流式调用 → thinkNode 重复触发同一工具 → 160s 死循环** | 小模型（如 qwen2.5:7b）的非流式 chat() 不触发 `on_chat_model_stream` → `streamEvents` 无 response 事件 → `hasResponseContent=false`。若 LLM 反复调用同一工具同一参数（如 `open-doc-viewer("./docs")`），每轮 thinkNode 耗时 ~70s，浪费 Token 和时间 | (1) thinkNode 比较当前 tool_calls 与上轮 AI 消息 → 连续相同 ≥ `MAX_IDENTICAL_TOOL_CALLS`(2) 时 `shouldContinue=false`；(2) AgentState 新增 `consecutiveIdenticalToolCalls` 计数；(3) agentAdapter runStream 增加 `chunkCount=0` 兜底文本注入 |
+| 49 | 🌐 | **tool_use WS 事件早于 assistant 占位消息 → addToolCall 静默丢失** | ChatView 通过 Electron IPC 发消息时不创建 assistant 占位消息 → 首个 `tool_use` 到达时 `addToolCall` 的 msgId 无对应记录 → `map()` 找不到目标 → 工具卡片永久丢失。ChatInput 已创建占位消息，但 ChatView 路径仍暴露此漏洞 | `tool_use` handler 中若 `lastMsg?.role !== 'assistant'`，先自动创建 `isStreaming: true` 的占位 assistant 消息，再挂载工具卡片 |
+| 50 | 🌐 | **tool_call/tool_result toolCallId 不匹配 → 工具结果永远丢** | Agent.ts 映射 on_tool_start/on_tool_end 时未传 toolCallId，agentAdapter 又用 `Date.now()` 伪造了**两个不同的 ID**（`lg_tool_${now}` vs `lg_tool_result_${Date.now()}`）→ 前端 chatStore 第 431 行 `tc.toolCallId === data.toolCallId` 永远不匹配 → 工具卡片永远停留在 running，所有插件的 stdout/error 用户看不到 | Agent.ts 提取 LangChain 的 `event.run_id` 作为 toolCallId 透传，agentAdapter 从 `data.toolCallId` 取 ID 不再伪造 |
+| 51 | 🌐 | **Doc_project UI 集成：右侧 iframe 面板 + WS open_panel 消息** | Doc_project 是独立 Vite React 项目，通过 EasyAgent Server 静态托管 `/doc-viewer/`（`base: '/doc-viewer/'`），前端 Layout.tsx 右侧可关闭 iframe 面板。Server 检测 `open-doc-viewer` 工具成功 → WS `{ type:'open_panel', url:'/doc-viewer/' }` → chatStore 转发 uiStore.openRightPanel() → Layout 渲染 iframe。关键注意：`X-Frame-Options` 需设为 `SAMEORIGIN`（否则同源 iframe 被拒），Doc_project vite 需设置 `base: '/doc-viewer/'`（否则 build 产物 assets 路径错误） |
+| 52 | 🌐 | **双缓存导致 install 装到旧版本** | 插件发新版后安装时命中两层缓存：(1) `market.json` 磁盘缓存 TTL 1小时，(2) GitHubClient 内存 Map 缓存 TTL 1小时。`listMarket(forceRefresh=true)` 只跳过磁盘缓存，内层 `getLatestRelease()` 仍命中内存缓存。根因在于两个缓存独立且 `getLatestRelease` 无 `skipCache` 参数 | ✅ 已修复：见 [双缓存问题彻底修复](#双缓存问题彻底修复)：(1) 新增 `RELEASE_CACHE_TTL=5min`；(2) `getLatestRelease/getManifest` + `skipCache` 参数；(3) `listMarket(forceRefresh=true)` → `clearCache()` + `skipCache=true` 层层穿透；(4) `executeInstall` 安装时强制 `skipCache`；(5) 新增 `POST /api/plugins/market/refresh` 端点；(6) `PluginMarketService.clearMarketCache()` 公开方法清除磁盘+内存双缓存 |
+
+
+
 
 
 
@@ -787,3 +820,47 @@ node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 - 架构设计: `docs/02_架构设计文档_ADD.md` (v5.4)
 - 需求文档: `docs/01_需求规格说明书_PRD.md` (v5.3)
 - 测试文档: `docs/03_测试案例文档.md` (1273 tests, 覆盖率门禁)
+- 插件系统规划: `docs/58_EasyAgent插件系统规划与GitHub插件市场设计.md` (v1.0, 插件市场+Doc_project)
+- 插件模板: `packages/plugin-template/` (manifest.json + plugin.js 最小示例)
+- Doc Viewer 插件: `packages/easyagent-plugin-obsidian-doc-viewer/` (MVP 包装)
+- 独立文档浏览器: `D:\Work_Area\AI\Doc_project\` (React+Vite+D3+FlexSearch Obsidian-like 工具)
+- Doc_project 已支持: File System Access API 打开本地目录、资源管理器风格 MD 目录树、D3 关系图谱(全局/邻居模式)、节点点击预览、全文搜索(标题+内容高亮)、设置面板
+- Doc_project 限制: 必须在 localhost/HTTPS 下运行，需要用户主动授权目录访问
+- 插件发现 Topic: GitHub 仓库需打 `easyagent-plugin` topic
+- 插件包格式: GitHub Release zipball + 根目录 `manifest.json`
+- 插件隔离: 复用 `packages/core/src/plugins/PluginSandbox.ts` Worker Threads 沙箱
+- Doc_project 技术栈: React 18 + Vite + Tailwind + Zustand + D3.js + FlexSearch
+
+## 🧩 修复汇总 (2026-07-02)
+- **`docs/修复汇总.md`**: 所有 bug 修复/架构决策/问题排查的集中记录，按日期时间标题从新到旧排列
+- 与 MEMORY.md 关键陷阱清单互补：MEMORY 是简表（一行一条），修复汇总是详表（完整上下文）
+
+
+**支持两种** default export 形式（`PluginWorkerEntry.ts:handleInit`）：
+
+1. **对象式（官方协议，推荐）**：
+   ```js
+   export default {
+     name, version, description, author,
+     async register(context) { context.registerTool({...}); },
+     getTools(), getSkills(), getHooks(),
+   };
+   ```
+
+2. **函数式（兼容入口）**：
+   ```js
+   export default function (context) {
+     context.registerTool({...});
+   }
+   ```
+   元信息从 `manifest.json` 读，函数本身只负责注册工具/技能/钩子。
+
+**Worker 内部统一 sandboxContext**：`registerTool` / `registerTools` / `registerSkill` / `registerHook` / `getConfig`。
+
+**PluginSandbox 路径解析陷阱**（2026-07-01）：
+- `PluginSandbox.ts:125` `__dirname + 'PluginWorkerEntry.js'` 在 **生产**（`dist/index.js` 内联）= `<core>/dist/PluginWorkerEntry.js` ✅
+- 在 **vitest 跑 src** 时 `__dirname` = `src/plugins/`，没有同目录 `PluginWorkerEntry.js`
+- 历史残留 `src/plugins/PluginWorkerEntry.js`（6.4KB, 6/25）会被错误地加载，掩盖新代码
+- **修复**：sibling 优先，不存在时回退 `<core>/dist/PluginWorkerEntry.js`；删除 src 下历史残留
+- **tsup 配置**：`core/tsup.config.ts` 用对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'` 独立输出 `dist/PluginWorkerEntry.js`（tsup `splitting:false` 会内联所有 import，路径敏感的 worker 入口必须独立打包）；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）
+

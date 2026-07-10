@@ -30,6 +30,14 @@ interface UIState {
   setActiveTab: (tabId: string) => void;
   updateTabTitle: (tabId: string, title: string) => void;
 
+  /** 右侧面板 (文档浏览器等) */
+  rightPanelVisible: boolean;
+  rightPanelUrl: string;
+  rightPanelTitle: string;
+  openRightPanel: (url: string, title?: string) => void;
+  closeRightPanel: () => void;
+  toggleRightPanel: () => void;
+
   /** Toast 通知 */
   toasts: Toast[];
   addToast: (toast: Omit<Toast, 'id'>) => void;
@@ -96,6 +104,14 @@ export const useUIStore = create<UIState>((set, get) => ({
     set((s) => ({
       tabs: s.tabs.map((t) => (t.id === tabId ? { ...t, title } : t)),
     })),
+
+  /** 右侧面板管理 */
+  rightPanelVisible: false,
+  rightPanelUrl: '',
+  rightPanelTitle: '',
+  openRightPanel: (url, title = '') => set({ rightPanelVisible: true, rightPanelUrl: url, rightPanelTitle: title }),
+  closeRightPanel: () => set({ rightPanelVisible: false }),
+  toggleRightPanel: () => set((s) => ({ rightPanelVisible: !s.rightPanelVisible })),
 
   toasts: [],
   addToast: (toast) => {

@@ -7,14 +7,35 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
-## [0.6.23] - 2026-07-01
+## [0.6.25] - 2026-07-02
+
+### Added
+- feat(plugins): 方案 D CI/CD 落地 — 插件 GitHub Actions 自动构建 + Release Asset 分发
+  - 新增 `.github/workflows/build.yml` (npm ci + softprops/action-gh-release)
+  - `PluginMarketService.ts` 支持下载 Release Asset `plugin.zip`
+  - Server 动态扫描 `~/.easyagent/plugins/<plugin>/dist/` 替代硬编码路径
+  - `obsidian-doc-viewer` 插件仓库 v1.0.6 发布成功 (plugin.zip 1.18 MB)
 
 ### Fixed
-- fix(lint): 修复剩余10个errors (prefer-const, no-unsafe-function-type, no-require-imports, no-misleading-character-class) + 51号文档 (ht182400-creator)
-- fix(lint): 修复12个测试文件中51处 no-empty 错误（catch块添加注释） (ht182400-creator)
-- fix(ci): package.json eslint 版本号与 pnpm-lock.yaml 对齐 (^9.15.0→^9.39.4, ^8.15.0→^8.62.0) (ht182400-creator)
+- fix(plugins): open_panel 触发链 Bug 修复
+  - Server switch case: `'tool_end'` → `'tool_result'`
+  - toolName 字段路径: `event.toolName` → `event.data.name`
+- fix(plugins): Doc_project 架构重构为独立插件仓库 (`easyagent-plugin-obsidian-doc-viewer`)
+- fix(plugins): PluginSandbox `normalizePluginResult()` 规范化执行结果
+- fix(plugins): **方案 D 三连 Bug 修复** (v1.0.5/v1.0.6)
+  - `extractZip` 把平铺 plugin.zip 误判为 GitHub zipball → 只拷贝 dist/ 子目录 → manifest.json 缺失
+  - `docViewerDistPath` 硬编码 `obsidian-doc-viewer` 与实际 `easyagent-plugin-obsidian-doc-viewer` 不匹配
+  - vite `base: '/'` 在 `/doc-viewer/` 子路径下导致资源 404
+- fix(plugins): CI 打包从 `dist.zip` 改为 `plugin.zip` (三件套: manifest.json + plugin.js + dist/)
 
-## [0.6.24] - 2026-06-29
+### Changed
+- docs(52_项目端口统一规划): v2.0→**v2.2**，新增 §十"方案 D"章节 + §十一变更日志 + §十二里程碑记录
+- `packages/easyagent-plugin-obsidian-doc-viewer/package.json`: version 0.1.0 → 1.0.6
+- **CI/CD 关键教训**: pnpm 在 GitHub Actions 中存在兼容性问题，改用 `npm ci` + `package-lock.json`
+- **CI/CD 关键教训**: `extractZip` 必须区分 zipball (有包装目录) vs 平铺 (用 manifest.json 标记) 两种模式
+- **CI/CD 关键教训**: vite base 必须与 Server 静态托管路径一致 (`/doc-viewer/`)
+
+## [0.6.24] - 2026-07-01
 
 ### Added
 - feat(langgraph): Phase D 完成 — WebSocket 实时节点高亮广播 (server + store)
