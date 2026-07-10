@@ -23,6 +23,11 @@ desktop/release/
 .easyagent/knowledge/
 # 临时文件
 .codebuddy/temp/
+# 根目录调试产物目录（脚本/日志/解压包，防污染 git 状态 #14）
+temp/
+# Obsidian 第三方插件与配置（非本仓源码）
+.obsidian/
+**/.obsidian/
 # 对话历史日志（可能含敏感信息，仅本地保留）
 history_*.md
 docs/history_*.md
