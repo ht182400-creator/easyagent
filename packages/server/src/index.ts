@@ -522,38 +522,67 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   // Express应用
   const app = express();
-  // CORS 配置：允许 Web 开发服务器 + Electron Desktop (file:// → Origin: null)
-  // 关键：Desktop 版从 file:// 加载前端 → 渲染进程 fetch 的 Origin 为 "null" 字符串
-  // 必须显式让 cors 中间件反射请求 Origin 到 Access-Control-Allow-Origin
+
+  const corsEnv = process.env.CORS_ORIGIN;
+  const allowedCorsOrigins = corsEnv
+    ? corsEnv.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  // 同源预判定中间件（保留 cors 包做真正的头设置；此处只判定“是否同源”）
+  // 浏览器加载同源子资源（<script>/<link>/同站 fetch）会带 Origin 头；
+  // 服务器若在 NAT 后（网卡是私网 IP，对外是公网 IP），无法靠网卡地址判断同源，
+  // 故比较 Origin 的 host:port 与本次请求的 Host 头是否一致：
+  //   · 一致 → 视为同源，摘除 Origin，让后续 cors 按“无 origin（同源导航）”放行；
+  //   · 不一致 → 保留 Origin，交给 cors 按 CORS_ORIGIN 白名单处理（跨域前端场景）。
+  // 安全不变：仅“站点自身 + 白名单跨域源 + file:// 桌面版”可被放行；
+  // 第三方恶意站点（Origin 与 Host 不符且不在白名单）仍会被 cors 拒绝。
+  app.use((req, _res, next) => {
+    const origin = req.headers.origin as string | undefined;
+    const host = (req.headers.host || '') as string;
+    if (origin) {
+      try {
+        const o = new URL(origin);
+        if (o.host === host) {
+          // 同源：等价于浏览器自身导航，cors 按无 origin 处理即可，无需反射具体源
+          delete (req.headers as Record<string, string | undefined>).origin;
+        }
+      } catch {
+        // Origin 非法，保留交 cors 拒绝
+      }
+    }
+    next();
+  });
+
+  // CORS 配置（cors 包，标准安全控件，控制“哪些源可读取本 API / 携带凭据”）
+  // 放行策略：无 Origin（同源导航） / file://（Electron Desktop）
+  // / 本地开发（localhost/127.0.0.1） / CORS_ORIGIN 显式白名单（独立前端域名）
   app.use(
     cors({
       origin: (
         origin: string | undefined,
         callback: (err: Error | null, allow?: boolean) => void,
       ) => {
-        const corsEnv = process.env.CORS_ORIGIN;
-        if (corsEnv) {
-          // 显式设置 CORS_ORIGIN 时精确匹配
-          if (origin === corsEnv) {
-            callback(null, true);
-          } else {
-            console.log(`[CORS] 拒绝 origin="${origin}", 要求="${corsEnv}"`);
-            callback(new Error('Not allowed by CORS'));
-          }
+        if (!origin || origin === 'null' || origin.startsWith('file://')) {
+          callback(null, true); // 同源导航 / Electron Desktop (file://)
           return;
         }
-        // 默认：允许 file://、本地开发服务器、桌面版自建
-        if (!origin || origin === 'null') {
-          callback(null, true); // Electron Desktop (file://)
-        } else if (origin.startsWith('http://127.0.0.1') || origin.startsWith('http://localhost')) {
-          callback(null, true); // Vite dev server / 桌面版自建
-        } else {
-          console.log(`[CORS] 拒绝未知 origin="${origin}"`);
-          callback(new Error('Not allowed by CORS'));
+        if (allowedCorsOrigins.length > 0 && allowedCorsOrigins.includes(origin)) {
+          callback(null, true); // 显式跨域白名单（独立前端域名访问）
+          return;
         }
+        if (
+          origin.startsWith('http://localhost') ||
+          origin.startsWith('http://127.0.0.1') ||
+          origin.startsWith('http://[::1]')
+        ) {
+          callback(null, true); // 本地开发服务器
+          return;
+        }
+        console.log(`[CORS] 拒绝未知 origin="${origin}"`);
+        callback(new Error('Not allowed by CORS'));
       },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     }),
   );
   app.use(express.json({ limit: '10mb' }));

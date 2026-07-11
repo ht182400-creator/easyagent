@@ -373,6 +373,14 @@ start-backend.bat   # 后端 localhost:3456 (可见窗口)
 start-frontend.bat  # Web前端 localhost:5173 (可见窗口)
 ```
 
+## 远程服务器部署运维（82.156.71.231，重要跨会话事实）
+
+- **服务器位置/账号**：腾讯云轻量应用服务器，公网 `82.156.71.231:3456`（已在轻量防火墙放行 TCP 3456）；项目根 `C:\easyagent`；服务 `node packages/server/dist/index.js`。服务器在 **NAT 后**：本机网卡是私网 IP（如 `172.16.48.13`），对外公网 IP `82.156.71.231` 在路由器上、不绑定本机网卡。
+- **助手可直登**：工作站自带 OpenSSH（`C:\Windows\System32\OpenSSH\ssh.exe`/`scp.exe`），可用 `SSH_ASKPASS`+`SSH_ASKPASS_REQUIRE=force` 非交互登录 `Administrator@82.156.71.231`。服务器默认 shell 是 **PowerShell**，远程命令用 `;` 分隔，不能用 cmd 的 `&`。
+- **致命坑：CORS 致静态资源 500（已修复）**：浏览器加载同源 `<script>`/`<link>` 子资源会带 `Origin: http://82.156.71.231:3456` 头；原 `cors` 中间件默认只放行 `localhost/127.0.0.1/file://`，**公网 IP 不在白名单 → `Error: Not allowed by CORS` → Express 错误页 500（text/html, CSP default-src none, 1361B）**。根页面 `/` 是顶层导航不带 Origin → 200（故"首页能开、资源 500"）。**NAT 下不能用 `os.networkInterfaces()` 判断同源**（取不到公网 IP）。**正确修复**（`packages/server/src/index.ts`）：**保留 `cors` 包**（它是安全控件，不能删），仅前置一个同源预判定中间件——比较 `Origin` 的 `host:port` 与请求 `Host` 头一致即摘除 `Origin` 让 `cors` 按同源放行（兼容 NAT/公网/局域网/域名），跨域前端走 `CORS_ORIGIN` 环境变量白名单（逗号分隔）。**教训**：CORS 整包移除是过度改动，根因只是白名单配置错。复现命令：`curl -H "Origin: http://82.156.71.231:3456" http://82.156.71.231:3456/assets/xxx.js` 应返回 200 且含 `Access-Control-Allow-Origin`。详见 `docs/60_服务器部署指南.md` §4.4。
+- **进程持久化**：SSH 会话里 `Start-Process`/`start /min` 启动的 node 会随 SSH 注销被一起杀掉。**必须**用 `schtasks /create /tn ea_server /tr C:\easyagent\start.bat /sc onstart /ru SYSTEM /rl highest /f` + `schtasks /run /tn ea_server`（SYSTEM / Session 0，脱离 SSH 会话，重启自起）。重启：`Stop-Process -Name node -Force; schtasks /end /tn ea_server; schtasks /run /tn ea_server`。
+- **部署流程**：本地 `pnpm run build:server` → `scp packages/server/dist/* Administrator@82.156.71.231:C:/easyagent/packages/server/dist/` → 重启。
+
 ## 测试命令
 
 ```bash
@@ -868,4 +876,11 @@ node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 - **内嵌 git 仓库**：`packages/easyagent-plugin-obsidian-doc-viewer`、`packages/plugin-template` 各自含 `.git`，直接 `git add` 会变成 gitlink(160000)，GitHub 只留空引用、无实际代码。修复：`git rm --cached -f <dir>` → `Remove-Item -Recurse -Force <dir>/.git` → `git add <dir>`（`git rm --cached` 对 gitlink 必须加 `-f`）。
 - **管线钩子无限重算**：仓库的 pre/post-commit 钩子（EasyAgent 进度管线）每次提交都会重算并改写 `docs/pipeline/*.json`（project-progress-data / pipeline-data / issue-data / dashboard-data / test-case-mapping / _issue_cache），正常提交会陷入"提交→钩子改写→又脏→再提交"的死循环、无法收敛。对策：用 `git commit --no-verify` 提交钩子最新生成的这版数据以终止循环（数据正确性不受影响，本是钩子自身生成）；注意 **post-commit 钩子不受 --no-verify 影响，工作区最终仍会残留这 5 个 JSON 的差异**，属生成物固有行为、下次提交自动重算，无需再提交。
 - **同步排除清单**：提交/推送时勿纳入 `temp/`（调试脚本/日志/plugin.zip 等）、`未命名.base`、`.obsidian/plugins/*`（第三方 Obsidian 插件依赖）、`packages/*/docs/.obsidian/`（Obsidian 配置）。
+
+## 🚀 服务器部署 (2026-07-11)
+- **目标环境**：Windows 云服务器 `82.156.71.231`，域名 `CCCN.fable5.icu`，先 HTTP(80) 后加 HTTPS。仓库公开 `https://github.com/ht182400-creator/easyagent.git`。
+- **架构**：单 Node 进程（Server 用 `express.static(packages/web/dist)` 同时托管页面+`/api/*`+`/ws`）；前端 `apiBase:''`/`wsBase:'/ws'` 相对路径，同源无 CORS、无需改代码。
+- **硬性约束**：`preinstall` 拦截 Node≥24；服务器必须用 **Node 18/20/22 LTS**。`pnpm install` 自动编译 better-sqlite3（workspace 已 `allowBuilds`），启动前须 `node scripts/sqlite3-loader.mjs system` 激活系统 Node 版 `.node`。
+- **部署构建链**：`core → langgraph → server → web`（web 由 Vite 直打包 `@easyagent/frontend` 源码，无需单独 build frontend）。启动 `node packages/server/dist/index.js`，生产 `PORT=80 HOST=0.0.0.0`（80 需管理员）。
+- **交付物**：`docs/60_服务器部署指南.md`、`scripts/deploy-server.ps1`（一键校验/拉取/装依赖/构建）、`scripts/start-server.cmd`（生产启动器）。持久化用 NSSM 注册服务；HTTPS 升级用 Caddy 反代 `localhost:3456` 自动签证书。
 
