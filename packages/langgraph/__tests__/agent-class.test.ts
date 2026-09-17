@@ -151,8 +151,14 @@ describe('LangGraphAgent.resume()', () => {
   it('run 后 resume 同一会话应该恢复到之前状态', async () => {
     // resume 恢复的是 checkpoint 中的 StateGraph 状态，
     // 包括 messages 历史和运行上下文
+    //
+    // 【2026-09-18 修复】原用例只提供了 1 条 Mock 回复，resume 会再次 invoke graph
+    // 从而拿到第 2 次 Mock 调用的默认返回值（content 为空串），
+    // 导致断言 `response.length > 0` 失败。这是**用例自身的缺陷**，非产品缺陷。
+    // 现提供 2 条回复，并把断言收紧到"必须拿到第 2 条回复 + 消息历史被恢复"。
     agent = buildAgent([
       { content: '第一轮回答', finishReason: 'stop' },
+      { content: '第二轮回答', finishReason: 'stop' },
     ]).agent;
 
     const r1 = await agent.run('第一轮', { sessionId: 'resume-test' });
@@ -163,8 +169,10 @@ describe('LangGraphAgent.resume()', () => {
     // 然后追加新消息并重新 invoke graph
     const r2 = await agent.resume('resume-test', '继续对话');
     expect(r2.sessionId).toBe('resume-test');
-    // response 可能因 checkpoint 恢复和状态重建而有差异，验证非空即可
-    expect(r2.response.length).toBeGreaterThan(0);
+    expect(r2.response).toBe('第二轮回答');
+
+    // 关键回归点：历史必须被恢复并追加，否则"恢复会话"名不副实
+    expect(r2.messages.length).toBeGreaterThan(r1.messages.length);
   });
 });
 

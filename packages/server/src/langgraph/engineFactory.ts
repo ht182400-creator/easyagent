@@ -50,7 +50,7 @@ export interface CreateAgentOptions {
 /**
  * 引擎配置文件结构
  */
-interface EngineConfig {
+export interface EngineConfig {
   engine: EngineType;
   langgraph?: {
     maxTurns?: number;
@@ -61,7 +61,7 @@ interface EngineConfig {
 /**
  * 配置文件查找结果
  */
-interface EngineConfigResult {
+export interface EngineConfigResult {
   /** 配置内容 */
   config: EngineConfig;
   /** 配置文件绝对路径 */
@@ -133,6 +133,21 @@ export function parseCliEngineArg(args: string[] = process.argv): EngineType | n
 }
 
 /**
+ * 引擎解析的外部依赖（依赖注入缝，用于可测试性）
+ *
+ * 存在意义：引擎解析结果受「环境变量」与「项目根 engine.config.json」共同影响。
+ * 若不注入，单元测试结果会被**仓库中真实的配置文件内容**左右——例如仓库把
+ * engine.config.json 设为 langgraph 后，"默认值应为 legacy" 这类用例就会误报失败
+ * （2026-09-18 实测：server 包因此产生 2 个假失败）。
+ */
+export interface EngineResolveDeps {
+  /** 环境变量表（默认 process.env；测试注入以隔离真实环境） */
+  env?: NodeJS.ProcessEnv;
+  /** 配置文件读取器（默认读真实 engine.config.json；测试可注入 () => null 以隔离文件系统） */
+  configProvider?: () => EngineConfigResult | null;
+}
+
+/**
  * 读取引擎配置
  *
  * 优先级（由高到低）：
@@ -142,10 +157,14 @@ export function parseCliEngineArg(args: string[] = process.argv): EngineType | n
  *   4. 默认值 'legacy'
  *
  * @param cliEngine - CLI 传入的引擎类型，优先级最高
+ * @param deps - 可选的依赖注入（测试用），不传则读真实环境变量与配置文件
  * @returns 确定的引擎类型
  */
-export function getEngineType(cliEngine?: EngineType | null): EngineType {
-  return resolveEngineSource(cliEngine).engine;
+export function getEngineType(
+  cliEngine?: EngineType | null,
+  deps?: EngineResolveDeps,
+): EngineType {
+  return resolveEngineSource(cliEngine, deps).engine;
 }
 
 /**
@@ -154,9 +173,17 @@ export function getEngineType(cliEngine?: EngineType | null): EngineType {
  * 同时返回最终引擎类型和它的来源，用于启动日志清晰展示。
  *
  * @param cliEngine - CLI 传入的引擎类型
+ * @param deps - 可选的依赖注入（测试用）
  * @returns 引擎类型 + 来源信息
  */
-export function resolveEngineSource(cliEngine?: EngineType | null): EngineSource {
+export function resolveEngineSource(
+  cliEngine?: EngineType | null,
+  deps: EngineResolveDeps = {},
+): EngineSource {
+  // 依赖注入缝：默认使用真实环境变量与真实配置文件，保证生产行为零变化
+  const env = deps.env ?? process.env;
+  const readConfig = deps.configProvider ?? loadEngineConfig;
+
   // 1. CLI 参数 > 一切
   if (cliEngine === 'langgraph' || cliEngine === 'legacy') {
     return {
@@ -167,7 +194,7 @@ export function resolveEngineSource(cliEngine?: EngineType | null): EngineSource
   }
 
   // 2. 环境变量
-  const envEngine = process.env.EASYAGENT_ENGINE?.toLowerCase();
+  const envEngine = env.EASYAGENT_ENGINE?.toLowerCase();
   if (envEngine === 'langgraph' || envEngine === 'legacy') {
     return {
       engine: envEngine,
@@ -177,7 +204,7 @@ export function resolveEngineSource(cliEngine?: EngineType | null): EngineSource
   }
 
   // 3. 配置文件 engine.config.json
-  const fileConfig = loadEngineConfig();
+  const fileConfig = readConfig();
   if (fileConfig?.config.engine) {
     return {
       engine: fileConfig.config.engine,

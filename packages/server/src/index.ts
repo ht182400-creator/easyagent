@@ -54,11 +54,25 @@ import {
   KnowledgeService,
   AutomationManager,
   logger,
+  describeLogTarget,
 } from '@easyagent/core';
 import type { AnyIMConfig, IMPlatform, IMMessage } from '@easyagent/core';
 
 // ========== 插件市场服务 ==========
 import { getPluginMarketService, type MarketPlugin, type InstallJob } from './services/PluginMarketService.js';
+
+// ========== API 安全中间件（鉴权 + 限流 + 绑定地址策略）==========
+import {
+  DEFAULT_BIND_HOST,
+  assertSecurityOk,
+  createApiAuthMiddleware,
+  createCostlyRateLimit,
+  createGlobalRateLimit,
+  describeSecurityConfig,
+  isLoopbackAddress,
+  resolveSecurityConfig,
+  safeTokenEqual,
+} from './middleware/apiSecurity.js';
 
 // ========== LangGraph 引擎集成 (Phase B) ==========
 import { getEngineType, createAgent, isLangGraphAdapter, parseCliEngineArg, resolveEngineSource } from './langgraph/index.js';
@@ -142,7 +156,18 @@ function saveCustomSkills(skills: CustomSkill[]): void {
 }
 
 const PORT = parseInt(process.env.PORT || '3456', 10);
-const HOST = process.env.HOST || '0.0.0.0';
+/**
+ * 监听地址
+ *
+ * 【2026-09-18 安全加固】默认值由 '0.0.0.0' 改为 '127.0.0.1'。
+ * 此前默认全网监听，叠加 REST 无鉴权 = 任何人可远程调用
+ * 文件浏览 / 命令执行 / 密钥写入接口。公网部署请显式设置
+ * `HOST=0.0.0.0` 并**同时**配置 `EASYAGENT_API_TOKEN`（否则拒绝启动）。
+ */
+const HOST = process.env.HOST || DEFAULT_BIND_HOST;
+
+/** API 安全配置（令牌 / 限流 / 反代层数），进程内解析一次 */
+const SECURITY_CONFIG = resolveSecurityConfig();
 
 /**
  * 将 Ollama 模型标签名格式化为可读名称
@@ -585,6 +610,20 @@ export async function createApp(options: CreateAppOptions = {}) {
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     }),
   );
+  // 反向代理支持：置于 Caddy / Nginx 之后时**必须**设置 EASYAGENT_TRUST_PROXY，
+  // 否则 req.ip 恒为代理地址，会导致「回环免鉴权」误判与限流聚簇到同一个桶。
+  if (SECURITY_CONFIG.trustProxy) {
+    app.set('trust proxy', SECURITY_CONFIG.trustProxy);
+  }
+
+  // ── 限流 ──
+  // 必须置于 express.json 之前：未授权的超大请求体不应消耗 10MB 解析开销。
+  // 注册方式为 `app.use(fn)`（不带路径前缀），详见 createGlobalRateLimit 注释。
+  if (SECURITY_CONFIG.rateLimitEnabled) {
+    app.use(createGlobalRateLimit());
+    app.use(createCostlyRateLimit());
+  }
+
   app.use(express.json({ limit: '10mb' }));
 
   /** 安全 HTTP 头中间件：防止常见 Web 攻击 */
@@ -597,6 +636,11 @@ export async function createApp(options: CreateAppOptions = {}) {
     res.setHeader('Cache-Control', 'no-store, max-age=0');
     next();
   });
+
+  // ── API 鉴权 ──
+  // 策略：静态资源放行；回环地址（Desktop / 本地 Web）免鉴权；
+  // 非回环请求必须携带有效令牌，否则 401。详见 middleware/apiSecurity.ts。
+  app.use(createApiAuthMiddleware(SECURITY_CONFIG));
 
   // ========== 系统API ==========
 
@@ -3428,17 +3472,32 @@ export async function createApp(options: CreateAppOptions = {}) {
   });
 
   wss.on('connection', (ws: WebSocket, req) => {
-    // WebSocket 基本认证：通过 query token 或 header 进行简单校验
+    // WebSocket 认证
+    //
+    // 【2026-09-18 安全加固】原实现仅在设置了 EASYAGENT_WS_TOKEN 时才校验
+    // （`if (serverToken && ...)`）—— 未设置环境变量即等于**完全不校验**，
+    // 且与 REST 侧令牌各管一套。现改为与 REST 共用同一策略：
+    //   · 回环地址（Desktop / 本地）→ 免鉴权
+    //   · 非回环 → 必须命中 EASYAGENT_API_TOKEN 或（兼容旧配置）EASYAGENT_WS_TOKEN
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-    const reqToken = url.searchParams.get('token') || req.headers['x-auth-token'];
-    const serverToken = process.env.EASYAGENT_WS_TOKEN;
-    if (serverToken && reqToken !== serverToken) {
-      logger.warn({ ip: req.socket.remoteAddress }, 'WebSocket 认证失败');
-      safeSend(ws, { type: 'error', error: '认证失败' });
-      ws.close(4001, 'Unauthorized');
-      return;
+    const reqToken =
+      url.searchParams.get('token') || (req.headers['x-auth-token'] as string | undefined) || null;
+    const wsPeer = req.socket.remoteAddress || undefined;
+    const wsNeedsAuth = !isLoopbackAddress(wsPeer);
+
+    if (wsNeedsAuth) {
+      const accepted = [SECURITY_CONFIG.token, process.env.EASYAGENT_WS_TOKEN].filter(
+        (t): t is string => !!t,
+      );
+      const passed = !!reqToken && accepted.some((t) => safeTokenEqual(reqToken, t));
+      if (!passed) {
+        logger.warn({ ip: wsPeer, hasToken: !!reqToken }, 'WebSocket 认证失败');
+        safeSend(ws, { type: 'error', error: '认证失败' });
+        ws.close(4001, 'Unauthorized');
+        return;
+      }
     }
-    logger.info({ ip: req.socket.remoteAddress }, 'WebSocket 客户端已连接');
+    logger.info({ ip: wsPeer, authRequired: wsNeedsAuth }, 'WebSocket 客户端已连接');
 
     // 发送连接确认
     safeSend(ws, { type: 'connected', timestamp: Date.now() });
@@ -3712,6 +3771,8 @@ export async function createApp(options: CreateAppOptions = {}) {
     imManager,
     knowledgeService,
     automationManager,
+    /** 应用版本号（由 version.json 读取，供启动横幅等场景复用，避免硬编码） */
+    appVersion: APP_VERSION,
   };
 }
 
@@ -3723,20 +3784,27 @@ const isMainModule =
   process.argv[1]?.endsWith('/index.ts');
 
 if (isMainModule) {
+  // 启动前安全自检：非回环监听且无令牌 → 直接拒绝启动（fail-fast）
+  // 宁可起不来，也不能悄悄把 API Key / 文件系统暴露到公网。
+  try {
+    assertSecurityOk(HOST, SECURITY_CONFIG);
+  } catch (err) {
+    console.error(`\n[安全自检失败] ${(err as Error).message}\n`);
+    process.exit(1);
+  }
+
   createApp()
-    .then(({ server, sessionManager, wss, automationManager }) => {
+    .then(({ server, sessionManager, wss, automationManager, appVersion }) => {
       // 启动服务器
       server.listen(PORT, HOST, () => {
-        console.log(
-          [
-            '╔══════════════════════════════════════════╗',
-            '║        EasyAgent Server v0.6.23           ║',
-            `║  HTTP:      http://localhost:${PORT}        ║`,
-            `║  WebSocket: ws://localhost:${PORT}/ws      ║`,
-            '╚══════════════════════════════════════════╝',
-          ].join('\n'),
+        logger.info(
+          `EasyAgent Server v${appVersion} 已启动\n` +
+            `  HTTP:      http://${HOST}:${PORT}\n` +
+            `  WebSocket: ws://${HOST}:${PORT}/ws\n` +
+            `  安全策略:  ${describeSecurityConfig(HOST, SECURITY_CONFIG)}\n` +
+            // 显式打印日志文件路径：使用者不必猜测"日志到底写到哪里去了"
+            `  日志文件:  ${describeLogTarget()}`,
         );
-        logger.info({ port: PORT, host: HOST }, '服务器已启动');
       });
 
       // 优雅关闭

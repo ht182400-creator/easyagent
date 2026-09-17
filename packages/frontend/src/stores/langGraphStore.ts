@@ -43,6 +43,18 @@ export interface CheckpointSessionDetail {
   }>;
 }
 
+/** 恢复 Checkpoint 会话的响应体（由 /api/langgraph/sessions/:id/resume 返回） */
+export interface ResumeSessionResult {
+  /** 服务端是否处理成功 */
+  success?: boolean;
+  /** Agent 的回复文本 */
+  response?: string;
+  /** 会话 ID */
+  sessionId?: string;
+  /** 其它由服务端附加的字段 */
+  [key: string]: unknown;
+}
+
 // ==================== Store 类型 ====================
 
 interface LangGraphState {
@@ -93,7 +105,15 @@ interface LangGraphState {
   // Checkpoint actions
   loadSessions: () => Promise<void>;
   loadSessionDetail: (id: string) => Promise<void>;
-  resumeSession: (id: string, userMessage?: string) => Promise<void>;
+  /**
+   * 恢复 Checkpoint 会话并继续执行
+   *
+   * 【2026-09-18 修复】此前声明为 `Promise<void>`，但实现实际 `return data`，
+   * 声明与运行时不一致 —— 调用方（SessionDetailModal）由此拿到 `never` 类型，
+   * `data.response` 触发 TS2339 并中断 `pnpm --filter @easyagent/web build`。
+   * 现按真实契约修正返回类型，并补充 HTTP 状态校验。
+   */
+  resumeSession: (id: string, userMessage?: string) => Promise<ResumeSessionResult>;
 }
 
 // ==================== 工具 ====================
@@ -149,7 +169,11 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
   highlightNode: (nodeId) => {
     set((state) => {
       // 高亮相连边
-      const nodeMap = new Map(state.sessions.map(() => [])); // placeholder
+      //
+      // 【2026-09-18 修复】原有一行死代码 `const nodeMap = new Map(state.sessions.map(() => []))`
+      // （标注为 placeholder 且从未被使用），其类型推断为 `Map<never[], never[]>`，
+      // 直接导致 `tsc` 报 TS2769 并中断 web 构建。已删除。
+      void state;
       const edges = new Set<string>();
       if (nodeId) {
         // 高亮所有出入边
@@ -367,9 +391,15 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
       });
-      const data = await resp.json();
+      if (!resp.ok) {
+        // 区分 HTTP 层失败：否则调用方会把错误响应当成正常结果渲染
+        throw new Error(`恢复会话失败 (HTTP ${resp.status})`);
+      }
+      const data = (await resp.json()) as ResumeSessionResult;
       return data;
     } catch (err) {
+      // 记录后向上抛出：调用方需要向用户展示失败原因
+      console.error('[langGraphStore] resumeSession 失败:', (err as Error).message);
       throw err;
     }
   },

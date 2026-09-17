@@ -307,20 +307,20 @@
     ]
   },
   "kpi": {
-    "testCases": 1514,
-    "testPassRate": 98,
-    "testPassed": 1229,
-    "testFailed": 31,
+    "testCases": 1561,
+    "testPassRate": 100,
+    "testPassed": 1572,
+    "testFailed": 0,
     "testSkipped": 0,
-    "_vitestTotal": 1260,
-    "_uncovered": 254,
-    "_coveragePct": 83,
-    "_stale": true,
+    "_vitestTotal": 1572,
+    "_uncovered": 0,
+    "_coveragePct": 101,
+    "_stale": false,
     "tools": 51,
     "providers": 10,
     "scoreTotal": 100,
     "modes": 4,
-    "_source": "vitest-reports(6 files) [coverage 83%]",
+    "_source": "vitest-reports(6 files)",
     "_totalFiles": 48,
     "_vitestFiles": [
       "_vitest-core.json",
@@ -339,9 +339,9 @@
       },
       {
         "label": "测试覆盖",
-        "score": 98,
+        "score": 100,
         "max": 100,
-        "note": "1229通过 (98%)/1260已执行 / 1514 定义 用例通过"
+        "note": "1572通过 (100%)/1572已执行 / 1561 定义 用例通过"
       },
       {
         "label": "分支优化",
@@ -406,9 +406,9 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1514用例"
+      "note": "29/29模块+1561用例"
     }
   ],
-  "lastUpdated": "2026-07-10T16:24:00.309Z",
+  "lastUpdated": "2026-09-17T16:13:19.567Z",
   "source": "module-registry.mjs (统一注册表同步)"
 }

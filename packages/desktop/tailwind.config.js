@@ -1,3 +1,21 @@
+/**
+ * Tailwind 配置 — Desktop (Electron)
+ *
+ * 【2026-09-18 统一】此前本文件硬编码了一整套 zinc 色板（#09090b / #131316 / #f4f4f5 …），
+ * 键虽然齐全所以桌面端显示正常，但它是**与 Web 端完全无关的第二套配色**：
+ * 同一段组件代码（packages/frontend/src）在 Web 与 Desktop 上呈现不同颜色，
+ * 且 `[data-theme='light']` 亮色主题在桌面端无对应色值（换肤会失效）。
+ *
+ * 现改为展开 `tailwind.tokens.mjs` 的共享令牌，全部指向 `index.css` 的 `--color-*`。
+ * Desktop 与 Web 由此共用**同一份**设计令牌，亮暗主题也能正常跟随。
+ *
+ * ⚠️ 这是一次**可见的视觉变更**（zinc → 设计令牌色板）。如需回退，恢复本文件的
+ * 硬编码 colors 即可；但请勿只改一半，否则两端会再次分裂。
+ *
+ * 校验脚本：`node scripts/verify-css-tokens.mjs`
+ */
+import { tokenColors, tokenFontFamily } from '../frontend/tailwind.tokens.mjs';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -10,36 +28,8 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      colors: {
-        // 设计令牌 - 暗色主题
-        brand: {
-          DEFAULT: '#6366f1',
-          hover: '#818cf8',
-          active: '#4f46e5',
-        },
-        surface: {
-          shell: '#09090b',
-          sidebar: '#0f0f12',
-          main: '#131316',
-          raised: '#1a1a1f',
-          overlay: '#22222a',
-          hover: '#2a2a33',
-        },
-        text: {
-          primary: '#f4f4f5',
-          secondary: '#a1a1aa',
-          muted: '#71717a',
-        },
-        border: {
-          DEFAULT: '#27272a',
-          subtle: '#1f1f24',
-          focus: '#6366f1',
-        },
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-      },
+      colors: tokenColors,
+      fontFamily: tokenFontFamily,
       animation: {
         'fade-in': 'fadeIn 150ms ease-out',
         'slide-in-left': 'slideInLeft 220ms cubic-bezier(0.22, 1, 0.36, 1)',

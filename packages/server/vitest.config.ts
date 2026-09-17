@@ -14,6 +14,13 @@ export default defineConfig({
     outputFile: {
       json: '../../docs/pipeline/_vitest-server.json',
     },
+    // 集成测试会集中打同一端点（如 chat-session-api.test.ts 有 25 个用例都打 /api/chat），
+    // 且 supertest 源地址恒为回环，会被限流器聚簇到同一个桶 → 触发 429 造成大量假失败。
+    // 因此测试环境关闭限流；限流逻辑本身由
+    // src/__tests__/api-security.test.ts 直接构造中间件做模块级测试（精确控制窗口与配额）。
+    env: {
+      EASYAGENT_DISABLE_RATE_LIMIT: '1',
+    },
     // 覆盖率配置 — DV-05 覆盖率门禁
     coverage: {
       provider: 'v8',

@@ -65,7 +65,7 @@ export { PROVIDER_PRESETS } from './config/ProviderPresets.js';
 export { ModelRegistry, getModelRegistry, resetModelRegistry } from './config/ModelRegistry.js';
 
 // 工具函数
-export { logger, createLogger, LogLevel } from './utils/logger.js';
+export { logger, createLogger, describeLogTarget, LogLevel } from './utils/logger.js';
 export { encrypt, decrypt, hash } from './utils/encryption.js';
 export { t, setLocale, getLocale, initI18n, zhCN, enUS } from './utils/i18n.js';
 export type { Locale } from './utils/i18n.js';

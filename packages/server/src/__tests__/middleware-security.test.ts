@@ -54,9 +54,12 @@ describe('安全 HTTP 头', () => {
     expect(res.headers['x-content-type-options']).toBe('nosniff');
   });
 
-  it('X-Frame-Options 头存在', async () => {
+  it('X-Frame-Options 应允许同源内嵌（文档浏览器 iframe 依赖）', async () => {
     const res = await request(app).get('/api/health');
-    expect(res.headers['x-frame-options']).toBe('DENY');
+    // 【2026-09-18 修复】原断言为 'DENY'，但服务端已刻意改为 'SAMEORIGIN'：
+    // Doc Viewer 插件需要在**同源** iframe 中加载 /doc-viewer/，DENY 会直接拒绝渲染。
+    // SAMEORIGIN 依然阻止任何第三方站点内嵌本服务页面，安全性未降低。
+    expect(res.headers['x-frame-options']).toBe('SAMEORIGIN');
   });
 
   it('X-XSS-Protection 头存在', async () => {

@@ -7,6 +7,91 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.26] - 2026-09-18
+
+> **本版主题：安全加固 + 可观测性 + 数据可信度**
+> 依据 `docs/62_专家团最终审核报告.md` 的 P0 清单实施，方案与回归记录见 `docs/63_P0优化实施方案与回归记录.md`。
+> ⚠️ **版本号说明**：`0.6.24` / `0.6.25` 仅在 CHANGELOG 中留有记录，**从未打 tag 发布**（远端 tag 止于 `v0.6.23`）；本版为 `v0.6.23` 之后的**首个实际发布版本**。
+
+### Security
+
+- **sec(server): REST API 补齐入站鉴权 + 限流**（原状态：REST 侧**完全没有鉴权**，WS 的校验写法为 `if (serverToken && ...)`，不设环境变量即等于不校验）
+  - 新增 `packages/server/src/middleware/apiSecurity.ts`：令牌鉴权 / 固定窗口限流 / 绑定地址策略
+  - **默认监听地址由 `0.0.0.0` 改为 `127.0.0.1`**：未显式配置 `HOST` 时服务不再对外暴露
+  - **非回环监听且无令牌 → 拒绝启动**（fail-fast），需显式 `EASYAGENT_ALLOW_REMOTE_NO_AUTH=1` 才放行
+  - 回环地址（Desktop / 本地 Web）免鉴权，跨主机访问必须携带令牌（`Authorization: Bearer` / `?token=` / `x-auth-token` / Cookie）
+  - 令牌未配置时自动生成并持久化到 `~/.easyagent/api-token`
+  - WebSocket 与 REST **共用同一令牌体系**
+  - 限流：全局 600 次/分钟/IP，高成本端点（`/api/chat`、`/api/run/*`、`/api/sandbox/*`、插件安装）30 次/分钟/IP
+  - 新增环境变量：`EASYAGENT_API_TOKEN`、`EASYAGENT_ALLOW_REMOTE_NO_AUTH`、`EASYAGENT_TRUST_PROXY`、`EASYAGENT_DISABLE_RATE_LIMIT`
+
+### Added
+
+- **可观测性：日志补上文件输出**（原状态：`packages/core/src/utils/logger.ts` **只写 stdout、无任何文件 transport**，`logger.debug()` 关掉终端即永久丢失）
+  - 双通道输出：控制台按 `LOG_LEVEL`/`EASYAGENT_DEBUG`（默认 `info`）；**文件默认 `debug`**，保证事后可完整回溯
+  - 每日轮转 `logs/runtime/easyagent-YYYY-MM-DD.log`，保留 30 天，跨日自动切换并清理过期文件
+  - 文件日志初始化失败仅降级为控制台输出，不影响主流程
+  - 服务端启动时**主动打印日志文件路径**（`describeLogTarget()`）
+  - 路径规则：服务端/CLI → `<项目根>/logs/runtime/`；Electron → `~/.easyagent/logs/runtime/`；测试环境默认关闭
+  - 新增环境变量：`EASYAGENT_LOG_FILE_LEVEL`、`EASYAGENT_LOG_DIR`、`EASYAGENT_LOG_RETENTION_DAYS`
+- **可观测性：关键路径补齐 DEBUG 日志**（改造前实测 core 仅 6 处 debug；server/desktop/cli 为 **0**）
+  - `AgentEngine`：run 入口/出口、轮次细节、工具执行耗时与结果规模、中止原因
+  - `apiSecurity`：鉴权通过/失败的判定依据、令牌携带方式、限流接近配额预警
+- **工程化：测试日志作为项目资产**（`scripts/run-tests-log.mjs` + `pnpm test:log`）
+  - 产物：分层文本日志 / 失败标红 HTML / `summary.json` / `raw/<包>.log`，落在 `logs/test-logs/<日期>_<时间>_<范围>/`
+  - 文件记录**全部级别**，控制台按级别过滤
+  - 历史遗留日志从 `packages/frontend/vitest_*.txt` 归档到 `logs/test-logs/archive/`
+- **工程化：命令输出日志**（`scripts/run-logged.mjs` + `pnpm log --label X -- <命令>`）
+  - 构建/部署/校验输出落到 `logs/build-logs/`，头部记录命令/工作目录/Git 提交/Node 版本，尾部记录退出码与耗时
+- **质量门禁（三项，均可直接用于 CI）**
+  - `pnpm verify:data` → `scripts/verify-data-consistency.mjs`：测试数据单一真源一致性
+  - `pnpm verify:tokens` → `scripts/verify-css-tokens.mjs`：设计令牌一致性（含"三端令牌键一致"与"类名可生成"校验）
+  - `pnpm verify:runtime-log` → `scripts/verify-runtime-log.mjs`：运行日志链路（落盘 + DEBUG + 毫秒时间戳）
+- **设计令牌单一真源**：新增 `packages/frontend/tailwind.tokens.mjs`，三端（frontend / web / desktop）共用同一份令牌定义
+- 新增 `logs/README.md`：日志总目录约定与查看方式
+
+### Fixed
+
+- **fix(frontend): 15 个设计令牌类名全部静默失效**（Web 端大面积丢背景/文字/边框色，Desktop 因硬编码色板而"看起来正常"）
+  - 根因一：`frontend/tailwind.config.js` 引用 `--surface-*` / `--text-*` / `--border-*`，而 `index.css` 只定义了 `--color-*` → var() 引用未定义变量，声明在计算值阶段被丢弃
+  - 根因二：`web/tailwind.config.js` **缺少 `shell`/`sidebar`/`main`/`overlay` 以及整个 `text`/`border` 命名空间** → 对应类名根本不被生成
+  - 修复：三端统一展开共享令牌；`index.css` 补 6 个语义别名（用 `var()` 间接引用，亮暗主题自动跟随）
+  - 注意：`desktop/tailwind.config.js` 的硬编码 zinc 色板已移除 → **桌面端配色会与 Web 端统一**（可见的视觉变更）
+- **fix(web): 构建被 tsc 阻断，导致官方部署脚本整体失效**（`deploy-server.ps1` 依赖 `pnpm --filter @easyagent/web build`）
+  - `web/tsconfig.json` 的 `@/*` 指向自身 `src`，但组件实际在 `../frontend/src` → 修正为 `../frontend/src/*`
+  - 缺 `vite/client` 类型 → 新增 `packages/frontend/src/vite-env.d.ts`
+  - `langGraphStore.resumeSession` 声明 `Promise<void>` 却 `return data`（**类型与运行时不一致**）→ 按真实契约修正为 `Promise<ResumeSessionResult>` 并补 HTTP 状态校验
+  - 删除 `langGraphStore.ts` 中从未使用的死代码 `new Map(state.sessions.map(() => []))`
+  - `SessionDetailModal`：清理因类型错误而不可达的分支
+- **fix(test): 6 个真实失败用例全部修复**（此前"100% 通过"的宣称与实际不符）
+  - `core` plugin-manager「卸载不存在的插件应静默处理」：断言 `toBeUndefined()` 与实现返回 `null` 不符 → 改为 `toBeNull()`
+  - `server` langgraph-engine ×2：用例被仓库真实 `engine.config.json` 影响（非密封）→ 为 `resolveEngineSource` 增加依赖注入缝（`env` / `configProvider`）
+  - `server` middleware-security「X-Frame-Options」：用例断言 `DENY`，代码已刻意改为 `SAMEORIGIN`（Doc Viewer 需同源 iframe）→ 更新断言
+  - `server` plugin-market-service「onPluginUnload 回调」：实现改为传原始 `pluginId` → 按真实契约断言
+  - `langgraph`「resume 恢复会话」：用例只配了 1 条 Mock 回复导致断言失败 → 补第 2 条并收紧断言
+- **fix(test): frontend 包 113 用例全通过但退出码为 1**（unhandled rejection 导致 CI 变红且报错与用例无关）
+  - `api.test.ts` 先推进定时器后 `await`，promise 在无人接手时已 rejected → 改为立即挂载 rejection 处理
+- **fix(logger): 每轮 Agent 迭代从 INFO 降级为 DEBUG**（循环细节不应淹没真正的状态变更）
+- **fix(server): 启动横幅移除硬编码版本号**，改用 `version.json` 读取值
+- **fix(logger): 从包目录启动时日志不再分散到 `packages/*/logs/`**（通过上溯定位项目根统一收口）
+
+### Changed
+
+- 测试数据基线刷新（**旧数字全部作废**）：定义用例 **1561**（模块映射口径）/ Vitest 已执行 **1572 全部通过** / Node.js Test Runner **75 全部通过** / 合计已执行 **1647**
+- `packages/server/vitest.config.ts`：测试环境关闭限流（supertest 源地址恒为回环，会聚簇到同一桶产生大量假 429）
+- `.gitignore`：新增 `logs/runtime/`、`logs/build-logs/`、`logs/test-logs/*/raw/`、`packages/*/logs/`
+
+### Docs
+
+- 新增 `docs/62_专家团最终审核报告.md`（八视角审核 + 评分卡 + 路线图，含顶部更正说明）
+- 新增 `docs/63_P0优化实施方案与回归记录.md`（方案、设计取舍、回归结果、未完成项）
+- 新增 `logs/README.md`、`logs/test-logs/README.md`
+- `docs/03_测试案例文档.md`：数字声明更新为当前权威值，并注明由门禁脚本校验
+- `.codebuddy/memory/MEMORY.md`：归档重写为精简版 v2.0（712 行 → ~400 行），新增 §12「P0 优化落地」与日志体系约定
+- `docs/修复汇总.md`：新增 2026-09-18 条目
+
+---
+
 ## [0.6.25] - 2026-07-02
 
 ### Added

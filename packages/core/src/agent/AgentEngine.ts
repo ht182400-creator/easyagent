@@ -159,6 +159,23 @@ export class AgentEngine {
     this.state = 'thinking';
     this.turnCount = 0;
 
+    // 入口日志（DEBUG）：只记录规模与关键参数。
+    // 刻意**不**记录消息全文 —— 既避免日志膨胀，也避免把用户代码/密钥写进日志文件。
+    // 【2026-09-18 补充】此前 core 全包仅 6 处 debug，出问题时无从回溯，故补齐关键路径。
+    logger.debug(
+      {
+        sessionId,
+        workspace,
+        provider: this.config.provider,
+        model: this.config.model,
+        maxTurns: this.config.maxTurns,
+        allowTools: this.config.allowTools,
+        historyMessages: session.messages.length,
+        userMessageChars: userMessage.length,
+      },
+      'AgentEngine.run 入口',
+    );
+
     try {
       // 构建消息列表
       const messages: Message[] = [
@@ -176,7 +193,17 @@ export class AgentEngine {
 
       while (shouldContinue && this.turnCount < this.config.maxTurns) {
         this.turnCount++;
-        logger.info({ turn: this.turnCount }, 'Agent循环迭代');
+        // 轮次推进属于"循环细节"，按日志分级规范归 DEBUG。
+        // 原实现用 INFO，会在长任务里刷屏并淹没真正的状态变更（INFO 应留给关键状态）。
+        logger.debug(
+          {
+            turn: this.turnCount,
+            maxTurns: this.config.maxTurns,
+            messageCount: messages.length,
+            toolDefinitions: toolDefinitions.length,
+          },
+          'Agent 轮次开始',
+        );
 
         this.state = 'thinking';
         this.emit('thinking', { turn: this.turnCount });
@@ -239,13 +266,26 @@ export class AgentEngine {
 
             // 脱敏工具输入，避免日志泄露 API Key / 密码等敏感字段
             const sanitizedInput = sanitizeToolInput(toolInput);
-            logger.info({ tool: toolName, input: sanitizedInput }, '执行工具');
+            const toolStartedAt = Date.now();
+            logger.debug({ tool: toolName, input: sanitizedInput }, '工具执行开始');
 
             const result = await this.tools.execute(toolName, toolInput, {
               workspace,
               sessionId,
               signal: this.abortController.signal,
             });
+
+            // 出口日志：耗时与结果规模是排查"工具卡住 / 结果被截断 / 静默失败"的关键线索
+            logger.debug(
+              {
+                tool: toolName,
+                success: result.success,
+                elapsedMs: Date.now() - toolStartedAt,
+                contentChars: result.content?.length ?? 0,
+                error: result.error,
+              },
+              '工具执行结束',
+            );
 
             this.emit('tool_result', { toolName, result });
 
@@ -271,6 +311,15 @@ export class AgentEngine {
       this.state = 'done';
       this.emit('done', { response: fullResponse, usage: this.totalUsage });
 
+      logger.debug(
+        {
+          sessionId,
+          turns: this.turnCount,
+          responseChars: fullResponse.length,
+          usage: { ...this.totalUsage },
+        },
+        'AgentEngine.run 出口',
+      );
       return fullResponse || 'Agent已完成，但没有生成回复。';
     } catch (error) {
       this.state = 'error';
@@ -278,6 +327,7 @@ export class AgentEngine {
       this.emit('error', { error: errorMsg });
 
       if ((error as Error).name === 'AbortError') {
+        logger.debug({ sessionId, turns: this.turnCount }, 'AgentEngine.run 被用户中止');
         return '操作已取消。';
       }
 

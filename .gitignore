@@ -51,4 +51,14 @@ docs/pipeline/ci-logs/
 $null
 /NUL
 18.0.0
+# 根目录杂项文件（Obsidian/离线工具产物，不参与同步）
+未命名.base
 temp/root-cleanup/
+# 测试日志：汇总（.log/.html/summary.json）作为项目资产入库；各包原始输出体积大，不入库
+logs/test-logs/*/raw/
+# 运行日志：每日轮转、量级大，不入库（需要留档请摘录到 docs/）
+logs/runtime/
+# 兜底：从包目录启动时若误建了包级 logs/，也不要入库
+packages/*/logs/
+# 构建/部署/启动等命令输出日志（logs/build-logs/），量级大，不入库
+logs/build-logs/

@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-07-10T16:23:58.868Z",
+    "generatedAt": "2026-09-17T16:13:19.341Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1514,
-    "unmappedCases": 317,
+    "totalTestCases": 1561,
+    "unmappedCases": 364,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -471,11 +471,11 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 317,
+      "totalCases": 364,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 317,
+          "cases": 364,
           "files": [
             {
               "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",
@@ -562,8 +562,12 @@
               "cases": 7
             },
             {
+              "path": "packages/server/src/__tests__/api-security.test.ts",
+              "cases": 43
+            },
+            {
               "path": "packages/server/src/__tests__/langgraph-engine.test.ts",
-              "cases": 9
+              "cases": 13
             },
             {
               "path": "packages/server/src/__tests__/plugin-market-api.test.ts",

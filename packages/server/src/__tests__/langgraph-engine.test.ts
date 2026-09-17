@@ -6,36 +6,89 @@
  * @module server/__tests__/langgraph-engine.test
  */
 import { describe, it, expect } from 'vitest';
-import { getEngineType } from '../langgraph/engineFactory.js';
+import { getEngineType, resolveEngineSource } from '../langgraph/engineFactory.js';
 import { LangGraphAgentAdapter } from '../langgraph/agentAdapter.js';
 import type { UnifiedAgentEvent, EventListener } from '../langgraph/agentAdapter.js';
 
 // ============ 1. 引擎配置解析 ============
 
 describe('getEngineType() — 引擎配置解析', () => {
-  it('未设置环境变量时默认返回 legacy', () => {
-    // 确保测试环境中没有设置 EASYAGENT_ENGINE
-    delete process.env.EASYAGENT_ENGINE;
-    expect(getEngineType()).toBe('legacy');
+  /**
+   * 依赖注入常量：隔离「真实环境变量」与「仓库中的 engine.config.json」
+   *
+   * 【2026-09-18 修复】原用例直接调用 getEngineType()，其返回值会被仓库里真实的
+   * engine.config.json（内容为 "engine": "langgraph"）左右，导致
+   * "未设置环境变量时默认返回 legacy" 与 "未知值回退 legacy" 两条用例误报失败。
+   * 现统一通过 deps 注入，用例结果只取决于被测逻辑本身。
+   */
+  const NO_ENV: NodeJS.ProcessEnv = {};
+  const NO_CONFIG = () => null;
+  /** 模拟一份指向 langgraph 的配置文件 */
+  const LG_CONFIG = () => ({
+    config: { engine: 'langgraph' as const },
+    path: '/fake/engine.config.json',
+  });
+
+  it('未设置环境变量且无配置文件时默认返回 legacy', () => {
+    expect(getEngineType(null, { env: NO_ENV, configProvider: NO_CONFIG })).toBe('legacy');
   });
 
   it('设置 EASYAGENT_ENGINE=langgraph 时返回 langgraph', () => {
-    process.env.EASYAGENT_ENGINE = 'langgraph';
-    expect(getEngineType()).toBe('langgraph');
-    // 清理
-    delete process.env.EASYAGENT_ENGINE;
+    expect(
+      getEngineType(null, { env: { EASYAGENT_ENGINE: 'langgraph' }, configProvider: NO_CONFIG }),
+    ).toBe('langgraph');
   });
 
   it('设置 EASYAGENT_ENGINE=legacy 时返回 legacy', () => {
-    process.env.EASYAGENT_ENGINE = 'legacy';
-    expect(getEngineType()).toBe('legacy');
-    delete process.env.EASYAGENT_ENGINE;
+    expect(
+      getEngineType(null, { env: { EASYAGENT_ENGINE: 'legacy' }, configProvider: NO_CONFIG }),
+    ).toBe('legacy');
   });
 
   it('设置未知值时返回 legacy（安全回退）', () => {
-    process.env.EASYAGENT_ENGINE = 'unknown';
-    expect(getEngineType()).toBe('legacy');
-    delete process.env.EASYAGENT_ENGINE;
+    expect(
+      getEngineType(null, { env: { EASYAGENT_ENGINE: 'unknown' }, configProvider: NO_CONFIG }),
+    ).toBe('legacy');
+  });
+
+  // ---------- 新增：配置文件层级与优先级链（原用例未覆盖） ----------
+
+  it('无环境变量时应采用 engine.config.json 中的配置', () => {
+    expect(getEngineType(null, { env: NO_ENV, configProvider: LG_CONFIG })).toBe('langgraph');
+  });
+
+  it('环境变量优先级高于配置文件', () => {
+    expect(
+      getEngineType(null, { env: { EASYAGENT_ENGINE: 'legacy' }, configProvider: LG_CONFIG }),
+    ).toBe('legacy');
+  });
+
+  it('CLI 参数优先级高于环境变量与配置文件', () => {
+    expect(
+      getEngineType('legacy', { env: { EASYAGENT_ENGINE: 'langgraph' }, configProvider: LG_CONFIG }),
+    ).toBe('legacy');
+  });
+
+  it('resolveEngineSource 应正确标注来源（cli / env / config / default）', () => {
+    // ① 默认值
+    expect(resolveEngineSource(null, { env: NO_ENV, configProvider: NO_CONFIG }).source).toBe(
+      'default',
+    );
+    // ② CLI 参数
+    expect(resolveEngineSource('langgraph', { env: NO_ENV, configProvider: NO_CONFIG }).source).toBe(
+      'cli',
+    );
+    // ③ 环境变量
+    expect(
+      resolveEngineSource(null, {
+        env: { EASYAGENT_ENGINE: 'legacy' },
+        configProvider: NO_CONFIG,
+      }).source,
+    ).toBe('env');
+    // ④ 配置文件
+    expect(resolveEngineSource(null, { env: NO_ENV, configProvider: LG_CONFIG }).source).toBe(
+      'config',
+    );
   });
 });
 

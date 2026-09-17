@@ -15,8 +15,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "baseUrl": ".",
+    "types": ["vite/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["../frontend/src/*"]
     }
   },
   "include": ["src"]

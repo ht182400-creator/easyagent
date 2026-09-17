@@ -196,7 +196,15 @@ describe('apiFetch', () => {
       );
 
       // 发起请求（会尝试重试）
-      const promise = apiFetch('/api/unreachable', '');
+      //
+      // 【2026-09-18 修复】必须**立即**挂载 rejection 处理函数。
+      // 原写法先推进定时器、后 await，promise 在定时器推进期间就已 rejected 且无人接手，
+      // Node 判定为 unhandled rejection → vitest 退出码非零。
+      // 后果：包内 113 个用例全部通过，CI 依然变红，且报错信息与用例无关，极难排查。
+      let rejected = false;
+      const settled = apiFetch('/api/unreachable', '').catch(() => {
+        rejected = true;
+      });
 
       // 逐步推进每次重试的定时器（共 6 次: 初始 + 5 次重试）
       for (let i = 0; i < 6; i++) {
@@ -207,12 +215,7 @@ describe('apiFetch', () => {
       expect(callCount).toBe(6);
 
       // 最终 promise 应被拒绝
-      let rejected = false;
-      try {
-        await promise;
-      } catch {
-        rejected = true;
-      }
+      await settled;
       expect(rejected).toBe(true);
 
       vi.useRealTimers();

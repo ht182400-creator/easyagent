@@ -1,886 +1,343 @@
 # EasyAgent 项目记忆
 
-> 📖 **新手导航**: 先看 `docs/README.md` → `docs/00_新手上手指南.md`
+> 📖 **新手导航**: `docs/README.md` → `docs/00_新手上手指南.md`
+> 🔎 **本文件为精简版 v2.0（2026-09-17 归档重写，712 → ~360 行）**。完整详表见 `docs/修复汇总.md`（按日期倒序）；管线细节见 `docs/pipeline/ARCHITECTURE.md`；本次审核结论见 `docs/62_专家团最终审核报告.md`。
 
 ## 目录
 
-- [项目概述](#项目概述) | [编码规范](#编码规范) | [核心规则](#核心规则)
-- [修复汇总集中记录规则](#-修复汇总集中记录规则v10-2026-07-02) | [测试数据同步约束](#-测试数据同步约束v10-2026-06-25) | [日志优先排查原则](#-日志优先排查原则v10-2026-06-26)
-- [调试日志强制规范](#-调试日志强制规范v10-2026-06-26) | [Memory 记录格式](#memory-记录格式约定v11-2026-06-25-强化)
-- [关键陷阱清单 (47条)](#关键陷阱清单) | [Web↔Desktop 代码隔离](#-web--desktop-代码隔离约束)
-- [标准化打包流水线](#标准化打包流水线) | [Server + Web 启动](#server--web-启动)
-- [测试命令](#测试命令) | [SWE-bench](#swe-bench-评测基准-p0-2-已完成) | [Node.js 版本限制](#nodejs-版本限制-p0-1-已完成)
-- [管线模块 v2.1 动态化架构](#管线模块-v21-动态化架构-2026-06-23) | [管线数据完整更新工作流](#-管线数据完整更新工作流-v20-2026-06-26)
-- [文档管理规范](#文档管理规范) | [关键文件索引](#关键文件索引)
+- [1. 项目概述](#1-项目概述) | [2. 核心规则速查](#2-核心规则速查)
+- [3. 关键陷阱清单（52 条）](#3-关键陷阱清单) | [4. Windows bat 铁律](#4-windows-bat-文件铁律)
+- [5. Web↔Desktop 约束](#5-web--desktop-代码隔离约束) | [6. 构建与启动](#6-构建与启动命令)
+- [7. 测试与数据同步](#7-测试与数据同步) | [8. 管线系统](#8-管线系统指针式)
+- [9. 服务器部署](#9-服务器部署) | [10. Git / 插件 / LangGraph](#10-git--插件--langgraph-速查)
+- [11. 关键文件索引](#11-关键文件索引) | [12. P0 优化落地（2026-09-18）](#12-p0-优化落地2026-09-18)
 
 ---
 
-## 项目概述
-- **项目**: EasyAgent - 集成中国主流大模型的开源 AI 编程助手
-- **版本**: v0.6.25 (方案 D CI/CD 落地, 插件市场自动构建)
-- **优化完成度**: 17/18 (94%) — P0+P1+P2+P3 全部完成，仅 #16 Vite Library Mode 延期
-- **统一数据源**: `docs/pipeline/lib/module-registry.mjs` → `scripts/unified-sync.mjs` → `test-case-mapping.json` + `pipeline-data.json`(5.7KB) + `dashboard-data.json`(独立文件) → API → 前端
-- **管线模块添加**: 见 `docs/43_管线模块添加标准流程.md`（v1.1 补丁: 可操作性 60%→90%）
-- **测试报告**: `/api/test-detail` 端点提供四级树形测试详情 (包→文件→分组→用例+失败原因)
-- **LangGraph 双引擎**: ✅ Phase A/B/C/D 全部完成并已联调验证 (2026-06-29 21:35)。Phase A=引擎桥接, Phase B=Server接入+Checkpoint API, Phase C=前端可视化(/langgraph)+CLI引擎切换, Phase D=WebSocket实时高亮+Checkpoint详情弹窗+节点遍历动画+组件测试92用例。联调修复: POST /api/run/:id 端点新增，9 场景全部执行成功
-- **仓库**: https://github.com/ht182400-creator/easyagent (SSH 推送)
-- **技术栈**: TypeScript 5.x + React 18 + Vite 5 + Tailwind CSS 3 + Zustand 4 + Express + WebSocket + Electron 30 + SQLite(better-sqlite3) + Vitest + tsup
-- **对比参考**: D:\Work_Area\AI\cc-haha
+## 12. P0 优化落地（2026-09-18）
 
-## LangGraph 子项目（2026-06-30）
+> 依据 `docs/62_专家团最终审核报告.md` 的 P0 清单实施。方案与回归记录：`docs/63_P0优化实施方案与回归记录.md`。
 
-- **`packages/langgraph/`** 是基于 `@langchain/langgraph ^0.2` 的独立 Agent 引擎包（v0.1.0）
-- **图结构**: START → think → route → (act → observe → think 循环) → END（Think-Act-Observe 环形有向图）
-- **与主项目关系**: 设计为 `AgentEngine`（硬编码 while 循环）的替代引擎；API 兼容，Phase A 已完成桥接
-- **集成路线**: ✅ Phase A 引擎桥接（已完成）→ ✅ Phase B 后端API（已完成）→ ✅ Phase C 前端可视化（已完成）→ ✅ Phase D WebSocket+Checkpoint UI+组件测试（已完成）
-- **Phase A 产物**: `bridge/adapterBridge.ts` + `bridge/toolBridge.ts` + `bridge/AgentFactory.ts`，9 个集成测试全通过
-- **Phase B 产物**: `server/src/langgraph/` (agentAdapter + engineFactory)，3 个 Checkpoint API，9 个测试全通过
-- **Phase C 产物**: `frontend/src/components/LangGraph/` (4 组件) + `frontend/src/pages/LangGraph.tsx` + `stores/langGraphStore.ts` + 三种模式 UI（集成可视化/终端演示/独立Demo）
-- **Phase D 产物**: WebSocket 广播(server) + connectWebSocket(store) + SessionDetailModal + 遍历动画 + 前端组件测试(92 用例 100% 通过)
-- **集成进度**: ✅ Phase A/B/C/D 全部完成 (2026-06-29)
-- **🔧 引擎选择体系 (2026-06-30)**: 三级优先级 — CLI参数(`--engine langgraph|legacy`) > 环境变量(`EASYAGENT_ENGINE`) > 配置文件(`engine.config.json`) > 默认值(`legacy`)。配置文件可提交 Git、持久化、未来在设置页暴露。详细文档：`docs/53_引擎选择配置与LangGraph使用指南.md`
-- **关键依赖新增**: `@easyagent/core: workspace:*`（桥接层需要）
-- **详细方案**: `packages/langgraph/docs/06_LangGraph集成EasyAgent方案.md`
-- **Demo**: `pnpm demo:web` (端口 3455)，9 个场景 + SVG 有向图可视化
-- **关键依赖**: `@langchain/langgraph`, `@langchain/core`, `better-sqlite3`
-- **文档位置**: `packages/langgraph/docs/` (00~06 共 7 份)
+### 已交付
 
-## 编码规范
+| 项 | 内容 | 关键文件 |
+|----|------|---------|
+| P0-1 安全 | REST 鉴权 + 限流 + **默认只监听 127.0.0.1**；非回环监听且无令牌时**拒绝启动**；WS 与 REST 共用令牌 | `packages/server/src/middleware/apiSecurity.ts` |
+| P0-2 测试 | 6 个真实失败全部修复（4 个是用例过期/写错、2 个是产品缺陷）；frontend unhandled rejection 修复 | 见 §12「测试修复」 |
+| P0-3 数据 | 单一真源 + CI 一致性门禁 | `scripts/verify-data-consistency.mjs` |
+| P0-5 令牌 | 15 个语义令牌类名全部恢复生效；三端共用 `tailwind.tokens.mjs` | `packages/frontend/tailwind.tokens.mjs`、`scripts/verify-css-tokens.mjs` |
+| 附加 | web 构建解锁（原 `tsc` 11 个错误导致 `deploy-server.ps1` 整体失效） | `packages/web/tsconfig.json` |
+| 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
+| P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
 
-- **注释要求**: 编写代码时必须保留良好的代码注释，中英文皆可，尽量言简意赅
-- 函数/类/复杂逻辑必须有注释说明其用途和关键决策
-- 避免无意义注释（如 `// i++`），注释应解释"为什么"而非"做什么"
-- **🔴 Linter 零容忍（2026-06-29 新增）**: 修改文件后必须 `read_lints` 直到零 ERROR。禁止"只修新增问题，不管已有的"——所有类型不兼容、未使用变量、rootDir 配置问题等，一旦发现必须根本性根治。公共 API 依赖的类型必须全部导出。详细规则见各包 `docs/02_约束规范.md` §八。
+### 新增命令（务必记住）
 
-## 核心规则
-
-### 源码编译
-- `packages/core/src`: `.ts` 与编译产物 `.js`/`.d.ts`/`.js.map` 共存
-- 测试导入路径使用 `.js` 扩展名: `import { ... } from '../config/ConfigManager.js'`
-- 修改 `.ts` 后需同步编译，否则测试跑旧代码
-- **删除旧编译产物**: `packages/server/src/index.js` 会导致 vitest 优先加载 `.js` 而非 `.ts`
-
-### 构建工具
-- **electron-builder 精确锁定 23.6.0**（去掉 `^`），不得使用 v24.0.0
-- **pnpm exec** 替代 npx，确保使用本地版本
-- **原生模块预编译 + npmRebuild: false**（better-sqlite3）
-- **external 框架的子依赖必须全部显式声明**（Express 58个、pino 13个、multer 6个、cors 2个），参考 `express-deps.json`
-
-### API 规范
-- **Desktop 中统一用 `127.0.0.1:3456`**，不用 `localhost`（Windows IPv6 陷阱）
-- **`apiFetch` 已内部调用 `.json()`**，调用处直接用 `.then(data => ...)`，禁止再调 `.json()`
-- CSP 中 `connect-src` 必须包含 `http://127.0.0.1:3456 ws://127.0.0.1:3456`
-
-### Desktop 打包规范
-- `index.html` 不用 `<style>` 标签（Vite 5 bug），全部外部 CSS link
-- CSS `@import` 必须在所有规则之前
-- 使用 HashRouter（适配 file:// 协议）
-- VS Code 需排除 `**/packages/desktop/release/**` 避免文件锁定
-- **Tailwind content 必须包含 frontend 组件路径**: `'../frontend/src/**/*.{js,ts,jsx,tsx}'`，否则生产构建会丢失布局/间距/flex 等 utility 类，导致侧边栏图标文字堆叠（2026-06-26 回归）
-
-### Provider 配置
-- `PROVIDER_PRESETS` 定义 11 个预设，`ConfigManager.load()` 只有 `apiKey` 的才启用
-- API Key 加密存储在 `~/.easyagent/providers.json`
-
-### 版本号管理
-- **唯一版本源**: `version.json` (v0.4.0)，修改后运行 `node scripts/sync-version.mjs` 同步
-- **禁止硬编码**: UI 组件通过 `/api/version` API 获取版本号，严禁写死
-- **发布**: `node scripts/release.mjs patch|minor|major` 版本标记；`release-publish.bat` 全流程交互发布
-- **CI/CD**: `.github/workflows/ci.yml` (日常测试) + `release.yml` (Tag 推送自动构建+发布)。⚠️ **必须使用 `windows-2022` runner**，`windows-latest` (Server 2025 + VS 2026) 不被 node-gyp v10.3.1 识别。⚠️ **发版 commit 绝不能含 `[skip ci]`**：因为 tag 指向该 commit，GitHub 会把 tag push 事件也跳过，导致 release.yml 不触发（v0.6.18 实测验证）。⚠️ **管线数据文件 (docs/pipeline/*.json) 绝不能进入 release commit**：post-commit hook 会修改这些文件形成脏数据，`git add .` 会一起暂存；release commit 与 CI auto-sync 版本不同 → rebase 冲突（v0.6.20 修复：`git add .` 前先 `git checkout HEAD -- docs/pipeline/`）。📄 详细复盘见 `docs/50_v0.6.18_发版双问题复盘_eslint路径与skipCI抑制.md`
-- verify-build.cjs 第 6 项自动拦截旧版本号硬编码
-- 模型列表通过 `/v1/models` API 动态获取，ProviderPresets 仅兜底
-- 命令白名单从 `EASYAGENT_ALLOWED_COMMANDS` 环境变量加载
-- 模型目录从 GitHub/jsdellivr CDN 下载 `models-catalog.json`，24h TTL 缓存
-
-### 🔴 测试数据同步约束（v1.0, 2026-06-25）
-
-**触发条件**（以下任一情况发生时，必须立即同步测试数据）：
-1. **发布 Tag 版本**（`release.mjs` 执行后）
-2. **完成大模块测试案例**（新增 ≥20 个测试用例的模块）
-3. **新增测试文件或删除测试文件**
-4. **CI 通过率/用例数发生变化**
-
-**必须同步的文件清单**（缺一不可）：
-
-| # | 文件 | 同步内容 | 同步方式 |
-|---|------|---------|---------|
-| 1 | `docs/03_测试案例文档.md` | 第1行摘要 + 一、测试概览表 + 四、汇总表 + 底部 footer | 手动更新数据 |
-| 2 | `docs/pipeline/test-case-mapping.json` | `_meta.totalTestCases` + `_meta.totalTestFiles` + 模块 `totalCases` | 运行 `node scripts/scan-test-cases.mjs` |
-| 3 | `docs/pipeline/pipeline-data.json` | `kpi.testCases` / `kpi.testPassed` / `kpi.providers` / `kpi._totalFiles` | 运行 `node scripts/update-progress.mjs` |
-| 4 | `docs/pipeline/project-progress-data.json` | `meta.totalTests` / `meta.modelsSupported` + 完成任务的 status→done | 手动或脚本更新 |
-| 5 | `MEMORY.md` | 第2行版本号+用例数 + 测试命令区当前结果 | 手动更新 |
-| 6 | `CHANGELOG.md` | 新版本条目（Added/Fixed） | 手动更新 |
-
-**同步验证命令**：
 ```bash
-# 运行后检查 pipeline-data.json kpi.testCases 是否等于实际用例数
-node scripts/update-progress.mjs
-# 验证管线数据一致性
-node --test docs/pipeline/__tests__/pipeline-config.test.mjs
+pnpm test:log            # 全量回归 + 分级测试日志（logs/test-logs/<日期>_<时间>_<范围>/）
+pnpm test:log:smoke      # 冒烟（web + frontend，秒级）
+pnpm verify:data         # 测试数据一致性门禁（CI 用）
+pnpm verify:tokens       # 设计令牌一致性门禁（CI 用）
+pnpm verify:runtime-log  # 运行日志链路验证（落盘 + DEBUG + 毫秒时间戳）
+pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出自动存档
 ```
 
-**🔴 违例检测**：
-- 若 `03_测试案例文档.md` 中的汇总表与 `test-case-mapping.json` 的 `_meta.totalTestCases` 不一致 → 视为数据不同步
-- 若 `MEMORY.md` 版本行中测试数 ≠ `test-case-mapping.json` 的 totalTestCases → 视为过期数据
-- 每次 AI 会话结束前，自动对比上述数值，若发现不一致则提醒同步
+### 🔴 日志体系（2026-09-18 建立，禁止再往 temp/ 或系统临时目录写日志）
 
-### 工作记忆文件操作
-- 每日日志 (`YYYY-MM-DD.md`) 是追加式日志，**严禁覆盖或删减已有内容**
-- MEMORY.md 可就地更新保持精简
-- 反例：2026-06-19 事故，使用 `write_to_file` 覆盖 575 行日志为 25 行摘要
+| 类型 | 位置 | 生成方式 | 入库 |
+|------|------|---------|:---:|
+| **运行日志** | `logs/runtime/easyagent-YYYY-MM-DD.log` | 运行时自动（每日轮转，保留 30 天） | ❌ |
+| **测试日志** | `logs/test-logs/<日期>_<时间>_<范围>/` | `pnpm test:log` | ✅ 汇总；`raw/` 忽略 |
+| **命令输出** | `logs/build-logs/<日期>_<时间>_<标签>.log` | `pnpm log --label X -- <命令>` | ❌ |
+| 历史归档 | `logs/test-logs/archive/`、`logs/build-logs/archive-2026-09-18/` | 手工 | ✅ |
 
-### 🔴 修复汇总集中记录规则（v1.0, 2026-07-02）
+**两条通道的级别故意不同（这是"看不到 debug"的答案）**：
+- 控制台：`LOG_LEVEL` > `EASYAGENT_DEBUG`，默认 **info**（保持清爽）
+- 文件：`EASYAGENT_LOG_FILE_LEVEL`，默认 **debug**（事后必须查得到细节）
 
-**强制规则**：每次完成 bug 修复、架构决策、问题排查后，**必须**将修复摘要追加到 `docs/修复汇总.md`：
+其余变量：`EASYAGENT_LOG_DIR`（目录覆盖）、`EASYAGENT_LOG_RETENTION_DAYS`（默认 30）。
+路径规则：服务端/CLI 用 `<cwd>/logs/runtime/`；Electron 用 `~/.easyagent/logs/runtime/`（工作目录不可控）。
+**服务端启动时会主动打印日志文件路径**。
 
-| 步骤 | 操作 |
-|------|------|
-| 1 | 完成修复相关工作（代码改动 + 测试验证 + 文档更新） |
-| 2 | 将修复摘要按 `## YYYY-MM-DD HH:MM — 简短标题` 格式追加到 `docs/修复汇总.md` |
-| 3 | 摘要需包含：现象、根因（表格或列表）、修复（表格或列表）、关联（MEMORY 陷阱编号/文档引用） |
-| 4 | 从新到旧排列（最新修复在最上面，紧接文件标题之后） |
+**日志分级纪律（本轮同时纠正）**：循环/轮次这类细节用 `debug`，不要再写 `info`（否则刷屏并淹没真正的状态变更）。
+实测改造前 core 包 105 info / 60 error / 54 warn / **仅 6 debug**，server、desktop、cli 的 debug 调用数为 **0**。
 
-**文件位置**：`docs/修复汇总.md`（单一文件，持续追加）
+### 新增/变更的环境变量（服务端）
 
-**与 MEMORY.md 的关系**：
-- `MEMORY.md` 的关键陷阱清单：**简表**（一行一条，便于快速扫描）
-- `docs/修复汇总.md`：**详表**（带日期时间标题，完整上下文）
-- 两者互补——MEMORY 查"有哪些陷阱"，修复汇总查"某天修了什么/how"
-
-**反例**：❌ 修复完只在 daily memory 记录 → 后续查找需要翻多个日期文件 → 信息碎片化。
-
-### 🔴 日志优先排查原则（v1.0, 2026-06-26）
-
-**问题**：AI 遇到代码问题时，倾向凭当前知识直接修，忽略项目自身的历史教训日志。导致重复踩坑——同样的陷阱在日志里已记录过解决方案，但因没查日志而走了弯路（如 06-26 `^)` 转义事件：06-21/06-22 日志早已证明不可靠 + 记录了正确方案，但 AI 第一反应还是用 `^)` 创可贴）。
-
-**强制规则**：修改**曾被动过的文件/模块**（构建脚本、发布流程、原生编译、bat/sh、打包配置等高频陷阱区）时，**必须先查历史日志再动手**：
-
-| 步骤 | 操作 | 工具 |
+| 变量 | 默认 | 说明 |
 |------|------|------|
-| 1 | 读最近 3-7 天每日日志 | `read_file .codebuddy/memory/YYYY-MM-DD.md` |
-| 2 | 关键字搜索历史 | `search_content` in `.codebuddy/memory/` |
-| 3 | 读 MEMORY.md 陷阱清单 | `read_file MEMORY.md` |
-| 4 | 确认有无同类问题记录 | — |
-| 5 | 参考历史方案制定修复策略 | — |
+| `HOST` | **`127.0.0.1`**（已改，原 `0.0.0.0`） | 公网部署须显式设 `0.0.0.0` |
+| `EASYAGENT_API_TOKEN` | 自动生成并持久化到 `~/.easyagent/api-token` | 非回环访问必需；回环（桌面/本地）免鉴权 |
+| `EASYAGENT_ALLOW_REMOTE_NO_AUTH` | 未设置 | 置 `1` 才允许"公网 + 无令牌"裸奔（不推荐） |
+| `EASYAGENT_TRUST_PROXY` | 未设置 | 置于 Caddy/Nginx 之后必须设为代理层数（如 `1`），否则 `req.ip` 恒为代理地址 → 回环判定与限流失真 |
+| `EASYAGENT_DISABLE_RATE_LIMIT` | 未设置 | 置 `1` 关闭限流（仅压测/测试用） |
 
-**典型案例**：
-- `release-publish.bat` CMD if 块内 echo 含 `)` → AI 第一反应 `^)` 转义 → 查阅日志后发现 06-21(build.bat v5: goto 模式)、06-22(CMD 括号+重定向冲突)、06-26(v0.5.29: goto 替代多行 if) 已反复验证 `^)` 不可靠 → 改用 goto 模式，一次通过。若不查日志，至少浪费 1 小时无效调试。
-- `build.bat` sqlite3 MODULE_VERSION → 已记录 35+ 个相关陷阱(#9/#20/#22/#30-#36)，不看日志直接修 ≈ 必定踩坑
+**公网部署三步**：`HOST=0.0.0.0` → `EASYAGENT_API_TOKEN=<强随机>` → `EASYAGENT_TRUST_PROXY=1`。浏览器首次访问 `http://域名:端口/?token=<令牌>` 自动换取 Cookie。
 
-**反例**：❌ 看到错误 → 直接 `replace_in_file` 凭经验修 → 引入新问题 → 再修 → 循环。这是 bat 文件历史上反复出现的问题模式。
+### 测试修复明细（P0-2）
 
-### 🔴 调试日志强制规范（v1.0, 2026-06-26）
+| 位置 | 性质 | 修复 |
+|------|------|------|
+| `core` plugin-manager「卸载不存在的插件应静默处理」 | 用例断言与实现不符 | `toBeUndefined()` → `toBeNull()`（实现契约为 `Promise<string \| null>`） |
+| `server` langgraph-engine「默认/未知值」×2 | **用例非密封**：被仓库真实 `engine.config.json` 影响 | 给 `resolveEngineSource/getEngineType` 增加依赖注入（`env` / `configProvider`），用例注入 `() => null` |
+| `server` middleware-security「X-Frame-Options」 | 用例过期 | `DENY` → `SAMEORIGIN`（代码已刻意改为支持同源 iframe） |
+| `server` plugin-market-service「onPluginUnload 回调」 | 用例过期 | 断言改回真实契约（收到原始 `pluginId`，用回调回传的 manifest name 定位目录） |
+| `langgraph` 「resume 恢复会话」 | **用例缺陷**：只配了 1 条 Mock 回复 | 补第 2 条回复，并把断言收紧为"必须拿到第 2 条回复 + 历史被恢复" |
+| `frontend` api.test.ts「连续失败后应最终拒绝」 | **unhandled rejection** → 用例全绿但退出码非零 | 立即挂载 rejection 处理，再推进定时器 |
 
-**问题**：项目代码缺乏统一的调试日志规范——.mjs 脚本全用裸 `console.log`、.bat 脚本的 `[DEBUG]` 行无开关控制、TS 代码中 `logger.debug` 使用率低。导致出问题时"盲飞"——没有调试日志可用，只能反复加临时 `echo` 排查，效率极低。
+> ⚠️ 注意：`_vitest-desktop.json` 的 mtime 曾停留在 2026-06-27，导致"30 个孤儿测试"的错误结论（详见 `docs/62` 更正说明）。**判断测试状态必须重跑，不能只看管线快照。**
 
-**强制规则**（详见 `docs/36_调试日志规范体系.md`）：
+---
 
-| 规则 | 内容 |
-|------|------|
-| **开关控制** | 所有 DEBUG/TRACE 日志统一由 `EASYAGENT_DEBUG=1` 或 `LOG_LEVEL=debug` 环境变量控制 |
-| **TS 代码** | 使用 `createLogger('ModuleName')` → `logger.debug()`，**禁止裸 `console.log`** |
-| **.mjs 脚本** | 使用 `scripts/lib/logger.mjs` → `log.debug()`，**禁止裸 `console.log`** |
-| **.bat 脚本** | 所有 `[DEBUG]` 行前加 `if %_DBG%==1` 开关检查，**禁止裸 echo [DEBUG]** |
-| **错误日志** | `catch` 块必须 `log.error(msg, { error, context })` 携带上下文，**禁止仅传字符串** |
-| **关键调用** | 外部命令/HTTP/文件I/O 前后必须有 `log.debug` 记录输入参数和输出结果 |
+## 1. 项目概述
 
-**环境变量优先级**：`LOG_LEVEL` > `EASYAGENT_DEBUG` > 默认 INFO
+- **项目**: EasyAgent — 集成中国主流大模型的开源 AI 编程助手
+- **版本**: v0.6.25（唯一版本源 `version.json`，改后跑 `node scripts/sync-version.mjs`）
+- **仓库**: https://github.com/ht182400-creator/easyagent（SSH 推送）
+- **技术栈**: TypeScript 5.x + React 18 + Vite 5 + Tailwind 3 + Zustand 4 + Express + WS + Electron 30 + SQLite(better-sqlite3) + Vitest + tsup
+- **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
+- **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
+- **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1561**（模块映射口径，73 个测试文件）；**Vitest 已执行 1572，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1647 全通过**。**历史值 1195 / 1260 / 1514 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
-**快速开启**：
-```bash
-# Windows CMD
-set EASYAGENT_DEBUG=1 && build.bat
+---
 
-# PowerShell
-$env:EASYAGENT_DEBUG = "1"; .\build.bat
+## 2. 核心规则速查
 
-# Linux/macOS
-EASYAGENT_DEBUG=1 ./build.sh
-```
+| # | 规则 | 要点 |
+|---|------|------|
+| 1 | **编译+测试不可省** | 改完必须 `py_compile` 等价物（tsc/vitest）全绿 + `read_lints` 到零 ERROR |
+| 2 | **日志必分级** | debug=入口/出口/参数；info=状态变更；warn=可恢复；error=不可恢复（带 traceback/堆栈）。禁止裸 `console.log`（.mjs 用 `scripts/lib/logger.mjs`） |
+| 3 | **try-catch 不吞异常** | 文件 I/O / 网络 / 外部进程 / 输入解析必须包；catch 里 `log.error(..., { error, context })`，禁止 `pass` |
+| 4 | **禁止硬编码** | 魔法数字/字符串/路径/超时/阈值 → `UPPER_SNAKE_CASE` 常量（或 `_config`） |
+| 5 | **单文件 ≤500 行** | 超了按职责拆。⚠️ 现存超标：`server/src/index.ts` 3759 行、`docs/pipeline/index.html` 2201 行、8 个前端页面 700~1000 行 |
+| 6 | **改签名 → 查所有调用方** | 搜全项目同步更新 |
+| 7 | **不猜 → 先搜** | 先搜官方文档/社区，禁止凭感觉写 |
+| 8 | **收尾更新文档** | `.codebuddy/memory/YYYY-MM-DD.md` + `docs/修复汇总.md` + 相关 `docs/` |
 
-**反例**：❌ 出问题时加临时 `console.log` / `echo [DEBUG]` 排查 → 修完删除 → 下次同样问题又要重新加。这是"飞纸片"式调试，项目历史上 bat 文件修订 200+ 次的主因之一。
+**源码编译**: `packages/core/src` 中 `.ts` 与产物 `.js/.d.ts` 共存 → 测试导入用 `.js` 扩展名；改 `.ts` 后需同步编译；**删除 `packages/server/src/index.js` 等旧产物**（否则 vitest 优先加载旧 JS）。
 
-**检查清单**：提交代码前确认 —
-- [ ] 新增 try-catch 的 catch 块有 `log.error` 带上下文
-- [ ] 关键外部调用有 `log.debug` 记录参数
-- [ ] .mjs 脚本用 `logger.mjs` 而非 `console.log`
-- [ ] .bat 的 DEBUG 行受开关控制
-- [ ] 无敏感信息泄露
+**构建工具**: electron-builder **精确锁 23.6.0**（勿升 v24）；用 `pnpm exec`；原生模块预编译 + `npmRebuild:false`；external 框架的子依赖必须全部显式声明（Express 58 / pino 13 / multer 6 / cors 2，见 `packages/desktop/express-deps.json`）。
 
-### Memory 记录格式约定（v1.1, 2026-06-25 强化）
+**API 规范**: Desktop 统一 `127.0.0.1:3456`（不用 `localhost`，Windows IPv6 陷阱）；`apiFetch` 已内部 `.json()`，调用处**禁止再 `.json()`**；CSP `connect-src` 必须含 `http://127.0.0.1:3456 ws://127.0.0.1:3456`。
 
-为使管线页面解析器能**准确**提取模块-问题-解决方案数据，**所有问题记录必须**遵循统一格式。详见 `docs/pipeline/memory-format-spec.md`。
+**Desktop 打包**: `index.html` 不用 `<style>`（Vite 5 bug）；`@import` 必须在所有规则之前；HashRouter；`tailwind.config.js` 的 `content` **必须含** `'../frontend/src/**/*.{js,ts,jsx,tsx}'`。
 
-**🔴 强制规则（每次记录时自动检查）**：
-1. 每个问题/修复使用独立的 `## [模块:ID] 简短标题 (HH:MM)` Section
-2. Section 内**必须**含以下字段（缺一不可）：
-   - `- **问题**: 描述`（必选）
-   - `- **根因**: 分析`（可选）
-   - `- **修复**: 方案`（必选）
-   - `- **状态**: ✅ resolved` / `⏳ pending` / `❌ open`（必选）
-3. 纯操作流程（启动/构建/发布/GitHub Push/文档更新）**不加** `[模块:ID]` 标签，用普通 `##` 标题
-4. **禁止**把问题修复混在纯操作流程段落中（如"遇到的问题及解决"列表），必须拆成独立 Section
+**版本/CSP 校验**: `packages/desktop/scripts/verify-build.cjs`（17 类 30+ 项）第 6 项拦截旧版本号硬编码；命令白名单来自 `EASYAGENT_ALLOWED_COMMANDS`。
 
-**⚠️ 反例（06-24/06-25 教训）**：
-- ❌ 自由格式表格（`| ID | 文件 | 修复 |`）→ 解析器无法识别
-- ❌ `### 🔴 阻塞` 子标题 + 嵌套列表 → 解析器跳过
-- ❌ 在操作流程中内嵌问题（"8. CI 补全 Desktop 测试"）→ 不会生成 issue 条目
-- ✅ 正确做法见文件末尾的 `## [模块:b2b]` 格式段落
+**Memory 写入纪律**: 每日日志 `YYYY-MM-DD.md` 是**追加式**，严禁覆盖/删减（反例：2026-06-19 用 `write_to_file` 覆盖 575 行 → 25 行事故）；`MEMORY.md` 可就地更新保持精简。
 
-**模块 ID 速查**：
-| ID | 模块 | ID | 模块 |
-|----|------|----|------|
-| F1 | 多模型适配器 | F9 | Desktop 原生应用 |
-| F2 | Agent 系统 | F10 | 插件与技能系统 |
-| F3 | 工具系统 | F11 | IM 适配器 |
-| F4 | 知识库 RAG | F12 | i18n 国际化 |
-| F5 | MCP 协议 | F13 | Desktop 自动升级 |
-| F6 | 沙箱执行环境 | F14 | 模型目录动态更新 |
-| F7 | Ink CLI | F15 | 全面去硬编码 |
-| F8 | Web Dashboard | F16 | 版本控制系统 |
-| B1a | Web↔Desktop 前端合并 | B2b | GitHub Actions CI/CD |
-| B1b | PluginManager 沙箱 | B2c | 集成测试·端到端 |
-| B2a | SWE-bench 评测体系 | B2d | 多模型评测排行榜 |
-| B2e | 用户行为埋点 | B3a | 一键安装脚本 |
-| B3b | VS Code 插件 | B3c | Contributor 引导 |
-| P5a | 管线解析与缓存 | P5b | 管线 API 服务 |
-| P5c | 前端渲染仪表板 | lg1 | LangGraph 引擎核心 |
-| lg2 | LangGraph 持久化 | lg3 | LangGraph 桥接与集成 |
-| lg4 | LangGraph 前端可视化 | lg5 | LangGraph 页面路由 |
-| lg6 | CLI 双引擎接入 | | |
+**修复记录双轨**: `MEMORY.md` = 简表（一行一条）；`docs/修复汇总.md` = 详表（`## YYYY-MM-DD HH:MM — 标题`，新→旧）。修复完**必须**追加详表。
 
-**缓存说明**：存量文件（06-22及之前）无需重新格式化，解析器通过 mtime 缓存机制复用已解析结果。
+**调试日志开关**: `LOG_LEVEL` > `EASYAGENT_DEBUG`；`.bat` 的 `[DEBUG]` 行需 `if %_DBG%==1` 包裹。
 
-## 关键陷阱清单
+**Memory MD 格式（管线解析器依赖）**: 每问题独立 `## [模块:ID] 标题 (HH:MM)`；必含 `- **问题**:` / `- **修复**:` / `- **状态**: ✅ resolved`；纯操作流程**不要**加 `[模块:ID]`；解析器实现见 `docs/pipeline/memory-format-spec.md`。
 
-| # | 🎯 | 陷阱 | 现象 | 修复 |
-|---|-----|------|------|------|
-| 1 | 🔀 | electron-builder v24 意外升级 | NSIS EnVar 插件缺失，exe 仅 0.3MB | 精确锁定 23.6.0，删 v24 残留 |
-| 2 | 🔀 | Vite 5 `<style>` 内联 | 构建失败 `No matching HTML proxy` | 改外部 CSS link |
-| 3 | 🖥️ | `localhost` → IPv6 | Dashboard 显示 `--`，API 请求全失败 | 全部改 `127.0.0.1` |
-| 4 | 🖥️ | 双重 `.json()` | 数据不显示，错误被 `.catch()` 静默吞掉 | 直接用 `apiFetch<Type>(url).then(data => ...)` |
-| 5 | 🔀 | CSS @import 不在第一行 | Tailwind 样式失效 | 移到文件最顶部 |
-| 6 | 🔀 | pnpm workspace symlink | asar 中找不到 @easyagent/core | tsup noExternal bundle |
-| 7 | 🔀 | Express 子依赖遗漏 | `Cannot find module 'body-parser'` 等 | 显式声明所有子依赖+孙子依赖 |
-| 8 | 🖥️ | VS Code 文件监视器锁定 | `Access Denied` 删除 app.asar | watcherExclude + taskkill |
-| 9 | 🖥️ | better-sqlite3 原生编译失败 | node-gyp 检测不到 VS | 预编译 .node 文件 + npmRebuild:false |
-| 10 | 🔀 | `packages/server/src/index.js` 残留 | vitest 加载旧 JS 而非新 TS | 删除旧编译产物 |
-| 11 | 🖥️ | **apiFetch 全项目双重 .json()** | 13 个文件 43+ 处数据消失无报错 | apiFetch 已返回解析对象，所有调用处去掉 `res.json()` + `res.ok` 检查 |
-| 12 | 🔀 | **bat文件 `[!]` + 延迟扩展冲突** | `enabledelayedexpansion` 下 echo `[!]` 被当成变量标记，导致整行解析崩溃 | 改为 `[^^!]`（`^^` 转义） |
-| 13 | 🔀 | **bat文件中文编码乱码** | CMD 代码页 936(GBK) 无法正确输出 UTF-8 中文，PowerShell 管道解析中文变乱码 | bat 开头 `chcp 65001` 设置 UTF-8 代码页；ps1 开头设置 `[Console]::OutputEncoding = UTF8`；JSON 数据本身正确，仅显示层编码不匹配 |
-| 13a | 🔀 | **git status 中文文件名显示为 octal 转义** | `docs/36_双通道发布指南.md` 显示为 `"docs/36_\345\217\214\351\200\232..."`，无法阅读 | `git config --global core.quotepath false`（全局+本地双保险）；原因：Git 默认对非 ASCII 文件名用 `\oct` 转义输出 |
-| 14 | 🔀 | **bat文件 `:::` 注释导致 CMD 崩溃** | `::: comment` 被 CMD 解析为非法 label，报 `此时不应有 :。` | **全部改为 `rem` 注释**；不用任何 `:` 开头的注释 |
-| 14a | 🔀 | **CMD `if (...)` 块内 echo 含 `)` 导致块提前关闭** | echo 中的 `)` 被 CMD 当作 if/for 块的结束符，导致块内剩余代码被跳过或 `else` 被误解析。`^)` 转义不可靠（CMD 预解析器处理不一致） | **用 `goto` 标签模式替代 `if (...) 多行块`**：正确判断后直接 `goto :CONTINUE` 跳过错误处理区；对 if 块内 echo 中不可避免地出现 `)` 的场景，改换措辞去掉括号或用变量替代 |
-| 15 | 🔀 | **execSync 路径含空格被截断** | `execSync('node ' + path)` 中路径有空格，CMD 当作参数分隔符截断| 路径加双引号：`node "${path}"` |
-| 16 | 🔀 | **`.mjs` 文件含 TS 类型注解** | Node.js ESM 不支持 TS 语法，`function foo(x: string)` 报 `SyntaxError` | 移除全部类型注解，用纯 JS |
-| 17 | 🔀 | **esbuild 0.20.1 对 catch 语法极脆弱** | `Expected "finally" but found "}"`：原代码 try 块中 if/else 结束后多了孤儿 `}`，导致 catch 的 `}` 无 try 可关闭 | 1) 统一写 `catch (err)` 2) verify #9 拦截 `catch {}` 和 `catch (_e)` 3) 确保 try 块 brace 配对正确 |
-| 18 | 🔀 | **PowerShell `Set-Content` 默认 ANSI 编码** | 批量修改含中文的 UTF-8 文件后中文全变乱码（76文件被毁） | **只能用 Node.js `writeFileSync` 明确指定 `utf8`**；verify-build.cjs 第14项自动检测乱码 |
-| 19 | 🔀 | **pnpm v11 `allowBuilds` 占位文本被当 false** | electron/better-sqlite3/esbuild 构建脚本被跳过，打包失败 | `pnpm-workspace.yaml` 中 `allowBuilds` 必须显式设为 `true`，不能留占位文本 |
-| 20 | 🖥️ | **better-sqlite3 在 asar 内加载原生模块失败** | `bindings` 从 `__dirname`（asar内路径）找不到 `.node`，后端启动失败，Dashboard 全 `--` | `files` 中 `!node_modules/better-sqlite3/**` 排除出asar；`extraResources` 复制到 `resources/node_modules/better-sqlite3/` |
-| 21 | 🖥️ | **mime 缺失导致 Express 500（开发可用/Release 报错）** | 开发模式 pnpm 提升 mime 到 server 包下，send 能间接解析；但 electron-builder 打包后 asar 中 `node_modules/mime` 消失（只在 `@easyagent/server/node_modules/mime`），send `require('mime')` 失败报 `Cannot find module 'mime'` | 在 desktop/package.json 显式添加 `"mime": "^1.6.0"`（不是 mime@2.x！）；verify #11 检查 top-level mime 存在+版本 |
-| 22 | 🖥️ | **开发/Release better-sqlite3 MODULE_VERSION 不一致** | 开发用系统 Node v24 编译 (137)，Electron 需要 v20 (123)，加载失败或 Dashboard `--` | 直接 `npx node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release`（不能用 `@electron/rebuild`，bin名歧义且 pnpm 下可能不生效）；verify #10 + build.bat Phase 2.5 自动检测/修复 |
-| 23 | 🖥️ | **electron-updater 传递依赖缺失（dev可用/Release崩溃）** | electron-builder 打包后 asar 中缺少 `lodash.escaperegexp`、`lodash.isequal`、`tiny-typed-emitter`，electron-updater 更新检查时 `require()` 失败 | 在 desktop/package.json 显式添加所有 electron-updater 的传递依赖（8个包）；verify #12 自动检测 |
-| 24 | 🖥️ | **Express 生态版本不兼容（dev可用/Release可能异常）** | desktop deps 中 `iconv-lite@0.6.3`、`media-typer@1.1.0`、`ipaddr.js@2.4.0`、`encodeurl@1.0.2` 与 Express 子包预期版本不匹配 | 保持监控；verify #13 自动 WARN；若出现异常则降级到匹配版本 |
-| 25 | 🖥️ | **apiFetch 双重 .json() 解析导致数据为空** | `apiFetch` 已内置 `res.json()` 返回解析后数据，但直接使用 `apiFetch().then(r => r.json())` 会导致 TypeError（数组/对象没有 .json() 方法），被 catch 静默吞掉 | 使用 `apiFetch<T>` 泛型直接获取数据，不要调用 `.then(r => r.json())`；原生 `fetch()` 才需要手动 `.json()`
-| 26 | 🖥️ | **HashRouter 下 `<a href>` 导致黑屏/页面跳转** | Desktop 使用 HashRouter（路由 `/#/xxx`），但 `<a href="/sessions">` 绕过 React Router 触发全页面导航 | 在所有 tsx 中应使用 `<Link to="/sessions">` 或 `navigate('/sessions')`；仅外部链接（`target="_blank"`）可用 `<a href>`；verify #15 自动检测
-| 27 | 🖥️ | **Desktop asar 内 PROJECT_ROOT 指向只读归档** | `createApp()` 中 `PROJECT_ROOT = resolve(__dirname, '..', '..', '..')` 在 asar 内解析到只读路径，知识库写入失败(400)、读取返回空 | 1) `createApp()` 接受 `options.projectRoot` 参数；2) Desktop main.ts 传入 `homedir()` 作为 projectRoot |
-| 28 | 🔀 | **CI windows-latest 已升级 VS 2026，node-gyp 不兼容** | CI 显示 0 jobs 或 better-sqlite3 编译失败，node-gyp v10.3.1 找不到 VS 2026 | ci.yml + release.yml 全部固定 `windows-2022`，确保 VS 2022 编译环境可用 |
-| 29 | 🖥️ | **Desktop Tailwind content 未扫描 frontend 组件 → 界面布局错乱** | EXE 运行后侧边栏图标和文字堆叠，flex/gap/w-64 等布局类丢失。开发模式正常但 Release 崩溃。根因：`desktop/tailwind.config.js` 的 `content` 只扫 `./src/renderer/**/*`，而实际 UI 组件在 `../frontend/src/` 中（通过 @/ alias），Tailwind JIT 不会生成只在 frontend 中使用的 utility 类。`web/tailwind.config.js` 早已包含此路径，但 desktop 建包时遗漏 | desktop/tailwind.config.js 的 content 添加 `'../frontend/src/**/*.{js,ts,jsx,tsx}'`；三个包各有独立 config，互不影响 |
-| 30 | 🖥️ | **postinstall.cjs 命令名错误 + @electron/rebuild 不生效** | `pnpm exec @electron/rebuild` 找不到二进制（实际注册名是 `electron-rebuild`），即使改用正确名也声称成功但不修改 binary（pnpm symlink 环境问题）。build.bat 自动修复步骤不完善 | postinstall.cjs: 改用 `npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release`；build.bat: 新增 Phase 2.5 自动检测文件大小并 rebuild；verify-build.cjs: 通过文件大小判断而非仅对比系统 Node 版本 |
-| 31 | 🖥️ | **tsup 内联 server 代码导致 asar 双重 CORS** | desktop tsup 打包时将 server 的 `createApp()` 整段内联进 `dist/main.js`，asar 中同时存在两份 CORS 中间件（main.js 1.2MB 含内联 server + node_modules/@easyagent/server/dist/index.js 625KB）。只更新 server 包不更新 main.js → CORS 行为被旧 main.js 覆盖 | 修改 @easyagent/server 源码后必须同时 `tsup --clean` 两个包；asar 修补必须同时替换 `dist/main.js` 和 `node_modules/@easyagent/server/dist/index.js` |
-| 32 | 🖥️ | **pnpm hardlink 下 node-gyp rebuild 假成功** | `node-gyp rebuild` exit 0 但 `better_sqlite3.node` mtime+大小未变、NVM 版本仍为 137 而非 123。原因：pnpm store 硬链接 + rebuild 输出到 store 路径，当前工作副本未更新 | 重建后必须检查文件 mtime+大小+NVM 头值（`Buffer.from([123,0,0,0])` 出现位置）；verify-build.cjs 已有 Phase 2.5 自动检测 |
-| 33 | 🖥️ | **electron-rebuild 在 pnpm 下静默跳过** | `@electron/rebuild --force` 声称成功但文件完全未变。bin 名歧义（`electron-rebuild` vs `@electron/rebuild`）+ pnpm 符链环境下找不到正确路径 | 直接用 `node-gyp rebuild` 显式指定 `--target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers`，不用 electron-rebuild |
-| 34 | 🖥️ | **5个脚本争抢 better_sqlite3.node → MODULE_VERSION 反复变** | postinstall.cjs(pnpm install时切electron)、sqlite3-loader.mjs(启动时切system)、build.bat Phase2.5(打包时rebuild)、rebuild-sqlite3.mjs(手动)、build-sqlite3.bat(手动) 互相覆盖。prebuild-install下载缓存的老旧二进制(MODULE=88)也可能被复制。 | 精简为2个脚本：`rebuild-sqlite3.mjs`(唯一编译入口) + `sqlite3-loader.mjs`(运行时切换)。postinstall.cjs 不再触碰.node。build.bat 改为 copy 已有 electron.node 而非 rebuild。删除 build-sqlite3.bat / build-sqlite3-dual.mjs / manage-sqlite3.mjs |
-| 35 | 🖥️ | **字节扫描 MODULE_VERSION 始终返回116 (假阳性)** | better-sqlite3 静态链接 sqlite3 c源码(~13万行), 字节扫描碰巧读到sqlite3常量116, 非真实NODE_MODULE_VERSION。导致每次排查都以为版本错误, 浪费数小时重复编译。 | (1) SHA256 比对 electron vs system 版本 → 不同=各自编译成功 (2) System 版本直接 `require('better-sqlite3')` → 加载成功=版本正确 (3) `node scripts/rebuild-sqlite3.mjs --verify` 一键验证 |
-| 36 | 🖥️ | **build.bat sqlite3 路径基于 CWD 而非项目根目录** | build.bat 在 `cd ..\desktop` 后使用相对路径 `node_modules\.pnpm\better-sqlite3@...` → pnpm workspace 中 `packages/desktop/` 下无此路径 → `better_sqlite3_electron.node` 始终"不存在" → 每次打包都触发不必要的 node-gyp rebuild → 可能失败。Phase 3.5 恢复路径同理错误。 | `_SQLITE_RELEASE` 路径加 `%~dp0` 前缀（强制基于 build.bat 所在目录=项目根目录）；`node scripts\rebuild-sqlite3.mjs` 也加 `%~dp0` 前缀 |
-| 37 | 🖥️ | **Desktop 有独立 renderer CSS，与 frontend CSS 是两个文件** | 修改 `packages/frontend/src/styles/index.css` 的 CSP 字体修复对 Desktop 不生效，因为 Desktop 的 `index.html` 引用 `/src/renderer/index.css`（指向 `packages/desktop/src/renderer/index.css`），而非 frontend 的 CSS。两个文件内容高度相似但独立维护。**前端合并(B1a)后 JS/组件已统一，CSS 也应统一**。 | ✅ 已删除 `packages/desktop/src/renderer/index.css`，移除 `index.html` 中的 `<link>` 标签。CSS 统一由 `frontend/main.tsx` → `import './styles/index.css'` 加载 |
-| 38 | 🔀 | **pnpm v11 isolated mode 下 `pnpm exec` 找不到 eslint/rimraf** | `pnpm exec eslint` → `[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command \"eslint\" not found`；node_modules 中只有 `.pnpm/` 和 `.vite/` 目录，无 `.bin/` 符号链 | 使用 `scripts/lint.bat` / `scripts/clean.bat` 包装器，直接 `node \"node_modules\\.pnpm\\eslint@<ver>\\node_modules\\eslint\\bin\\eslint.js\"` 调用；`eslint.config.cjs` 用 `createRequire` 从 .pnpm 路径加载 `@eslint/js` 和 `typescript-eslint` |
-| 39 | 🖥️ | **pnpm isolated + electron-builder: 传递依赖必须显式声明** | electron-builder 从 `packages/desktop/node_modules/` 打包；pnpm isolated 模式下该目录只有直接依赖的 symlink，无 `.pnpm/` 目录。Server 的 express 传递依赖（55 个）在根 `.pnpm/` 中，electron-builder 找不到 → 运行时 `Cannot find module` | 两种解法: 1) tsup `noExternal` 把 express/cors/ws/multer 内联进 main.js（不需要运行时解析）; 2) `node-linker=hoisted` 平坦化 node_modules。pino 例外：CJS `require('pino-pretty')` 不可内联，必须保持 external + 保留其 11 个传递依赖。Desktop deps: 119→36 项 |
-| 40 | 🖥️ | **LangGraph checkpoint 序列化导致 BaseMessage 丢失原型方法** | `state.messages[0]?.getType is not a function` — SqliteCheckpointer 用 JSON.stringify/parse 持久化 State，messages 数组中的 AIMessage/HumanMessage 等实例转为普通 JS 对象，丢失 getType() 等 prototype 方法。同样影响 `instanceof AIMessage` 判断（checkpoint 还原后为 false）、`tool_calls` 属性存取方式 | 所有消息处理代码统一使用 `getMessageType(msg)` 工具函数（优先调 getType()，否则读 .type 属性，兜底 constructor.name）；`toChatMessages()` 用 hasToolCalls/getToolCallId 替代原始属性检查；参考 `packages/langgraph/src/graph/messageUtils.ts` |
-| 41 | 🔀 | **LangGraph 普通聊天误暴露 benchmark 工具导致死循环** | 普通问候却反复调用 benchmark_load/run/report，最终 `Recursion limit of 25 reached`。根因：系统提示词未约束工具使用；AgentFactory 把 69 个工具全量下发（含 benchmark_*）；observeNode 失败后无条件继续；recursionLimit 与 maxTurns 单位不一致 | 系统提示词明确"普通聊天不调用工具"；AgentFactory 过滤 `benchmark_*`；AgentState 增加 `consecutiveFailures`，actNode 统计失败，observeNode 超过 3 次停止；`streamEvents` 传入 `recursionLimit = maxTurns * 3 + 10` |
-| 42 | 🔀 | **小模型上下文被工具 schema 污染导致语气偏移 / 误输出 JSON 解释** | qwen2.5:7b 看到 66 个工具 JSON schema（占上下文 19-25%）后，问候回复从自然对话变为"您可以告诉我需要使用哪个工具或功能"；写 C 代码时附带"在 JSON 格式中请求这个函数可能不太合适"的解释。根因：7B 模型指令跟随弱，上下文中的结构化信息（JSON schema）被模型关联到不相关输出 | 按模型规模分级暴露工具（7B → 15-20 个核心工具；70B+ → 完整 66 个）；精简工具 description；系统提示词补丁"不要在普通对话中提及 JSON 或工具" |
-| 43 | 🌐 | **插件市场页面安装进度卡"准备中"（WebSocket 未建立）** | 后端安装流程全部成功（日志"安装完成"），但前端 `/plugins` 页面按钮永远显示"准备中…"。根因：WebSocket 在 chatStore 中懒加载（仅进入对话页面时建立），/plugins 页面不会触发连接 → 后端广播的 `plugin:install:progress` 事件无人接收 → `installProgress` Map 永远 pending | HTTP 轮询兜底（`pollInstallJob` 每 1s 轮询 `/api/plugins/install/:jobId`，最多 60s）；终态（done/error）自动清理 progress 条目避免 UI 锁定；done 时自动追加到 installed 列表 |
-| 44 | 🌐 | **"已安装插件"列表含某插件，但"社区插件市场"仍显示"使用"按钮** | `fetchInstalled` 把 id 改写为 `local:<name>` 形式以兼容本地插件，而 `fetchMarketplace` 注入"已安装"状态时仅按 `installedIds.has(p.id)` 严格匹配。marketplace 返回的 id 是 `obsidian-doc-viewer`，与 `local:obsidian-doc-viewer` 永远不等 → 按钮全部错误显示"使用" | `fetchMarketplace` 改用 `installedNames` Set 同时按 id 和 name 匹配（兼容两种 id 形式） |
-| 45 | 🔀 | **`fetch failed` 与 `Failed to fetch` 是两种不同的错误字符串** | Chrome/Node.js 版本升级后错误信息变更：旧版抛 `'Failed to fetch'`，Chrome 100+ / Node 22+ 抛 `'fetch failed'`（更短）。`request.ts:125` 仅匹配旧版字符串 → 新版环境重试逻辑永不生效 → 第一次失败就直接显示错误 | 错误匹配兼容两种字符串：`error.message === 'Failed to fetch' \|\| error.message === 'fetch failed'` |
-| 46 | 🔀 | **Ollama 未启动导致 AI 回复显示 "fetch failed" 且原因不明** | 用户发消息后 AI 回复"错误: fetch failed"，耗时很短（~500ms）。根因：默认 provider 是 Ollama（`localhost:11434`），服务未启动 → Node.js fetch 抛 `ECONNREFUSED` → 错误信息透传到前端。前端仅显示通用错误，不区分是后端宕机还是上游 LLM 不可达 | 1) 前端区分后端宕机（HTTP 503/ECONNREFUSED）vs 上游 LLM 不可达（fetch failed 来自适配器层）；2) 后端 adapter 层 catch 时判断 URL 端口并给出友好提示（如"Ollama 服务未启动，请运行 ollama serve"）；3) `/api/config` 可快速诊断当前 provider 状态 |
-| 47 | 🔀 | **插件 `execute` 返回 string 而非 ToolResult → "工具执行失败: 未知错误" → LLM 无意义反思循环** | 插件模板和示例都教 `return "string"`，但 `ITool.execute` 契约要求 `Promise<ToolResult>`（`{success, content, error}`）。PluginSandbox.createProxyTool 直接 `as Promise<ToolResult>` 透传无规范化 → actNode 看到 `result.success` 为 `undefined`（falsy）→ 走 line 189 失败分支 → `result.error \|\| '未知错误'` 兜底 → LLM 收到"工具失败"反馈 → 进入 144s 无意义 think→act→observe 循环，最终给一段 282 字"反思"回复 | **四层防御**：(1) 修复示例 plugin.js/plugin-template 改用 `{success, content}` 返回；(2) `PluginSandbox.normalizePluginResult()` 兜底 4 种形态（标准/半结构/字符串/null）强制规范为 ToolResult；(3) `actNode.executeSingleTool` 检测 `result.success` 缺失时按成功处理 + 附加"系统提示"；(4) 错误前缀改为可识别形式（如 `[系统提示] 工具 X 未返回标准 ToolResult 格式`）便于 LLM 区分 |
-| 48 | 🔀 | **LLM 非流式调用 → thinkNode 重复触发同一工具 → 160s 死循环** | 小模型（如 qwen2.5:7b）的非流式 chat() 不触发 `on_chat_model_stream` → `streamEvents` 无 response 事件 → `hasResponseContent=false`。若 LLM 反复调用同一工具同一参数（如 `open-doc-viewer("./docs")`），每轮 thinkNode 耗时 ~70s，浪费 Token 和时间 | (1) thinkNode 比较当前 tool_calls 与上轮 AI 消息 → 连续相同 ≥ `MAX_IDENTICAL_TOOL_CALLS`(2) 时 `shouldContinue=false`；(2) AgentState 新增 `consecutiveIdenticalToolCalls` 计数；(3) agentAdapter runStream 增加 `chunkCount=0` 兜底文本注入 |
-| 49 | 🌐 | **tool_use WS 事件早于 assistant 占位消息 → addToolCall 静默丢失** | ChatView 通过 Electron IPC 发消息时不创建 assistant 占位消息 → 首个 `tool_use` 到达时 `addToolCall` 的 msgId 无对应记录 → `map()` 找不到目标 → 工具卡片永久丢失。ChatInput 已创建占位消息，但 ChatView 路径仍暴露此漏洞 | `tool_use` handler 中若 `lastMsg?.role !== 'assistant'`，先自动创建 `isStreaming: true` 的占位 assistant 消息，再挂载工具卡片 |
-| 50 | 🌐 | **tool_call/tool_result toolCallId 不匹配 → 工具结果永远丢** | Agent.ts 映射 on_tool_start/on_tool_end 时未传 toolCallId，agentAdapter 又用 `Date.now()` 伪造了**两个不同的 ID**（`lg_tool_${now}` vs `lg_tool_result_${Date.now()}`）→ 前端 chatStore 第 431 行 `tc.toolCallId === data.toolCallId` 永远不匹配 → 工具卡片永远停留在 running，所有插件的 stdout/error 用户看不到 | Agent.ts 提取 LangChain 的 `event.run_id` 作为 toolCallId 透传，agentAdapter 从 `data.toolCallId` 取 ID 不再伪造 |
-| 51 | 🌐 | **Doc_project UI 集成：右侧 iframe 面板 + WS open_panel 消息** | Doc_project 是独立 Vite React 项目，通过 EasyAgent Server 静态托管 `/doc-viewer/`（`base: '/doc-viewer/'`），前端 Layout.tsx 右侧可关闭 iframe 面板。Server 检测 `open-doc-viewer` 工具成功 → WS `{ type:'open_panel', url:'/doc-viewer/' }` → chatStore 转发 uiStore.openRightPanel() → Layout 渲染 iframe。关键注意：`X-Frame-Options` 需设为 `SAMEORIGIN`（否则同源 iframe 被拒），Doc_project vite 需设置 `base: '/doc-viewer/'`（否则 build 产物 assets 路径错误） |
-| 52 | 🌐 | **双缓存导致 install 装到旧版本** | 插件发新版后安装时命中两层缓存：(1) `market.json` 磁盘缓存 TTL 1小时，(2) GitHubClient 内存 Map 缓存 TTL 1小时。`listMarket(forceRefresh=true)` 只跳过磁盘缓存，内层 `getLatestRelease()` 仍命中内存缓存。根因在于两个缓存独立且 `getLatestRelease` 无 `skipCache` 参数 | ✅ 已修复：见 [双缓存问题彻底修复](#双缓存问题彻底修复)：(1) 新增 `RELEASE_CACHE_TTL=5min`；(2) `getLatestRelease/getManifest` + `skipCache` 参数；(3) `listMarket(forceRefresh=true)` → `clearCache()` + `skipCache=true` 层层穿透；(4) `executeInstall` 安装时强制 `skipCache`；(5) 新增 `POST /api/plugins/market/refresh` 端点；(6) `PluginMarketService.clearMarketCache()` 公开方法清除磁盘+内存双缓存 |
+**模块 ID 速查**: F1 多模型适配 / F2 Agent / F3 工具 / F4 知识库RAG / F5 MCP / F6 沙箱 / F7 CLI / F8 Web Dashboard / F9 Desktop / F10 插件技能 / F11 IM / F12 i18n / F13 自动升级 / F14 模型目录 / F15 去硬编码 / F16 版本控制；B1a Web↔Desktop 合并 / B2b CI-CD / B3a 安装脚本 / B3b VS Code 插件；P5a 管线解析 / P5b 管线 API / P5c 仪表板；lg1~lg6 LangGraph 六项。
 
+---
 
+## 3. 关键陷阱清单
 
+> 范围标记：🖥️=Desktop 专属 / 🌐=Web 专属 / 🔀=两者影响。**新 bug 修复后必须在此加一行 + 在 `verify-build.cjs` 加检查**。
 
+| # | 🎯 | 陷阱 | 修复 |
+|---|-----|------|------|
+| 1 | 🔀 | electron-builder v24 意外升级 → NSIS EnVar 缺失，exe 仅 0.3MB | 精确锁 23.6.0，删 v24 残留 |
+| 2 | 🔀 | Vite 5 `<style>` 内联 → `No matching HTML proxy` | 改外部 CSS link |
+| 3 | 🖥️ | `localhost` 解析成 IPv6 → Dashboard 全 `--` | 全改 `127.0.0.1` |
+| 4 | 🖥️ | 双重 `.json()` → 数据不显示且错误被吞 | `apiFetch<T>(url).then(d => ...)` |
+| 5 | 🔀 | CSS `@import` 不在首行 → Tailwind 失效 | 移到最顶部 |
+| 6 | 🔀 | pnpm symlink → asar 里找不到 `@easyagent/core` | tsup `noExternal` bundle |
+| 7 | 🔀 | Express 子依赖遗漏 → `Cannot find module 'body-parser'` | 显式声明全部子/孙依赖 |
+| 8 | 🖥️ | VS Code watcher 锁定 → 删 app.asar `Access Denied` | watcherExclude + taskkill |
+| 9 | 🖥️ | better-sqlite3 原生编译失败 | 预编译 `.node` + `npmRebuild:false` |
+| 10 | 🔀 | `packages/server/src/index.js` 残留 → vitest 加载旧 JS | 删除旧编译产物 |
+| 11 | 🖥️ | apiFetch 双重 `.json()` 全项目 13 文件 43+ 处 | 去掉 `res.json()`，直接用返回值 |
+| 12 | 🔀 | bat `[!]` + 延迟扩展冲突 → 整行解析崩溃 | 改 `[^^!]` |
+| 13 | 🔀 | bat 中文乱码（CMD 936 vs UTF-8） | JSON 数据本身正确，仅显示层；见 §4 |
+| 13a | 🔀 | git status 中文名显示 octal 转义 | `git config --global core.quotepath false` |
+| 14 | 🔀 | bat `:::` 注释被当非法 label → CMD 崩溃 | 全部改 `rem` |
+| 14a | 🔀 | CMD `if(...)` 块内 echo 含 `)` → 块提前关闭（`^)` 不可靠） | 改 `goto` 标签模式 |
+| 15 | 🔀 | `execSync('node ' + path)` 路径含空格被截断 | 加双引号 `node "${path}"` |
+| 16 | 🔀 | `.mjs` 含 TS 类型注解 → SyntaxError | 纯 JS |
+| 17 | 🔀 | esbuild 0.20.1 对 catch 语法脆弱 → `Expected "finally"` | 统一 `catch (err)`；verify #9 拦截裸 `catch {}` |
+| 18 | 🔀 | PowerShell `Set-Content` 默认 ANSI → 76 个中文文件被毁 | **只用 Node `writeFileSync(..., 'utf8')`**；verify #14 检测 |
+| 19 | 🔀 | pnpm v11 `allowBuilds` 占位文本被当 false | 显式设 `true` |
+| 20 | 🖥️ | asar 内加载 better-sqlite3 失败 | `!node_modules/better-sqlite3/**` 排除出 asar + `extraResources` |
+| 21 | 🖥️ | `mime` 缺失 → Release 下 Express 500 | desktop 显式加 `"mime": "^1.6.0"`（**不是 2.x**）；verify #11 |
+| 22 | 🖥️ | 开发/Release better-sqlite3 MODULE_VERSION 不一致（137 vs 123） | `npx node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release`；verify #10 + build.bat Phase 2.5 |
+| 23 | 🖥️ | electron-updater 传递依赖缺失（dev 可用/Release 崩） | desktop 显式加 8 个传递依赖；verify #12 |
+| 24 | 🖥️ | Express 生态版本不兼容（iconv-lite/media-typer/ipaddr.js/encodeurl） | 保持监控；verify #13 WARN |
+| 25 | 🖥️ | apiFetch 双重 `.json()` → TypeError 被静默吞 | 用 `apiFetch<T>` 泛型 |
+| 26 | 🖥️ | HashRouter 下 `<a href>` → 黑屏 | 用 `<Link>` / `navigate()`；verify #15 |
+| 27 | 🖥️ | asar 内 `PROJECT_ROOT` 只读 → 知识库写入 400 | `createApp({ projectRoot })`，Desktop 传 `homedir()` |
+| 28 | 🔀 | CI `windows-latest` 升级 VS 2026 → node-gyp 不识别，0 jobs | 全部固定 `windows-2022` |
+| 29 | 🖥️ | Desktop Tailwind `content` 漏 frontend → 布局类丢失 | 加 `'../frontend/src/**/*.{js,ts,jsx,tsx}'` |
+| 30 | 🖥️ | `pnpm exec @electron/rebuild` bin 名歧义 + 不生效 | 改 `npx --yes node-gyp rebuild ...`；按文件大小判断 |
+| 31 | 🖥️ | tsup 内联 server → asar 里两份 CORS，旧 main.js 覆盖新逻辑 | 改 server 后**同时** `tsup --clean` 两个包；asar 修补要同时替换两处 |
+| 32 | 🖥️ | pnpm hardlink 下 node-gyp rebuild 假成功（exit 0 但文件未变） | 重建后查 mtime+大小+头值；verify Phase 2.5 |
+| 33 | 🖥️ | electron-rebuild 在 pnpm 下静默跳过 | 直接用 `node-gyp` 显式参数 |
+| 34 | 🖥️ | 5 个脚本争抢 `better_sqlite3.node` → MODULE_VERSION 反复变 | 精简为 2 个：`rebuild-sqlite3.mjs`（唯一编译入口）+ `sqlite3-loader.mjs`（运行时切换） |
+| 35 | 🖥️ | 字节扫描 MODULE_VERSION 假阳性（始终 116） | 勿扫字节；用 SHA256 比对 + `rebuild-sqlite3.mjs --verify` |
+| 36 | 🖥️ | build.bat sqlite3 路径基于 CWD → 误判"不存在"→ 每次多余 rebuild | 路径加 `%~dp0` 前缀 |
+| 37 | 🖥️ | Desktop 独立 renderer CSS 与 frontend 两套 | ✅ 已删，统一由 `frontend/main.tsx` import |
+| 38 | 🔀 | pnpm isolated 下 `pnpm exec eslint` 找不到 bin | 用 `scripts/lint.bat` / `clean.bat` 直调 `.pnpm` 路径 |
+| 39 | 🖥️ | electron-builder 找不到传递依赖（pnpm isolated 无 `.pnpm/`） | tsup `noExternal` 内联 express/cors/ws/multer；pino 例外须保持 external |
+| 40 | 🖥️ | LangGraph checkpoint 序列化丢 BaseMessage 原型方法（`getType is not a function`） | 统一用 `getMessageType(msg)`；`toChatMessages()` 用 hasToolCalls/getToolCallId |
+| 41 | 🔀 | LangGraph 普通聊天误暴露 benchmark 工具 → 死循环 `Recursion limit reached` | 系统提示词约束；过滤 `benchmark_*`；`consecutiveFailures>3` 停止；`recursionLimit = maxTurns*3+10` |
+| 42 | 🔀 | 小模型被 66 个工具 schema 污染（占上下文 19-25%）→ 语气偏移/输出 JSON 解释 | 按模型分级暴露工具（7B→15-20 个；70B+→完整） |
+| 43 | 🌐 | 插件市场安装进度卡"准备中"（WS 未建立） | HTTP 轮询兜底 1s/次 ≤60s；终态清理 |
+| 44 | 🌐 | 已安装插件仍显示"使用"（id 前缀 `local:` 不匹配） | 按 id + name 双匹配 |
+| 45 | 🔀 | `fetch failed` 与 `Failed to fetch` 是两种字符串 | 错误匹配兼容两者 |
+| 46 | 🔀 | Ollama 未启动 → 只显示 "fetch failed"，原因不明 | 区分后端宕机 vs 上游 LLM 不可达；给出"请运行 ollama serve" |
+| 47 | 🔀 | 插件 `execute` 返回 string 而非 `ToolResult` → LLM 无意义反思循环 | 四层防御：模板修正 + `normalizePluginResult()` + actNode 兜底 + 可识别错误前缀 |
+| 48 | 🔀 | LLM 非流式 → thinkNode 重复同一工具 → 160s 死循环 | 连续相同工具调用 ≥2 次即停；`consecutiveIdenticalToolCalls` |
+| 49 | 🌐 | `tool_use` WS 事件早于 assistant 占位消息 → 工具卡片丢失 | handler 中自动补建占位消息 |
+| 50 | 🌐 | toolCallId 不匹配（伪造两个不同 ID）→ 工具结果永远丢 | 用 LangChain `event.run_id` 作 toolCallId |
+| 51 | 🌐 | Doc_project 面板集成 | Server 静态托管 `/doc-viewer/`（vite `base:'/doc-viewer/'`），`X-Frame-Options: SAMEORIGIN`，WS `open_panel` |
+| 52 | 🌐 | 双缓存导致插件装到旧版本 | `RELEASE_CACHE_TTL=5min` + `skipCache` 层层穿透 + `POST /api/plugins/market/refresh` |
 
+---
 
+## 4. Windows bat 文件铁律
 
+**三条禁令**（违反任一条 → CMD 报错信息与真实原因完全无关）：
 
-## ⚠️ Windows bat 文件编写铁律（2026-06-28 实测）
+| # | 禁令 | 替代 |
+|---|------|------|
+| 1 | 禁用 Unicode box-drawing 字符（`╔ ║ ⚠️` 等） | 用 ASCII `=====`、`[OK]`、`[FAIL]` |
+| 2 | 禁用 `type file \| findstr`（chcp=65001 时管道截断） | `findstr /c:"kw" file > nul 2> nul` |
+| 3 | 禁用 `chcp 65001`（CMD 公认 bug，echo 中文后解析器失序） | **不设 chcp**，中文 Windows 默认 936 |
 
-每次在 `.bat` 文件中撰写中文日志/输出时，必须遵守以下 3 条铁律。违反任意一条都会导致 CMD 解析错误——错误信息与真正原因完全无关（如 `... was unexpected at this time.` / `'raph.config.json' is not recognized`）。
+**次要**: `:::` → `rem`；`if(...)` 块内 echo 含 `)` → 改 `goto`；文件存 UTF-8 without BOM。
 
-| # | 禁令 | 原因 | 替代方案 |
-|---|------|------|---------|
-| 1 | **禁用 Unicode box-drawing 字符**（`╔` `╗` `╚` `╝` `║` `⚠️` 等） | CMD 对多字节 UTF-8 控制字符解析不稳定，部分字节被截断当命令执行 | 使用 ASCII 分隔线 `=====`, 标签 `[OK]` `[FAIL]` |
-| 2 | **禁用 `type file \| findstr ...` 管道**（当 chcp=65001 时） | Pipe `\|` 子进程 + UTF-8 混合导致字符截断，`type lang...` 被吞成 `...raph` | `findstr /c:"keyword" filename > nul 2> nul` 直接读文件，不用 type+pipe |
-| 3 | **禁用 `chcp 65001`** | 已确认是 CMD 公认 bug——echo 中文后解析器失序，后续行被乱读（含 `if`、`else`、`...` 等） | **不设 chcp**，中文 Windows 默认 936 即可正常显示中文 |
+---
 
-**额外注意**（不那么致命但曾踩过）：
-- `:::` 注释 → 一律改为 `REM`（`:::` 被 CMD 当非法 label 崩溃）
-- `if (...)` 多行块内 `echo` 含 `)` → 一律改用 `goto` 标签模式（`^)` 转义不可靠）
-- 文件保存编码推荐 **UTF-8 without BOM** + 无 `chcp` 声明，让系统默认 936 自然处理
+## 5. Web ↔ Desktop 代码隔离约束
 
-## ⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)
+- 前端已统一为 `@easyagent/frontend` 共享包，Web/Desktop 通过 `mountApp()` 复用同一套 UI/状态/路由
+- 各自入口（`web/src/main.tsx`、`desktop/src/renderer/main.tsx`）只注入平台配置
 
-- **前端已统一为 `@easyagent/frontend` 共享包**，Web 和 Desktop 通过 `mountApp()` 复用同一套 UI/状态/路由
-- 各自入口文件（`web/src/main.tsx` / `desktop/src/renderer/main.tsx`）只负责注入平台配置
-- **关键差异仍存在**：
-  | 差异点 | Web | Desktop |
-  |--------|-----|---------|
-  | 路由方案 | `BrowserRouter`（路径 `/sessions`） | `HashRouter`（路径 `/#/sessions`） |
-  | 协议 | HTTP/HTTPS | `file://` + `http://127.0.0.1:3456` |
-  | IPC 桥接 | 无 | `ipcBridge.ts` → `window.easyAgent` |
-  | 包名导入 | `@easyagent/frontend` | `@easyagent/frontend` |
-- **修改 UI/组件/状态** → 只改 `packages/frontend/src/`，两个平台自动生效
-- **修改入口逻辑/IPC** → 改对应平台的 `main.tsx` 或 `ipcBridge.ts`
-- **pnpm isolated mode**: 所有二进制工具（eslint, rimraf 等）通过 `scripts/lint.bat` / `scripts/clean.bat` 包装器直接调用 `.pnpm` 路径
+| 差异点 | Web | Desktop |
+|--------|-----|---------|
+| 路由 | `BrowserRouter` | `HashRouter` |
+| 协议 | HTTP/HTTPS | `file://` + `http://127.0.0.1:3456` |
+| IPC 桥接 | 无 | `ipcBridge.ts` → `window.easyAgent` |
 
-### ⚠️ 陷阱自愈规则（每次修复 bug 后必须执行）
-- **每次发现并修复一个新 bug 后，必须同时更新两个文件，无需用户提醒**：
-  1. **MEMORY.md** ── 在陷阱表中新增一行，**必须标注 🎯 范围标记**（🖥️=Desktop / 🌐=Web / 🔀=两者）
-  2. **verify-build.cjs** ── 添加对应的自动检查逻辑
-- **每日日志 (`YYYY-MM-DD.md`) 中的 bug 记录也必须标注范围标记**，格式：`[🖥️ Desktop专属]` / `[🌐 Web专属]` / `[🔀 两者影响]`
-- 目的：让脚本替人记住教训，下次构建自动拦截
+- **改 UI/组件/状态 → 只改 `packages/frontend/src/`**；改入口/IPC → 改对应平台 `main.tsx` / `ipcBridge.ts`
+- ⚠️ `frontend/src/main.tsx` **只导出 `mountApp`，绝不自行调用**（否则与 web/desktop 入口双重挂载 → 全局字体/布局异常）
+- ⚠️ 改模块入口后 Vite HMR 缓存可能不一致（页面全空白、无 JS 错误）→ **重启 Vite**
 
-## 标准化打包流水线
+---
+
+## 6. 构建与启动命令
 
 ```bash
 build.bat              # 快速测试 (--dir, ~60s)
 build.bat --release    # 完整 NSIS 安装包 (~3min)
-build.bat --verify     # 仅预检查，不构建
+build.bat --verify     # 仅预检查
+# 流程: 清理进程 → verify-build.cjs 预检查 → core/server/desktop tsup → vite build → electron-builder → 输出验证
+# 输出: release/EasyAgent-<ver>-win-x64.exe 或 release/win-unpacked/EasyAgent.exe
+
+start-backend.bat      # 后端 localhost:3456（可见窗口）
+start-frontend.bat     # Web 前端 localhost:5173
+
+pnpm build             # core → cli → server → desktop tsup
+pnpm build:web         # web 生产构建
 ```
-
-**流程**: 清理进程 → verify-build.cjs 预检查(10大类20+项) → core/server/desktop tsup → vite build → electron-builder → 输出验证
-
-**输出**: `release/EasyAgent-0.4.0-win-x64.exe` 或 `release/win-unpacked/EasyAgent.exe`
-
-## Server + Web 启动
-
-```bash
-start-backend.bat   # 后端 localhost:3456 (可见窗口)
-start-frontend.bat  # Web前端 localhost:5173 (可见窗口)
-```
-
-## 远程服务器部署运维（82.156.71.231，重要跨会话事实）
-
-- **服务器位置/账号**：腾讯云轻量应用服务器，公网 `82.156.71.231:3456`（已在轻量防火墙放行 TCP 3456）；项目根 `C:\easyagent`；服务 `node packages/server/dist/index.js`。服务器在 **NAT 后**：本机网卡是私网 IP（如 `172.16.48.13`），对外公网 IP `82.156.71.231` 在路由器上、不绑定本机网卡。
-- **助手可直登**：工作站自带 OpenSSH（`C:\Windows\System32\OpenSSH\ssh.exe`/`scp.exe`），可用 `SSH_ASKPASS`+`SSH_ASKPASS_REQUIRE=force` 非交互登录 `Administrator@82.156.71.231`。服务器默认 shell 是 **PowerShell**，远程命令用 `;` 分隔，不能用 cmd 的 `&`。
-- **致命坑：CORS 致静态资源 500（已修复）**：浏览器加载同源 `<script>`/`<link>` 子资源会带 `Origin: http://82.156.71.231:3456` 头；原 `cors` 中间件默认只放行 `localhost/127.0.0.1/file://`，**公网 IP 不在白名单 → `Error: Not allowed by CORS` → Express 错误页 500（text/html, CSP default-src none, 1361B）**。根页面 `/` 是顶层导航不带 Origin → 200（故"首页能开、资源 500"）。**NAT 下不能用 `os.networkInterfaces()` 判断同源**（取不到公网 IP）。**正确修复**（`packages/server/src/index.ts`）：**保留 `cors` 包**（它是安全控件，不能删），仅前置一个同源预判定中间件——比较 `Origin` 的 `host:port` 与请求 `Host` 头一致即摘除 `Origin` 让 `cors` 按同源放行（兼容 NAT/公网/局域网/域名），跨域前端走 `CORS_ORIGIN` 环境变量白名单（逗号分隔）。**教训**：CORS 整包移除是过度改动，根因只是白名单配置错。复现命令：`curl -H "Origin: http://82.156.71.231:3456" http://82.156.71.231:3456/assets/xxx.js` 应返回 200 且含 `Access-Control-Allow-Origin`。详见 `docs/60_服务器部署指南.md` §4.4。
-- **进程持久化**：SSH 会话里 `Start-Process`/`start /min` 启动的 node 会随 SSH 注销被一起杀掉。**必须**用 `schtasks /create /tn ea_server /tr C:\easyagent\start.bat /sc onstart /ru SYSTEM /rl highest /f` + `schtasks /run /tn ea_server`（SYSTEM / Session 0，脱离 SSH 会话，重启自起）。重启：`Stop-Process -Name node -Force; schtasks /end /tn ea_server; schtasks /run /tn ea_server`。
-- **部署流程**：本地 `pnpm run build:server` → `scp packages/server/dist/* Administrator@82.156.71.231:C:/easyagent/packages/server/dist/` → 重启。
-
-## 测试命令
-
-```bash
-cd packages/core && npx vitest run     # 926 tests (JSON → _vitest-core.json)
-cd packages/server && npx vitest run   # 151 tests (JSON → _vitest-server.json)
-cd packages/desktop && npx vitest run  # 118 tests (JSON → _vitest-desktop.json)
-# 覆盖率
-pnpm run test:coverage                 # 全包覆盖率检查
-pnpm run test:coverage:core            # Core 仅覆盖率 (thresholds 35/25/30/35)
-pnpm run test:coverage:server          # Server 仅覆盖率 (thresholds 30/20/25/30)
-```
-**管线动态通过率**: 服务器启动时自动读取 `docs/pipeline/_vitest-*.json`，按模块汇总计算各阶段 pass rate。
-**测试用例数**: 来自 `docs/pipeline/test-case-mapping.json`（`scripts/unified-sync.mjs` 自动生成）。
-**当前结果**: 1195 定义用例 / 1195 CI已执行(1195通过/0失败) / 100% CI通过率 · 综合评分 100 · CI v0.5.2 ✅ 6/6 jobs。
-
-## SWE-bench 评测基准 (P0-2 已完成)
-
-```bash
-pnpm benchmark:dry                     # 环境检查 (无需 API Key)
-pnpm benchmark --provider deepseek --model deepseek-v4  # 实际评测
-```
-
-- 数据集: `packages/core/src/benchmark/benchmark-tasks.json` (10题, easy/medium/hard)
-- 运行器: `BenchmarkRunner.ts` + `SWEBenchEngine.ts`
-- CLI: `scripts/swe-bench/run-benchmark.mjs`
-
-## Node.js 版本限制 (P0-1 已完成)
-
-- engines: `>=18.0.0 <24.0.0` (better-sqlite3 无 Node 24 预编译)
-- preinstall: `scripts/preinstall.cjs` 自动拦截
-- 跳过: `set EASYAGENT_SKIP_NODE_CHECK=1` (Windows) / `export` (Unix)
-
-## 管线模块 v2.1 动态化架构 (2026-06-23)
-
-### 架构原则
-- **KPI 动态计算**: `testCases` 从 `test-case-mapping.json` 读取，`passRate` 从 vitest JSON 报告实时计算，**严禁硬编码通过率**
-- **单一配置源**: `docs/pipeline/lib/pipeline-config.mjs` 是唯一配置源（MODULES + PHASES + BRANCHES + KPI），模块变更只改这一个文件
-- **测试用例对照表**: `docs/pipeline/test-case-mapping.json` 由 `scripts/scan-test-cases.mjs` 自动生成，是测试数量的唯一数据源
-- **vitest JSON 报告**: 运行测试后自动生成 `_vitest-*.json`，管线服务器读取并动态计算各阶段通过率
-- **三级渐进式加载**: HTTP API → 静态 JSON 快照 → 内嵌骨架回退，确保 HTTP/file:///离线三种模式均可用
-- **产品目录模式**: Dashboard 卡片详情（工具列表、模型目录）视为静态产品文档，存于 `pipeline-data.json.dashboard`
-
-### 关键组件
-| 文件 | 职责 |
-|------|------|
-| `docs/pipeline/lib/pipeline-config.mjs` | 唯一配置源 |
-| `docs/pipeline/lib/pipeline-api.mjs` | 6 REST API 端点 |
-| `docs/pipeline/lib/pipeline-parser.mjs` | Memory MD 解析 + 缓存 |
-| `docs/pipeline/lib/pipeline-cache.mjs` | mtime 文件级缓存 |
-| `docs/pipeline/server.mjs` | 113 行路由分发 |
-| `docs/pipeline/index.html` | 前端渲染 (924 行, 0 硬编码) |
-| `docs/pipeline/pipeline-data.json` | 静态快照 (含 pipeline + dashboard) |
-| `docs/pipeline/ARCHITECTURE.md` | 架构设计文档 |
-| `scripts/update-progress.mjs` | Git hook 自动检测更新 |
-
-### 关键命令
-```bash
-node docs/pipeline/server.mjs              # 启动管线服务器 (端口 8898)
-node scripts/update-progress.mjs           # 手动触发进度同步
-del docs\pipeline\.pipeline-cache.json     # 强制重建解析缓存
-```
-
-### 新增/修改模块定义（只需改一个文件）
-
-**唯一入口**：`docs/pipeline/lib/pipeline-config.mjs`
-
-在该文件的 `MODULES` 对象中添加新条目即可：
-
-```js
-export const MODULES = {
-  // ... 现有模块 ...
-  newId: {
-    id: 'newId',        // 模块唯一 ID，对应 memory 文件中 [模块:newId]
-    name: '新模块名',      // 显示名称
-    phase: 'P3',        // 所属阶段（P1-P6）
-    icon: '🆕',         // 节点图标
-    desc: '模块简述',     // 鼠标悬停提示
-    status: 'pending',  // pending | in-progress | done
-    keywords: ['关键1', '关键2'],  // memory 文件中无显式标签时的关键词匹配回退
-  },
-};
-```
-
-同时需在 `pipeline-parser.mjs` 第192行附近，将新模块 ID 前缀加入标签 regex：
-```js
-/\[模块[：:]\s*(F\d+|B[123][a-e]|p5[a-c]|newId)\s*\]/i
-```
-
-Memory 文件中使用 `[模块:newId]` 标签，解析器即可自动识别分配。
-
-### 仪表板测试分类数据层级
-
-测试分类卡片支持 **4 层渐进展开**：
-
-| 层级 | 数据位置 | 示例 |
-|------|---------|------|
-| L1 | `generateTestItems()` 的 `expandItems` | 多模型适配器 (127 tests) |
-| L2 | `generateTestItems()` 的 level-2 | DeepSeek 适配 (18) |
-| L3 | `TEST_LEVEL3_MAP` | 流式对话测试 (4) |
-| L4 | `TEST_LEVEL4_MAP` | SSE 流式响应完整性 ✅ |
-
-**新增 L4 数据示例**（在 `pipeline-config.mjs` 的 `TEST_LEVEL4_MAP` 中）：
-```js
-'流式对话测试': [
-  { label: 'SSE 流式响应完整性', val: '✅' },
-  { label: 'chunk 分片重组正确性', val: '✅' },
-],
-```
-
-L3 项有 `expandItems` 时自动渲染为可展开行（▶ 箭头），无则保持纯文本显示。
-
-**L4 全覆盖（2026-06-23 补全）**: `TEST_LEVEL4_MAP` 覆盖全部 209 个 L3 项的 L4 具体用例名称，13 个模块 100% 覆盖。注入逻辑在 `attachLevel3()` 中统一处理，不区分模块。
-
-### 工具卡片 L3 参数详情（2026-06-23 新增）
-
-`tools` 卡片现支持 3 级展开（L1: 工具组 → L2: 工具名 → L3: 参数签名）：
-
-**新增工具参数**（在 `pipeline-config.mjs` 的 `TOOL_PARAMS_MAP` 中）：
-```js
-'read_file': [
-  { label: 'filePath', val: 'string · 必填' },
-  { label: 'offset', val: 'number' },
-  { label: 'limit', val: 'number' },
-],
-```
-
-已覆盖 30 个工具的参数签名，`attachToolParams()` 自动注入到 `generateToolItems()` 返回数据中。
-
-### 🔴 数据分析图表数据一致性规则 (v1.0, 2026-06-25)
-
-**问题根源**：pass 面板的分析图表从 `detail.items`（`generatePassRateItems`）推导总数，而 KPI 从 `getKPI()` 获取，两者数据源可能不一致。
-
-**强制规则**：
-1. `renderPassCharts` 必须从 `pipelineData.kpi` 获取权威通过/失败/跳过/总数，**不得从 items 反推**
-2. `generatePassRateItems` 必须包含所有阶段+分支节点ID，确保 `items.val` 总和 = `KPI.testCases`
-3. `calcPhasePassRate` 返回 `rate: 'N/A'` 时，图表需显示"N/A"文字+底部解释说明
-4. `pass` 面板 summary 必须同时检查 `failed` 和 `skipped`（三种情况：全通过/有跳过/有失败）
-5. 任何新增模块（分支/主线）必须同步更新 `generatePassRateItems` 的 `phaseDefs` 列表
-
-### 仪表板 9 张卡片速查
-
-| 卡片 | cardId | 层级 | 说明 |
-|------|--------|------|------|
-| 测试用例总数 | tests | L1→**L4** (全覆盖) | 13个模块 209 L3项→209 L4具体用例，100%覆盖 |
-| 测试通过率 | pass | L1→L2 | 按阶段分组 |
-| 内置工具数 | tools | L1→L3 | 工具组→工具名→参数 |
-| 模型提供商 | models | L1→L2 | 提供商→模型 |
-| 综合评分 | score | 图表 | 版本演进柱状图+维度条 |
-| 操作模式 | modes | L1→L2 | 模式→功能特性 |
-| **主线完工率** 🆕 | progress | L1→L2 | 分期进度条+模块明细 |
-| **已完成模块** 🆕 | modules_progress | L1→L2 | 按状态分组+模块清单 |
-| 问题记录 | issues | 节点点击 | 模块问题分布+时间线 |
-
-### Memory 文件格式约束（解析器依赖）
-
-**核心规则（编写新记录时遵循）**：
-1. 每个问题使用独立的 `## ` section，可带 `[模块:ID]` 标签或依赖关键词匹配
-2. 问题字段推荐使用 `- **问题**:` / `- **根因**:` / `- **修复**:` / `- **状态**: ✅ resolved` 格式
-
-**解析器已兼容的格式（新旧均可）**：
-- 冒号位置：`**问题：**`（旧）和 `**问题**: `（新）都兼容
-- `### ` 子节识别：支持 `### 问题诊断/问题回顾` → `### 修复内容/解决` 模式
-- 解决方案标记：`**修复**`, `**修复1**`, `**修复方案**`, `**修复内容**`, `**正确方案**`, `**核心方案**`, `**最终方案**`, `**解决**` 均识别
-- 编号修复项：`**1. 修复描述**` / `**2. 修复描述**` 在 solution 块内被捕获
-- 粗体键值对：`- **Pages**: desc` 在 solution 块内被捕获
-- `- **修复** (path):` 括号后跟冒号的格式也被识别
-
-**不需要遵守的旧约束**：
-- ~~每个 Section 必须含 `[模块:ID]`~~ → 关键词匹配作为回退方案
-- ~~冒号必须在粗体标记内部~~ → 内外皆可
-- ~~不能用 `### 修复内容`~~ → 已支持
-- 纯操作流程（启动/构建/GitHub）如无意匹配，可加 `## ` 但无模块标签和 fix 字段，会自动过滤
-
-**模块 ID 速查**：
-| ID | 模块 | ID | 模块 |
-|----|------|----|------|
-| F1 | 多模型适配器 | F9 | Desktop 原生应用 |
-| F2 | Agent 系统 | F10 | 插件与技能系统 |
-| F3 | 工具系统 | F11 | IM 适配器 |
-| F4 | 知识库 RAG | F12 | i18n 国际化 |
-| F5 | MCP 协议 | F13 | Desktop 自动升级 |
-| F6 | 沙箱执行环境 | F14 | 模型目录动态更新 |
-| F7 | Ink CLI | F15 | 全面去硬编码 |
-| F8 | Web Dashboard | F16 | 版本控制系统 |
-| B1a-B3c | 分支优化项(10个) | P5a-P5c | 管线运维(3个) |
-
-**缓存说明**：仅修改日期（当日）或变更过的 MD 文件会被重新解析，旧文件复用 mtime 缓存
-
-### 解析器修复历程（2026-06-23）
-
-两次大规模修复，将问题追踪覆盖率从 ~23% 提升到 **99.5%**：
-
-**第一轮 — 模块分配修复**：
-- 问题：p5a/p5b/p5c/b2b 等模块节点显示 0 个问题
-- 根因：① 内存文件标签错误（`[模块:F8]`→应为`[模块:p5a]`）② `**date**:`格式无`## `标题头 ③ regex 冒号位置单一 ④ section 过滤过激（跳过GitHub等）⑤ 去重仅看`date+title`
-- 结果：总问题数 39→64→87，p5a:0→4, p5b:0→1, p5c:0→3, b2b:0→3
-
-**第二轮 — "详见原文"消除修复**：
-- 问题：大量条目显示"详见原文"（44/64 = 69%），无法展开具体解决信息
-- 根因：① `### 修复内容`不被识别为solution section ② `\b`对中文字符无效（`解决\b`始终false）③ `### 问题回顾`→`### 解决`过渡时entry被提前push ④ `**修复**(path):`括号后冒号不匹配 ⑤ solution块内粗体键值对不捕获 ⑥ `**修复1**:`编号修复项不匹配
-- 关键修复：`\b`→`(?![一-龥\w])`（中文友好边界）；fixStart regex改为通配含修复/方案关键词的粗体标签；问题→解决子段间不reset problem、不提前push entry
-- 结果：总问题数 87→143→189，"详见原文" 44→25→6→1（-97.7%）
-
-**重要教训**：
-- JavaScript `\b` word boundary 对中文字符无效，需用 `(?![一-龥\w])` 替代
-- `### ` 子段（问题回顾→解决）过渡时不应推送/重置条目，需保留累积状态
-
-## 参考：BMAD Agent Team 插件评估（2026-06-23）
-
-**BMAD** (Business Model And Design) 是 CodeBuddy 的 Agile 团队协作插件，包含 7 个角色化 Agent：
-
-| Agent | 角色 | 说明 |
-|-------|------|------|
-| bmad-po | Product Owner | 需求收集、用户故事、PRD 编写 |
-| bmad-architect | System Architect | 技术架构设计、方案评审（交互式） |
-| bmad-sm | Scrum Master | Sprint 规划、任务拆解 |
-| bmad-dev | Developer | 按 PRD/架构/sprint 计划实现功能 |
-| bmad-qa | QA Engineer | 全面自动化测试 |
-| bmad-review | Code Reviewer | 独立代码审查 |
-| bmad-orchestrator | Orchestrator | 工作流协调、仓库分析 |
-
-**评估结论**：不适合 EasyAgent 项目。
-- 功能重叠：EasyAgent 本身是 AI 编程助手（70 工具），bmad 做的事它都能直接做
-- 组织错配：bmad 为多角色团队设计，EasyAgent 是个人/小团队项目
-- 已移除：工作区引用（`_add_level3.mjs`）+ 用户级插件目录均已清理
-
-## 🔴 管线数据完整更新工作流 (v2.0, 2026-06-26)
-
-**核心原则**：每次 `git push` → CI 全部通过 → **CI 自动**获取 vitest 报告 → **CI 自动**运行 unified-sync → **CI 自动** git commit + push 管线文件 → 本地 pull 即可。
-
-**⚡ 自动化方式**：
-- **CI 端**：`.github/workflows/ci.yml` 中 `sync-pipeline` job，在所有 6 个 job 通过后自动触发（仅 push main 分支）
-- **本地端**：`git pull` 后运行 `scripts/pipeline-auto-sync.ps1` 同步服务器状态
-
-**CI sync-pipeline job 流程**：
-1. 下载 `test-core`、`test-server`、`test-desktop` 上传的 vitest JSON artifacts
-2. 运行 `node scripts/unified-sync.mjs` 刷新所有管线数据文件
-3. `git add` + `git commit -m "ci: auto-sync pipeline data [skip ci]"` + `git push`
-
-### 数据流全景图
-
-```
-module-registry.mjs (唯一权威源——29 模块定义 + testFiles 映射)
-  │
-  ├──→ unified-sync.mjs (统一同步脚本)
-  │       ├── 步骤1: 加载 MODULE_REGISTRY + PHASE_DEFINITIONS + BRANCH_DEFINITIONS
-  │       ├── 步骤2: 扫描 packages/ 下所有 *.test.ts/tsx 文件
-  │       ├── 步骤3: 统计用例数 (优先 vitest 报告 → 源码解析回退)
-  │       ├── 步骤4: 生成 test-case-mapping.json (模块→文件→用例数)
-  │       ├── 步骤5: 调用 getKPI() 获取动态 KPI
-  │       ├── 步骤6: 强制清除缓存, 调用 parseMemoryIssues() 解析所有问题
-  │       ├── 步骤7: 生成 pipeline-data.json (phases/branches/kpi/scoreHistory/dashboard)
-  │       └── 步骤8: 导出 issue-data.json (离线问题回退)
-  │
-  ├──→ 输出文件 (共 5 个):
-  │     ├── test-case-mapping.json     ← 模块→测试文件映射 (从 registry 生成)
-  │     ├── pipeline-data.json         ← KPI + phases + branches + dashboard + scoreHistory
-  │     ├── _test_detail.json          ← 四级树形测试详情 (从 vitest 报告生成)
-  │     ├── issue-data.json            ← 问题数据离线回退 (526+ 条)
-  │     └── project-progress-data.json ← 项目进度 (git hook 自动更新)
-  │
-  ├──→ Vitest 报告输入 (3 个):
-  │     ├── _vitest-core.json    ← CI job test-core 或本地 npx vitest run
-  │     ├── _vitest-server.json  ← CI job test-server
-  │     └── _vitest-desktop.json ← CI job test-desktop
-  │
-  └──→ API 层 (server.mjs + pipeline-api.mjs → pipeline-config.mjs)
-        ├── GET /api/pipeline      ← pipelineView + KPI + scoreHistory
-        ├── GET /api/dashboard     ← 9 张卡片完整数据
-        ├── GET /api/dashboard/:id ← 单卡片详情
-        ├── GET /api/issues        ← 实时解析 memory MD 问题
-        ├── GET /api/status        ← 系统状态摘要
-        ├── GET /api/modules       ← 全部模块列表
-        └── GET /api/test-detail   ← 四级树形测试详情 (自动回退 _test_detail.json)
-```
-
-### 文件依赖关系（修改触发链）
-
-| 修改源文件 | 触发更新的文件 | 更新方式 |
-|-----------|--------------|---------|
-| `module-registry.mjs` (新增/修改模块) | test-case-mapping.json + pipeline-data.json | `node scripts/unified-sync.mjs` |
-| `pipeline-config.mjs` (KPI/评分/阶段逻辑) | pipeline-data.json (API 动态读取,无需重生成) | 重启服务器即可 |
-| 项目测试文件 (*.test.ts) 增删 | test-case-mapping.json (用例数变化) | `node scripts/unified-sync.mjs` |
-| `_vitest-*.json` (CI 报告刷新) | pipeline-data.json KPI + _test_detail.json | `node scripts/unified-sync.mjs` |
-| `.codebuddy/memory/*.md` (新增问题记录) | issue-data.json + pipeline-data.json.dashboard.issues | `node scripts/unified-sync.mjs` |
-| `03_测试案例文档.md` (手动更新) | 无自动依赖, 但需与 mapping 一致 | 手动同步 |
-
-### 🔴 GitHub Push → CI → 管线更新 标准流程
-
-**触发条件**：每次 `git push` 到 main 分支后 CI 完成（6/6 jobs ✅）。
-
-**必须执行的步骤**（缺一不可）：
-
-#### 第 1 步：获取 CI vitest 报告
-
-```bash
-# 方式 A：本地重新运行 vitest（推荐，最简单可靠）
-cd packages/core && npx vitest run     # → _vitest-core.json (926 tests)
-cd packages/server && npx vitest run   # → _vitest-server.json (151 tests)
-cd packages/desktop && npx vitest run  # → _vitest-desktop.json (118 tests)
-# 合计 1195 tests
-
-# 方式 B：从 GitHub Actions artifacts 下载（需认证 token）
-# CI 各 job 的 vitest JSON 输出自动写入 docs/pipeline/_vitest-*.json
-# 但需确认 vitest.config.ts 中已配置 reporter: 'json' + outputFile
-```
-
-#### 第 2 步：运行统一同步脚本
-
-```bash
-node scripts/unified-sync.mjs
-```
-
-此脚本自动完成：
-1. 加载 module-registry.mjs 模块定义
-2. 扫描所有测试文件，统计用例数
-3. 生成 `test-case-mapping.json`（1195 用例, 48 文件, 29 模块）
-4. 强制清除问题缓存，重新解析所有 memory MD 文件
-5. 生成 `pipeline-data.json`（KPI=1195/1195/0, score=100, 6 phases, 3 branches, 9 dashboard cards）
-6. 导出 `issue-data.json`（离线问题回退）
-
-#### 第 3 步：重启管线服务器
-
-```bash
-# 杀掉旧进程
-Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force
-# 启动新服务器
-Start-Process -FilePath "node" -ArgumentList "docs/pipeline/server.mjs", "8899" -WorkingDirectory "d:\Work_Area\AI\Claude Code  CN" -WindowStyle Hidden
-# 验证端口
-netstat -ano | findstr ":8899"
-```
-
-#### 第 4 步：验证数据一致性
-
-```bash
-# 验证 KPI 数据
-node -e "var pd=JSON.parse(require('fs').readFileSync('docs/pipeline/pipeline-data.json','utf-8')); console.log('KPI:', pd.kpi.testCases, '/', pd.kpi.testPassed, '/', pd.kpi.testFailed, ' score:', pd.kpi.scoreTotal)"
-
-# 验证测试映射
-node -e "var m=JSON.parse(require('fs').readFileSync('docs/pipeline/test-case-mapping.json','utf-8')); console.log('mapping:', m._meta.totalTestCases, 'cases,', m._meta.totalTestFiles, 'files')"
-
-# 验证 API 响应
-curl -s http://127.0.0.1:8899/api/pipeline | node -e "var d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{var j=JSON.parse(d);console.log('API KPI:',j.kpi.testCases,j.kpi.testPassRate,j.kpi.scoreTotal)})"
-
-# 运行管线测试
-node --test docs/pipeline/__tests__/pipeline-*.test.mjs
-```
-
-### 🔴 管线功能块显示健康检查清单
-
-| # | 检查项 | 预期值 | 验证方式 |
-|---|--------|--------|---------|
-| 1 | 测试用例总数卡片 | 1195 | 仪表板 → tests 卡片 → 展开全部模块 |
-| 2 | 测试通过率卡片 | 100% | 仪表板 → pass 卡片 → 各阶段显示"100%"或"代码扫描" |
-| 3 | 内置工具数卡片 | 51 tools | 仪表板 → tools 卡片 → 17 分组 → 可展开参数 |
-| 4 | 模型提供商卡片 | 10 providers | 仪表板 → models 卡片 → 10 家国产模型 |
-| 5 | 综合评分卡片 | 100/100 | 仪表板 → score 卡片 → 五维度柱状图 |
-| 6 | 操作模式卡片 | 4 modes | 仪表板 → modes 卡片 → Chat/Agent/Plan/Review |
-| 7 | 主线完工率卡片 | 100%, 6/6 阶段 | 仪表板 → progress 卡片 → 进度条全绿 |
-| 8 | 已完成模块卡片 | 29/29 模块 | 仪表板 → modules_progress → 全部 done ✅ |
-| 9 | 问题记录卡片 | 535+ 条 | 仪表板 → issues 卡片 → 覆盖 23+ 模块 |
-| 10 | 全景流程图 | 29 节点全绿 | SVG 管线图 → 6 阶段 3 分支全部绿色 done |
-| 11 | 节点点击面板 | testCount 正确 | 点击任意节点 → "🧪 N 测试用例" |
-| 12 | MD 问题反馈面板 | 按模块分类 | 点击问题记录卡片 → 展开 → 按模块显示问题 |
-| 13 | 测试详情报告 | 1195 用例 | 点击失败的测试数 → 四级树形展开 (包→文件→分组→用例) |
-| 14 | pass 数据分析图 | 环形图+柱状图+表格 | pass 面板 → 三图数据一致 |
-| 15 | 版本历史图 | v0.1.0 → v0.5.2 单调递增 | score 卡片 → 版本演进柱状图 |
-
-### Vitest 报告刷新注意事项
-
-1. **core 包 vitest 配置**：`packages/core/vitest.config.ts` 必须配置 JSON reporter + outputFile
-2. **报告时效性检测**：`unified-sync.mjs` 会对比 vitest 报告 mtime 与 `_test_detail.json` mtime，若 vitest 更新则强制重新生成
-3. **完整性问题**：历史上 `_vitest-core.json` 曾只包含 1 文件/49 断言（应为 33 文件/926 断言），务必确认 3 个报告文件都完整
-4. **验证完整性**：`_vitest-core.json` 中 `numTotalTests` 应 ≈ 926; `_vitest-server.json` ≈ 151; `_vitest-desktop.json` ≈ 118
-
-### 常见问题速查
-
-| 问题 | 症状 | 修复 |
-|------|------|------|
-| vitest 报告过期 | KPI 显示 318 而非 1195 | 重新运行 `npx vitest run` 生成新报告 |
-| 问题缓存过旧 | issues 卡片显示旧数量 | `del docs\pipeline\.pipeline-cache.json` + 重启服务器 |
-| 服务器代码未更新 | API 返回旧数据 | 重启 node 进程 (pipeline-config.mjs 动态 import) |
-| testCount 缺失 | 节点面板不显示测试数 | 运行 `node scripts/unified-sync.mjs` 重新生成 |
-| 模块状态不一致 | 完工率 < 100% 但全部 done | 检查 module-registry.mjs 中各模块 status 字段 |
-| _test_detail.json 过期 | 测试详情只显示 318 条 | 运行 `npx vitest run` 刷新报告 → unified-sync 自动重新生成 |
-| JSON/API 数据不一致 | 页面显示与 API 返回不同 | 检查 transformJSONData() 兼容 pipeline.phases (v2.0) 和 mainLane (v1.x) |
-
-## 文档管理规范
-
-> 详见 `docs/55_MD文档管理方案选型与知识库体系设计.md`（9 方案对比 + Obsidian 九维度分析 + 反向索引规范）
-
-### 🔴 MD 文档拆分规则
-
-| 规则 | 说明 |
-|------|------|
-| 拆分阈值 | 单文件 ≥ 4000 行时触发拆分 |
-| 命名规范 | 主文件 → `XX_主题.md`；分册 → `XX_主题_更新02.md`（序号递增） |
-| 主文件职责 | ≤ 300 行精简版：目录大纲 + 最新 5-10 条 + 分册链接 |
-| 活跃分册 | 始终追加到**最后一个分册**；主文件明确标注"当前活跃分册" |
-| 封版分册 | 不可修改，只读归档 |
-
-### 🔍 反向索引维护
-
-> `docs/README.md` 维护反向索引表，用关键词快速定位文档位置
-
-| 规则 | 说明 |
-|------|------|
-| 新增文档 | 评估是否需要新增索引条目（5+ 行新内容 = 大概率需要） |
-| 删除/重命名 | 同步更新索引中的文件路径 |
-| 关键词去重 | 同一关键词合并到一行（多个位置用逗号分隔） |
-| 30 条上限 | 超过 30 条时按类别（🔧构建/🚀发布/🧠引擎/🤖模型/📐架构/📋规范）拆分子表 |
-
-### 推荐工具链
-
-| 场景 | 工具 | 说明 |
-|------|------|------|
-| 代码/Git 操作 | VS Code | 主编辑器，diff/merge/rebase 必备 |
-| 文档浏览 | Obsidian（可选） | 打开 `docs/` 文件夹，双向链接 + 知识图谱 |
-| 长期 AI 检索 | ChromaDB RAG（远期） | EasyAgent 内嵌文档语义搜索 |
+> ⚠️ 构建前必须清 `dist/renderer` 缓存（否则 Vite 复用旧产物，前端代码不更新）。构建链唯一入口是 `build.bat`，禁止手动逐步跑。
 
 ---
 
-## 关键文件索引
+## 7. 测试与数据同步
 
-- 版本源: `version.json` (0.5.2)
-- 版本同步: `scripts/sync-version.mjs`
-- 统一管线同步: `scripts/unified-sync.mjs` ← **核心同步入口**
-- 模块注册表: `docs/pipeline/lib/module-registry.mjs` ← **唯一权威源**
-- 管线配置: `docs/pipeline/lib/pipeline-config.mjs` ← KPI/评分/阶段/模块定义
-- 管线 API: `docs/pipeline/lib/pipeline-api.mjs` ← 7 REST API 端点
-- 管线解析器: `docs/pipeline/lib/pipeline-parser.mjs` ← Memory MD 解析 + 缓存
-- 管线服务器: `docs/pipeline/server.mjs` ← HTTP 服务 (端口 8898/8899)
-- 管线前端: `docs/pipeline/index.html` ← 仪表板渲染 (924 行)
-- 管线架构: `docs/pipeline/ARCHITECTURE.md`
-- 发布脚本: `scripts/release.mjs`
-- 一键发布: `release-publish.bat`（交互式，集成版本标记+构建+上传全流程）
-- 更新日志: `CHANGELOG.md`
-- 打包流程: `docs/05_Desktop_EXE打包标准流程.md` (v1.8, 28个问题详解)
-- **构建必检清单**: `docs/14_构建前必检清单.md` ← ⭐ 每次构建前30秒过一遍
-- 发布与CI/CD: `docs/06_版本发布与CI-CD流程指南.md` (v1.0, 发布全流程 + GitHub Actions)
-- 分发方案: `docs/07_自动更新分发方案对比.md` (v1.0, GitHub Releases/R2/COS/自建 5 方案对比)
-- 预检查脚本: `packages/desktop/scripts/verify-build.cjs` (17类, 30+项自动检查)
-- 一键打包: `build.bat --release` ← **唯一入口，禁止手动一步步跑**
-- 依赖清单: `packages/desktop/express-deps.json` (90+ 包)
-- 架构设计: `docs/02_架构设计文档_ADD.md` (v5.4)
-- 需求文档: `docs/01_需求规格说明书_PRD.md` (v5.3)
-- 测试文档: `docs/03_测试案例文档.md` (1273 tests, 覆盖率门禁)
-- 插件系统规划: `docs/58_EasyAgent插件系统规划与GitHub插件市场设计.md` (v1.0, 插件市场+Doc_project)
-- 插件模板: `packages/plugin-template/` (manifest.json + plugin.js 最小示例)
-- Doc Viewer 插件: `packages/easyagent-plugin-obsidian-doc-viewer/` (MVP 包装)
-- 独立文档浏览器: `D:\Work_Area\AI\Doc_project\` (React+Vite+D3+FlexSearch Obsidian-like 工具)
-- Doc_project 已支持: File System Access API 打开本地目录、资源管理器风格 MD 目录树、D3 关系图谱(全局/邻居模式)、节点点击预览、全文搜索(标题+内容高亮)、设置面板
-- Doc_project 限制: 必须在 localhost/HTTPS 下运行，需要用户主动授权目录访问
-- 插件发现 Topic: GitHub 仓库需打 `easyagent-plugin` topic
-- 插件包格式: GitHub Release zipball + 根目录 `manifest.json`
-- 插件隔离: 复用 `packages/core/src/plugins/PluginSandbox.ts` Worker Threads 沙箱
-- Doc_project 技术栈: React 18 + Vite + Tailwind + Zustand + D3.js + FlexSearch
+```bash
+pnpm test:all                    # core → server → langgraph → desktop → frontend → web → cli
+pnpm run test:coverage           # 全包覆盖率
+node scripts/unified-sync.mjs    # 统一同步管线数据（唯一入口）
+node --test docs/pipeline/__tests__/pipeline-*.test.mjs
+```
 
-## 🧩 修复汇总 (2026-07-02)
-- **`docs/修复汇总.md`**: 所有 bug 修复/架构决策/问题排查的集中记录，按日期时间标题从新到旧排列
-- 与 MEMORY.md 关键陷阱清单互补：MEMORY 是简表（一行一条），修复汇总是详表（完整上下文）
+**🔴 触发即同步**（发布 Tag / 新增≥20 用例 / 增删测试文件 / CI 通过率变化）——必须同步 6 处：
+`docs/03_测试案例文档.md` + `docs/pipeline/test-case-mapping.json`（`scripts/scan-test-cases.mjs`）+ `docs/pipeline/pipeline-data.json`（`scripts/update-progress.mjs`）+ `docs/pipeline/project-progress-data.json` + `MEMORY.md` + `CHANGELOG.md`
 
+**违例判定**: `03_测试案例文档.md` 汇总表 ≠ `test-case-mapping.json._meta.totalTestCases`，或 `MEMORY.md` 版本行 ≠ 实际 → 视为不同步。
 
-**支持两种** default export 形式（`PluginWorkerEntry.ts:handleInit`）：
+---
 
-1. **对象式（官方协议，推荐）**：
-   ```js
-   export default {
-     name, version, description, author,
-     async register(context) { context.registerTool({...}); },
-     getTools(), getSkills(), getHooks(),
-   };
-   ```
+## 8. 管线系统（指针式）
 
-2. **函数式（兼容入口）**：
-   ```js
-   export default function (context) {
-     context.registerTool({...});
-   }
-   ```
-   元信息从 `manifest.json` 读，函数本身只负责注册工具/技能/钩子。
+- **唯一权威源**: `docs/pipeline/lib/module-registry.mjs`（30 模块 + testFiles 映射）→ `scripts/unified-sync.mjs` → 5 个输出文件 → API → 前端
+- **唯一配置源**: `docs/pipeline/lib/pipeline-config.mjs`（KPI/评分/阶段/模块/`TEST_LEVEL4_MAP`/`TOOL_PARAMS_MAP`）
+- **KPI 必须动态计算**，严禁硬编码通过率；`testCases` 来自 mapping，`passRate` 来自 `_vitest-*.json` 实时计算
+- **三级渐进加载**: HTTP API → 静态 JSON 快照 → 内嵌骨架（兼容 HTTP/file:///离线）
+- **数据一致性铁律**: `renderPassCharts` 必须从 `pipelineData.kpi` 取权威值，**不得从 items 反推**
+- **CI 自动同步**: `ci.yml` 的 `sync-pipeline` job 在 6 个 job 全绿后自动下载 vitest artifacts → `unified-sync.mjs` → commit `[skip ci]`
+- **新增模块流程**: 见 `docs/43_管线模块添加标准流程.md`（改 `module-registry.mjs` + `pipeline-parser.mjs` 的标签 regex）
+- **关键命令**: `node docs/pipeline/server.mjs`（端口 8898）、`del docs\pipeline\.pipeline-cache.json` 强制重建缓存
+- ⚠️ JS 的 `\b` 对中文无效 → 中文边界用 `(?![一-龥\w])`
 
-**Worker 内部统一 sandboxContext**：`registerTool` / `registerTools` / `registerSkill` / `registerHook` / `getConfig`。
+---
 
-**PluginSandbox 路径解析陷阱**（2026-07-01）：
-- `PluginSandbox.ts:125` `__dirname + 'PluginWorkerEntry.js'` 在 **生产**（`dist/index.js` 内联）= `<core>/dist/PluginWorkerEntry.js` ✅
-- 在 **vitest 跑 src** 时 `__dirname` = `src/plugins/`，没有同目录 `PluginWorkerEntry.js`
-- 历史残留 `src/plugins/PluginWorkerEntry.js`（6.4KB, 6/25）会被错误地加载，掩盖新代码
-- **修复**：sibling 优先，不存在时回退 `<core>/dist/PluginWorkerEntry.js`；删除 src 下历史残留
-- **tsup 配置**：`core/tsup.config.ts` 用对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'` 独立输出 `dist/PluginWorkerEntry.js`（tsup `splitting:false` 会内联所有 import，路径敏感的 worker 入口必须独立打包）；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）
+## 9. 服务器部署
 
-## 🔄 Git 提交/同步陷阱 (2026-07-10)
-- **内嵌 git 仓库**：`packages/easyagent-plugin-obsidian-doc-viewer`、`packages/plugin-template` 各自含 `.git`，直接 `git add` 会变成 gitlink(160000)，GitHub 只留空引用、无实际代码。修复：`git rm --cached -f <dir>` → `Remove-Item -Recurse -Force <dir>/.git` → `git add <dir>`（`git rm --cached` 对 gitlink 必须加 `-f`）。
-- **管线钩子无限重算**：仓库的 pre/post-commit 钩子（EasyAgent 进度管线）每次提交都会重算并改写 `docs/pipeline/*.json`（project-progress-data / pipeline-data / issue-data / dashboard-data / test-case-mapping / _issue_cache），正常提交会陷入"提交→钩子改写→又脏→再提交"的死循环、无法收敛。对策：用 `git commit --no-verify` 提交钩子最新生成的这版数据以终止循环（数据正确性不受影响，本是钩子自身生成）；注意 **post-commit 钩子不受 --no-verify 影响，工作区最终仍会残留这 5 个 JSON 的差异**，属生成物固有行为、下次提交自动重算，无需再提交。
-- **同步排除清单**：提交/推送时勿纳入 `temp/`（调试脚本/日志/plugin.zip 等）、`未命名.base`、`.obsidian/plugins/*`（第三方 Obsidian 插件依赖）、`packages/*/docs/.obsidian/`（Obsidian 配置）。
+- **目标**: Windows 云服务器 `82.156.71.231:3456`，域名 `CCCN.fable5.icu`；项目根 `C:\easyagent`；服务器在 **NAT 后**（本机网卡是私网 IP）
+- **架构**: 单 Node 进程，Server 用 `express.static(packages/web/dist)` 同时托管页面 + `/api/*` + `/ws`；前端 `apiBase:''` / `wsBase:'/ws'` 同源，无 CORS
+- **部署构建链**: `core → langgraph → server → web`（web 由 Vite 直打包 `@easyagent/frontend` 源码）；启动 `node packages/server/dist/index.js`；生产 `PORT=80 HOST=0.0.0.0`
+- **Node 版本**: 必须 Node 18/20/22 LTS（`preinstall` 拦截 ≥24）；启动前 `node scripts/sqlite3-loader.mjs system`
+- **进程持久化**: SSH 会话里启动的 node 会随注销被杀 → 必须 `schtasks /create /tn ea_server /tr C:\easyagent\start.bat /sc onstart /ru SYSTEM /rl highest /f`；重启 = `Stop-Process -Name node -Force` + `schtasks /end` + `/run`
+- **部署流程**: 本地 `pnpm run build:server` → `scp packages/server/dist/* Administrator@82.156.71.231:C:/easyagent/packages/server/dist/` → 重启
+- **CORS 致命坑（已修）**: 公网 IP 不在白名单 → 子资源 500（首页正常）。修法：前置同源预判定中间件（比较 Origin 的 host:port 与 Host 头一致即摘 Origin 让 `cors` 按同源放行）+ `CORS_ORIGIN` 环境变量白名单。**不要整包删除 cors**。详见 `docs/60` §4.4
+- **交付物**: `docs/60_服务器部署指南.md`、`scripts/deploy-server.ps1`、`scripts/start-server.cmd`；HTTPS 用 Caddy 反代
 
-## 🚀 服务器部署 (2026-07-11)
-- **目标环境**：Windows 云服务器 `82.156.71.231`，域名 `CCCN.fable5.icu`，先 HTTP(80) 后加 HTTPS。仓库公开 `https://github.com/ht182400-creator/easyagent.git`。
-- **架构**：单 Node 进程（Server 用 `express.static(packages/web/dist)` 同时托管页面+`/api/*`+`/ws`）；前端 `apiBase:''`/`wsBase:'/ws'` 相对路径，同源无 CORS、无需改代码。
-- **硬性约束**：`preinstall` 拦截 Node≥24；服务器必须用 **Node 18/20/22 LTS**。`pnpm install` 自动编译 better-sqlite3（workspace 已 `allowBuilds`），启动前须 `node scripts/sqlite3-loader.mjs system` 激活系统 Node 版 `.node`。
-- **部署构建链**：`core → langgraph → server → web`（web 由 Vite 直打包 `@easyagent/frontend` 源码，无需单独 build frontend）。启动 `node packages/server/dist/index.js`，生产 `PORT=80 HOST=0.0.0.0`（80 需管理员）。
-- **交付物**：`docs/60_服务器部署指南.md`、`scripts/deploy-server.ps1`（一键校验/拉取/装依赖/构建）、`scripts/start-server.cmd`（生产启动器）。持久化用 NSSM 注册服务；HTTPS 升级用 Caddy 反代 `localhost:3456` 自动签证书。
+---
 
+## 10. Git / 插件 / LangGraph 速查
+
+**Git 陷阱**
+- 内嵌 git 仓库（`packages/plugin-template`、`packages/easyagent-plugin-obsidian-doc-viewer`）会被当成 gitlink(160000) → `git rm --cached -f <dir>` → 删其 `.git` → 再 `git add`
+- 管线钩子会在每次提交后改写 `docs/pipeline/*.json` → 提交无法收敛。对策：`git commit --no-verify` 终止循环（post-commit 钩子不受影响，工作区仍留 5 个 JSON 差异属正常生成物行为）
+- 同步排除清单：`temp/`、`未命名.base`、`.obsidian/plugins/*`、`packages/*/docs/.obsidian/`
+- ⚠️ 发版 commit **绝不能含 `[skip ci]`**（tag 指向该 commit 会连 tag push 一起跳过）；发版前 `git add .` 前先 `git checkout HEAD -- docs/pipeline/`
+
+**插件系统**
+- 支持两种 `default export`：对象式（官方协议，`register(context)` + `getTools/getSkills/getHooks`）与函数式（兼容）
+- 包格式：GitHub Release zipball + 根目录 `manifest.json`；发现方式：仓库打 `easyagent-plugin` topic
+- 隔离：`PluginSandbox.ts` Worker Threads + `PluginPermission.ts`（默认拒绝，四级 none/readonly/standard/full）
+- ⚠️ `PluginSandbox` 加载 `PluginWorkerEntry.js` 时 **sibling 优先，回退 `<core>/dist/`**；勿留 `src/plugins/PluginWorkerEntry.js` 历史残留
+- ⚠️ `tsup` 用对象 entry 独立输出 `PluginWorkerEntry.js`（`splitting:false` 会内联，路径敏感入口必须独立打包）；dts 排除该 entry
+
+**LangGraph 包**
+- 图: `START → think → route → (act → observe → think)* → END`
+- 产物: `bridge/adapterBridge.ts` + `toolBridge.ts` + `AgentFactory.ts`；`server/src/langgraph/`；`frontend/src/components/LangGraph/` + `pages/LangGraph.tsx`
+- 关键依赖: `@langchain/langgraph ^0.2`、`@langchain/core ^0.3`、`better-sqlite3`
+- ⚠️ `stream()` 走 `streamEvents`，非流式 adapter 无 `on_chat_model_stream` → 必须从 checkpointer 取最新 AI 消息兜底发 response 事件
+- Demo: `pnpm demo:web`（端口 3455）
+
+---
+
+## 11. 关键文件索引
+
+| 类别 | 路径 |
+|------|------|
+| 版本源 / 同步 | `version.json`、`scripts/sync-version.mjs` |
+| 核心引擎 | `packages/core/src/agent/AgentEngine.ts`、`packages/core/src/tools/{ToolRegistry,index}.ts` |
+| 模型预设 | `packages/core/src/config/ProviderPresets.ts`、`ModelRegistry.ts` |
+| 服务端 | `packages/server/src/index.ts`（3759 行，待拆）、`packages/server/src/langgraph/` |
+| 前端 | `packages/frontend/src/{App.tsx,pages/*,components/*,stores/*}` |
+| 共享入口 | `packages/frontend/src/mountApp.tsx`（只导出，不自调用） |
+| 桌面 | `packages/desktop/src/main.ts`（1252 行）、`ipcBridge.ts`、`index.html` |
+| 构建校验 | `packages/desktop/scripts/verify-build.cjs`、`docs/14_构建前必检清单.md` |
+| **质量门禁（新增）** | `scripts/run-tests-log.mjs`（回归+日志）、`scripts/verify-data-consistency.mjs`（数据一致性）、`scripts/verify-css-tokens.mjs`（设计令牌） |
+| **测试日志目录** | `logs/test-logs/<日期>_<时间>_<范围>/`（分层 log + 失败标红 HTML + summary.json + raw/） |
+| **API 安全中间件** | `packages/server/src/middleware/apiSecurity.ts`（鉴权 / 限流 / 绑定地址 / fail-fast 自检） |
+| **设计令牌真源** | `packages/frontend/tailwind.tokens.mjs` + `packages/frontend/src/styles/index.css`（`--color-*`） |
+| 打包流程 | `docs/05_Desktop_EXE打包标准流程.md`、`docs/11_构建链路对照表_tsup_asar_inline详解.md` |
+| 发布 / CI | `scripts/release.mjs`、`release-publish.bat`、`docs/06`、`docs/49`、`.github/workflows/{ci,_test,release}.yml` |
+| 管线 | `docs/pipeline/lib/{module-registry,pipeline-config,pipeline-api,pipeline-parser}.mjs`、`docs/pipeline/ARCHITECTURE.md` |
+| 架构 / 需求 | `docs/02_架构设计文档_ADD.md`、`docs/01_需求规格说明书_PRD.md` |
+| 测试文档 | `docs/03_测试案例文档.md` |
+| 修复详表 | `docs/修复汇总.md` ← 每次修复必追加 |
+| 引擎/模型决策 | `docs/53_引擎选择配置与LangGraph使用指南.md`、`docs/54_AI引擎架构决策知识库.md` |
+| 部署 | `docs/60_服务器部署指南.md`、`scripts/deploy-server.ps1`、`scripts/start-server.cmd` |
+| 本次审核 | `docs/62_专家团最终审核报告.md` |

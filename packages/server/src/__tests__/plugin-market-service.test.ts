@@ -243,13 +243,24 @@ describe('PluginMarketService — 卸载流程 (uninstallPlugin)', () => {
     expect(installed.find((p) => p.id === 'test/existing-plugin')).toBeUndefined();
   });
 
-  it('卸载时应调用 onPluginUnload 回调', async () => {
-    const unloadCb = vi.fn().mockResolvedValue(undefined);
+  it('卸载时应以原始 pluginId 调用 onPluginUnload，并按回调返回的 manifest name 定位目录', async () => {
+    // 契约（见 PluginMarketService.uninstallPlugin 实现）：
+    //   ① 传给 PluginManager 的必须是**原始 pluginId**（如 'test/existing-plugin'）——
+    //      GitHub repo 名（easyagent-plugin-xxx）与 manifest.name（xxx）不同，
+    //      需由 PluginManager 内部解析后把真正的 manifest name 回传；
+    //   ② 回调回传的 manifest name 会被优先用于定位磁盘目录。
+    //
+    // 【2026-09-18 修复】原断言 `toHaveBeenCalledWith('existing-plugin')` 与实现不符 →
+    // 误报失败（实际收到 'test/existing-plugin'）。现按真实契约断言两个关键点。
+    const unloadCb = vi.fn().mockResolvedValue('existing-plugin');
     service.setPluginUnloadCallback(unloadCb);
 
     await service.uninstallPlugin('test/existing-plugin');
 
-    expect(unloadCb).toHaveBeenCalledWith('existing-plugin');
+    // ① 回调收到的是原始 pluginId
+    expect(unloadCb).toHaveBeenCalledWith('test/existing-plugin');
+    // ② 依据回调回传的 manifest name 删除目录
+    expect(existsSync(join(tmpDir, 'existing-plugin'))).toBe(false);
   });
 
   it('卸载不存在的插件不应抛出异常', async () => {

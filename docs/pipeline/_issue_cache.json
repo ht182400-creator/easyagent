@@ -65,12 +65,16 @@
       "size": 2372
     },
     "2026-07-11.md": {
-      "mtimeMs": 1783700233748.4766,
-      "size": 2776
+      "mtimeMs": 1783738678780.992,
+      "size": 27040
+    },
+    "2026-09-17.md": {
+      "mtimeMs": 1789660309919.3564,
+      "size": 4593
     },
     "MEMORY.md": {
-      "mtimeMs": 1783700244876.568,
-      "size": 74328
+      "mtimeMs": 1789660208232.6238,
+      "size": 22999
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -10961,32 +10965,73 @@
       }
     ],
     "2026-07-10.md": [],
-    "2026-07-11.md": [],
-    "MEMORY.md": [
+    "2026-07-11.md": [
+      {
+        "moduleId": "f1",
+        "date": "2026-07-11",
+        "title": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
+        "problem": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
+        "solution": "80`（nginx 已配 80→3456；micro 同源站已证明 EdgeOne 可达，**安全组无需再开**）。此操作在腾讯云控制台或 EdgeOne API 完成——**SSH 无法直接建 EdgeOne 站点**（需腾讯云 SecretId/SecretKey）。用户需把 cccn 的 DNS 从 A 记录(82.156.71.231)改为 EdgeOne 给的 CNAME。；备用（立即可用、与备案无关）: EasyAgent 已绑 `0.0.0.0:3456`；用户在腾讯云**安全组放行 TCP 3456** 后即可用 `http://82.156.71.231:3456` 或 `http://CCCN.fable5.icu:3456`（非80端口不受备案拦截）；经验: ① 腾讯云\"未备案域名+大陆CVM公网IP\"的80端口**确实会被网络层拦截**（返回备案页，nginx 无日志）；② 怀疑备案拦截时，先确认该域名是否走 EdgeOne「不含中国大陆」豁免；③ 别把\"同服务器已工作的域名\"简单等同于\"直连 CVM\"——mic；EdgeOne 概念区分（用户曾混淆）: `EdgeOne Pages`=纯静态托管，不支持服务端动态；`EdgeOne 加速/站点`=反向代理，支持动态（/api/*、SSR）与 WebSocket（文档明确支持，域名级可开关）。",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-07-11",
+        "title": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
+        "problem": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
+        "solution": "80`（nginx 已配 80→3456；micro 同源站已证明 EdgeOne 可达，**安全组无需再开**）。此操作在腾讯云控制台或 EdgeOne API 完成——**SSH 无法直接建 EdgeOne 站点**（需腾讯云 SecretId/SecretKey）。用户需把 cccn 的 DNS 从 A 记录(82.156.71.231)改为 EdgeOne 给的 CNAME。；备用（立即可用、与备案无关）: EasyAgent 已绑 `0.0.0.0:3456`；用户在腾讯云**安全组放行 TCP 3456** 后即可用 `http://82.156.71.231:3456` 或 `http://CCCN.fable5.icu:3456`（非80端口不受备案拦截）；经验: ① 腾讯云\"未备案域名+大陆CVM公网IP\"的80端口**确实会被网络层拦截**（返回备案页，nginx 无日志）；② 怀疑备案拦截时，先确认该域名是否走 EdgeOne「不含中国大陆」豁免；③ 别把\"同服务器已工作的域名\"简单等同于\"直连 CVM\"——mic；EdgeOne 概念区分（用户曾混淆）: `EdgeOne Pages`=纯静态托管，不支持服务端动态；`EdgeOne 加速/站点`=反向代理，支持动态（/api/*、SSR）与 WebSocket（文档明确支持，域名级可开关）。",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f4"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-07-11",
+        "title": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
+        "problem": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
+        "solution": "80`（nginx 已配 80→3456；micro 同源站已证明 EdgeOne 可达，**安全组无需再开**）。此操作在腾讯云控制台或 EdgeOne API 完成——**SSH 无法直接建 EdgeOne 站点**（需腾讯云 SecretId/SecretKey）。用户需把 cccn 的 DNS 从 A 记录(82.156.71.231)改为 EdgeOne 给的 CNAME。；备用（立即可用、与备案无关）: EasyAgent 已绑 `0.0.0.0:3456`；用户在腾讯云**安全组放行 TCP 3456** 后即可用 `http://82.156.71.231:3456` 或 `http://CCCN.fable5.icu:3456`（非80端口不受备案拦截）；经验: ① 腾讯云\"未备案域名+大陆CVM公网IP\"的80端口**确实会被网络层拦截**（返回备案页，nginx 无日志）；② 怀疑备案拦截时，先确认该域名是否走 EdgeOne「不含中国大陆」豁免；③ 别把\"同服务器已工作的域名\"简单等同于\"直连 CVM\"——mic；EdgeOne 概念区分（用户曾混淆）: `EdgeOne Pages`=纯静态托管，不支持服务端动态；`EdgeOne 加速/站点`=反向代理，支持动态（/api/*、SSR）与 WebSocket（文档明确支持，域名级可开关）。",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f4"
+        ]
+      },
       {
         "moduleId": "f9",
-        "date": "",
-        "title": "⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)",
-        "problem": "⚠️ Web ↔ Desktop 代码隔离约束 (v0.6.7 更新)",
-        "solution": "1. **MEMORY.md** ── 在陷阱表中新增一行，**必须标注 🎯 范围标记**（🖥️=Desktop / 🌐=Web / 🔀=两者） 2. **verify-build.cjs** ── 添加对应的自动检查逻辑；目的：让脚本替人记住教训，下次构建自动拦截",
+        "date": "2026-07-11",
+        "title": "用户问\"能否取消被占用的 Pages 部署\" —— 二次纠错（重要）",
+        "problem": "用户问\"能否取消被占用的 Pages 部署\" —— 二次纠错（重要）",
+        "solution": "用户再次在对话贴出密码（已脱敏，不写入仓库），收尾已删除 temp/askpass.cmd，再次提醒尽快改密。；同步 GitHub（2026-07-11 10:56）: `git add` 选定文件（排除来历不明的 `未命名.base`）→ commit → push 被 GitHub 密钥扫描拦截：① `2026-07-11.md:74` 含明文服务器密码、② `2026-07-11.md:41` 含明文腾讯云 Secret",
         "status": "resolved",
         "_tagModuleIds": [
           "f9"
         ]
-      },
+      }
+    ],
+    "2026-09-17.md": [
       {
-        "moduleId": "f10",
-        "date": "",
-        "title": "🧩 修复汇总 (2026-07-02)",
-        "problem": "🧩 修复汇总 (2026-07-02)",
-        "solution": "sibling 优先，不存在时回退 `<core>/dist/PluginWorkerEntry.js`；删除 src 下历史残留；tsup 配置: `core/tsup.config.ts` 用对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'` 独立输出 `dist/PluginWorkerEntry.js`（tsup `s",
+        "moduleId": "p5a",
+        "date": "2026-09-17",
+        "title": "[记忆:MEMORY] MEMORY.md 归档重写为精简版 v2.0",
+        "problem": ": `MEMORY.md` 达 712 行 / 77KB，超出会话注入上限被截断，且内含过期数据（\"1195 tests / 100% 通过\"）",
+        "solution": "就地重写为约 360 行结构化精简版 —— 保留全部 52 条陷阱清单 + 核心规则 + bat 铁律 + 服务器部署事实；把管线 v2.1 细节改为指针式引用（`docs/pipeline/ARCHITECTURE.md`）；更正测试数字为实测值",
         "status": "resolved",
         "_tagModuleIds": [
-          "f10"
+          "p5a"
         ]
       }
     ],
+    "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-07-10T16:24:00.290Z"
+  "generatedAt": "2026-09-17T16:13:19.544Z"
 }

@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "timestamp": "2026-09-18 00:04:27.405",
+    "scope": "冒烟验证",
+    "packages": [
+      "frontend",
+      "web"
+    ],
+    "elapsedMs": 10197,
+    "nodeVersion": "v24.13.0",
+    "gitCommit": "8df2d79",
+    "totals": {
+      "tests": 115,
+      "passed": 115,
+      "failed": 0,
+      "skipped": 0
+    },
+    "allOk": false
+  },
+  "results": [
+    {
+      "pkg": "frontend",
+      "label": "前端共享包",
+      "status": "error",
+      "exitCode": 1,
+      "elapsedMs": 7569,
+      "degraded": false,
+      "tests": 113,
+      "passed": 113,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n\u001b[7m\u001b[1m\u001b[36m RUN \u001b[39m\u001b[22m\u001b[27m \u001b[36mv1.6.0\u001b[39m \u001b[90mD:/Work_Area/AI/Claude Code  CN/packages/frontend\u001b[39m\n\n \u001b[32m✓\u001b[39m src/__tests__/events.test.ts \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 18\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/request.test.ts \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/pluginsStore.test.ts \u001b[2m (\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 32\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/api.test.ts \u001b[2m (\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 38\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/LangGraphPage.test.tsx \u001b[2m (\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 513\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/MiniFlowGraph.test.tsx \u001b[2m (\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 83\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/FlowZoomModal.test.tsx \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 97\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/GraphCanvas.test.tsx \u001b[2m (\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 127\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/ScenarioCard.test.tsx \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 141\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/mountApp.test.tsx \u001b[2m (\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1295\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/config.test.tsx \u001b[2m (\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/langGraphStore.test.ts \u001b[2m (\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4134\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[31m⎯⎯⎯⎯⎯⎯\u001b[1m\u001b[7m Unhandled Errors \u001b[27m\u001b[22m⎯⎯⎯⎯⎯⎯\u001b[39m\n\u001b[31m\u001b[1m\nVitest caught 1 unhandled error during the test run.\nThis might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.\u001b[22m\u001b[39m\n\u001b[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\u001b[39m\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m113 passed\u001b[39m\u001b[22m\u001b[90m (113)\u001b[39m\n\u001b[2m     Errors \u001b[22m \u001b[1m\u001b[31m1 error\u001b[39m\u001b[22m\n\u001b[2m   Start at \u001b[22m 00:04:18\n\u001b[2m   Duration \u001b[22m 6.10s\u001b[2m (transform 1.78s, setup 0ms, collect 3.47s, tests 6.49s, environment 10.29s, prepare 6.02s)\u001b[22m\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-frontend.json\n"
+    },
+    {
+      "pkg": "web",
+      "label": "Web 壳",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 2573,
+      "degraded": false,
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n\u001b[7m\u001b[1m\u001b[36m RUN \u001b[39m\u001b[22m\u001b[27m \u001b[36mv1.6.0\u001b[39m \u001b[90mD:/Work_Area/AI/Claude Code  CN/packages/web\u001b[39m\n\n \u001b[32m✓\u001b[39m src/__tests__/main.test.ts \u001b[2m (\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 13\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:04:26\n\u001b[2m   Duration \u001b[22m 800ms\u001b[2m (transform 28ms, setup 0ms, collect 19ms, tests 13ms, environment 394ms, prepare 95ms)\u001b[22m\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-web.json\n"
+    }
+  ]
+}

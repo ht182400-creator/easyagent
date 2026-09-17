@@ -1032,7 +1032,10 @@ describe('PluginManager - 完整卸载', () => {
 
   it('卸载不存在的插件应静默处理', async () => {
     const pm = new PluginManager();
-    await expect(pm.unloadPlugin('ghost-plugin')).resolves.toBeUndefined();
+    // 契约（见 PluginManager.unloadPlugin 签名 `Promise<string | null>`）：
+    // 找不到插件时**不抛异常**，静默返回 null，由调用方自行判断是否命中。
+    // 【2026-09-18 修复】原断言为 toBeUndefined()，与实现返回 null 不符 → 误报失败。
+    await expect(pm.unloadPlugin('ghost-plugin')).resolves.toBeNull();
   });
 
   it('卸载含技能的插件应同时注销技能关联的工具', async () => {

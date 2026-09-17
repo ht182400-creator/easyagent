@@ -52,12 +52,10 @@ export default function SessionDetailModal({ sessionId, onClose }: SessionDetail
     setResumeResult(null);
     try {
       const data = await resumeSession(sessionId, resumeInput.trim());
+      // 服务端返回 { success, response, sessionId }，优先展示 response 文本；
+      // 无 response 字段时退化为 JSON 展示，便于排查。
       const responseText =
-        typeof data?.response === 'string'
-          ? data.response
-          : typeof data === 'string'
-            ? data
-            : JSON.stringify(data || {});
+        typeof data?.response === 'string' ? data.response : JSON.stringify(data ?? {});
       setResumeResult(responseText);
       setResumeInput('');
     } catch (err) {

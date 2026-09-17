@@ -94,6 +94,26 @@
   --color-info: #06b6d4;
   --color-info-light: rgba(6, 182, 212, 0.1);
 
+  /* ---- 语义别名：Tailwind 类名 ↔ CSS 变量的一一对应 ----
+   *
+   * 这些别名被 `tailwind.config.js` 的 surface-* / text-* / border-* 命名空间引用，
+   * 对应组件中实际书写的类名（如 bg-surface-shell、text-text-primary、border-border-subtle）。
+   *
+   * ⚠️ 【2026-09-18 修复】此前 tailwind.config.js 引用的是 `--surface-*` / `--text-*` /
+   * `--border-*` 形态的变量，而本文件从未定义过它们（本文件用的是 `--color-*` 前缀）。
+   * 按 CSS 规范，var() 引用未定义变量时该声明会在**计算值阶段被丢弃**，
+   * 于是 12 个语义色类名全部静默失效（背景透明、文字色回退为继承），
+   * 只因 body 上设置了 color 而被继承兜底掩盖，肉眼难以察觉。
+   *
+   * 用 var() 间接引用而非复制色值：亮色主题切换时无需重复定义即可自动生效。
+   */
+  --color-surface-shell: var(--color-surface-container-lowest);
+  --color-surface-sidebar: var(--color-surface-container);
+  --color-surface-main: var(--color-surface);
+  --color-surface-overlay: var(--color-surface-raised);
+  --color-text-muted: var(--color-text-tertiary);
+  --color-border-subtle: var(--color-border-light);
+
   /* ---- 阴影 ---- */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
