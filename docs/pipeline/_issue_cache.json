@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789662396533.9453,
-      "size": 4552
+      "mtimeMs": 1789663006938.6643,
+      "size": 7185
     },
     "MEMORY.md": {
-      "mtimeMs": 1789662391816.6245,
-      "size": 29477
+      "mtimeMs": 1789663000554.4463,
+      "size": 31256
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11058,10 +11058,21 @@
           "f9",
           "f11"
         ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-09-18",
+        "title": "[发布:v0.6.26] 双通道发布完成（GitHub + Forgejo）",
+        "problem": "[发布:v0.6.26] 双通道发布完成（GitHub + Forgejo）",
+        "solution": "完成 v0.6.26 发版并推送到两个远端 + 在 Forgejo 创建 Release",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f16"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-17T16:35:20.987Z"
+  "generatedAt": "2026-09-17T16:36:52.707Z"
 }

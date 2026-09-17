@@ -4636,6 +4636,13 @@
           "problem": ": `release-publish.bat` Step 6 的 `pipeline-auto-sync.ps1` 在本地会等待 GitHub CI 完成（最长 600s），每次 release 都卡 5-10 分钟 [根因] : `fetch-ci-data.mjs` 轮询等待 CI workflow run 完成，但 CI（test-core→server/desktop→coverage/pipeline/build-check→sync-pipeline）在 windows-2022 runner 上至少需 5-8 分钟",
           "solution": "`release-publish.bat` Step 6 默认传 `--skip-ci`，跳过 CI 等待，直接跑本地 `unified-sync.mjs` + 重启管线服务器；失效保护: 如需强制等待 CI，可手动执行 `powershell -File scripts/pipeline-auto-sync.ps1`（不传 --skip-ci）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[发布:v0.6.26] 双通道发布完成（GitHub + Forgejo）",
+          "problem": "[发布:v0.6.26] 双通道发布完成（GitHub + Forgejo）",
+          "solution": "完成 v0.6.26 发版并推送到两个远端 + 在 Forgejo 创建 Release",
+          "status": "resolved"
         }
       ]
     },
@@ -5969,8 +5976,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 828,
-  "_generatedAt": "2026-09-17T16:35:20.990Z",
+  "_totalIssues": 829,
+  "_generatedAt": "2026-09-17T16:36:52.712Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6001,6 +6008,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-17T16:35:21.006Z"
+    "exportedAt": "2026-09-17T16:36:52.729Z"
   }
 }

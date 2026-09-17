@@ -29,7 +29,7 @@
  * 退出码：0 = 成功；1 = 失败（缺少凭据 / push 失败）
  */
 
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createLogger } from './lib/logger.mjs';
@@ -76,17 +76,19 @@ function parseArgs(argv) {
 function git(args, extraConfig = []) {
   const configArgs = extraConfig.flatMap((c) => ['-c', c]);
   try {
-    const out = execFileSync('git', [...configArgs, ...args], {
+    // 【2026-09-18 修复】必须用 spawnSync 同时取 stdout + stderr：
+    // git 的「推送结果」(`old..new  main -> main`) 与失败原因都写在 **stderr**，
+    // 而 execFileSync 只返回 stdout —— 会导致成功时 output 为空，
+    // 进而误报成 "(up-to-date)"，让人以为没推上去（实测踩到）。
+    const r = spawnSync('git', [...configArgs, ...args], {
       cwd: PROJECT_ROOT,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    return { ok: true, output: (out || '').trim() };
+    const combined = `${r.stdout || ''}${r.stderr || ''}`.trim();
+    return { ok: r.status === 0, output: combined };
   } catch (err) {
-    // stderr 常含真正的失败原因（如 401 / 非快进），必须回传而不是丢弃
-    const stderr = err.stderr ? String(err.stderr).trim() : '';
-    const stdout = err.stdout ? String(err.stdout).trim() : '';
-    return { ok: false, output: stderr || stdout || err.message };
+    return { ok: false, output: err.message };
   }
 }
 
@@ -135,11 +137,13 @@ function main() {
   // ── 推送分支 ──
   log.info(`推送分支 ${branch} → ${remote} ...`);
   const pushBranch = git(['push', remote, branch], [authConfig]);
-  if (pushBranch.ok) {
-    log.ok(`分支已推送: ${pushBranch.output || `(up-to-date) ${branch}`}`);
-  } else {
+  if (!pushBranch.ok) {
     log.error(`分支推送失败: ${pushBranch.output}`);
     failed = true;
+  } else if (/up-to-date|up to date/i.test(pushBranch.output)) {
+    log.info(`分支已是最新，无需推送: ${branch}`);
+  } else {
+    log.ok(`分支已推送: ${pushBranch.output}`);
   }
 
   // ── 推送标签 ──
@@ -151,13 +155,13 @@ function main() {
 
   for (const tag of tagsToPush) {
     const r = git(['push', remote, tag], [authConfig]);
-    if (r.ok) {
-      log.ok(`标签已推送: ${tag}`);
-    } else if (/up-to-date|up to date/i.test(r.output)) {
-      log.info(`标签已存在，跳过: ${tag}`);
-    } else {
+    if (!r.ok) {
       log.error(`标签推送失败 ${tag}: ${r.output}`);
       failed = true;
+    } else if (/up-to-date|up to date/i.test(r.output)) {
+      log.info(`标签已存在于远端，跳过: ${tag}`);
+    } else {
+      log.ok(`标签已推送: ${tag}`);
     }
   }
 
