@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-17T16:48:02.792Z",
+    "generatedAt": "2026-09-17T17:04:11.124Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1624,
-    "unmappedCases": 427,
+    "totalTestCases": 1629,
+    "unmappedCases": 432,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -471,11 +471,11 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 427,
+      "totalCases": 432,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 427,
+          "cases": 432,
           "files": [
             {
               "path": "packages/core/src/__tests__/context-manager.test.ts",
@@ -580,6 +580,10 @@
             {
               "path": "packages/server/src/__tests__/plugin-market-service.test.ts",
               "cases": 32
+            },
+            {
+              "path": "packages/server/src/__tests__/route-inventory.test.ts",
+              "cases": 5
             },
             {
               "path": "packages/web/src/__tests__/main.test.ts",

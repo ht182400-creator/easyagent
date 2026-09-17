@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789663073245.5078,
-      "size": 8079
+      "mtimeMs": 1789663717864.87,
+      "size": 10549
     },
     "MEMORY.md": {
-      "mtimeMs": 1789663079478.4937,
-      "size": 31982
+      "mtimeMs": 1789663707051.1177,
+      "size": 33363
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11069,10 +11069,21 @@
         "_tagModuleIds": [
           "f16"
         ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-09-18",
+        "title": "[P0-4:上下文工程] ContextManager 落地：小模型档固定开销 45.3% → 6.",
+        "problem": ": 改造前无 token 预算 / 无历史压缩 / 无工具结果截断 / 70 个工具无条件全量下发",
+        "solution": "新增 `packages/core/src/agent/context/`（6 个文件）+ 接入 AgentEngine + 度量脚本",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-17T16:48:02.991Z"
+  "generatedAt": "2026-09-17T17:04:11.296Z"
 }

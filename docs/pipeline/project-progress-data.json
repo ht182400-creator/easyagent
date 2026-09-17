@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.26",
-    "codename": "安全加固与可观测性",
-    "lastUpdated": "2026-09-17T16:38:03.824Z",
+    "version": "0.6.27",
+    "codename": "上下文工程",
+    "lastUpdated": "2026-09-17T16:50:12.408Z",
     "engine": "auto-detected",
-    "totalTests": 1561,
+    "totalTests": 1624,
     "modelsSupported": 4
   },
   "phases": [

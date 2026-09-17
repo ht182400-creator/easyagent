@@ -1,6 +1,6 @@
 {
-  "version": "0.6.27",
-  "codename": "上下文工程",
+  "version": "0.6.28",
+  "codename": "服务端拆分",
   "releaseDate": "2026-09-18",
   "electronVersion": "30.0.0",
   "nodeVersion": ">=18.0.0"

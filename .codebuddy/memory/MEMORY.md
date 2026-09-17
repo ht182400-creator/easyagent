@@ -30,6 +30,23 @@
 | 附加 | web 构建解锁（原 `tsc` 11 个错误导致 `deploy-server.ps1` 整体失效） | `packages/web/tsconfig.json` |
 | 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
+| **P1-1 服务端拆分** | **第一阶段完成：`index.ts` 3827 → 3401 行**（knowledge / automations / staticFiles 三组路由外移） | `packages/server/src/routes/`、`docs/66` |
+
+### 🛡️ 服务端重构的安全网（改 `server/src/index.ts` 前必读）
+
+| 手段 | 命令 | 作用 |
+|------|------|------|
+| 路由清单快照 | `pnpm --filter @easyagent/server test` | 93 条路由与基线**双向**比对，丢/多都会失败；另有重复注册断言 |
+| 运行时行为 | `pnpm verify:server-routes` | 验证**注册顺序**与静态托管（单测覆盖不到） |
+| 类型检查 | 语言服务器诊断（IDE） | 依赖注入漏字段必然失败。**⚠️ 根 tsconfig `exclude` 含 `packages`，跑它是空跑** |
+
+**拆分四原则**：① 纯搬迁（路径/方法/逻辑/顺序全不变）② 显式依赖注入（每个模块自己的 `XxxRoutesDeps`，不要"上帝上下文"）③ `__dirname` 由调用方传入（它取决于**构建产物**布局，在新模块里取会让"拆文件"改变路径解析）④ 顺序约束写进模块头 + 调用点两处注释
+
+**必须保持的注册顺序**：
+- `registerStaticRoutes` **最后调用** → 内含 `/api/*` 404 兜底与 SPA fallback；顺序错会让未匹配 API 返回 `200 + index.html`（前端把 HTML 当 JSON 解析，报错与根因无关）
+- 知识库 `/api/knowledge/stats/summary` **必须先于** `/api/knowledge/:id`
+
+**更新路由基线**：`$env:UPDATE_ROUTE_INVENTORY='1'; pnpm --filter @easyagent/server test`，然后**必须 review 基线 diff**
 
 ### 🧠 上下文工程要点（P0-4，改这块代码前必读）
 
@@ -141,7 +158,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1624**（模块映射口径，48 个映射文件）；**Vitest 已执行 1635，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1710 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1629**（模块映射口径，48 个映射文件）；**Vitest 已执行 1640，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1715 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

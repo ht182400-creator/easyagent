@@ -7,6 +7,54 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.28] - 2026-09-18
+
+> **本版主题：服务端入口拆分（P1-1 第一阶段）** —— `index.ts` 3827 → 3401 行。
+> 方案与后续批次：`docs/66_P1-1服务端拆分方案与进度.md`
+
+### Added
+
+- **路由清单快照测试**（`packages/server/src/__tests__/route-inventory.test.ts`）：
+  Express 内部注册表枚举全部路由，与基线**双向**比对（丢失/新增都失败）+ 重复注册断言 +
+  数量下限独立断言（防"基线被误覆盖成空数组"）→ 让 3827 行的搬迁成为**可证明等价**的操作
+- **路由枚举工具**（`packages/server/src/utils/routeInventory.ts`）：
+  归一化 `app.all()` 展开的 35 个 HTTP 动作为单条 `ALL`，否则一条 404 兜底会淹没真实差异
+- **运行时行为验证**（`scripts/verify-server-routes.mjs` / `pnpm verify:server-routes`）：
+  验证单元测试覆盖不到的**注册顺序**与**静态托管路径基准**，共 6 项探针
+
+### Changed
+
+- **拆分 `packages/server/src/index.ts`（3827 → 3401 行，移除 444 行）**，新增 `packages/server/src/routes/`：
+  - `routes/knowledge.ts` — 8 条知识库路由（project/global 双作用域）
+  - `routes/automations.ts` — 8 条自动化任务路由
+  - `routes/staticFiles.ts` — `/api/*` 404 兜底 + `/doc-viewer` + 静态资源 + SPA fallback
+  - `routes/index.ts` — 统一出口
+- **显式依赖注入**：每个模块声明自己的 `XxxRoutesDeps`，不引入"上帝上下文"
+- **`__dirname` 由调用方传入**（`deps.serverDir`）：它取决于**构建产物布局**而非源码布局，
+  在新模块里取会让"拆文件"意外改变路径解析（这类 bug 极难定位）
+- 测试基线刷新：定义用例 **1629** / Vitest 已执行 **1640 全部通过** / Node **75** / 合计 **1715**
+
+### Fixed
+
+- **根 `tsconfig.json` 的 `exclude` 含 `packages`，导致 `npx tsc -p tsconfig.json` 是空跑**
+  （报 `TS18003: No inputs were found`，看起来"0 错误"其实什么都没检查）→ 已记入文档，
+  类型检查应以语言服务器诊断或包级 tsconfig 为准
+- 快照断言"路由路径必须以 `/` 开头"过严（`app.get('*')` 是合法的 SPA fallback）→ 放宽为
+  "以 `/` 开头或含通配符"，并补充"不得含空白字符"
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 路由集合逐条等价 | ✅ 93 条与基线完全一致 |
+| 服务端测试 | ✅ 262 / 262 |
+| 全量回归 | ✅ **1640 / 1640 通过，0 失败** |
+| 类型检查（语言服务器） | ✅ `packages/server/src` 0 诊断 |
+| 构建（tsup） | ✅ 退出码 0 |
+| 运行时行为 | ✅ 6 / 6（含「未匹配 API → 404 JSON」最高风险探针） |
+
+---
+
 ## [0.6.27] - 2026-09-18
 
 > **本版主题：上下文工程（P0-4）** —— 补齐 2026 年 Agent 最核心的能力短板。

@@ -681,6 +681,13 @@
           "problem": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
           "solution": "80`（nginx 已配 80→3456；micro 同源站已证明 EdgeOne 可达，**安全组无需再开**）。此操作在腾讯云控制台或 EdgeOne API 完成——**SSH 无法直接建 EdgeOne 站点**（需腾讯云 SecretId/SecretKey）。用户需把 cccn 的 DNS 从 A 记录(82.156.71.231)改为 EdgeOne 给的 CNAME。；备用（立即可用、与备案无关）: EasyAgent 已绑 `0.0.0.0:3456`；用户在腾讯云**安全组放行 TCP 3456** 后即可用 `http://82.156.71.231:3456` 或 `http://CCCN.fable5.icu:3456`（非80端口不受备案拦截）；经验: ① 腾讯云\"未备案域名+大陆CVM公网IP\"的80端口**确实会被网络层拦截**（返回备案页，nginx 无日志）；② 怀疑备案拦截时，先确认该域名是否走 EdgeOne「不含中国大陆」豁免；③ 别把\"同服务器已工作的域名\"简单等同于\"直连 CVM\"——mic；EdgeOne 概念区分（用户曾混淆）: `EdgeOne Pages`=纯静态托管，不支持服务端动态；`EdgeOne 加速/站点`=反向代理，支持动态（/api/*、SSR）与 WebSocket（文档明确支持，域名级可开关）。",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P0-4:上下文工程] ContextManager 落地：小模型档固定开销 45.3% → 6.",
+          "problem": ": 改造前无 token 预算 / 无历史压缩 / 无工具结果截断 / 70 个工具无条件全量下发",
+          "solution": "新增 `packages/core/src/agent/context/`（6 个文件）+ 接入 AgentEngine + 度量脚本",
+          "status": "resolved"
         }
       ]
     },
@@ -5976,8 +5983,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 829,
-  "_generatedAt": "2026-09-17T16:48:02.995Z",
+  "_totalIssues": 830,
+  "_generatedAt": "2026-09-17T17:04:11.301Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6008,6 +6015,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-17T16:48:03.013Z"
+    "exportedAt": "2026-09-17T17:04:11.317Z"
   }
 }

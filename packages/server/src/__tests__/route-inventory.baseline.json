@@ -1,0 +1,379 @@
+{
+  "_comment": "路由清单基线（由 __tests__/route-inventory.test.ts 生成）。任何增删改都会让测试失败——这是重构安全网，请 review diff 后再更新。",
+  "_generatedAt": "2026-09-17T16:53:56.301Z",
+  "_count": 93,
+  "routes": [
+    {
+      "method": "GET",
+      "path": "*"
+    },
+    {
+      "method": "ALL",
+      "path": "/api/*"
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/north-star"
+    },
+    {
+      "method": "POST",
+      "path": "/api/analytics/track"
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/trends"
+    },
+    {
+      "method": "GET",
+      "path": "/api/automations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/automations"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/automations/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/automations/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/automations/:id/run"
+    },
+    {
+      "method": "POST",
+      "path": "/api/automations/:id/stop"
+    },
+    {
+      "method": "POST",
+      "path": "/api/automations/:id/toggle"
+    },
+    {
+      "method": "GET",
+      "path": "/api/automations/history"
+    },
+    {
+      "method": "POST",
+      "path": "/api/chat"
+    },
+    {
+      "method": "GET",
+      "path": "/api/config"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/config"
+    },
+    {
+      "method": "GET",
+      "path": "/api/config/allowed-commands"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/config/allowed-commands"
+    },
+    {
+      "method": "GET",
+      "path": "/api/config/templates"
+    },
+    {
+      "method": "POST",
+      "path": "/api/demo/start"
+    },
+    {
+      "method": "GET",
+      "path": "/api/demo/status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/demo/stop"
+    },
+    {
+      "method": "GET",
+      "path": "/api/engine-type"
+    },
+    {
+      "method": "GET",
+      "path": "/api/files/browse"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/im/:platform"
+    },
+    {
+      "method": "POST",
+      "path": "/api/im/:platform/start"
+    },
+    {
+      "method": "POST",
+      "path": "/api/im/:platform/stop"
+    },
+    {
+      "method": "GET",
+      "path": "/api/im/config"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/im/config"
+    },
+    {
+      "method": "GET",
+      "path": "/api/im/status"
+    },
+    {
+      "method": "ALL",
+      "path": "/api/im/webhook/:platform"
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge"
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/knowledge/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/import"
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/knowledge/stats/summary"
+    },
+    {
+      "method": "POST",
+      "path": "/api/knowledge/upload"
+    },
+    {
+      "method": "GET",
+      "path": "/api/langgraph/sessions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/langgraph/sessions/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/langgraph/sessions/:id/resume"
+    },
+    {
+      "method": "GET",
+      "path": "/api/plugins"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/plugins/:name"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/:name/toggle"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/install"
+    },
+    {
+      "method": "GET",
+      "path": "/api/plugins/install/:jobId"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/load"
+    },
+    {
+      "method": "GET",
+      "path": "/api/plugins/market"
+    },
+    {
+      "method": "GET",
+      "path": "/api/plugins/market/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/market/refresh"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/safe-mode"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/uninstall/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/plugins/update-check"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/providers/:id/key"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/:id/models/refresh"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/:id/test"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/all-models"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/catalog/refresh"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/catalog/status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/run/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/sandbox"
+    },
+    {
+      "method": "POST",
+      "path": "/api/sandbox"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/sandbox/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/sandbox/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/sandbox/:id/exec"
+    },
+    {
+      "method": "GET",
+      "path": "/api/sandbox/status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/semantic/file"
+    },
+    {
+      "method": "GET",
+      "path": "/api/semantic/map"
+    },
+    {
+      "method": "GET",
+      "path": "/api/semantic/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/semantic/references"
+    },
+    {
+      "method": "GET",
+      "path": "/api/semantic/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/sessions"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/sessions/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/sessions/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/sessions/:id/archive"
+    },
+    {
+      "method": "GET",
+      "path": "/api/sessions/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/skills"
+    },
+    {
+      "method": "POST",
+      "path": "/api/skills/:name/activate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/skills/:name/deactivate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/skills/custom"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/skills/custom/:name"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/skills/custom/:name"
+    },
+    {
+      "method": "GET",
+      "path": "/api/status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/test/open-panel"
+    },
+    {
+      "method": "GET",
+      "path": "/api/token-usage/analytics"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tools"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tools/:name"
+    },
+    {
+      "method": "GET",
+      "path": "/api/version"
+    },
+    {
+      "method": "GET",
+      "path": "/api/version/check"
+    },
+    {
+      "method": "GET",
+      "path": "/doc-viewer/*"
+    }
+  ]
+}
