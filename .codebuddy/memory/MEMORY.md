@@ -61,6 +61,26 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 **日志分级纪律（本轮同时纠正）**：循环/轮次这类细节用 `debug`，不要再写 `info`（否则刷屏并淹没真正的状态变更）。
 实测改造前 core 包 105 info / 60 error / 54 warn / **仅 6 debug**，server、desktop、cli 的 debug 调用数为 **0**。
 
+### 🔀 双通道发布（GitHub + Forgejo，2026-09-18 建立）
+
+| remote | 地址 | 认证 | Release |
+|--------|------|------|---------|
+| `origin` | `git@github.com:ht182400-creator/easyagent.git` | SSH | 由 `.github/workflows/release.yml` 在 tag 推送时**自动创建**（含 EXE） |
+| `forgejo` | `http://localhost:3000/ht182400/easyagent.git` | HTTP Basic | **需手动调 API 创建**（该实例无工作流，仅源码归档） |
+
+- Forgejo 实例：`http://localhost:3000`（`16.0.2+gitea-1.22.0`），用户名 **`ht182400`**（⚠️ 不是 `ht82400`，少一个 `1` 会得到 `user does not exist`），仓库 `ht182400/easyagent`（公开）
+- **推送命令**：`pnpm push:forgejo`（脚本 `scripts/push-forgejo.mjs`）
+- **🔴 凭据纪律**：`FORGEJO_USER` / `FORGEJO_TOKEN` **只从环境变量读**，绝不写进 remote URL / `.git/config` / 文档 / 代码。
+  脚本通过**一次性 `http.extraHeader`** 注入 Basic 头 → 不落盘、不进 reflog。（写入 remote URL 会残留在 `.git/config` + reflog，已验证规避）
+- 完整流程与踩坑：`docs/64_Forgejo发布指南.md`
+- ⚠️ 推送前**必须** `git fetch forgejo` 比对历史是否同源；不同源绝不可 force push，须先与用户确认
+
+### 版本号现状（2026-09-18）
+
+- `version.json` = **0.6.26**，最新 tag = **v0.6.26**（本次发布）
+- ⚠️ CHANGELOG 中的 `0.6.24` / `0.6.25` **从未打 tag**（远端 tag 曾止于 v0.6.23），本版是 v0.6.23 之后的首个实际发布
+- 发版后 post-commit 钩子会再次改写 `docs/pipeline/*.json` → **工作区长期残留这 5~6 个文件的差异属正常生成物行为**，用 `git commit --no-verify` 可收敛一次，但钩子会再跑一轮（不必继续追）
+
 ### 新增/变更的环境变量（服务端）
 
 | 变量 | 默认 | 说明 |

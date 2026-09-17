@@ -30,6 +30,7 @@
     "verify:data": "node scripts/verify-data-consistency.mjs",
     "verify:tokens": "node scripts/verify-css-tokens.mjs",
     "verify:runtime-log": "node scripts/verify-runtime-log.mjs",
+    "push:forgejo": "node scripts/push-forgejo.mjs",
     "test:langgraph": "pnpm --filter @easyagent/langgraph exec vitest run",
     "test:all": "pnpm run test:core && pnpm run test:server && pnpm run test:langgraph && pnpm run test:desktop && pnpm run test:frontend && pnpm run test:web && pnpm run test:cli",
     "test:coverage": "pnpm -r run test:coverage",
