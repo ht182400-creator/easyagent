@@ -21,6 +21,8 @@ desktop/release/
 .codebuddy/teams/
 # EasyAgent 本地数据
 .easyagent/knowledge/
+# 上下文工程：工具结果截断后的完整内容落盘（工作区内，供模型按需 read_file 取回）
+.easyagent/context/
 # 临时文件
 .codebuddy/temp/
 # 根目录调试产物目录（脚本/日志/解压包，防污染 git 状态 #14）

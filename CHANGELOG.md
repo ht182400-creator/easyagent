@@ -7,6 +7,78 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.27] - 2026-09-18
+
+> **本版主题：上下文工程（P0-4）** —— 补齐 2026 年 Agent 最核心的能力短板。
+> 设计与实测：`docs/65_上下文工程ContextManager设计与实测.md`
+
+### Added
+
+- **`ContextManager`：上下文工程编排器**（新增 `packages/core/src/agent/context/`，6 个模块）
+  - `tokenEstimator`：本地零依赖 token 估算（CJK ≈ 1 字符/token，其余 ≈ 4 字符/token；可用环境变量校准）
+  - `toolSelection`：按模型规模分级暴露工具 + 生成紧凑「工具索引」
+  - `toolResultTruncator`：工具结果超长截断 + **落盘到工作区内**（`.easyagent/context/<sessionId>/`），模型可按需用 `read_file` 分段取回
+  - `historyCompactor`：超预算时压缩为**确定性结构化摘要**（零 LLM 调用）；裁剪点二分查找；**保护 `assistant(tool_calls)` ↔ `tool` 配对**
+  - `ContextManager`：编排入口，输出 `{ systemPrompt, messages, toolDefinitions, stats }`
+  - `options`：全部能力可独立开关，支持灰度与回滚
+- **上下文度量脚本** `scripts/measure-context.mjs`（`pnpm measure:context`）：
+  量化工具/描述/历史各占多少 token，可作回归检测
+- **63 个上下文工程用例**（`packages/core/src/__tests__/context-manager.test.ts`），覆盖边界值、异常、以及 5 条架构不变量
+
+### Changed
+
+- **`AgentEngine.run()` 全面接入上下文工程**
+  - 工具按模型规模分级（小档 ≤40k 只给 17 个核心工具；中档排除 23 个；大档仅排除 `benchmark_*`）
+  - **系统提示词不再内联完整工具描述**（此前与 `tools` 参数重复计费约 6,058 token），改为紧凑「工具索引」
+  - 工具结果超长时截断后再回填（完整内容落盘，路径写入消息）
+  - 历史超预算时压缩为摘要追加到系统提示词
+  - **工作集与完整历史分离**：`messages`（可能被压缩，发给模型）与 `fullHistory`（永不压缩，用于会话落盘）——
+    避免"上下文优化"演变成"会话记录丢失"
+- **测试基线刷新**：定义用例 **1624**（模块映射口径）/ Vitest 已执行 **1635 全部通过** / Node Test Runner **75** / 合计已执行 **1710**
+
+### Fixed
+
+- **fix(core): `benchmark_*` 工具在全部档位被排除** —— 陷阱 #41 实测：普通聊天误暴露 benchmark 工具会导致模型反复
+  `benchmark_load → run → report` 直至 `Recursion limit of 25 reached`
+- **fix(core): 系统提示词工具描述重复计费** —— 同一份信息（完整 JSON Schema 与文字描述）此前付两次 token
+
+### 实测收益
+
+| 档位 | 模型窗口 | 工具数 | 改造前占窗口 | 改造后占窗口 | 节省 |
+|------|---------|-------|------------|------------|------|
+| small | 32,768 | 70 → **17** | **45.3%** | **6.8%** | **12,605 token（85.0%）** |
+| medium | 131,072 | 70 → **47** | 11.3% | 4.9% | 8,418 token（56.8%） |
+| large | 200,001 | 70 → **66** | 7.4% | 4.9% | 5,036 token（34.0%） |
+
+> 小模型收益最大：**从"近一半上下文被工具吃掉"降到"约十五分之一"**。
+
+### 新增环境变量
+
+| 变量 | 默认 | 说明 |
+|------|------|------|
+| `EASYAGENT_CONTEXT_V2` | `1` | 置 `0` **完全回滚**到改造前行为 |
+| `EASYAGENT_CONTEXT_TOOL_TIER` | `1` | 关闭工具分级（仍排除 `benchmark_*`） |
+| `EASYAGENT_CONTEXT_RESULT_LIMIT` | `8000` | 工具结果字符上限；`0` = 不截断 |
+| `EASYAGENT_CONTEXT_COMPACT` | `1` | 关闭历史压缩与结果截断 |
+| `EASYAGENT_CONTEXT_USABLE_RATIO` | `0.7` | 可用上下文比例（预留 30% 给输出） |
+| `EASYAGENT_CONTEXT_DEDUPE_DESC` | `1` | 关闭提示词去重（不支持 function calling 时自动关闭） |
+| `EASYAGENT_TOKEN_CJK_PER_TOKEN` / `EASYAGENT_TOKEN_OTHER_PER_TOKEN` | `1` / `4` | token 估算校准 |
+
+### 回归验证
+
+```
+范围: core, server, frontend, desktop, langgraph, web
+汇总: 1635 用例 / 1635 通过 / 0 失败 / 0 跳过   （退出码 0）
+```
+
+### Docs
+
+- 新增 `docs/65_上下文工程ContextManager设计与实测.md`
+- `docs/63` 更新 P0-4 状态与回归数字
+- `docs/修复汇总.md`、`.codebuddy/memory/MEMORY.md`（新增「上下文工程要点」与 5 条不变量）同步更新
+
+---
+
 ## [0.6.26] - 2026-09-18
 
 > **本版主题：安全加固 + 可观测性 + 数据可信度**

@@ -25,10 +25,24 @@
 | P0-1 安全 | REST 鉴权 + 限流 + **默认只监听 127.0.0.1**；非回环监听且无令牌时**拒绝启动**；WS 与 REST 共用令牌 | `packages/server/src/middleware/apiSecurity.ts` |
 | P0-2 测试 | 6 个真实失败全部修复（4 个是用例过期/写错、2 个是产品缺陷）；frontend unhandled rejection 修复 | 见 §12「测试修复」 |
 | P0-3 数据 | 单一真源 + CI 一致性门禁 | `scripts/verify-data-consistency.mjs` |
+| **P0-4 上下文工程** | **`ContextManager`：token 预算 / 工具按模型规模分级 / 工具结果截断+工作区落盘 / 历史压缩。小模型档固定开销 45.3% → 6.8%** | `packages/core/src/agent/context/`、`scripts/measure-context.mjs`、`docs/65` |
 | P0-5 令牌 | 15 个语义令牌类名全部恢复生效；三端共用 `tailwind.tokens.mjs` | `packages/frontend/tailwind.tokens.mjs`、`scripts/verify-css-tokens.mjs` |
 | 附加 | web 构建解锁（原 `tsc` 11 个错误导致 `deploy-server.ps1` 整体失效） | `packages/web/tsconfig.json` |
 | 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
+
+### 🧠 上下文工程要点（P0-4，改这块代码前必读）
+
+- **开关**：`EASYAGENT_CONTEXT_V2=0` 完全回到改造前行为（无需改代码即可回滚）
+- **档位**：小档 ≤40k 只给 17 个核心工具（白名单）；中档 ≤200k 排除 23 个；大档仅排除 `benchmark_*`
+- **关键不变量（有专门用例守护，改动时勿破坏）**：
+  1. 历史压缩**不得拆散** `assistant(tool_calls)` ↔ `tool` 结果（否则 provider 报 400）
+  2. 压缩只作用于「发给模型的工作集」，**会话落盘用 `fullHistory`**（压缩不能导致历史丢失）
+  3. medium/large 档用**排除清单**而非白名单 → **新增工具默认可见**
+  4. **模型不支持 function calling 时必须保留内联工具描述**（否则能力直接消失）
+  5. 工具结果落盘必须在**工作区内**（`FileTools.safePath()` 拒绝工作区外路径）
+- **相关陷阱**：`benchmark_*` 工具全档位排除（陷阱 #41：普通聊天误暴露会导致死循环）
+- **度量**：`pnpm measure:context`（需先构建 core）
 
 ### 新增命令（务必记住）
 
@@ -127,7 +141,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1561**（模块映射口径，73 个测试文件）；**Vitest 已执行 1572，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1647 全通过**。**历史值 1195 / 1260 / 1514 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1624**（模块映射口径，48 个映射文件）；**Vitest 已执行 1635，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1710 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

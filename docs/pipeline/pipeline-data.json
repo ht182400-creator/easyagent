@@ -307,12 +307,12 @@
     ]
   },
   "kpi": {
-    "testCases": 1561,
+    "testCases": 1624,
     "testPassRate": 100,
-    "testPassed": 1572,
+    "testPassed": 1635,
     "testFailed": 0,
     "testSkipped": 0,
-    "_vitestTotal": 1572,
+    "_vitestTotal": 1635,
     "_uncovered": 0,
     "_coveragePct": 101,
     "_stale": false,
@@ -341,7 +341,7 @@
         "label": "测试覆盖",
         "score": 100,
         "max": 100,
-        "note": "1572通过 (100%)/1572已执行 / 1561 定义 用例通过"
+        "note": "1635通过 (100%)/1635已执行 / 1624 定义 用例通过"
       },
       {
         "label": "分支优化",
@@ -406,9 +406,9 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1561用例"
+      "note": "29/29模块+1624用例"
     }
   ],
-  "lastUpdated": "2026-09-17T16:37:38.441Z",
+  "lastUpdated": "2026-09-17T16:48:03.009Z",
   "source": "module-registry.mjs (统一注册表同步)"
 }

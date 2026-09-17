@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-17T16:37:38.171Z",
+    "generatedAt": "2026-09-17T16:48:02.792Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1561,
-    "unmappedCases": 364,
+    "totalTestCases": 1624,
+    "unmappedCases": 427,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -471,12 +471,16 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 364,
+      "totalCases": 427,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 364,
+          "cases": 427,
           "files": [
+            {
+              "path": "packages/core/src/__tests__/context-manager.test.ts",
+              "cases": 63
+            },
             {
               "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",
               "cases": 37

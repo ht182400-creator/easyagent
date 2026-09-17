@@ -21,6 +21,7 @@ import type { ProviderConfig } from '../types/index.js';
 import { ToolRegistry } from '../tools/ToolRegistry.js';
 import { SessionManager } from '../session/SessionManager.js';
 import { logger } from '../utils/logger.js';
+import { getContextManager } from './context/index.js';
 
 /** Agent事件监听器 */
 export type AgentEventListener = (event: AgentEvent) => void;
@@ -177,15 +178,54 @@ export class AgentEngine {
     );
 
     try {
-      // 构建消息列表
-      const messages: Message[] = [
-        { role: 'system', content: this.buildSystemPrompt(workspace) },
-        ...session.messages,
-        { role: 'user', content: userMessage },
-      ];
+      // ── 上下文工程（P0-4）──
+      // 由 ContextManager 统一决定「系统提示词 / 消息 / 工具定义」三件事：
+      //   ① 工具按模型规模分级暴露（32k 小模型只给核心工具）
+      //   ② 系统提示词用紧凑工具索引，消除与 tools 参数的重复计费
+      //   ③ 历史超预算时压缩为结构化摘要
+      // 关闭开关（EASYAGENT_CONTEXT_V2=0）时行为与改造前完全一致。
+      const contextManager = getContextManager();
+      const contextOptions = contextManager.getOptions();
+      const modelInfo = this.adapter.getModelInfo();
 
-      // 构建工具定义
-      const toolDefinitions = this.buildToolDefinitions();
+      /**
+       * 是否可以把「完整工具描述」从系统提示词中移除
+       *
+       * ⚠️ 安全守卫：**模型不支持 function calling 时必须保留内联描述**。
+       * 否则 `tools` 字段不会被适配器下发，而提示词里也没有工具说明，
+       * 模型将完全不知道有工具可用 —— 那是能力消失，不是省 token。
+       */
+      const supportsFunctionCalling = modelInfo?.supportsTools !== false;
+      const dedupeDescriptions = contextOptions.dedupeToolDescriptions && supportsFunctionCalling;
+      if (contextOptions.dedupeToolDescriptions && !supportsFunctionCalling) {
+        logger.info(
+          { model: this.config.model },
+          '该模型不支持 function calling，已保留系统提示词中的完整工具描述（不执行描述去重）',
+        );
+      }
+
+      /**
+       * 完整历史（不含 system，**不做任何压缩**）
+       *
+       * 与工作集 `messages` 分开维护的原因：压缩只应改变「发给模型的上下文」，
+       * **绝不应导致会话记录丢失**。会话落盘时使用本数组。
+       */
+      const fullHistory: Message[] = [...session.messages, { role: 'user', content: userMessage }];
+
+      const built = contextManager.build({
+        systemPrompt: this.buildSystemPrompt(workspace, !dedupeDescriptions),
+        messages: fullHistory,
+        toolDefinitions: this.config.allowTools ? this.tools.getDefinitions() : [],
+        workspace,
+        sessionId,
+        model: this.config.model,
+        maxContextTokens: modelInfo?.maxContextTokens,
+        dedupeToolDescriptions: dedupeDescriptions,
+      });
+
+      /** 工作集：真正发给模型的消息（含 system，可能已被压缩） */
+      const messages: Message[] = built.messages;
+      const toolDefinitions = built.toolDefinitions;
 
       // Agent循环
       let fullResponse = '';
@@ -233,12 +273,14 @@ export class AgentEngine {
           this.totalUsage.totalTokens += response.usage.totalTokens;
         }
 
-        // 添加助手消息到对话历史
-        messages.push({
+        // 添加助手消息到对话历史（工作集与完整历史同步追加）
+        const assistantMessage: Message = {
           role: 'assistant',
           content: response.content || '',
           tool_calls: response.toolCalls,
-        });
+        };
+        messages.push(assistantMessage);
+        fullHistory.push(assistantMessage);
 
         fullResponse += response.content || '';
 
@@ -289,8 +331,22 @@ export class AgentEngine {
 
             this.emit('tool_result', { toolName, result });
 
-            // 添加工具结果到对话历史
+            // 工具结果超长时截断：完整内容落盘到工作区 `.easyagent/context/`，
+            // 消息里给出相对路径，模型需要时可用 read_file 分段取回。
+            const truncated = contextManager.truncateToolResult(result.content, {
+              workspace,
+              sessionId,
+              toolName,
+            });
+
+            // 工作集用**截断版**（省上下文）；完整历史保留**原文**
+            // （用户回看会话、以及"重新读取完整结果"的诉求不应因压缩而受损）
             messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: truncated.content,
+            });
+            fullHistory.push({
               role: 'tool',
               tool_call_id: toolCall.id,
               content: result.content,
@@ -302,8 +358,9 @@ export class AgentEngine {
         }
       }
 
-      // 保存会话
-      session.messages = messages.filter((m) => m.role !== 'system');
+      // 保存会话：使用**完整历史**而非工作集
+      // （工作集可能已被 ContextManager 压缩，用它落盘会导致会话记录永久丢失）
+      session.messages = fullHistory;
       session.metadata.updatedAt = new Date();
       session.metadata.tokenUsage = { ...this.totalUsage };
       this.sessions.save(session);
@@ -410,11 +467,23 @@ export class AgentEngine {
 
   /**
    * 构建系统提示词
+   *
+   * @param workspace - 工作目录
+   * @param includeToolDetails - 是否把**完整工具描述**拼进提示词。
+   *   启用上下文工程时传 `false` —— 完整参数定义已由 function calling 的 `tools` 字段承载，
+   *   再拼一遍等于同一份信息付两次 token（实测约 6,058 token）。
+   *   ContextManager 会改为追加一份紧凑的「工具索引」。
    */
-  private buildSystemPrompt(workspace: string): string {
+  private buildSystemPrompt(workspace: string, includeToolDetails = true): string {
     const os =
       process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux';
     const date = new Date().toLocaleString('zh-CN');
+
+    const toolSection = !this.config.allowTools
+      ? '工具调用已禁用'
+      : includeToolDetails
+        ? this.tools.getDescriptions()
+        : '（完整参数定义见本次请求的 tools 字段；命名与用途见下方「工具索引」）';
 
     return `${this.config.systemPrompt}
 
@@ -425,13 +494,16 @@ export class AgentEngine {
 - Shell: ${process.env.SHELL || (process.platform === 'win32' ? 'PowerShell' : 'bash')}
 
 ## 可用工具
-${this.config.allowTools ? this.tools.getDescriptions() : '工具调用已禁用'}`;
+${toolSection}`;
   }
 
   /**
    * 构建工具定义列表
+   *
+   * @deprecated 工具选择已交由 `ContextManager.build()` 统一负责
+   *   （需要按模型规模分级 + 统计 token）。保留本方法仅供外部按需调用全量定义。
    */
-  private buildToolDefinitions(): ToolDefinition[] {
+  getToolDefinitions(): ToolDefinition[] {
     if (!this.config.allowTools) return [];
     return this.tools.getDefinitions();
   }

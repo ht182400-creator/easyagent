@@ -19,6 +19,39 @@ export {
 export { AgentEngine } from './agent/AgentEngine.js';
 export type { AgentEventListener } from './agent/AgentEngine.js';
 
+// 上下文工程（P0-4）：token 预算 / 工具分级 / 结果截断 / 历史压缩
+export {
+  ContextManager,
+  getContextManager,
+  resetContextManager,
+  resolveContextOptions,
+  CONTEXT_DIR_RELATIVE,
+  estimateTokens,
+  estimateMessagesTokens,
+  estimateToolDefinitionsTokens,
+  resolveModelScale,
+  selectToolDefinitions,
+  buildToolIndexText,
+  truncateToolResult,
+  compactHistory,
+  ALWAYS_EXCLUDED_TOOLS,
+  CORE_TOOL_NAMES,
+  MEDIUM_EXCLUDED_TOOLS,
+} from './agent/context/index.js';
+export type {
+  ContextAdjustment,
+  ContextBuildInput,
+  ContextBuildResult,
+  ContextManagerOptions,
+  ContextStats,
+  ModelScale,
+  TruncatedToolResult,
+  ToolSelectionResult,
+  CompactHistoryInput,
+  CompactHistoryResult,
+  TokenEstimatorOptions,
+} from './agent/context/index.js';
+
 // 多Agent协作协调器 🆕
 export { MultiAgentCoordinator, PREDEFINED_ROLES } from './agent/MultiAgentCoordinator.js';
 export type {
