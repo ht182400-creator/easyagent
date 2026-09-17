@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.23",
-    "codename": "Gemini",
-    "lastUpdated": "2026-07-11T02:58:02.463Z",
+    "version": "0.6.26",
+    "codename": "安全加固与可观测性",
+    "lastUpdated": "2026-09-17T16:34:53.665Z",
     "engine": "auto-detected",
-    "totalTests": 1514,
+    "totalTests": 1561,
     "modelsSupported": 4
   },
   "phases": [

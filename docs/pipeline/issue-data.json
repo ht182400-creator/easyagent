@@ -2322,6 +2322,13 @@
           "problem": "用户问\"能否取消被占用的 Pages 部署\" —— 二次纠错（重要）",
           "solution": "用户再次在对话贴出密码（已脱敏，不写入仓库），收尾已删除 temp/askpass.cmd，再次提醒尽快改密。；同步 GitHub（2026-07-11 10:56）: `git add` 选定文件（排除来历不明的 `未命名.base`）→ commit → push 被 GitHub 密钥扫描拦截：① `2026-07-11.md:74` 含明文服务器密码、② `2026-07-11.md:41` 含明文腾讯云 Secret",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[审核:更正] 纠正审核报告的一处错误结论",
+          "problem": ": `docs/62` 称\"存在 30 个孤儿测试\" [根因] : 该结论来自 mtime 停在 2026-06-27 的 `_vitest-desktop.json` 过期快照；重跑 desktop 全量实际 **215/215 全通过**",
+          "solution": "已在 `docs/63` §3.1 明确更正；`docs/62` 保留原样存证；教训: 判断测试状态必须重跑，不能只看管线快照",
+          "status": "resolved"
         }
       ]
     },
@@ -3443,6 +3450,13 @@
           "title": "插件市场系统联调 — 四连修复 (23:05-23:20)",
           "problem": ": 安装后日志 `Cannot find module '.../core/dist/PluginWorkerEntry.js'`，UI 卡在\"准备中…\" [根因] : `PluginSandbox.ts:125` 用 `resolve(__dirname, 'PluginWorkerEntry.js')` 加载 worker；tsup `splitting: false` 把 PluginSandbox 内联到 `dist/index.js`（`__dirname` = `dist/`），但 entry 配置里从未包含 `PluginWorkerEntry.",
           "solution": "`core/tsup.config.ts` 加对象 entry `'PluginWorkerEntry': 'src/plugins/PluginWorkerEntry.ts'`，输出到 `dist/PluginWorkerEntry.js`；dts 排除该 entry（dynamic property access 推导为 `{}` 会报错）；教训: tsup `splitting: false` 会内联所有 import 子模块，任何**路径敏感**代码（worker 入口、native binding 等）必须独立打包",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[审核:更正] 纠正审核报告的一处错误结论",
+          "problem": ": `docs/62` 称\"存在 30 个孤儿测试\" [根因] : 该结论来自 mtime 停在 2026-06-27 的 `_vitest-desktop.json` 过期快照；重跑 desktop 全量实际 **215/215 全通过**",
+          "solution": "已在 `docs/63` §3.1 明确更正；`docs/62` 保留原样存证；教训: 判断测试状态必须重跑，不能只看管线快照",
           "status": "resolved"
         }
       ]
@@ -5955,8 +5969,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 826,
-  "_generatedAt": "2026-09-17T16:13:19.551Z",
+  "_totalIssues": 828,
+  "_generatedAt": "2026-09-17T16:34:53.970Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -5976,16 +5990,17 @@
     "2026-07-10.md",
     "2026-07-11.md",
     "2026-09-17.md",
+    "2026-09-18.md",
     "MEMORY.md",
     "README.md"
   ],
   "_cacheStats": {
-    "totalFiles": 20,
+    "totalFiles": 21,
     "cacheHits": 0,
-    "reparsed": 20
+    "reparsed": 21
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-17T16:13:19.569Z"
+    "exportedAt": "2026-09-17T16:34:53.982Z"
   }
 }
