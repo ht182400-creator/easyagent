@@ -161,6 +161,7 @@ pnpm push:forgejo --tag vX.Y.Z
 | 3 | 建仓返回 `repository with the same name already exists` | 仓库早已存在（2026-08-19 创建） | 先 `GET /api/v1/repos/{owner}/{repo}` 探测；存在则跳过建仓，直接比对历史 |
 | 4 | 担心推送覆盖远端 | 未确认历史是否同源 | 先 `git fetch forgejo` 比对 HEAD；本次确认 `forgejo/main` 与本地完全一致后才推送（**若历史不同源，绝不可 force push，需先与用户确认**） |
 | 5 | `write:repository` 权限不足 | 令牌 scope 不含 `write:user` | 建仓需 `write:user`；纯推送 `write:repository` 即可 |
+| 6 | 脚本报「(up-to-date)」但实际推送成功 | **git 的推送结果写在 stderr**，`execFileSync` 只返回 stdout → `output` 为空，被 `\|\| '(up-to-date)'` 兜底误判 | 改用 `spawnSync` 同时捕获 stdout+stderr；并区分「已推送 / 已是最新」两种文案 |
 
 ---
 

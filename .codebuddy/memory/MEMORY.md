@@ -75,6 +75,16 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - 完整流程与踩坑：`docs/64_Forgejo发布指南.md`
 - ⚠️ 推送前**必须** `git fetch forgejo` 比对历史是否同源；不同源绝不可 force push，须先与用户确认
 
+### 🪤 通用陷阱：Node 调用 git 必须同时捕获 stdout 与 stderr（2026-09-18 实测）
+
+`execFileSync('git', args)` **只返回 stdout**，而 git 的以下输出**全部走 stderr**：
+- 推送结果（`old..new  main -> main`、`Everything up-to-date`）
+- 大部分错误原因（401、非快进、找不到远端）
+
+**后果**：成功会被报成"无变化"（`output` 为空 + `|| '默认文案'` 兜底），失败也可能被报成成功。
+**规避**：用 `spawnSync` + `stdio: ['ignore','pipe','pipe']`，把 `stdout + stderr` 合并后再判断。
+**适用**：任何"包装外部命令并依据输出做判断"的脚本（`push-forgejo.mjs`、`run-logged.mjs`）——已修 `013e996`。
+
 ### 版本号现状（2026-09-18）
 
 - `version.json` = **0.6.26**，最新 tag = **v0.6.26**（本次发布）
