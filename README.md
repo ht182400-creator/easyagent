@@ -69,7 +69,7 @@
 - **版本控制系统**: 单一版本源(version.json) + CHANGELOG + 版本检查 API(/api/version, /api/version/check) + Web/Desktop 端升级提示 + 发布脚本(release.mjs) + 一键发布(release-publish.bat) + 构建时版本注入
 - **模型目录动态更新**: 启动时后台下载最新模型目录，24h缓存，三级降级保证可用性
 - **Skills/Plugins 系统**: 插件生命周期管理 + 6 内置技能 (code-review/test/debug/refactor/explain/doc)
-- **MCP 协议**: JSON-RPC over stdio，多 MCP Server 管理
+- **MCP 协议**: 🆕 2025-06-18 规范 —— stdio + **Streamable HTTP** 双传输，协议版本协商，多 MCP Server 管理
 - **i18n 国际化**: zh-CN / en-US 双语支持
 - **会话持久化**: SQLite 本地存储，完整对话历史，WAL 模式；**schema 迁移机制**（`PRAGMA user_version` 版本戳 + 事务化迁移，升级不丢数据）
 - **API 安全**: REST 鉴权（回环免鉴权 / 非回环强制令牌）+ 请求限流 + 默认仅监听 127.0.0.1 + 全局错误处理（统一错误响应格式）

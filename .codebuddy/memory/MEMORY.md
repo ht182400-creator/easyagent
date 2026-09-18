@@ -32,6 +32,7 @@
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
 | **P1-5 数据库迁移** | **已完成**：`DatabaseMigrator`（`PRAGMA user_version` 版本戳 + 事务化 + fail-fast + mock 环境自动跳过）；sessions.db（v1 基线 + v2 索引）与 langgraph-checkpoints.db 已接入；真实存量库副本验证数据零丢失。**新增迁移只追加不改历史，基线必须幂等** | `core/src/db/`、`langgraph/src/memory/checkpointerMigrations.ts`、`docs/72` |
 | **P1-6 错误中间件 + CI 冒烟** | **已完成（收尾）**：`errorHandler`（/api/* 统一 `{success:false,error:{code,message}}`，堆栈只进日志，headersSent 防护）+ `asyncHandler`（**Express 4 不捕获 async 路由 rejection，async 路由必须包裹**）+ `scripts/smoke-test.mjs` + ci.yml `smoke-test` job（真实启动→health→sessions）；命令 `pnpm smoke` | `server/src/middleware/errorHandler.ts`、`scripts/smoke-test.mjs`、`docs/73` |
+| **P1-3 MCP 升级** | **已完成（P1 全清）**：`StreamableHttpTransport`（2025-06-18 规范：单 JSON/SSE 响应分派、Session-Id、Protocol-Version 头、DELETE 终止）+ `MCPClient` 双传输分派（`url`/`command` 二选一）+ 版本协商（2025-06-18/2025-03-26/2024-11-05）；补 stdio 遗漏的 initialized 通知。**未实现：GET 长连接推送通道（server-initiated 场景再引入）** | `core/src/mcp/`、`docs/75` |
 | **P1-1 服务端拆分** | **✅ 六批全部完成（2026-09-18）：`index.ts` 3827 → 389 行（-89.8%），达成 ≤500 目标**。第六批抽 `bootstrap.ts`（模型目录初始化 / createWsHub / createAutomationSystem / createIMManagerFor / applySecurityMiddleware）。全量回归 1729/1729 | `packages/server/src/routes/`、`bootstrap.ts`、`docs/66` |
 
 ### 🔧 纯搬迁后的死导入核查（linter 不管这个）
@@ -297,7 +298,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1718**（模块映射口径，48 个映射文件）；**Vitest 已执行 1753，全部通过，0 失败**（P1-5 迁移器 +18、P1-6 错误中间件 +6 后）。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 / 1685 / 1696 / 1699 / 1710 / 1715 / 1726 / 1729 / 1747 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1718**（模块映射口径，48 个映射文件）；**Vitest 已执行 1758，全部通过，0 失败**（P1-5 迁移器 +18、P1-6 错误中间件 +6、P1-3 MCP Streamable HTTP +5 后）。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 / 1685 / 1696 / 1699 / 1710 / 1715 / 1726 / 1729 / 1747 / 1753 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

@@ -424,9 +424,18 @@ export interface SearchResult {
 /** MCP服务器配置 */
 export interface MCPServerConfig {
   name: string;
-  command: string;
-  args: string[];
+  /** stdio 模式：服务器启动命令（与 url 二选一） */
+  command?: string;
+  /** stdio 模式：命令参数 */
+  args?: string[];
+  /**
+   * Streamable HTTP 模式（MCP 2025-06-18 规范）：服务器端点 URL
+   * 设置后走 HTTP 传输（与 command 二选一，url 优先）
+   */
+  url?: string;
   env?: Record<string, string>;
+  /** Streamable HTTP 模式：附加请求头（如 Authorization） */
+  headers?: Record<string, string>;
   enabled: boolean;
   /** 自动批准的工具列表 */
   autoApprove?: string[];
