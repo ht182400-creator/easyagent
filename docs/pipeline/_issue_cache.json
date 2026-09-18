@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789663717864.87,
-      "size": 10549
+      "mtimeMs": 1789664688068.2783,
+      "size": 13600
     },
     "MEMORY.md": {
-      "mtimeMs": 1789663707051.1177,
-      "size": 33363
+      "mtimeMs": 1789664681544.987,
+      "size": 34956
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11080,10 +11080,21 @@
         "_tagModuleIds": [
           "f2"
         ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-09-18",
+        "title": "[P1-1:重构] 服务端入口拆分第一阶段：3827 → 3401 行",
+        "problem": ": `packages/server/src/index.ts` 3827 行 / 93 条路由，违反项目「单文件 ≤500 行」规范 7.5 倍",
+        "solution": "先建安全网（路由快照 + 运行时验证），再搬迁 3 组路由（knowledge / automations / staticFiles）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f4"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-17T17:04:11.296Z"
+  "generatedAt": "2026-09-18T01:20:11.639Z"
 }

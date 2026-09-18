@@ -9,6 +9,7 @@
  * @module PluginsMarket
  */
 import { useState, useEffect, useMemo } from 'react';
+import { sanitizeHtml } from '../utils/markdown.js';
 import {
   Search,
   Download,
@@ -557,8 +558,13 @@ function PluginDetailView({ detail, loading, installProgress, onInstall, onClose
         <div className="bg-white/[0.03] border border-white/5 rounded-lg p-5">
           <h3 className="text-sm font-medium mb-3">README</h3>
           <div
-            className="prose prose-invert prose-sm max-w-none [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_pre]:bg-black/30 [&_code]:bg-black/20 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_a]:text-blue-400"
-            dangerouslySetInnerHTML={{ __html: readmeHtml }}
+            className="markdown-body [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_a]:text-blue-400"
+            /* 🛡️ readmeHtml 是服务端从 GitHub 取回的**裸 HTML**（application/vnd.github.html+json），
+               绕过了一切 Markdown 渲染器，因此必须在渲染前消毒。
+               注意：此处原先用的是 `prose prose-invert` 类，但项目并未安装
+               @tailwindcss/typography，那些类实际是空的 → README 此前处于"无任何排版样式"状态。
+               现改用 .markdown-body（定义见 styles/index.css）。 */
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(readmeHtml) }}
           />
         </div>
       )}

@@ -7,6 +7,68 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.29] - 2026-09-18
+
+> **本版主题：前端 Markdown 渲染加固（P1-4）** —— 修掉两个 XSS 缺口，补上表格/有序列表/代码高亮。
+> 方案与实现：`docs/67_P1-4前端Markdown与代码高亮方案.md`
+
+### Added
+
+- **`packages/frontend/src/utils/markdown.ts`** —— 统一的 Markdown 渲染与安全消毒模块
+  （`markdown-it` + `highlight.js` + `DOMPurify`），提供两条明确分开的渲染路径：
+  - `renderMarkdown()` —— 本地 Markdown 文本。三层防线：
+    `html:false` 转义原始 HTML / `isSafeUrl` 协议白名单 / 链接统一 `rel="noopener noreferrer"`
+  - `sanitizeHtml()` —— 远程不可信 HTML（GitHub README），DOMPurify 消毒
+  - `isSafeUrl()` / `estimateWordCount()` —— URL 安全判定与 CJK 字数估算
+- **能力**：支持表格、有序列表、嵌套列表；代码块语法高亮（按需注册 16 种语言，
+  并补齐 `js`/`ts`/`sh`/`py`/`yml`/`html` 等 20 组高频别名）
+- **测试**：`__tests__/markdown.test.ts` 共 **35 条**，其中 **6 条为安全回归**
+  （原始 HTML 转义 / `img onerror` / `javascript:` / `data:` / 属性逃逸 / 大小写变形协议）
+
+### Changed
+
+- `MessageList.tsx` 删除本地自研正则渲染器（47 行），统一改用 `renderMarkdown()`
+- `PluginsMarket.tsx` 的 README 渲染前增加 `sanitizeHtml()`；
+  无效果的 `prose prose-invert`（依赖未安装的 `@tailwindcss/typography`）改为 `.markdown-body`
+- `styles/index.css` 新增 highlight.js 主题配色覆写（保留词法着色，容器外观交还设计令牌）
+- 测试基线刷新：定义用例 **1664** / Vitest 已执行 **1675 全部通过** / Node **75** / 合计 **1750**
+
+### Security
+
+- **修复「`"` 未转义导致属性逃逸」**：原自研渲染器只转义 `& < >` 而漏了 `"`，
+  链接的 `href="$2"` 可被 `x" onmouseover="alert(1)` 挣脱，注入任意 HTML 属性
+- **修复「URI 协议完全未过滤」**：`[点我](javascript:alert(1))` 曾可直接点击执行。
+  现仅放行 http / https / mailto / tel 与相对路径、锚点
+- **修复「GitHub README 裸 HTML 无消毒」**：服务端用 `application/vnd.github.html+json`
+  取回的远程 HTML 曾直接进入 `dangerouslySetInnerHTML`，现经 DOMPurify 消毒
+- 链接补充 `rel="noopener noreferrer"`（原实现缺 `noreferrer`，存在反向标签钓鱼面）
+
+### Fixed
+
+- `PluginsMarket` 使用未安装插件的 Tailwind 类（`prose prose-invert`）→ README 长期无排版样式。
+  与 P0-5 令牌断裂属同类病灶：**引用了不存在的定义，且不报错**
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| Markdown 模块测试 | ✅ 35 / 35（含 6 条安全回归） |
+| 前端包全量测试 | ✅ 148 / 148（113 → +35） |
+| 全量回归 | ✅ **1675 / 1675 通过，0 失败** |
+| 类型检查（语言服务器） | ✅ 0 诊断 |
+| Web 构建 | ✅ 退出码 0 |
+| 产物核验 | ✅ JS 渲染逻辑未被 tree-shake；CSS 中 hljs token 类已打包且应用覆写在后 |
+| 数据一致性 / 设计令牌门禁 | ✅ 均通过 |
+
+### 已知后续项
+
+- 服务端 README 建议改取原始 Markdown（`Accept: application/vnd.github.raw`），
+  从「过滤危险内容」升级为「根本不引入不可信 HTML」
+- 插件包 `SearchPanel.tsx` 的 `highlightText()` 仍是自研字符串拼接，建议收敛
+- Web JS 产物 741 KB（含 markdown-it + 16 语言 highlight.js）；若在意首屏可改为动态 `import()` 懒加载
+
+---
+
 ## [0.6.28] - 2026-09-18
 
 > **本版主题：服务端入口拆分（P1-1 第一阶段）** —— `index.ts` 3827 → 3401 行。

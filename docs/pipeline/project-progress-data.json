@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.27",
-    "codename": "上下文工程",
-    "lastUpdated": "2026-09-17T16:50:12.408Z",
+    "version": "0.6.28",
+    "codename": "服务端拆分",
+    "lastUpdated": "2026-09-17T17:06:13.340Z",
     "engine": "auto-detected",
-    "totalTests": 1624,
+    "totalTests": 1629,
     "modelsSupported": 4
   },
   "phases": [

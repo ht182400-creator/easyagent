@@ -31,6 +31,26 @@
 | 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
 | **P1-1 服务端拆分** | **第一阶段完成：`index.ts` 3827 → 3401 行**（knowledge / automations / staticFiles 三组路由外移） | `packages/server/src/routes/`、`docs/66` |
+| **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
+
+### 📝 前端 HTML 渲染安全（改任何 `dangerouslySetInnerHTML` 前必读）
+
+**只有两条合法路径，不要自造第三种**：
+- **本地 Markdown 文本** → `renderMarkdown()`（`utils/markdown.ts`）：markdown-it `html:false` 转义原始 HTML + `isSafeUrl` 协议白名单（`javascript:`/`data:`/`vbscript:`/`file:` 全部拦截）+ 链接统一 `rel="noopener noreferrer"`
+- **远程不可信 HTML**（如 GitHub README）→ `sanitizeHtml()`：**必须**走 DOMPurify
+
+**历史教训**：原自研正则渲染器只转义 `& < >` 而**漏了 `"`**，链接 `href="$2"` 可被挣脱；且 URI 协议完全不过滤 → `[x](javascript:alert(1))` 点击即执行。
+
+⚠️ **`PluginsMarket` 的 README 是服务端取回的裸 HTML**（`application/vnd.github.html+json`），绕过 markdown-it，务必保持消毒。更彻底的后续方向：服务端改取原始 Markdown（`Accept: application/vnd.github.raw`），从"过滤危险内容"升级为"根本不引入不可信 HTML"。
+
+### ⚠️ 环境陷阱（本仓库特有）
+
+| 陷阱 | 现象 | 解法 |
+|------|------|------|
+| **pnpm 安装被 IDE 批量删除保护拦截** | `ERR_PNPM_LINKING_FAILED` / `SAFE_DELETE_BULK_CONFIRM_REQUIRED`，count 501 > 500；依赖进了 store 但**没链接到包**，且 `package.json` 未更新；计数 scope 是 turn，**重试不归零** | 手动写 `package.json` + `pnpm install`；必要时对**该条命令**设 `CODEBUDDY_SAFE_DELETE_ENABLED=0`（IDE 源码第 22 行的开关），跑完立即 `Remove-Item Env:CODEBUDDY_SAFE_DELETE_ENABLED` |
+| **中断的 install 会静默破坏其他包链接** | desktop 包 0 用例，报 `Failed to resolve "@testing-library/jest-dom"`，而前端测试全绿 | 跑**全量** `pnpm install` 修复。**改依赖后必须跑全量回归**——只看改动所在的包会漏掉跨包链接损伤 |
+| **DOMPurify 在 happy-dom 下不可靠** | 连 `<p>`/`<h2>`/`<span class>` 都被整类剥掉（默认配置亦然），多元素时 `<script>` 反而可能存活 → 安全断言会给出**错误结论** | 测试文件加单文件指令 `// @vitest-environment jsdom`。本仓库默认用 happy-dom（v0.6.22 为规避 React 重复实例），但**不渲染 React 的测试文件**可安全切 jsdom |
+| **引用不存在的定义不报错** | `prose prose-invert` 类（未装 `@tailwindcss/typography`）、Tailwind 令牌指向未定义 CSS 变量——都是静默失效 | 用脚本门禁兜底：`verify-css-tokens.mjs`；新引入第三方类名前先确认依赖已安装 |
 
 ### 🛡️ 服务端重构的安全网（改 `server/src/index.ts` 前必读）
 
@@ -158,7 +178,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1629**（模块映射口径，48 个映射文件）；**Vitest 已执行 1640，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1715 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1664**（模块映射口径，48 个映射文件）；**Vitest 已执行 1675，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1750 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

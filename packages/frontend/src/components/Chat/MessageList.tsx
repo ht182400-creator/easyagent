@@ -13,6 +13,8 @@ import { Bot, User, AlertCircle, Loader2 } from 'lucide-react';
 import { useChatStore, type ChatMessage } from '../../stores/chatStore';
 import { ToolCallCard } from './ToolCallCard';
 import { useSettingsStore } from '../../stores/settingsStore';
+// Markdown 渲染改用统一模块（表格/有序列表/代码高亮 + XSS 防护），详见模块头注释
+import { renderMarkdown } from '../../utils/markdown.js';
 
 // ===================== 常量 =====================
 
@@ -231,54 +233,14 @@ function StreamingBubble({ text }: { text: string }) {
 }
 
 // ===================== Markdown 渲染 =====================
+//
+// 原先这里有一个 40 余行的自研正则渲染器，存在两类中止级问题：
+//   · 能力：不支持表格 / 有序列表 / 嵌套列表 / 代码高亮
+//   · 安全：只转义 `& < >` 而漏了 `"` → 链接 href 可被挣脱；
+//           且**完全不过滤 `javascript:` 等协议** → 点击即执行
+// 现已统一迁入 utils/markdown.ts（markdown-it + 协议白名单 + highlight.js），
+// 本地不再保留实现，避免两处行为漂移。
 
-/**
- * 轻量 Markdown → HTML 渲染器
- */
-function renderMarkdown(text: string): string {
-  if (!text) return '';
-
-  let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-  // 代码块 ```
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang: string, code: string) => {
-    return `<pre data-lang="${lang || 'text'}"><code>${code.trim()}</code></pre>`;
-  });
-
-  // 行内代码 `
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-  // 粗体 **
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-  // 斜体 *
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
-  // 链接 [text](url)
-  html = html.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener">$1</a>',
-  );
-
-  // 标题
-  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-
-  // 无序列表
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
-
-  // 引用
-  html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-
-  // 换行
-  html = html.replace(/\n\n/g, '</p><p>');
-  html = html.replace(/\n/g, '<br/>');
-  html = `<p>${html}</p>`;
-
-  return html;
-}
 
 // ===================== 虚拟行组件 =====================
 

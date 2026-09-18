@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/web",
-  "version": "0.6.28",
+  "version": "0.6.29",
   "description": "EasyAgent Web Dashboard",
   "type": "module",
   "scripts": {
