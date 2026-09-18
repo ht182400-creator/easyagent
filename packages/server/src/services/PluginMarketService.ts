@@ -224,22 +224,25 @@ export class PluginMarketService {
   }
 
   /**
-   * 获取单个插件详情（含 README HTML）
+   * 获取单个插件详情（含 README **原始 Markdown**）
+   *
+   * ⚠️ 返回的是 Markdown 原文而非 HTML。前端须用 `renderMarkdown()` 渲染，
+   * 切勿直接塞进 `dangerouslySetInnerHTML` —— 详见 GitHubClient.getReadmeMarkdown 说明。
    *
    * @param pluginId - owner/repo
    * @returns 插件详情
    */
   async getPluginDetail(pluginId: string): Promise<{
     plugin: MarketPlugin | null;
-    readmeHtml: string | null;
+    readmeMarkdown: string | null;
   }> {
     const client = getGitHubClient();
 
     try {
-      const [latestRelease, manifest, readmeHtml] = await Promise.all([
+      const [latestRelease, manifest, readmeMarkdown] = await Promise.all([
         client.getLatestRelease(pluginId),
         client.getManifest(pluginId),
-        client.getReadmeHtml(pluginId),
+        client.getReadmeMarkdown(pluginId),
       ]);
 
       const version = latestRelease?.tag_name || '0.0.0';
@@ -258,10 +261,10 @@ export class PluginMarketService {
         permissions: this.extractPermissions(manifest?.permissions),
       };
 
-      return { plugin, readmeHtml };
+      return { plugin, readmeMarkdown };
     } catch (error) {
       logger.error(`[PluginMarket] 获取插件详情失败 ${pluginId}: ${(error as Error).message}`);
-      return { plugin: null, readmeHtml: null };
+      return { plugin: null, readmeMarkdown: null };
     }
   }
 

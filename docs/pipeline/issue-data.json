@@ -1609,6 +1609,13 @@
           "problem": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
           "solution": "上游修了别忘了所有调用点；`checkAllUpdates` 和 `listMarket` 是两个独立入口，都需要 `skipCache`；前端 store 不会自动反映 disk 变化: 任何 `install/uninstall/update` 终态后必须主动 `fetchInstalled()` 同步；不能只更新 `marketplace` 不更新 `installed`",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-4:安全+UX] 前端 Markdown 渲染加固：修掉 2 个 XSS 缺口 + 补上表格",
+          "problem": ": 审核报告只记了 1 个点（D9 属性逃逸），勘察后发现实际是 **3 处渲染点 + 2 类安全缺口 + 1 处样式静默失效**",
+          "solution": "新增统一模块 `packages/frontend/src/utils/markdown.ts`（markdown-it + highlight.js + DOMPurify）",
+          "status": "resolved"
         }
       ]
     },
@@ -5486,6 +5493,13 @@
           "problem": ": 点击安装后只有旋转图标，无文字进度（\"下载中 X%\"等） [根因] : `initPluginProgressListener()` 定义了 handler 但未订阅 WebSocket/事件总线，实际上从未收到 `plugin:install:progress` 消息",
           "solution": "复用 `chatStore` 已有的全局 WebSocket 和事件总线 — `chatStore.ts` 新增 `case 'plugin:install:progress': emit(...)` 转发 → `pluginsStore.ts` 中 `on('plugin:install:progress')` 真正订阅 → `App.tsx` useEffect 挂载监听器；测试: 新增 5 用例，frontend 12 文件 110/110 通过 ✅",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-4:安全+UX] 前端 Markdown 渲染加固：修掉 2 个 XSS 缺口 + 补上表格",
+          "problem": ": 审核报告只记了 1 个点（D9 属性逃逸），勘察后发现实际是 **3 处渲染点 + 2 类安全缺口 + 1 处样式静默失效**",
+          "solution": "新增统一模块 `packages/frontend/src/utils/markdown.ts`（markdown-it + highlight.js + DOMPurify）",
+          "status": "resolved"
         }
       ]
     },
@@ -5990,8 +6004,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 831,
-  "_generatedAt": "2026-09-18T01:20:11.643Z",
+  "_totalIssues": 833,
+  "_generatedAt": "2026-09-18T01:41:36.198Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6022,6 +6036,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-18T01:20:11.656Z"
+    "exportedAt": "2026-09-18T01:41:36.212Z"
   }
 }

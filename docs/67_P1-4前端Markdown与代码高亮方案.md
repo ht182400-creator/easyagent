@@ -2,7 +2,11 @@
 
 > **建立日期**: 2026-09-18
 > **审核依据**: `docs/62_专家团最终审核报告.md` §附录 D9（Markdown 渲染器可构造属性逃逸）
-> **当前状态**: ✅ 已完成并发布 v0.6.29 —— 新增统一模块 `packages/frontend/src/utils/markdown.ts`，35 条测试全通过，全量回归 1675/1675
+> **当前状态**: ✅ 已完成并发布 **v0.6.30** —— 新增统一模块 `packages/frontend/src/utils/markdown.ts`，
+> 并把服务端 README 改为取原始 Markdown（**远程 HTML 路径已彻底消除**）。
+> 32 条测试全通过，全量回归 **1672/1672**
+>
+> **v0.6.30 追加**：本节 §3.1 原描述的两条渲染路径已合并为**一条**，`sanitizeHtml()` 与 `dompurify` 依赖一并移除。
 
 ---
 
@@ -15,7 +19,7 @@
 | 位置 | 渲染内容 | 原实现 | 安全状态 |
 |------|---------|--------|---------|
 | `components/Chat/MessageList.tsx` | AI 回复 / 流式输出 | **自研正则**（约 40 行） | 有缺口（见下） |
-| `pages/PluginsMarket.tsx` | **GitHub 远程 README 裸 HTML** | 直接 `dangerouslySetInnerHTML` | **完全无消毒** |
+| `pages/PluginsMarket.tsx` | GitHub 远程 README | 直接 `dangerouslySetInnerHTML` | v0.6.29 前**完全无消毒**（裸 HTML）；v0.6.30 起服务端改返原始 Markdown，与聊天共用 `renderMarkdown()` |
 | `easyagent-plugin-obsidian-doc-viewer/.../SearchPanel.tsx` | 搜索片段高亮 `highlightText()` | 自研 | 同类问题（插件包，**未处理**） |
 
 ### 1.2 两个真实安全缺口（原自研渲染器）
@@ -57,17 +61,44 @@ html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" re
 
 ## 三、实现
 
-### 3.1 两条渲染路径，不要混用
+### 3.1 唯一渲染路径（v0.6.30 起）
 
 ```
 ① 本地 Markdown 文本  →  renderMarkdown()
-   来源：AI 回复、知识库文档。安全由**构造保证**（原始 HTML 被转义 + 协议白名单），
-   不额外跑 DOMPurify —— 聊天列表是虚拟滚动高频渲染，重复消毒浪费 CPU。
-
-② 远程不可信 HTML     →  sanitizeHtml()
-   来源：GitHub README（服务端用 application/vnd.github.html+json 取回的裸 HTML），
-   绕过了 markdown-it，必须单独消毒。
+   来源：AI 回复、知识库文档、插件市场 README。
+   安全由**构造保证**（原始 HTML 被转义 + 协议白名单），不额外消毒 ——
+   聊天列表是虚拟滚动高频渲染，重复消毒浪费 CPU。
 ```
+
+> **v0.6.29 曾有的第二条路径**（`sanitizeHtml()` + DOMPurify，用于远程 HTML）**已删除**。
+> 原因：与其「取回不可信 HTML 再过滤」，不如「**根本不引入不可信 HTML**」——
+> 见 §3.5。
+
+### 3.5 服务端改取原始 Markdown（v0.6.30，消除远程 HTML 信任面）
+
+`server/src/utils/githubClient.ts` 的 `getReadmeHtml()` → `getReadmeMarkdown()`：
+
+| | 旧 | 新 |
+|---|---|---|
+| Accept | `application/vnd.github.html+json` | **`application/vnd.github.raw`** |
+| 返回 | GitHub 渲染后的**裸 HTML** | **原始 Markdown** |
+| 前端处理 | `sanitizeHtml()` 事后消毒 | `renderMarkdown()` 直接渲染 |
+
+**真实 API 实测**（`ht182400-creator/easyagent`）：
+
+```
+raw  → "# EasyAgent - AI编程助手 v0.4.0 (Gemini)\n\n> 集成中国主流大模型的全功能AI编程助手…"
+html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><svg …>…"
+```
+
+> 对照可见：旧路径取回的是**带内联 SVG、`data-path`、`itemprop` 等属性的臃肿 HTML** ——
+> 而它此前被直接塞进 `dangerouslySetInnerHTML`。
+
+**三重收益**：① 信任面被**消除**而非过滤；② README 获得表格/代码高亮；③ 移除 `dompurify`
+依赖，Web JS 产物 **741 KB → 711 KB**。
+
+连带改动：`PluginMarketService.getPluginDetail` 返回字段 `readmeHtml` → `readmeMarkdown`；
+前端 `PluginDetail` 接口与 `PluginsMarket.tsx` 同步改为 `renderMarkdown()`。
 
 ### 3.2 三层防线（`renderMarkdown`）
 
@@ -185,11 +216,10 @@ html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" re
 
 ## 七、后续建议（按优先级）
 
-1. **🔒 更彻底地消除远程 HTML 信任面**（推荐）
-   目前 README 仍走「取回裸 HTML → 消毒」。更优做法是**服务端改取原始 Markdown**
-   （GitHub 的 `Accept: application/vnd.github.raw`），前端用 `renderMarkdown()` 渲染 ——
-   **从「过滤危险内容」升级为「根本不引入不可信 HTML」**，同时 README 也能获得表格/代码高亮。
-   涉及 `packages/server/src/utils/githubClient.ts` + `PluginMarketService` + 相关测试连带更新。
+1. ✅ **🔒 消除远程 HTML 信任面 —— 已于 v0.6.30 完成**（详见 §3.5）
+   服务端改取原始 Markdown（`Accept: application/vnd.github.raw`），前端用 `renderMarkdown()` 渲染，
+   **从「过滤危险内容」升级为「根本不引入不可信 HTML」**；顺带获得表格/代码高亮，
+   并移除 `dompurify` 依赖（Web JS 741 KB → 711 KB）。
 
 2. **🔒 处理插件包的 `highlightText()`**
    `easyagent-plugin-obsidian-doc-viewer/.../SearchPanel.tsx` 仍是自研字符串拼接，存在同类风险，建议复用本模块或统一收敛。

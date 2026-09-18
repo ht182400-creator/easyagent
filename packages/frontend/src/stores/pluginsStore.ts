@@ -77,7 +77,12 @@ export interface InstallProgress {
 /** 插件详情 */
 export interface PluginDetail {
   plugin: PluginMarketEntry | null;
-  readmeHtml: string | null;
+  /**
+   * README **原始 Markdown** 文本（服务端自 GitHub `raw` 取回）
+   *
+   * ⚠️ 渲染时必须用 `renderMarkdown()` 转换；**不要**直接塞进 `dangerouslySetInnerHTML`。
+   */
+  readmeMarkdown: string | null;
 }
 
 interface PluginsState {
@@ -215,7 +220,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
   },
 
   /**
-   * 获取插件详情（含 README HTML）
+   * 获取插件详情（含 README 原始 Markdown）
    *
    * @param pluginId - owner/repo
    */

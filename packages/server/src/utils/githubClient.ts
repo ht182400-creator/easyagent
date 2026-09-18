@@ -178,16 +178,28 @@ export class GitHubClient {
   }
 
   /**
-   * 获取仓库 README (HTML 格式，便于前端展示)
+   * 获取仓库 README（**原始 Markdown** 格式）
    *
-   * GitHub 的 `application/vnd.github.html+json` content-type 名义是 JSON，
-   * 但实际响应体是顶层裸 HTML 字符串（不是 JSON 包装对象），
-   * 因此不能直接用 res.json() 解析，必须用 res.text()。
+   * ── 🛡️ 为什么是 Markdown 而不是 HTML ──
+   * 本方法原先使用 `application/vnd.github.html+json`，取回的是 GitHub 渲染后的
+   * **裸 HTML 字符串**。前端若把这类第三方 HTML 直接塞进 `dangerouslySetInnerHTML`，
+   * 就等于把任意远端仓库作者编写的 HTML 在本应用同源上下文里执行
+   * （`<img onerror>`、`<a href="javascript:">`、`<iframe>`……）。
+   * 即便事后用 DOMPurify 消毒，本质仍是"先引入危险内容再过滤"。
+   *
+   * 现在改为 `application/vnd.github.raw` 直接取**原始 Markdown**：
+   *   ① 前端用同一个 `renderMarkdown()` 渲染（`html:false` 转义原始 HTML + 协议白名单），
+   *      **根本不存在"不可信 HTML 进入 DOM"这一步**，信任面被消除而非过滤；
+   *   ② 顺带获得表格、有序列表、代码块高亮（HTML 形态反而丢失了这部分信息）；
+   *   ③ 不再需要 DOMPurify 依赖。
+   *
+   * 注意：这里的「原始」指未经 GitHub 渲染的源码，但**内容本身仍不可信** ——
+   * 安全性由前端渲染环节保证（见 `frontend/src/utils/markdown.ts`）。
    *
    * @param fullName - owner/repo
-   * @returns HTML 格式的 README 内容
+   * @returns Markdown 原文，失败返回 null
    */
-  async getReadmeHtml(fullName: string): Promise<string | null> {
+  async getReadmeMarkdown(fullName: string): Promise<string | null> {
     const cacheKey = `readme:${fullName}`;
     const cached = this.getCache<string | null>(cacheKey);
     if (cached !== undefined) {
@@ -196,7 +208,8 @@ export class GitHubClient {
 
     const url = `${GITHUB_API}/repos/${fullName}/readme`;
     const headers: Record<string, string> = {
-      Accept: 'application/vnd.github.html+json',
+      // 关键：raw 而非 html —— 详见上方「为什么是 Markdown」说明
+      Accept: 'application/vnd.github.raw',
       'User-Agent': 'EasyAgent-Plugin-Market/1.0',
     };
     if (this.token) {
@@ -217,10 +230,10 @@ export class GitHubClient {
         throw new Error(`GitHub API 请求失败 (${res.status}): ${res.statusText}`);
       }
 
-      // 关键：用 res.text() 而非 res.json() — 实际响应是裸 HTML 字符串
-      const html = await res.text();
-      this.setCache(cacheKey, html);
-      return html;
+      // raw 响应体就是纯文本 Markdown
+      const markdown = await res.text();
+      this.setCache(cacheKey, markdown);
+      return markdown;
     } catch (error) {
       logger.warn(`[GitHubClient] ${fullName} 无 README: ${(error as Error).message}`);
       this.setCache(cacheKey, null);
@@ -354,10 +367,11 @@ export class GitHubClient {
   /**
    * Base64 解码助手（已不再被内部调用，保留以备未来扩展）
    *
-   * 历史背景：旧版 `getReadmeHtml()` 曾用此方法解码 `application/vnd.github.html+json`
+   * 历史背景：旧版 README 获取曾尝试解码 `application/vnd.github.html+json`
    * 返回的 JSON 包装对象 `{content, encoding}`。但实测 GitHub 该 content-type
-   * 实际返回**裸 HTML 字符串**（顶层不是 JSON），新版 `getReadmeHtml()` 已改用
-   * `res.text()` 直接读 HTML。manifest 路径仍使用内联 `Buffer.from`。
+   * 实际返回**裸 HTML 字符串**（顶层不是 JSON）。
+   * 现行 `getReadmeMarkdown()` 已改用 `application/vnd.github.raw` + `res.text()`
+   * 直接读原始 Markdown，不再需要解码。manifest 路径仍使用内联 `Buffer.from`。
    */
   // private _decodeBase64Field(data: { content: string; encoding: string }): string {
   //   if (data.encoding === 'base64' && data.content) {

@@ -1,0 +1,39 @@
+[2026-09-18 09:43:03.028] [INFO ] [test-runner] ==============================================================================
+[2026-09-18 09:43:03.030] [INFO ] [test-runner] EasyAgent 回归测试开始 — 范围: v0.6.30发版前全量回归（core, server, frontend, desktop, langgraph, web）
+[2026-09-18 09:43:03.030] [INFO ] [test-runner] 时间: 2026-09-18 09:43:03.030  提交: fcd767b  Node: v24.13.0
+[2026-09-18 09:43:03.030] [INFO ] [test-runner] 日志目录: D:\Work_Area\AI\Claude Code  CN\logs\test-logs\2026-09-18_094302_v0.6.30发版前全量回归
+[2026-09-18 09:43:03.030] [INFO ] [test-runner] ==============================================================================
+[2026-09-18 09:43:03.030] [INFO ] [test-runner] ▶ 开始测试 [core] 核心引擎 — 工作目录 packages/core
+[2026-09-18 09:43:03.030] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 09:43:16.536] [DEBUG] [test-runner] [core] exit=0 耗时=13.5s 用例=991 通过=991 失败=0 跳过=0
+[2026-09-18 09:43:16.536] [INFO ] [test-runner] ✅ 结束测试 [core] 耗时 13.5s — 991/991 通过
+[2026-09-18 09:43:16.536] [INFO ] [test-runner] ▶ 开始测试 [server] 服务端 — 工作目录 packages/server
+[2026-09-18 09:43:16.536] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 09:43:43.973] [DEBUG] [test-runner] [server] exit=0 耗时=27.4s 用例=262 通过=262 失败=0 跳过=0
+[2026-09-18 09:43:43.973] [INFO ] [test-runner] ✅ 结束测试 [server] 耗时 27.4s — 262/262 通过
+[2026-09-18 09:43:43.974] [INFO ] [test-runner] ▶ 开始测试 [frontend] 前端共享包 — 工作目录 packages/frontend
+[2026-09-18 09:43:43.974] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 09:43:51.485] [DEBUG] [test-runner] [frontend] exit=0 耗时=7.5s 用例=145 通过=145 失败=0 跳过=0
+[2026-09-18 09:43:51.485] [INFO ] [test-runner] ✅ 结束测试 [frontend] 耗时 7.5s — 145/145 通过
+[2026-09-18 09:43:51.485] [INFO ] [test-runner] ▶ 开始测试 [desktop] 桌面端 — 工作目录 packages/desktop
+[2026-09-18 09:43:51.485] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 09:43:56.183] [DEBUG] [test-runner] [desktop] exit=0 耗时=4.7s 用例=215 通过=215 失败=0 跳过=0
+[2026-09-18 09:43:56.183] [INFO ] [test-runner] ✅ 结束测试 [desktop] 耗时 4.7s — 215/215 通过
+[2026-09-18 09:43:56.183] [INFO ] [test-runner] ▶ 开始测试 [langgraph] LangGraph 引擎 — 工作目录 packages/langgraph
+[2026-09-18 09:43:56.183] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 09:43:59.522] [DEBUG] [test-runner] [langgraph] exit=0 耗时=3.3s 用例=57 通过=57 失败=0 跳过=0
+[2026-09-18 09:43:59.522] [INFO ] [test-runner] ✅ 结束测试 [langgraph] 耗时 3.3s — 57/57 通过
+[2026-09-18 09:43:59.523] [INFO ] [test-runner] ▶ 开始测试 [web] Web 壳 — 工作目录 packages/web
+[2026-09-18 09:43:59.523] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 09:44:02.175] [DEBUG] [test-runner] [web] exit=0 耗时=2.6s 用例=2 通过=2 失败=0 跳过=0
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] ✅ 结束测试 [web] 耗时 2.6s — 2/2 通过
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] ------------------------------------------------------------------------------
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] 汇总: 1672 用例 / 1672 通过 / 0 失败 / 0 跳过 / 耗时 59.2s
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] core       ✅ 通过  991/991
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] server     ✅ 通过  262/262
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] frontend   ✅ 通过  145/145
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] desktop    ✅ 通过  215/215
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] langgraph  ✅ 通过  57/57
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] web        ✅ 通过  2/2
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] ✅ 结论: 全部通过
+[2026-09-18 09:44:02.175] [INFO ] [test-runner] ------------------------------------------------------------------------------

@@ -7,22 +7,22 @@
  *
  * ⚠️ 标有「🛡️」的用例是**安全回归**，删除或修改前请先理解它守护的攻击方式。
  *
- * ── 为什么本文件用 jsdom 而不是包默认的 happy-dom ──
- * `sanitizeHtml()` 内部使用 DOMPurify。实测发现 **DOMPurify 在 happy-dom 下行为不可靠**：
- * 连默认配置都会把 `<p>` / `<h2>` / `<span>` 这类正常标签整类剥掉
- * （输入 `<p>hi</p>` 输出只剩 `hi`），而多元素场景下 `<script>` 反而可能存活。
- * 这会让「消毒是否真的生效」的断言失去意义——甚至给出错误的安全结论。
+ * ── 关于测试环境（历史沿革，勿轻易改回） ──
+ * 本文件曾用单文件指令 `@vitest-environment jsdom`，因为当时的 `sanitizeHtml()` 依赖
+ * DOMPurify，而 **DOMPurify 在 happy-dom 下行为不可靠**：连 `<p>`/`<h2>`/`<span class>`
+ * 都会被整类剥掉，多元素场景下 `<script>` 反而可能存活 → 安全断言会给出**错误结论**。
  *
- * 本文件**不渲染任何 React 组件**，因此不受 v0.6.22「改用 happy-dom 规避 React 重复实例」
- * 那条约定的约束，可以安全地使用 jsdom（DOM 实现更完整，也更接近真实浏览器）。
+ * 现 `sanitizeHtml()` 已随「服务端改取原始 Markdown」一并移除（不再有任何远程 HTML 渲染路径），
+ * 因此回归包默认的 happy-dom 环境即可。
  *
- * @vitest-environment jsdom
+ * ⚠️ 若将来重新引入 DOMPurify，**必须**同时恢复 `@vitest-environment jsdom` 指令
+ * 与该库的消毒回归用例。
  *
  * @module __tests__/markdown.test
  */
 
 import { describe, it, expect } from 'vitest';
-import { renderMarkdown, sanitizeHtml, isSafeUrl, estimateWordCount } from '../utils/markdown.js';
+import { renderMarkdown, isSafeUrl, estimateWordCount } from '../utils/markdown.js';
 
 // ===================== 渲染能力 =====================
 
@@ -225,49 +225,53 @@ describe('isSafeUrl — 协议白名单', () => {
   });
 });
 
-// ===================== 远程 HTML 消毒 =====================
+// ===================== 远程 README（Markdown 形态） =====================
 
-describe('sanitizeHtml — 远程 HTML（如 GitHub README）', () => {
-  it('空输入应返回空串', () => {
-    expect(sanitizeHtml('')).toBe('');
-    expect(sanitizeHtml(null)).toBe('');
+describe('renderMarkdown — 远程不可信 README', () => {
+  /**
+   * 🛡️ 服务端现已改为取原始 Markdown（GitHub `vnd.github.raw`），不再返回远程 HTML。
+   * 这类内容**同样不可信**，安全性完全由 renderMarkdown 保证 —— 以下用例即为此护栏。
+   */
+  it('🛡️ README 中内嵌的 HTML 事件处理器不得存活', () => {
+    const malicious = '# 插件说明\n\n<img src=x onerror=alert(1)>\n\n正常使用。';
+    const html = renderMarkdown(malicious);
+    expect(html).toContain('<h1>插件说明</h1>');
+    expect(html).not.toContain('<img');
+    expect(html).toContain('&lt;img');
   });
 
-  it('🛡️ 移除 script 标签', () => {
-    const out = sanitizeHtml('<p>hi</p><script>alert(1)</script>');
-    expect(out).not.toContain('<script');
-    expect(out).toContain('<p>hi</p>');
+  it('🛡️ README 中的 javascript: 链接不得进入 href', () => {
+    const malicious = '[安装](javascript:alert(1))';
+    const html = renderMarkdown(malicious);
+    expect(html.toLowerCase()).not.toContain('href="javascript:');
   });
 
-  it('🛡️ 移除事件处理器属性', () => {
-    const out = sanitizeHtml('<p onclick="alert(1)">文本</p>');
-    expect(out.toLowerCase()).not.toContain('onclick');
-    expect(out).toContain('文本');
+  it('🛡️ README 中的 script 标签不得存活', () => {
+    const html = renderMarkdown('正常文本\n\n<script>alert(1)</script>');
+    expect(html).not.toContain('<script>');
   });
 
-  it('🛡️ 移除 javascript: 协议的 href', () => {
-    const out = sanitizeHtml('<a href="javascript:alert(1)">恶意链接</a>');
-    expect(out.toLowerCase()).not.toContain('javascript:');
-  });
-
-  it('🛡️ 移除 iframe / object 等危险标签', () => {
-    const out = sanitizeHtml('<iframe src="https://evil.com"></iframe><p>ok</p>');
-    expect(out.toLowerCase()).not.toContain('<iframe');
-    expect(out).toContain('<p>ok</p>');
-  });
-
-  it('保留正常排版内容（防护不能过度清洗）', () => {
-    const out = sanitizeHtml(
-      '<h2>标题</h2><ul><li>项</li></ul><table><tr><td>单元格</td></tr></table>',
-    );
-    expect(out).toContain('<h2>标题</h2>');
-    expect(out).toContain('<li>项</li>');
-    expect(out).toContain('<td>单元格</td>');
-  });
-
-  it('保留 hljs 高亮所需的 class', () => {
-    const out = sanitizeHtml('<span class="hljs-keyword">const</span>');
-    expect(out).toContain('class="hljs-keyword"');
+  it('README 的正常排版应保留（防护不能过度清洗）', () => {
+    const readme = [
+      '# 插件名',
+      '',
+      '## 安装',
+      '',
+      '```bash',
+      // 注意：样例须符合 bash 语法才会产出高亮 token
+      //      （`pnpm add x` 在 bash 下无内建命令 → 无 hljs span，不是 bug）
+      'echo "installing my-plugin"',
+      '```',
+      '',
+      '| 参数 | 说明 |',
+      '| --- | --- |',
+      '| a | 参数 A |',
+    ].join('\n');
+    const html = renderMarkdown(readme);
+    expect(html).toContain('<h1>插件名</h1>');
+    expect(html).toContain('<h2>安装</h2>');
+    expect(html).toContain('<table>');
+    expect(html).toMatch(/class="hljs-/);
   });
 });
 

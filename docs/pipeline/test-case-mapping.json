@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-18T01:20:11.447Z",
+    "generatedAt": "2026-09-18T01:41:35.999Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1664,
-    "unmappedCases": 467,
+    "totalTestCases": 1661,
+    "unmappedCases": 464,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -471,11 +471,11 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 467,
+      "totalCases": 464,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 467,
+          "cases": 464,
           "files": [
             {
               "path": "packages/core/src/__tests__/context-manager.test.ts",
@@ -535,7 +535,7 @@
             },
             {
               "path": "packages/frontend/src/__tests__/markdown.test.ts",
-              "cases": 35
+              "cases": 32
             },
             {
               "path": "packages/frontend/src/__tests__/mountapp.test.tsx",

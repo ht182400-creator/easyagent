@@ -74,16 +74,13 @@ function mockGitHubFetch(url: string): Response {
     }), { status: 200, headers });
   }
 
-  // 获取 README
+  // 获取 README（raw Markdown —— v0.6.30 起服务端改用 vnd.github.raw 取原文）
   if (url.includes('/readme')) {
-    return new Response(JSON.stringify({
-      content: Buffer.from('# Hello Plugin\n\nThis is a test plugin.').toString('base64'),
-      encoding: 'base64',
-    }), {
+    return new Response('# Hello Plugin\n\nThis is a test plugin.', {
       status: 200,
       headers: new Headers({
         ...Object.fromEntries(headers.entries()),
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain; charset=utf-8',
       }),
     });
   }
@@ -169,7 +166,9 @@ describe('插件市场 API — GET /api/plugins/market/:id', () => {
     const res = await request(app).get('/api/plugins/market/test-org%2Feasyagent-plugin-hello');
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('plugin');
-    expect(res.body).toHaveProperty('readmeHtml');
+    expect(res.body).toHaveProperty('readmeMarkdown');
+    // 内容应是原始 Markdown，而非 GitHub 渲染后的 HTML
+    expect(res.body.readmeMarkdown).toBe('# Hello Plugin\n\nThis is a test plugin.');
   });
 
   it('plugin 对象应包含完整字段', async () => {

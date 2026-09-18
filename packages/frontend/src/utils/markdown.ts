@@ -13,22 +13,24 @@
  * 本模块用成熟的 `markdown-it`（`html:false`，原始 HTML 一律转义）+ 链接协议白名单替换掉它，
  * 并为「远程不可信 HTML」（如 GitHub README）提供 DOMPurify 消毒入口。
  *
- * ── 两条不同的渲染路径，不要混用 ──
+ * ── 唯一渲染路径 ──
  *
- *   **① 本地 Markdown 文本** → {@link renderMarkdown}
- *      来源：AI 回复、知识库文档。用 markdown-it，**安全由构造保证**（原始 HTML 被转义），
- *      不额外跑 DOMPurify —— 聊天列表是虚拟滚动的高频渲染场景，重复消毒没必要且浪费 CPU。
+ * 本模块只有 {@link renderMarkdown} 一条渲染路径，**所有** Markdown 内容都走它：
+ *   · AI 回复 / 流式输出 / 知识库文档
+ *   · GitHub 插件市场 README —— 服务端已改为取**原始 Markdown**
+ *     （`Accept: application/vnd.github.raw`，见 `server/src/utils/githubClient.ts`）
  *
- *   **② 远程不可信 HTML** → {@link sanitizeHtml}
- *      来源：GitHub README（服务端用 `application/vnd.github.html+json` 取回的**裸 HTML**）。
- *      这类内容绕过了 markdown-it，**必须**消毒后才能进 `dangerouslySetInnerHTML`。
+ * ⚠️ 曾经存在第二条路径 `sanitizeHtml()`（DOMPurify），用于消毒服务端返回的远程 HTML。
+ * 现已被**删除**：与其"取回不可信 HTML 再过滤"，不如"根本不引入不可信 HTML"。
+ * 若将来确实出现无法避免的远程 HTML 渲染场景，请恢复该能力并配套
+ * `__tests__/markdown.test.ts` 中的消毒回归用例，并使用 jsdom 环境
+ * （DOMPurify 在 happy-dom 下行为不可靠，详见测试文件头部注释）。
  *
  * @module utils/markdown
  */
 
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js/lib/core';
-import DOMPurify from 'dompurify';
 
 // 代码高亮主题（浅色/深色由 highlight.js 提供，这里选与暗色 UI 匹配的深色主题）
 // 从 TS 引入而非在 CSS 里 @import：Vite 原生支持，vitest（`css: false`）会自动忽略。
@@ -218,36 +220,6 @@ export function renderMarkdown(text: string | null | undefined): string {
     console.error('[markdown] 渲染失败:', err);
     return '';
   }
-}
-
-/**
- * 消毒外部 HTML（如 GitHub README）
- *
- * 这类内容是**服务端取回的裸 HTML**，没有经过 markdown-it，因此必须单独消毒。
- *
- * @param html - 待消毒的 HTML
- * @returns 消毒后的 HTML；无 DOM 环境（如 SSR）返回空串
- */
-export function sanitizeHtml(html: string | null | undefined): string {
-  if (!html) return '';
-  if (typeof window === 'undefined') {
-    // DOMPurify 依赖 DOM。非浏览器环境返回空串 —— 宁可不显示，也不能未经消毒就渲染。
-    return '';
-  }
-  return DOMPurify.sanitize(html, {
-    // 保留常见排版标签与 hljs 高亮所需的 span/class
-    ALLOWED_TAGS: [
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'p', 'br', 'hr', 'blockquote', 'pre', 'code',
-      'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-      'strong', 'em', 'del', 's', 'sup', 'sub', 'mark',
-      'a', 'img', 'figure', 'figcaption',
-      'table', 'thead', 'tbody', 'tr', 'th', 'td',
-      'span', 'div', 'summary', 'details',
-    ],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel', 'colspan', 'rowspan', 'align'],
-    ALLOW_DATA_ATTR: false,
-  });
 }
 
 /**

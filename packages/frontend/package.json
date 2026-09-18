@@ -1,6 +1,6 @@
 {
   "name": "@easyagent/frontend",
-  "version": "0.6.29",
+  "version": "0.6.30",
   "description": "EasyAgent 统一前端 - Web + Desktop 共享 UI 组件/页面/状态管理",
   "type": "module",
   "main": "./src/mountApp.tsx",
@@ -23,7 +23,6 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "dompurify": "^3.4.15",
     "highlight.js": "^11.12.0",
     "lucide-react": "^0.378.0",
     "markdown-it": "^15.0.2",

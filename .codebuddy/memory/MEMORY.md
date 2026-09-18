@@ -35,13 +35,19 @@
 
 ### 📝 前端 HTML 渲染安全（改任何 `dangerouslySetInnerHTML` 前必读）
 
-**只有两条合法路径，不要自造第三种**：
-- **本地 Markdown 文本** → `renderMarkdown()`（`utils/markdown.ts`）：markdown-it `html:false` 转义原始 HTML + `isSafeUrl` 协议白名单（`javascript:`/`data:`/`vbscript:`/`file:` 全部拦截）+ 链接统一 `rel="noopener noreferrer"`
-- **远程不可信 HTML**（如 GitHub README）→ `sanitizeHtml()`：**必须**走 DOMPurify
+**只有一条合法路径**：所有 Markdown 内容（AI 回复 / 知识库 / 插件市场 README）都走
+`renderMarkdown()`（`utils/markdown.ts`）：markdown-it `html:false` 转义原始 HTML +
+`isSafeUrl` 协议白名单（`javascript:`/`data:`/`vbscript:`/`file:` 全部拦截）+
+链接统一 `rel="noopener noreferrer"`。
 
-**历史教训**：原自研正则渲染器只转义 `& < >` 而**漏了 `"`**，链接 `href="$2"` 可被挣脱；且 URI 协议完全不过滤 → `[x](javascript:alert(1))` 点击即执行。
+**核心原则：消除信任面，而不是过滤危险内容。** 服务端 GitHub README 取的是
+**原始 Markdown**（`Accept: application/vnd.github.raw`，已实测可用），因此**不存在
+"远程 HTML 进 DOM"这一步**。`sanitizeHtml()` 与 `dompurify` 依赖已随之移除
+（若将来真出现无法避免的远程 HTML，需恢复 DOMPurify + 消毒回归用例 + jsdom 环境）。
 
-⚠️ **`PluginsMarket` 的 README 是服务端取回的裸 HTML**（`application/vnd.github.html+json`），绕过 markdown-it，务必保持消毒。更彻底的后续方向：服务端改取原始 Markdown（`Accept: application/vnd.github.raw`），从"过滤危险内容"升级为"根本不引入不可信 HTML"。
+**历史教训**：原自研正则渲染器只转义 `& < >` 而**漏了 `"`**，链接 `href="$2"` 可被挣脱；
+且 URI 协议完全不过滤 → `[x](javascript:alert(1))` 点击即执行。
+另：`PluginsMarket` 曾把 GitHub 渲染后的裸 HTML（含内联 SVG）直接塞进 `dangerouslySetInnerHTML`。
 
 ### ⚠️ 环境陷阱（本仓库特有）
 
@@ -178,7 +184,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1664**（模块映射口径，48 个映射文件）；**Vitest 已执行 1675，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1750 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1661**（模块映射口径，48 个映射文件）；**Vitest 已执行 1672，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1747 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

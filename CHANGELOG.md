@@ -7,6 +7,63 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.30] - 2026-09-18
+
+> **本版主题：消除远程 HTML 信任面** —— 服务端 GitHub README 改取**原始 Markdown**，
+> 从「过滤危险内容」升级为「**根本不引入不可信 HTML**」。
+> 详见 `docs/67_P1-4前端Markdown与代码高亮方案.md` §3.5
+
+### Security
+
+- **服务端 README 改取原始 Markdown**：`getReadmeHtml()` → `getReadmeMarkdown()`，
+  Accept 由 `application/vnd.github.html+json` 改为 **`application/vnd.github.raw`**
+- 前端插件市场 README 由 `sanitizeHtml()` 改为与聊天消息**同一条** `renderMarkdown()` 路径 ——
+  从此**不存在"远程 HTML 进入 DOM"这一步**
+- 连带移除已无调用方的 `sanitizeHtml()` 与 `dompurify` 依赖
+
+**真实 API 实测**（`ht182400-creator/easyagent`）：
+
+```
+raw  → "# EasyAgent - AI编程助手 v0.4.0 (Gemini)\n\n> 集成中国主流大模型的全功能AI编程助手…"
+html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><svg …>…"
+```
+
+> 对照可见：旧路径取回的是带**内联 SVG / `data-path` / `itemprop`** 的臃肿 HTML，
+> 而它此前被直接塞进 `dangerouslySetInnerHTML`。
+
+### Changed
+
+- `PluginMarketService.getPluginDetail` 返回字段 `readmeHtml` → `readmeMarkdown`
+- 前端 `PluginDetail` 接口与 `PluginsMarket.tsx` 同步改用 `renderMarkdown()`
+- 测试文件 `markdown.test.ts` 从 jsdom 改回 happy-dom（DOMPurify 已移除，无需特殊环境）
+- 测试基线刷新：定义用例 **1661** / Vitest 已执行 **1672 全部通过** / Node **75** / 合计 **1747**
+- **Web JS 产物 741 KB → 711 KB**
+
+### Tests
+
+- 服务端插件市场用例改断言 `readmeMarkdown`，并加护栏「不得含 `<h1>`」（防止回退成 HTML）
+- 前端删除 7 条 `sanitizeHtml` 消毒用例，新增 4 条「远程不可信 README」回归：
+  内嵌 HTML 事件处理器 / `javascript:` 链接 / `<script>` 不得存活；正常排版须保留
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 服务端插件市场测试 | ✅ 50 / 50 |
+| Markdown 模块测试 | ✅ 32 / 32 |
+| 全量回归 | ✅ **1672 / 1672 通过，0 失败** |
+| 类型检查（语言服务器） | ✅ 0 诊断 |
+| Web 构建 | ✅ 退出码 0 |
+| 产物核验 | ✅ `dompurify` 已完全移出（0 处命中） |
+| 数据一致性 / 设计令牌门禁 | ✅ 均通过 |
+
+### 已知后续项
+
+- 插件包 `SearchPanel.tsx` 的 `highlightText()` 仍是自研字符串拼接，建议收敛
+- Web JS 711 KB；若在意首屏，可把 markdown 模块改为动态 `import()` 懒加载
+
+---
+
 ## [0.6.29] - 2026-09-18
 
 > **本版主题：前端 Markdown 渲染加固（P1-4）** —— 修掉两个 XSS 缺口，补上表格/有序列表/代码高亮。

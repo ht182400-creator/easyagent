@@ -9,7 +9,7 @@
  * @module PluginsMarket
  */
 import { useState, useEffect, useMemo } from 'react';
-import { sanitizeHtml } from '../utils/markdown.js';
+import { renderMarkdown } from '../utils/markdown.js';
 import {
   Search,
   Download,
@@ -196,7 +196,7 @@ interface MarketTabProps {
   searchQuery: string;
   loading: boolean;
   installProgress: Map<string, InstallProgress>;
-  selectedPlugin: { plugin: PluginMarketEntry | null; readmeHtml: string | null } | null;
+  selectedPlugin: { plugin: PluginMarketEntry | null; readmeMarkdown: string | null } | null;
   detailLoading: boolean;
   onSearch: (query: string) => void;
   onInstall: (pluginId: string) => Promise<string | null>;
@@ -419,7 +419,7 @@ function PluginCard({ plugin, installProgress, onInstall, onViewDetail }: Plugin
 // ===================== 插件详情视图 =====================
 
 interface PluginDetailViewProps {
-  detail: { plugin: PluginMarketEntry | null; readmeHtml: string | null };
+  detail: { plugin: PluginMarketEntry | null; readmeMarkdown: string | null };
   loading: boolean;
   installProgress: Map<string, InstallProgress>;
   onInstall: (pluginId: string) => Promise<string | null>;
@@ -427,7 +427,7 @@ interface PluginDetailViewProps {
 }
 
 function PluginDetailView({ detail, loading, installProgress, onInstall, onClose }: PluginDetailViewProps) {
-  const { plugin, readmeHtml } = detail;
+  const { plugin, readmeMarkdown } = detail;
 
   if (loading) {
     return (
@@ -554,17 +554,18 @@ function PluginDetailView({ detail, loading, installProgress, onInstall, onClose
       </div>
 
       {/* README */}
-      {readmeHtml && (
+      {readmeMarkdown && (
         <div className="bg-white/[0.03] border border-white/5 rounded-lg p-5">
           <h3 className="text-sm font-medium mb-3">README</h3>
           <div
             className="markdown-body [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_a]:text-blue-400"
-            /* 🛡️ readmeHtml 是服务端从 GitHub 取回的**裸 HTML**（application/vnd.github.html+json），
-               绕过了一切 Markdown 渲染器，因此必须在渲染前消毒。
-               注意：此处原先用的是 `prose prose-invert` 类，但项目并未安装
-               @tailwindcss/typography，那些类实际是空的 → README 此前处于"无任何排版样式"状态。
-               现改用 .markdown-body（定义见 styles/index.css）。 */
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(readmeHtml) }}
+            /* 🛡️ 服务端现在返回的是**原始 Markdown**（GitHub `vnd.github.raw`），
+               因此走与聊天消息完全相同的 `renderMarkdown()` —— 原始 HTML 被转义、
+               javascript: 等协议被拦截。**信任面被消除，而不是事后过滤。**
+               （此前服务端返回的是 GitHub 渲染后的裸 HTML，只能靠 DOMPurify 事后消毒。）
+               另注：此处原先用的是 `prose prose-invert` 类，但项目并未安装
+               @tailwindcss/typography，那些类实际是空的 → README 曾长期无排版样式。 */
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(readmeMarkdown) }}
           />
         </div>
       )}

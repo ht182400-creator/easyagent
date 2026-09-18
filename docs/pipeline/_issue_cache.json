@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789664688068.2783,
-      "size": 13600
+      "mtimeMs": 1789694635303.204,
+      "size": 17504
     },
     "MEMORY.md": {
-      "mtimeMs": 1789664681544.987,
-      "size": 34956
+      "mtimeMs": 1789694604552.8562,
+      "size": 37808
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11091,10 +11091,34 @@
         "_tagModuleIds": [
           "f4"
         ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-09-18",
+        "title": "[P1-4:安全+UX] 前端 Markdown 渲染加固：修掉 2 个 XSS 缺口 + 补上表格",
+        "problem": ": 审核报告只记了 1 个点（D9 属性逃逸），勘察后发现实际是 **3 处渲染点 + 2 类安全缺口 + 1 处样式静默失效**",
+        "solution": "新增统一模块 `packages/frontend/src/utils/markdown.ts`（markdown-it + highlight.js + DOMPurify）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "b1a"
+        ]
+      },
+      {
+        "moduleId": "b1a",
+        "date": "2026-09-18",
+        "title": "[P1-4:安全+UX] 前端 Markdown 渲染加固：修掉 2 个 XSS 缺口 + 补上表格",
+        "problem": ": 审核报告只记了 1 个点（D9 属性逃逸），勘察后发现实际是 **3 处渲染点 + 2 类安全缺口 + 1 处样式静默失效**",
+        "solution": "新增统一模块 `packages/frontend/src/utils/markdown.ts`（markdown-it + highlight.js + DOMPurify）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8",
+          "b1a"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-18T01:20:11.639Z"
+  "generatedAt": "2026-09-18T01:41:36.194Z"
 }

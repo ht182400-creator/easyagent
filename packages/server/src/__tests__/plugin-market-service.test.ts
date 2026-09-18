@@ -26,7 +26,7 @@ const mockGitHubClient = {
   getLatestRelease: vi.fn(),
   downloadRepoZip: vi.fn(),
   getManifest: vi.fn(),
-  getReadmeHtml: vi.fn(),
+  getReadmeMarkdown: vi.fn(),
   setToken: vi.fn(),
   getRateLimit: vi.fn().mockReturnValue({ remaining: 60, reset: 0 }),
   clearCache: vi.fn(),
@@ -599,7 +599,7 @@ describe('PluginMarketService — 插件详情 (getPluginDetail)', () => {
       keywords: ['test', 'plugin'],
     });
 
-    mockGitHubClient.getReadmeHtml.mockResolvedValue('<h1>Test README</h1>');
+    mockGitHubClient.getReadmeMarkdown.mockResolvedValue('# Test README');
   });
 
   afterEach(() => {
@@ -607,14 +607,17 @@ describe('PluginMarketService — 插件详情 (getPluginDetail)', () => {
     vi.clearAllMocks();
   });
 
-  it('应返回插件信息和 README HTML', async () => {
+  it('应返回插件信息和 README（原始 Markdown）', async () => {
     const detail = await service.getPluginDetail('test/my-plugin');
 
     expect(detail.plugin).not.toBeNull();
     expect(detail.plugin!.id).toBe('test/my-plugin');
     expect(detail.plugin!.name).toBe('Test Plugin');
     expect(detail.plugin!.version).toBe('1.0.0');
-    expect(detail.readmeHtml).toBe('<h1>Test README</h1>');
+    // 🛡️ 必须是原始 Markdown —— 前端统一用 renderMarkdown() 渲染，
+    //    服务端不再返回远程 HTML（避免"取回不可信 HTML 再过滤"）
+    expect(detail.readmeMarkdown).toBe('# Test README');
+    expect(detail.readmeMarkdown).not.toContain('<h1>');
   });
 
   it('失败时应返回 null 而非抛出异常', async () => {
@@ -623,7 +626,7 @@ describe('PluginMarketService — 插件详情 (getPluginDetail)', () => {
     const detail = await service.getPluginDetail('test/nonexistent');
 
     expect(detail.plugin).toBeNull();
-    expect(detail.readmeHtml).toBeNull();
+    expect(detail.readmeMarkdown).toBeNull();
   });
 });
 
