@@ -1,76 +1,22 @@
+/**
+ * 知识库页面
+ *
+ * P2-1 拆分：添加文档弹窗 / 文档详情弹窗 / 文档列表 / 公共辅助已迁至
+ * pages/knowledge-base/ 子模块，本文件保留编排与筛选逻辑（840 → ~300 行）。
+ * 添加弹窗按 `{showAdd && ...}` 条件挂载 —— 每次打开即全新表单状态。
+ */
 import { useEffect, useState, useRef, useCallback } from 'react';
-import {
-  BookOpen,
-  Upload,
-  Database,
-  Search,
-  FileText,
-  FolderTree,
-  Tag,
-  Trash2,
-  Plus,
-  X,
-  Filter,
-  RefreshCw,
-  ChevronDown,
-  File,
-  FileCode,
-  Link,
-  Folder,
-  FolderOpen,
-  Globe,
-  Briefcase,
-} from 'lucide-react';
+import { Database, Search, Plus, X, Tag, Briefcase, Globe } from 'lucide-react';
 import {
   useKnowledgeBaseStore,
   KB_CATEGORIES,
   type KnowledgeDocument,
-  type KBSearchResult,
 } from '../stores/knowledgeBaseStore';
 import { useAppStore } from '../stores/appStore';
-import FileBrowser from '../components/FileBrowser';
-
-/** 功能卡片 */
-const FEATURES = [
-  {
-    icon: Upload,
-    title: '文档导入',
-    desc: '支持 Markdown、代码文件、文本文件的文档导入和手动输入',
-    color: 'text-blue-400',
-    action: 'import' as const,
-  },
-  {
-    icon: Search,
-    title: '智能搜索',
-    desc: '基于标题、标签、分类和内容的多维度全文检索',
-    color: 'text-green-400',
-    action: 'search' as const,
-  },
-  {
-    icon: FolderTree,
-    title: '分类管理',
-    desc: '6个预设分类 + 自定义标签，轻松组织知识文档',
-    color: 'text-purple-400',
-    action: 'category' as const,
-  },
-];
-
-/** 分类图标映射 */
-const CATEGORY_ICONS: Record<string, React.FC<{ className?: string }>> = {
-  api: FileCode,
-  guide: BookOpen,
-  note: FileText,
-  reference: Link,
-  spec: File,
-  general: Folder,
-};
-
-/** 格式化文件大小 */
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes}B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
-}
+import { FEATURES } from './knowledge-base/helpers';
+import { AddDocumentModal } from './knowledge-base/AddDocumentModal';
+import { DocumentViewModal } from './knowledge-base/DocumentViewModal';
+import { DocList } from './knowledge-base/DocList';
 
 export default function KnowledgeBase() {
   const {
@@ -83,14 +29,11 @@ export default function KnowledgeBase() {
     allTags,
     stats,
     fetchDocuments,
-    addDocument,
     removeDocument,
     searchDocument,
     setSearchQuery,
     setSelectedCategory,
     setSelectedTag,
-    importFromFile,
-    uploadFile,
     scope,
     setScope,
     getDocument,
@@ -101,8 +44,6 @@ export default function KnowledgeBase() {
   const [viewDoc, setViewDoc] = useState<KnowledgeDocument | null>(null);
   const [loadingDoc, setLoadingDoc] = useState(false); // 加载文档详情中
   const [searchInput, setSearchInput] = useState('');
-  const [showBrowser, setShowBrowser] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /** 功能卡片点击的滚动/操作目标 ref */
   const searchRef = useRef<HTMLDivElement>(null);
@@ -112,7 +53,6 @@ export default function KnowledgeBase() {
   /** 点击功能介绍卡片：显示导入弹窗 / 聚焦搜索 / 滚动到分类区域 */
   const handleFeatureClick = useCallback((action: 'import' | 'search' | 'category') => {
     if (action === 'import') {
-      resetForm();
       setShowAdd(true);
     } else if (action === 'search' && searchRef.current) {
       searchRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -121,16 +61,6 @@ export default function KnowledgeBase() {
       categoryFilterRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
-
-  // 添加表单
-  const [formTitle, setFormTitle] = useState('');
-  const [formContent, setFormContent] = useState('');
-  const [formCategory, setFormCategory] = useState('general');
-  const [formTags, setFormTags] = useState('');
-  const [addType, setAddType] = useState<'text' | 'file' | 'upload'>('text');
-  const [formFilePath, setFormFilePath] = useState('');
-  const [uploadFileName, setUploadFileName] = useState('');
-  const [uploadFileObj, setUploadFileObj] = useState<File | null>(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -154,46 +84,6 @@ export default function KnowledgeBase() {
       ? documents.filter((d) => d.tags.includes(selectedTag))
       : documents;
 
-  const handleAdd = async () => {
-    if (!formTitle.trim()) {
-      addNotification({ type: 'warning', message: '请输入文档标题' });
-      return;
-    }
-    if (addType === 'text' && !formContent.trim()) {
-      addNotification({ type: 'warning', message: '请输入文档内容' });
-      return;
-    }
-    if (addType === 'upload' && !uploadFileObj) {
-      addNotification({ type: 'warning', message: '请选择要上传的文件' });
-      return;
-    }
-
-    try {
-      const tags = formTags
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean);
-
-      if (addType === 'upload' && uploadFileObj) {
-        // 文件上传
-        await uploadFile(uploadFileObj, formCategory, tags);
-      } else {
-        await addDocument({
-          title: formTitle,
-          content: addType === 'text' ? formContent : '',
-          category: formCategory,
-          tags,
-          source: addType === 'file' ? formFilePath : '手动输入',
-          size: addType === 'text' ? formContent.length : uploadFileObj?.size || 0,
-        });
-      }
-      setShowAdd(false);
-      resetForm();
-    } catch (err) {
-      addNotification({ type: 'error', message: `添加失败: ${(err as Error).message}` });
-    }
-  };
-
   /**
    * 点击文档卡片 → 从服务端加载完整内容后打开预览弹窗
    */
@@ -214,57 +104,6 @@ export default function KnowledgeBase() {
     if (!confirm(`确定要删除 "${title}" 吗？`)) return;
     if (viewDoc?.id === id) setViewDoc(null);
     await removeDocument(id);
-  };
-
-  const handleImportFile = async () => {
-    if (!formFilePath.trim()) {
-      addNotification({ type: 'warning', message: '请输入文件路径' });
-      return;
-    }
-    try {
-      await importFromFile(formFilePath);
-      setShowAdd(false);
-      resetForm();
-    } catch (err) {
-      addNotification({ type: 'error', message: `导入失败: ${(err as Error).message}` });
-    }
-  };
-
-  /** 处理文件选择（通过系统文件对话框） */
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadFileObj(file);
-      setUploadFileName(file.name);
-      // 自动用文件名作为标题
-      if (!formTitle.trim()) {
-        setFormTitle(file.name.replace(/\.[^.]+$/, ''));
-      }
-    }
-  };
-
-  /** 处理拖拽上传 */
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      setUploadFileObj(file);
-      setUploadFileName(file.name);
-      if (!formTitle.trim()) {
-        setFormTitle(file.name.replace(/\.[^.]+$/, ''));
-      }
-    }
-  };
-
-  const resetForm = () => {
-    setFormTitle('');
-    setFormContent('');
-    setFormCategory('general');
-    setFormTags('');
-    setFormFilePath('');
-    setUploadFileName('');
-    setUploadFileObj(null);
-    setAddType('text');
   };
 
   return (
@@ -299,13 +138,7 @@ export default function KnowledgeBase() {
               全局
             </button>
           </div>
-          <button
-            className="btn-primary flex items-center gap-2"
-            onClick={() => {
-              resetForm();
-              setShowAdd(true);
-            }}
-          >
+          <button className="btn-primary flex items-center gap-2" onClick={() => setShowAdd(true)}>
             <Plus className="w-4 h-4" /> 添加文档
           </button>
         </div>
@@ -350,7 +183,7 @@ export default function KnowledgeBase() {
           </div>
           <div className="bg-gray-800 rounded-lg p-4">
             <div className="text-2xl font-bold text-green-400">
-              {stats.totalSize > 0 ? formatSize(stats.totalSize) : '0B'}
+              {stats.totalSize > 0 ? `${(stats.totalSize / 1024).toFixed(1)}KB` : '0B'}
             </div>
             <div className="text-sm text-gray-400">存储大小</div>
           </div>
@@ -458,426 +291,29 @@ export default function KnowledgeBase() {
         </div>
       )}
 
-      {/* 文档列表 */}
-      <div className="card">
-        {loading ? (
-          <div className="text-center py-8">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-gray-600" />
-            <p className="text-gray-500">加载中...</p>
-          </div>
-        ) : searchInput && searchResults.length > 0 ? (
-          // 搜索结果
-          <div>
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Search className="w-5 h-5 text-green-400" />
-              搜索结果 ({searchResults.length})
-            </h3>
-            <div className="space-y-2">
-              {searchResults.map((r) => (
-                <div
-                  key={r.document.id}
-                  className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 cursor-pointer transition-colors"
-                  onClick={() => handleViewDoc(r.document.id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0 mr-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium">{r.document.title}</h4>
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-primary-500/10 text-primary-400">
-                          {Math.round(r.score * 100)}% 匹配
-                        </span>
-                        <span className="text-xs text-gray-600">
-                          {KB_CATEGORIES.find((c) => c.id === r.document.category)?.label ||
-                            r.document.category}
-                        </span>
-                      </div>
-                      {r.snippet && (
-                        <p className="text-sm text-gray-400 line-clamp-2">{r.snippet}</p>
-                      )}
-                      <p className="text-xs text-gray-600 mt-1">
-                        {formatSize(r.document.size)} · {r.document.chunkCount} 块 ·{' '}
-                        {new Date(r.document.updatedAt).toLocaleDateString('zh-CN')}
-                      </p>
-                    </div>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <button
-                        className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(r.document.id, r.document.title);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : searchInput ? (
-          <div className="text-center py-8">
-            <Search className="w-10 h-10 text-gray-700 mx-auto mb-2" />
-            <p className="text-gray-500">未找到匹配 "{searchInput}" 的文档</p>
-          </div>
-        ) : filteredDocs.length > 0 ? (
-          // 正常文档列表
-          <div>
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary-400" />
-              文档列表 ({filteredDocs.length})
-            </h3>
-            <div className="space-y-2">
-              {filteredDocs.map((doc) => {
-                const catInfo = KB_CATEGORIES.find((c) => c.id === doc.category);
-                const CatIcon = CATEGORY_ICONS[doc.category] || FileText;
-                return (
-                  <div
-                    key={doc.id}
-                    className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 cursor-pointer transition-colors"
-                    onClick={() => handleViewDoc(doc.id)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div
-                          className="p-2 bg-gray-750 rounded-lg flex-shrink-0"
-                          style={{ color: catInfo?.color }}
-                        >
-                          <CatIcon className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium">{doc.title}</h4>
-                            <span className="text-xs text-gray-600">
-                              {catInfo?.label || doc.category}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-500 line-clamp-1">
-                            {doc.content?.slice(0, 150) || '(空内容)'}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            {doc.tags.map((t) => (
-                              <span
-                                key={t}
-                                className="text-xs px-1.5 py-0.5 bg-gray-750 rounded text-gray-500"
-                              >
-                                #{t}
-                              </span>
-                            ))}
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {formatSize(doc.size)} · {doc.chunkCount} 块 · {doc.source} ·{' '}
-                            {new Date(doc.updatedAt).toLocaleDateString('zh-CN')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-1 flex-shrink-0">
-                        <button
-                          className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(doc.id, doc.title);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <BookOpen className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-500">暂无文档</p>
-            <p className="text-sm text-gray-600 mt-1">点击"添加文档"开始构建知识库</p>
-          </div>
-        )}
-      </div>
+      {/* 文档列表（四态：加载/搜索结果/常规/空） */}
+      <DocList
+        loading={loading}
+        searchInput={searchInput}
+        searchResults={searchResults}
+        filteredDocs={filteredDocs}
+        onView={handleViewDoc}
+        onDelete={handleDelete}
+      />
 
       {/* 文档详情弹窗 */}
       {(viewDoc || loadingDoc) && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => {
-            if (!loadingDoc) setViewDoc(null);
-          }}
-        >
-          <div
-            className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-6 border-b border-gray-800">
-              <h2 className="text-lg font-bold truncate">{viewDoc?.title || '加载中...'}</h2>
-              <div className="flex gap-2">
-                {viewDoc && (
-                  <button
-                    className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                    onClick={() => {
-                      handleDelete(viewDoc.id, viewDoc.title);
-                      setViewDoc(null);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-400" />
-                  </button>
-                )}
-                <button
-                  className="p-1 hover:bg-gray-800 rounded-lg"
-                  onClick={() => setViewDoc(null)}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <div className="p-6 overflow-y-auto flex-1">
-              {loadingDoc ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400" />
-                  <span className="ml-3 text-gray-400">加载文档内容...</span>
-                </div>
-              ) : viewDoc ? (
-                <>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="text-xs px-2 py-1 bg-primary-500/10 text-primary-400 rounded">
-                      {KB_CATEGORIES.find((c) => c.id === viewDoc.category)?.label ||
-                        viewDoc.category}
-                    </span>
-                    {viewDoc.tags?.map((t: string) => (
-                      <span key={t} className="text-xs px-2 py-1 bg-gray-800 text-gray-400 rounded">
-                        #{t}
-                      </span>
-                    ))}
-                    <span className="text-xs px-2 py-1 bg-gray-800 text-gray-500 rounded">
-                      {formatSize(viewDoc.size)} · {viewDoc.chunkCount} 块
-                    </span>
-                    <span className="text-xs px-2 py-1 bg-gray-800 text-gray-500 rounded">
-                      来源: {viewDoc.source}
-                    </span>
-                    {/* 显示作用域标签 */}
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${scope === 'global' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}
-                    >
-                      {scope === 'global' ? '全局' : '项目'}
-                    </span>
-                  </div>
-                  <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono bg-gray-800 rounded-lg p-4 overflow-x-auto">
-                    {viewDoc.content || '(空内容)'}
-                  </pre>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 添加文档弹窗 */}
-      {showAdd && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => setShowAdd(false)}
-        >
-          <div
-            className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4 p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary-400" />
-                添加文档
-              </h2>
-              <button
-                className="p-1 hover:bg-gray-800 rounded-lg"
-                onClick={() => setShowAdd(false)}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {/* 添加方式 */}
-              <div className="flex gap-2">
-                <button
-                  className={`flex-1 py-2 rounded-lg text-sm transition-colors ${addType === 'text' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-gray-800 text-gray-400'}`}
-                  onClick={() => setAddType('text')}
-                >
-                  手动输入
-                </button>
-                <button
-                  className={`flex-1 py-2 rounded-lg text-sm transition-colors ${addType === 'file' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-gray-800 text-gray-400'}`}
-                  onClick={() => setAddType('file')}
-                >
-                  项目文件
-                </button>
-                <button
-                  className={`flex-1 py-2 rounded-lg text-sm transition-colors ${addType === 'upload' ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-gray-800 text-gray-400'}`}
-                  onClick={() => setAddType('upload')}
-                >
-                  <Upload className="w-3.5 h-3.5 inline mr-1" />
-                  上传文件
-                </button>
-              </div>
-
-              {/* 标题 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">文档标题</label>
-                <input
-                  type="text"
-                  className="input w-full"
-                  placeholder="给文档起个名字"
-                  value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                />
-              </div>
-
-              {/* 内容 / 文件路径 / 上传 */}
-              {addType === 'text' ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">文档内容</label>
-                  <textarea
-                    className="input w-full h-32 resize-none font-mono text-sm"
-                    placeholder="粘贴或输入文档内容..."
-                    value={formContent}
-                    onChange={(e) => setFormContent(e.target.value)}
-                  />
-                </div>
-              ) : addType === 'file' ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    文件路径（相对于{scope === 'global' ? '用户目录' : '项目根目录'}）
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      className="input flex-1"
-                      placeholder="例如: docs/README.md"
-                      value={formFilePath}
-                      onChange={(e) => setFormFilePath(e.target.value)}
-                    />
-                    {scope === 'project' && (
-                      <button
-                        type="button"
-                        className="btn-secondary text-sm px-3 flex items-center gap-1 shrink-0"
-                        onClick={() => setShowBrowser(true)}
-                      >
-                        <FolderOpen className="w-3.5 h-3.5" /> 浏览...
-                      </button>
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs text-gray-600">
-                    {scope === 'project'
-                      ? '路径相对于项目根目录。可直接输入，或点击"浏览..."从文件树中选择。'
-                      : '路径相对于用户目录 ~。仅支持用户目录下的文件。'}
-                  </p>
-                  <button
-                    className="mt-2 btn-secondary text-sm py-1.5 flex items-center gap-1"
-                    onClick={handleImportFile}
-                  >
-                    <Upload className="w-3.5 h-3.5" /> 从文件导入
-                  </button>
-                </div>
-              ) : (
-                /* 上传文件 */
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    上传文件（支持任意本地文件）
-                  </label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept=".md,.txt,.json,.yaml,.yml,.toml,.xml,.csv,.ts,.tsx,.js,.jsx,.py,.rs,.go,.java,.c,.cpp,.css,.html,.vue,.svelte,.sh,.bat,.ps1,.env"
-                    onChange={handleFileSelect}
-                  />
-                  <div
-                    className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${uploadFileName ? 'border-green-500/40 bg-green-500/5' : 'border-gray-700 hover:border-gray-600'}`}
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handleDrop}
-                  >
-                    {uploadFileName ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <FileText className="w-10 h-10 text-green-400" />
-                        <span className="text-green-400 font-medium">{uploadFileName}</span>
-                        <span className="text-xs text-gray-600">
-                          {uploadFileObj ? `${(uploadFileObj.size / 1024).toFixed(1)}KB` : ''}
-                        </span>
-                        <span className="text-xs text-gray-500">点击或拖放更换文件</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2">
-                        <Upload className="w-10 h-10 text-gray-600" />
-                        <span className="text-gray-400">点击选择文件或拖放文件到此处</span>
-                        <span className="text-xs text-gray-600">
-                          支持 Markdown、代码文件、文本文件、配置文件等
-                        </span>
-                        <span className="text-xs text-gray-700">最大 10MB</span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs text-gray-600">
-                    上传的文件将导入到{scope === 'global' ? '全局' : '项目'}
-                    知识库中，可跨所有项目共享和检索。
-                  </p>
-                </div>
-              )}
-
-              {/* 分类 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">分类</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {KB_CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      className={`py-2 px-3 rounded-lg text-xs transition-colors ${formCategory === cat.id ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30' : 'bg-gray-800 text-gray-400 hover:bg-gray-750'}`}
-                      onClick={() => setFormCategory(cat.id)}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 标签 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  标签 (逗号分隔)
-                </label>
-                <input
-                  type="text"
-                  className="input w-full"
-                  placeholder="例如: typescript, react, 教程"
-                  value={formTags}
-                  onChange={(e) => setFormTags(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button className="btn-secondary" onClick={() => setShowAdd(false)}>
-                取消
-              </button>
-              <button className="btn-primary flex items-center gap-2" onClick={handleAdd}>
-                <Plus className="w-4 h-4" /> 添加文档
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 文件浏览器弹窗 */}
-      {showBrowser && (
-        <FileBrowser
-          selectedPath={formFilePath}
+        <DocumentViewModal
+          viewDoc={viewDoc}
+          loading={loadingDoc}
           scope={scope}
-          onSelect={(path) => {
-            setFormFilePath(path);
-            setShowBrowser(false);
-          }}
-          onClose={() => setShowBrowser(false)}
+          onDelete={handleDelete}
+          onClose={() => setViewDoc(null)}
         />
       )}
+
+      {/* 添加文档弹窗（条件挂载 = 每次打开全新表单；文件浏览器内聚于弹窗） */}
+      {showAdd && <AddDocumentModal scope={scope} onClose={() => setShowAdd(false)} />}
     </div>
   );
 }
