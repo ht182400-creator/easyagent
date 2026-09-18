@@ -46,6 +46,11 @@ jobs:
       - name: Run smoke test
         run: node scripts/smoke-test.mjs
 
+      # ⚡ 性能基线回归（P1-7）：冷启动/健康延迟/工具 schema token 与基线比对
+      #    劣化 >20% 告警（不阻断），>50% 失败；基线过期用 pnpm bench:baseline 重建
+      - name: Performance baseline check
+        run: node scripts/perf-baseline.mjs
+
   # 🔴 管线数据自动同步 — 所有测试通过后自动更新管线文件
   sync-pipeline:
     name: Sync Pipeline Data

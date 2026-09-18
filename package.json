@@ -34,6 +34,8 @@
     "verify:readme-format": "node scripts/verify-readme-format.mjs",
     "verify:all": "node scripts/verify-all.mjs",
     "smoke": "node scripts/smoke-test.mjs",
+    "bench:baseline": "node scripts/perf-baseline.mjs --write",
+    "bench:check": "node scripts/perf-baseline.mjs",
     "verify:catalog-sources": "node scripts/verify-catalog-sources.mjs",
     "verify:classes": "node scripts/verify-component-classes.mjs",
     "models:refresh": "node scripts/refresh-models-catalog.mjs",

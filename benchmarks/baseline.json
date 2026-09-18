@@ -1,0 +1,18 @@
+{
+  "updatedAt": "2026-09-18T12:49:07.881Z",
+  "commit": "3d2de0a",
+  "env": {
+    "node": "v24.13.0",
+    "platform": "win32/x64"
+  },
+  "metrics": {
+    "startupMs": 714,
+    "healthRttMs": 1,
+    "toolSchemaTokens": 8774,
+    "tokenPerTask": null
+  },
+  "notes": {
+    "tokenPerTask": "需要 provider key；本地 pnpm benchmark 跑出后人工补录",
+    "method": "startupMs/healthRttMs 为多次测量中位数；toolSchemaTokens 复用 core estimateToolDefinitionsTokens"
+  }
+}

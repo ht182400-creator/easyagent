@@ -67,6 +67,12 @@ const VERIFIERS = [
     note: '需先构建 server + web；验证注册顺序（/api/* 404 不能被 SPA 吞）',
   },
   {
+    key: 'perf',
+    name: '性能基线回归（P1-7）',
+    file: 'perf-baseline.mjs',
+    note: '冷启动/健康延迟/工具 schema token 与 benchmarks/baseline.json 比对；>20% 告警、>50% 失败；需先构建 server',
+  },
+  {
     key: 'readme',
     name: 'README 格式',
     file: 'verify-readme-format.mjs',
