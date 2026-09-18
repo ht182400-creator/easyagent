@@ -33,6 +33,27 @@
 | **P1-1 服务端拆分** | **第一阶段完成：`index.ts` 3827 → 3401 行**（knowledge / automations / staticFiles 三组路由外移） | `packages/server/src/routes/`、`docs/66` |
 | **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
 | **P1-2 思维链支持** | **已完成**：推理模型思考过程解析与展示，`reasoning_content` / `reasoning` 双字段归一化；契约是**正文与思考过程严格分离**（思考不入上下文） | `core/src/adapters/OpenAICompatibleAdapter.ts`、`docs/68` |
+| **校验体系去盲区** | **已完成**：新增 `pnpm verify:all`；全部 `verify-*.mjs` 统一输出 `__VERIFY_STATUS__=PASS\|FAIL\|SKIP` | `scripts/verify-all.mjs` |
+
+### ✅ 校验体系的正确用法（v0.6.32 起）
+
+**一律用 `pnpm verify:all`，不要用 `node scripts/xxx.mjs | Select-String '✅|❌'` 这类过滤写法。**
+
+原因：过滤只保留含标记的行 —— 脚本崩溃 / 走"跳过"分支 / 输出格式变化时会**一片空白**，
+而空白极易被误读成"没报错=通过"，实际上**一次都没校验**。
+
+**三种状态**（`verify-all` 会把 SKIP 单独列出）：
+
+| 状态 | 含义 | 退出码 |
+|------|------|:---:|
+| `PASS` | 校验通过 | 0 |
+| `FAIL` | 发现真实问题 | 1 |
+| `SKIP` | **未做校验**（网络/环境原因） | 0 |
+
+⚠️ **`SKIP` 退出码为 0，但不可当作通过。**
+
+**新增校验脚本时必须遵守**：结尾打印 `__VERIFY_STATUS__=PASS|FAIL|SKIP`，
+并在 `verify-all.mjs` 的 `VERIFIERS` 清单里登记（否则不会被汇总到）。
 
 ### 📝 前端 HTML 渲染安全（改任何 `dangerouslySetInnerHTML` 前必读）
 

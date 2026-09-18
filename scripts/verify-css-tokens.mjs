@@ -258,4 +258,7 @@ async function main() {
   return 1;
 }
 
-process.exit(await main());
+// 统一状态标记：供 scripts/verify-all.mjs 汇总判定（详见该文件头部注释）。
+const __exitCode = await main();
+console.log(`__VERIFY_STATUS__=${__exitCode === 0 ? 'PASS' : 'FAIL'}`);
+process.exit(__exitCode);

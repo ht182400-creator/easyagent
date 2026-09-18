@@ -1,6 +1,6 @@
 {
   "name": "easyagent",
-  "version": "0.6.31",
+  "version": "0.6.32",
   "description": "AI编程助手 - 集成中国主流大模型的全功能AI Agent",
   "private": true,
   "packageManager": "pnpm@11.7.0",
@@ -32,6 +32,7 @@
     "verify:runtime-log": "node scripts/verify-runtime-log.mjs",
     "verify:server-routes": "node scripts/verify-server-routes.mjs",
     "verify:readme-format": "node scripts/verify-readme-format.mjs",
+    "verify:all": "node scripts/verify-all.mjs",
     "measure:context": "node scripts/measure-context.mjs",
     "push:forgejo": "node scripts/push-forgejo.mjs",
     "test:langgraph": "pnpm --filter @easyagent/langgraph exec vitest run",

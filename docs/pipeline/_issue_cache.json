@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789695757824.2354,
-      "size": 20198
+      "mtimeMs": 1789696849098.309,
+      "size": 22663
     },
     "MEMORY.md": {
-      "mtimeMs": 1789695729367.0105,
-      "size": 37956
+      "mtimeMs": 1789696869912.9766,
+      "size": 38250
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11126,10 +11126,34 @@
         "_tagModuleIds": [
           "f8"
         ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-09-18",
+        "title": "[P1-2 之一:功能] 推理模型「思考过程」支持：思维链与正文分离",
+        "problem": ": P1-2「推理通道 `reasoning_content` 未解析」→ 思考期间界面空白，用户以为卡死",
+        "solution": "四层打通（类型 / 适配器 / 引擎 / 服务端 WS / 前端 UI）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-09-18",
+        "title": "[P1-2 之一:功能] 推理模型「思考过程」支持：思维链与正文分离",
+        "problem": ": P1-2「推理通道 `reasoning_content` 未解析」→ 思考期间界面空白，用户以为卡死",
+        "solution": "四层打通（类型 / 适配器 / 引擎 / 服务端 WS / 前端 UI）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f8"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-18T01:59:29.996Z"
+  "generatedAt": "2026-09-18T02:02:42.406Z"
 }

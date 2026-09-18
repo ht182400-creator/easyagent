@@ -16,10 +16,16 @@
  * ── 用法 ──
  *   node scripts/verify-readme-format.mjs [owner/repo]
  *
- * 说明：
- *   · 需要网络；GitHub 未限流时秒级返回
- *   · 网络不可用或触发限流时**跳过并退出 0**（不作为失败），避免把 CI 卡在外部依赖上
- *   · 退出码：0 = 通过或跳过；1 = 格式不符合预期（真的回退成 HTML 了）
+ * ── 状态语义（⚠️ 与其他校验脚本不同，本脚本会「跳过」）──
+ *   PASS  确认取回的是原始 Markdown
+ *   FAIL  取回的是 HTML / JSON —— Accept 头被改坏了（安全回退），必须修
+ *   SKIP  网络不可用 / GitHub 限流 / 仓库无 README —— **未做校验**，退出码仍为 0
+ *
+ * ⚠️ 之所以要显式区分 SKIP 而不是"静默退出 0"：
+ *    早期版本在网络异常时直接返回 0 且只打印一行 ⚠️，配合
+ *    `| Select-String '✅|❌'` 这类过滤用法会**什么都不显示**，
+ *    看起来像"没报错=通过"，实际上**一次都没校验**。现在会打印
+ *    `__VERIFY_STATUS__=SKIP`，让 `verify-all` 能把它显式暴露出来。
  */
 
 const REPO = process.argv[2] || 'ht182400-creator/easyagent';
@@ -46,18 +52,17 @@ async function main() {
 
     if (!res.ok) {
       console.warn(
-        `⚠️  GitHub 返回 ${res.status}（可能未限流/仓库无 README/网络受限）—— 跳过校验，退出码 0`,
+        `⚠️  SKIP — GitHub 返回 ${res.status}（限流 / 仓库无 README / 网络受限），未做校验`,
       );
-      return 0;
+      return { code: 0, status: 'SKIP' };
     }
     text = await res.text();
   } catch (err) {
     clearTimeout(timer);
-    console.warn(`⚠️  无法访问 GitHub（${err.message}）—— 跳过校验，退出码 0`);
-    return 0;
+    console.warn(`⚠️  SKIP — 无法访问 GitHub（${err.message}），未做校验`);
+    return { code: 0, status: 'SKIP' };
   }
 
-  const head = text.slice(0, 200);
   const trimmed = text.trimStart();
 
   // 判据：Markdown 文件的首个非空内容应为标题/引用等标记，绝不应是 HTML 标签
@@ -67,22 +72,23 @@ async function main() {
   console.log(`[verify-readme-format] 前 80 字符: ${JSON.stringify(trimmed.slice(0, 80))}`);
 
   if (looksLikeHtml) {
-    console.error('❌ README 取回的是 **HTML** —— Accept 头疑似被改回 vnd.github.html');
+    console.error('❌ FAIL — README 取回的是 **HTML**，Accept 头疑似被改回 vnd.github.html');
     console.error('   这会让远程不可信 HTML 重新进入前端渲染链路（安全回退）');
-    return 1;
+    return { code: 1, status: 'FAIL' };
   }
   if (looksLikeJson) {
-    console.error('❌ README 取回的是 **JSON** —— Accept 头可能写错（如用了 vnd.github+json）');
-    return 1;
+    console.error('❌ FAIL — README 取回的是 **JSON**，Accept 头可能写错（如用了 vnd.github+json）');
+    return { code: 1, status: 'FAIL' };
   }
   if (text.length === 0) {
-    console.warn('⚠️  README 内容为空 —— 跳过校验，退出码 0');
-    return 0;
+    console.warn('⚠️  SKIP — README 内容为空，未做校验');
+    return { code: 0, status: 'SKIP' };
   }
 
-  console.log(`✅ README 为原始 Markdown（长度 ${text.length}）`);
-  console.log('✅ 格式校验通过 —— 未回退为 HTML');
-  return 0;
+  console.log(`✅ PASS — README 为原始 Markdown（长度 ${text.length}），未回退为 HTML`);
+  return { code: 0, status: 'PASS' };
 }
 
-process.exitCode = await main();
+const { code, status } = await main();
+console.log(`__VERIFY_STATUS__=${status}`);
+process.exitCode = code;

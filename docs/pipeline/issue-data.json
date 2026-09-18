@@ -241,6 +241,13 @@
           "problem": "域名访问\"备案页\"问题 —— 最终准确诊断（踩了两轮坑）",
           "solution": "80`（nginx 已配 80→3456；micro 同源站已证明 EdgeOne 可达，**安全组无需再开**）。此操作在腾讯云控制台或 EdgeOne API 完成——**SSH 无法直接建 EdgeOne 站点**（需腾讯云 SecretId/SecretKey）。用户需把 cccn 的 DNS 从 A 记录(82.156.71.231)改为 EdgeOne 给的 CNAME。；备用（立即可用、与备案无关）: EasyAgent 已绑 `0.0.0.0:3456`；用户在腾讯云**安全组放行 TCP 3456** 后即可用 `http://82.156.71.231:3456` 或 `http://CCCN.fable5.icu:3456`（非80端口不受备案拦截）；经验: ① 腾讯云\"未备案域名+大陆CVM公网IP\"的80端口**确实会被网络层拦截**（返回备案页，nginx 无日志）；② 怀疑备案拦截时，先确认该域名是否走 EdgeOne「不含中国大陆」豁免；③ 别把\"同服务器已工作的域名\"简单等同于\"直连 CVM\"——mic；EdgeOne 概念区分（用户曾混淆）: `EdgeOne Pages`=纯静态托管，不支持服务端动态；`EdgeOne 加速/站点`=反向代理，支持动态（/api/*、SSR）与 WebSocket（文档明确支持，域名级可开关）。",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-2 之一:功能] 推理模型「思考过程」支持：思维链与正文分离",
+          "problem": ": P1-2「推理通道 `reasoning_content` 未解析」→ 思考期间界面空白，用户以为卡死",
+          "solution": "四层打通（类型 / 适配器 / 引擎 / 服务端 WS / 前端 UI）",
+          "status": "resolved"
         }
       ]
     },
@@ -1622,6 +1629,13 @@
           "title": "[P1-4 续:安全] 消除远程 HTML 信任面：服务端 README 改取原始 Markdown",
           "problem": ": v0.6.29 把「裸 HTML 无消毒」修成「DOMPurify 事后消毒」，但本质仍是**先引入危险内容再过滤**",
           "solution": "服务端改 `Accept: application/vnd.github.raw` 取原始 Markdown；前端与聊天共用 `renderMarkdown()`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-2 之一:功能] 推理模型「思考过程」支持：思维链与正文分离",
+          "problem": ": P1-2「推理通道 `reasoning_content` 未解析」→ 思考期间界面空白，用户以为卡死",
+          "solution": "四层打通（类型 / 适配器 / 引擎 / 服务端 WS / 前端 UI）",
           "status": "resolved"
         }
       ]
@@ -6011,8 +6025,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 834,
-  "_generatedAt": "2026-09-18T01:59:30.002Z",
+  "_totalIssues": 836,
+  "_generatedAt": "2026-09-18T02:02:42.411Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6043,6 +6057,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-18T01:59:30.022Z"
+    "exportedAt": "2026-09-18T02:02:42.429Z"
   }
 }

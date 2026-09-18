@@ -139,4 +139,9 @@ async function main() {
   return 1;
 }
 
-process.exitCode = await main();
+// 统一状态标记：供 scripts/verify-all.mjs 汇总判定（详见该文件头部注释）。
+// 注意：产物缺失时返回 1（FAIL 而非 SKIP）—— 需要先构建是**真实的前置条件**，
+// 若算作跳过，CI 里"从没构建过"也会被当成通过。
+const __exitCode = await main();
+console.log(`__VERIFY_STATUS__=${__exitCode === 0 ? 'PASS' : 'FAIL'}`);
+process.exitCode = __exitCode;
