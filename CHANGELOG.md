@@ -7,6 +7,78 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.33] - 2026-09-18
+
+> **本版主题：模型目录自动化与多源降级** —— 让厂商发布的新模型能自动进入客户端可见范围，
+> 并在连不上 GitHub 时仍有可用通道。
+> 详见 `docs/69_模型目录自动化与多源降级方案.md`
+
+### 背景（实测，与直觉相反）
+
+客户端的"自动拉取"**早已实现**（远程目录 + CDN 兜底 + 24h 缓存 + 三级降级 + 手动刷新）。
+断掉的是**中间那一环**：`models-catalog.json` 的 `generatedAt` 停留在 **2026-06-19**，
+**91 天**没重新生成过 —— 客户端每天勤快下载的是一份三个月前的数据。
+**「自动拉取」有了，「自动升级」并没有。**
+
+原因：目录文件**人工维护**。此外原降级链只有 GitHub raw + jsDelivr，**国内两者都常不可达**，
+且失败**没有任何提示**。
+
+### Added
+
+- **目录自动生成** `scripts/refresh-models-catalog.mjs`（`pnpm models:refresh`）
+  - 内置预设为基准（元数据已校准）+ 厂商 `/models` 仅用于**发现新模型**
+  - 合并规则：**只增不删**、不覆盖已校准元数据、新增标记 `unverified`
+  - 支持 `--dry-run` / `--check` / `--max-age`
+- **定时任务** `.github/workflows/refresh-models.yml` —— 每周一自动重新生成并提交
+- **多源降级链**（任一步失败继续下一步）：
+  `自定义 URL → 本地文件 → 额外镜像 → GitHub raw → jsDelivr → 本地缓存 → 应用内置`
+  - 新环境变量：`EASYAGENT_MODELS_CATALOG_URL` / `EASYAGENT_MODELS_CATALOG_FILE` /
+    `EASYAGENT_MODELS_CATALOG_MIRRORS`
+- **厂商 API 直连补齐**（不依赖 GitHub 的更新通道）：目录 `stale` 或来自缓存/内置时，
+  用已配置 Key 的厂商直连 `/models` 并入最新模型列表
+- **端到端验证** `scripts/verify-catalog-sources.mjs`（`pnpm verify:catalog-sources`）
+- 单元测试 16 条（新鲜度、下线检测、合并边界）
+
+### Changed
+
+- `ModelRegistry` 新增 `getFreshness()` / `getSource()` / `findMissingModels()` / `mergeModels()`
+- `ModelType` 新增 `unverified?: boolean` —— 标记"元数据未校准"，
+  **界面不得把保守默认值当作真实规格呈现**
+- `/api/providers/catalog/status` 新增 `source` / `stale` / `ageDays` / `maxAgeDays`
+- 启动时目录过期会明确告警并给出修复命令
+- `ModelConfig` 与目录重建：**40 → 52 个模型**
+- 测试基线刷新：定义用例 **1685** / Vitest 已执行 **1696 全部通过** / Node **75** / 合计 **1771**
+
+### Fixed
+
+- **测试 flaky**：`plugin-sandbox` / `plugin-manager` 在全量并行下出现 **11 条间歇性失败**
+  （单独跑 96/96 全过）→ 跨文件状态干扰（插件系统持有进程级单例）。
+  处置：core 设 `fileParallelism: false`。
+  **代价真实**：core 15s → 35.9s（+140%），属**预防性**修复（未能稳定复现）
+
+### 设计原则
+
+> **绝不让"连不上"变成"没有模型可选"** —— 所有远程源失败时继续用本地缓存，只告警、不清空。
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 目录生成 | ✅ 11 家 / 52 个模型（原 40） |
+| 过期检测 | ✅ 修复前报「91 天未更新 → FAIL」，重建后 PASS |
+| 多源降级端到端 | ✅ 5 / 5（自定义文件生效，缓存正确还原） |
+| 单元测试 | ✅ 16 / 16（只增不删 / 不覆盖已校准元数据 / 必标 unverified / 幂等） |
+| 全量回归 | ✅ **1696 / 1696 通过，0 失败** |
+| `pnpm verify:all` | ✅ **7 / 7 通过**（新增"目录新鲜度"与"目录多源降级"两项） |
+
+### 已知边界
+
+1. 自动发现的新模型**元数据是保守默认值**（标记 `unverified`），准确值仍需人工/官方校准
+2. 发布为 npm 包走 npmmirror（国内最稳分发渠道）**需 npm 发布权限**，本次未做
+3. 厂商直连补齐需用户已配置对应 API Key
+
+---
+
 ## [0.6.32] - 2026-09-18
 
 > **本版主题：校验体系消除「空白 = 通过」盲区**

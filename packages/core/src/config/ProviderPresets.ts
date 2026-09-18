@@ -607,11 +607,31 @@ export const PROVIDER_PRESETS: ProviderConfig[] = [
     apiKey: '',
     apiKeyEnv: 'OPENAI_API_KEY',
     apiFormat: 'openai',
-    defaultModel: 'gpt-4o',
+    // 【2026-09-18 刷新】默认模型由 gpt-4o 改为当期旗舰 gpt-6-astra。
+    // 规格依据 OpenAI 官方模型页（经 DataLearner 收录核对）：
+    //   官方 API ID `gpt-6-astra` / 上下文 1,050,000 / 最大输出 128,000 /
+    //   价格（≤272K）输入 $10、输出 $50 每百万 token / 知识截止 2026-04-30
+    //
+    // ⚠️ 已知兼容性风险（来自官方文档）：
+    //   GPT-6 Astra **支持 Chat Completions，但工具调用需要 Responses API**。
+    //   本项目的 71 个工具是通过 Chat Completions 的 `tools` 字段下发的，
+    //   因此若发现该模型不触发工具，请暂时改用下面的 gpt-4o（Legacy），
+    //   或推进 Responses API 适配（见 docs/69）。
+    defaultModel: 'gpt-6-astra',
     models: [
       {
+        id: 'gpt-6-astra',
+        name: 'GPT-6 Astra',
+        maxContextTokens: 1050000,
+        maxOutputTokens: 128000,
+        supportsTools: true,
+        supportsVision: true,
+        pricing: { input: 10, output: 50 },
+      },
+      // Legacy：Chat Completions + 工具调用经过验证、稳定可用
+      {
         id: 'gpt-4o',
-        name: 'GPT-4o',
+        name: 'GPT-4o (Legacy)',
         maxContextTokens: 128000,
         maxOutputTokens: 16384,
         supportsTools: true,
@@ -620,7 +640,7 @@ export const PROVIDER_PRESETS: ProviderConfig[] = [
       },
       {
         id: 'gpt-4o-mini',
-        name: 'GPT-4o Mini',
+        name: 'GPT-4o Mini (Legacy)',
         maxContextTokens: 128000,
         maxOutputTokens: 16384,
         supportsTools: true,

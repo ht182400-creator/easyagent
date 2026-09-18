@@ -1,0 +1,81 @@
+# 模型目录自动刷新
+#
+# ── 为什么需要这个 workflow ──
+# 客户端的 ModelRegistry 早已能自动**拉取**远程目录（GitHub raw + jsDelivr 兜底，
+# 24h 缓存，三级降级）。但目录文件 `models-catalog.json` 此前是**人工维护**的 ——
+# 实测它曾停留在 2026-06-19（91 天未重新生成）：客户端每天都在自动下载一份
+# 三个月前的数据，厂商的新模型永远不出现，而界面上看不出任何异常。
+#
+# 也就是说：**"自动拉取"有了，"自动升级"并没有**。本 workflow 补上这一环 ——
+# 定期重新生成目录并提交，让厂商发布的新模型自动进入客户端可见范围。
+#
+# ── 工作方式 ──
+#   1. 基于内置 `PROVIDER_PRESETS` 重新生成目录（始终可用）
+#   2. 若配置了厂商 API Key（Secrets），额外调用各厂商 `/models` 端点
+#      **发现预设中还没有的新模型**并并入目录（标记 unverified: true）
+#   3. 目录有变化则自动提交到 main
+#
+# ── 需要配置的 Secrets（可选；不配则只刷新预设部分）──
+#   DEEPSEEK_API_KEY / DASHSCOPE_API_KEY / ZHIPU_API_KEY / MOONSHOT_API_KEY
+#   OPENAI_API_KEY / DOUBAO_API_KEY / MINIMAX_API_KEY
+#
+# 建议：先用 1~2 个 Key 试用；没有 Key 时脚本仍能正常工作，只是发现不了新模型。
+
+name: Refresh Models Catalog
+
+on:
+  schedule:
+    # 每周一 03:17 UTC（避开整点，减少 Actions 排队）
+    - cron: '17 3 * * 1'
+  workflow_dispatch: # 支持手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建 core（生成脚本依赖其产物导出的 PROVIDER_PRESETS）
+        run: pnpm --filter @easyagent/core build
+
+      - name: 刷新模型目录
+        env:
+          # 未配置的 Key 会为空，脚本会自动跳过对应厂商（只刷新预设部分）
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          MOONSHOT_API_KEY: ${{ secrets.MOONSHOT_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DOUBAO_API_KEY: ${{ secrets.DOUBAO_API_KEY }}
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+        run: node scripts/refresh-models-catalog.mjs
+
+      - name: 校验新目录可被解析且未过期
+        run: node scripts/refresh-models-catalog.mjs --check
+
+      - name: 有变化则提交
+        run: |
+          if git diff --quiet -- models-catalog.json; then
+            echo "目录无变化，跳过提交"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add models-catalog.json
+          git commit -m "chore(models): 自动刷新模型目录 [skip ci]"
+          git push

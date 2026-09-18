@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>EasyAgent 回归测试报告 — 2026-09-18 10:25:14.227</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;
+      --red:#f85149;--green:#3fb950;--amber:#d29922}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:var(--bg);color:var(--fg);
+     font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+h1{font-size:20px;margin:0 0 4px}
+h3{font-size:15px;margin:24px 0 8px}
+.meta{color:var(--dim);font-size:12px;margin-bottom:20px}
+.cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+      padding:12px 18px;min-width:120px}
+.card .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.card .v{font-size:22px;font-weight:600;margin-top:2px}
+.card.bad .v{color:var(--red)}
+.card.good .v{color:var(--green)}
+table{width:100%;border-collapse:collapse;background:var(--card);
+      border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd);font-size:13px}
+th{background:#1c2128;color:var(--dim);font-weight:600}
+tr.fail td{background:rgba(248,81,73,.08)}
+.red{color:var(--red)}.bold{font-weight:700}.ok td:nth-child(3){color:var(--green)}
+.case{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--red);
+      border-radius:6px;padding:10px 14px;margin-bottom:10px}
+.case-title{font-weight:600;margin-bottom:6px}
+pre.msg{margin:0;padding:8px;background:#0b0f14;border-radius:4px;overflow-x:auto;
+        color:#ffa198;font-size:12px;white-space:pre-wrap}
+details{margin-top:12px}summary{cursor:pointer;color:var(--dim)}
+pre.tail{background:#0b0f14;padding:10px;border-radius:6px;overflow-x:auto;
+         font-size:11.5px;color:var(--dim);max-height:320px}
+.foot{margin-top:28px;color:var(--dim);font-size:12px}
+</style></head><body>
+<h1>EasyAgent 回归测试报告</h1>
+<div class="meta">
+  运行时间：2026-09-18 10:25:14.227 ・ 范围：模型目录自动化全量回归 ・
+  Node：v24.13.0 ・ 提交：1e785ec ・
+  耗时：64.2s ・ 结论：<span class="red bold">❌ 存在失败</span>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="k">用例总数</div><div class="v">1689</div></div>
+  <div class="card good"><div class="k">通过</div><div class="v">1678</div></div>
+  <div class="card bad"><div class="k">失败</div><div class="v">11</div></div>
+  <div class="card"><div class="k">跳过</div><div class="v">0</div></div>
+</div>
+
+<table>
+<thead><tr><th>包</th><th>说明</th><th>结果</th><th>用例</th><th>通过</th><th>失败</th><th>跳过</th><th>耗时</th></tr></thead>
+<tbody>
+<tr class="fail">
+  <td>core</td><td>核心引擎</td>
+  <td>❌ 11 失败</td>
+  <td>1008</td><td>997</td>
+  <td class="red bold">11</td>
+  <td>0</td>
+  <td>17.8s</td>
+</tr>
+<tr class="ok">
+  <td>server</td><td>服务端</td>
+  <td>✅ 通过</td>
+  <td>262</td><td>262</td>
+  <td class="">0</td>
+  <td>0</td>
+  <td>27.9s</td>
+</tr>
+<tr class="ok">
+  <td>frontend</td><td>前端共享包</td>
+  <td>✅ 通过</td>
+  <td>145</td><td>145</td>
+  <td class="">0</td>
+  <td>0</td>
+  <td>7.6s</td>
+</tr>
+<tr class="ok">
+  <td>desktop</td><td>桌面端</td>
+  <td>✅ 通过</td>
+  <td>215</td><td>215</td>
+  <td class="">0</td>
+  <td>0</td>
+  <td>4.6s</td>
+</tr>
+<tr class="ok">
+  <td>langgraph</td><td>LangGraph 引擎</td>
+  <td>✅ 通过</td>
+  <td>57</td><td>57</td>
+  <td class="">0</td>
+  <td>0</td>
+  <td>3.5s</td>
+</tr>
+<tr class="ok">
+  <td>web</td><td>Web 壳</td>
+  <td>✅ 通过</td>
+  <td>2</td><td>2</td>
+  <td class="">0</td>
+  <td>0</td>
+  <td>2.8s</td>
+</tr>
+</tbody></table>
+
+<h3 class="red">❌ core（11 个失败用例）</h3>
+<div class="case">
+  <div class="case-title">__tests__/plugin-manager.test.ts ::  PluginManager - 边界条件 重复加载同一沙箱插件应先关闭旧沙箱</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 有 manifest.json 的插件应使用 sandbox 模式加载</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 loadPluginSafe 应强制使用沙箱模式</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 沙箱插件应可在 ToolRegistry 中注册工具</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 卸载沙箱插件应清理插件和沙箱</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 destroy 应清理所有沙箱</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 getEnabledPlugins 应包含沙箱插件</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 沙箱模式配置应传递给 PluginSandbox</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱错误处理 重复加载同一插件应先卸载旧版本</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱错误处理 函数式插件（export default function）应能加载并注册工具</div>
+  <pre class="msg">Worker 错误: Cannot find module 'D:\Work_Area\AI\Claude Code  CN\packages\core\dist\PluginWorkerEntry.js'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱错误处理 非函数非对象导出应抛出明确错误</div>
+  <pre class="msg">expected [Function] to throw error including '插件模块必须导出插件对象或插件函数' but got 'Worker 错误: Cannot find module \'D:\Wo…'</pre>
+</div>
+
+<h3>各包控制台输出（尾部 120 行）</h3>
+<details><summary>core — 核心引擎</summary>
+<pre class="tail">[2026-09-18 10:24:20.616 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_82&quot;
+[2026-09-18 10:24:20.617 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_83&quot;
+[2026-09-18 10:24:20.617 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_84&quot;
+[2026-09-18 10:24:20.617 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_85&quot;
+[2026-09-18 10:24:20.617 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_86&quot;
+[2026-09-18 10:24:20.617 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_87&quot;
+[2026-09-18 10:24:20.617 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_88&quot;
+[2026-09-18 10:24:20.618 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_89&quot;
+[2026-09-18 10:24:20.618 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_90&quot;
+[2026-09-18 10:24:20.618 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_91&quot;
+[2026-09-18 10:24:20.618 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_92&quot;
+[2026-09-18 10:24:20.619 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_93&quot;
+[2026-09-18 10:24:20.619 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_94&quot;
+[2026-09-18 10:24:20.619 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_95&quot;
+[2026-09-18 10:24:20.619 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_96&quot;
+[2026-09-18 10:24:20.619 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_97&quot;
+[2026-09-18 10:24:20.619 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_98&quot;
+[2026-09-18 10:24:20.619 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool_99&quot;
+[2026-09-18 10:24:20.621 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;echo&quot;
+[2026-09-18 10:24:20.621 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool-with_special.chars&quot;
+ [32m✓[39m src/__tests__/tool-registry.test.ts [2m ([22m[2m24 tests[22m[2m)[22m[33m 386[2mms[22m[39m
+ [32m✓[39m src/__tests__/wechat-crypto.test.ts [2m ([22m[2m13 tests[22m[2m)[22m[90m 14[2mms[22m[39m
+[2026-09-18 10:24:20.766 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.774 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.775 +0800] [33mWARN[39m (easyagent): [36m适配器已在运行中[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.776 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.777 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已停止[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.778 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.779 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.781 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已停止[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.786 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.791 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-18 10:24:20.795 +0800] [31mERROR[39m (easyagent): [36m流式发送失败[39m
+    platform: &quot;telegram&quot;
+    error: &quot;Edit failed&quot;
+ [32m✓[39m src/__tests__/im-adapters.test.ts [2m ([22m[2m23 tests[22m[2m)[22m[33m 373[2mms[22m[39m
+[2026-09-18 10:24:21.217 +0800] [31mERROR[39m (easyagent): [36mIM 适配器启动失败[39m
+    platform: &quot;wechat&quot;
+    error: &quot;企业微信接入需要配置 corpId 和 appSecret\n参考: https://developer.work.weixin.qq.com/document/path/90665&quot;
+ [32m✓[39m src/__tests__/wechat-adapter.test.ts [2m ([22m[2m9 tests[22m[2m)[22m[90m 241[2mms[22m[39m
+[2026-09-18 10:24:21.234 +0800] [32mINFO[39m (easyagent): [36m企业微信 URL 验证请求[39m
+[2026-09-18 10:24:21.236 +0800] [32mINFO[39m (easyagent): [36m企业微信 URL 验证请求[39m
+[2026-09-18 10:24:21.237 +0800] [32mINFO[39m (easyagent): [36m企业微信 URL 验证请求[39m
+[2026-09-18 10:24:21.238 +0800] [33mWARN[39m (easyagent): [36m企业微信 URL 验证解密失败，返回原始 echostr[39m
+    error: &quot;Invalid key length&quot;
+[2026-09-18 10:24:21.242 +0800] [33mWARN[39m (easyagent): [36m企业微信消息解析为空，跳过处理[39m
+[2026-09-18 10:24:21.244 +0800] [33mWARN[39m (easyagent): [36m企业微信消息解析为空，跳过处理[39m
+[2026-09-18 10:24:21.304 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-18 10:24:21.315 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-18 10:24:21.318 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-18 10:24:21.318 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-18 10:24:21.327 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;test_tool&quot;
+[2026-09-18 10:24:21.329 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool1&quot;
+[2026-09-18 10:24:21.332 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-18 10:24:21.332 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-18 10:24:21.333 +0800] [32mINFO[39m (easyagent): [36m会话已删除[39m
+    sessionId: &quot;test-session&quot;
+[2026-09-18 10:24:21.334 +0800] [32mINFO[39m (easyagent): [36m会话管理器已关闭[39m
+ [32m✓[39m src/__tests__/model-registry-freshness.test.ts [2m ([22m[2m9 tests[22m[2m)[22m[90m 12[2mms[22m[39m
+[2026-09-18 10:24:21.377 +0800] [32mINFO[39m (easyagent): [36m使用本地缓存模型目录[39m
+[2026-09-18 10:24:21.379 +0800] [32mINFO[39m (easyagent): [36m配置加载完成[39m
+ [32m✓[39m src/__tests__/core.test.ts [2m ([22m[2m10 tests[22m[2m)[22m[33m 394[2mms[22m[39m
+[2026-09-18 10:24:21.961 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {}
+ [32m✓[39m src/__tests__/encryption.test.ts [2m ([22m[2m18 tests[22m[2m)[22m[33m 867[2mms[22m[39m
+[2026-09-18 10:24:21.970 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {}
+[2026-09-18 10:24:22.019 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {}
+[2026-09-18 10:24:22.043 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {
+      &quot;code&quot;: &quot;ERR_CRYPTO_INVALID_IV&quot;
+    }
+ [32m✓[39m src/__tests__/project-tools.test.ts [2m ([22m[2m36 tests[22m[2m)[22m[33m 7441[2mms[22m[39m
+ [32m✓[39m src/__tests__/code-tools.test.ts [2m ([22m[2m23 tests[22m[2m)[22m[33m 4014[2mms[22m[39m
+ [32m✓[39m src/__tests__/git-advanced-tools.test.ts [2m ([22m[2m32 tests[22m[2m)[22m[33m 11530[2mms[22m[39m
+ [32m✓[39m src/__tests__/exec-tools-security.test.ts [2m ([22m[2m34 tests[22m [2m|[22m [33m1 skipped[39m[2m)[22m[33m 10700[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m34 passed[39m[22m[90m (36)[39m
+[2m      Tests [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m996 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (1008)[39m
+[2m   Start at [22m 10:24:11
+[2m   Duration [22m 15.90s[2m (transform 7.64s, setup 4ms, collect 9.57s, tests 72.29s, environment 19ms, prepare 15.92s)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-core.json
+</pre></details>
+<details><summary>server — 服务端</summary>
+<pre class="tail">    tool: &quot;git_cherry_pick&quot;
+[2026-09-18 10:24:33.262 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;git_reflog&quot;
+[2026-09-18 10:24:33.262 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_semantic_map&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_symbol_search&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_find_references&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_overview&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_file_structure&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_load&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_run&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_report&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_scan&quot;
+[2026-09-18 10:24:33.263 +0800] [32mINFO[39m (easyagent): [36m开始初始化插件系统[39m
+[2026-09-18 10:24:33.267 +0800] [32mINFO[39m (easyagent): [36m自动化管理器已初始化[39m
+    path: &quot;C:\Users\ht182\.easyagent\data\automations.json&quot;
+    interval: 30000
+[2026-09-18 10:24:33.270 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-18 10:24:33.271 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-18 10:24:33.477 +0800] [33mWARN[39m (easyagent): [36mDocker 不可用: Command failed: docker version --format &quot;{{.Server.Version}}&quot;
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+[39m
+[2026-09-18 10:24:33.479 +0800] [32mINFO[39m (easyagent): [36m文档浏览器静态文件已托管[39m
+    path: &quot;C:\Users\ht182\.easyagent\plugins\easyagent-plugin-obsidian-doc-viewer\dist&quot;
+    source: &quot;已安装插件: easyagent-plugin-obsidian-doc-viewer&quot;
+[2026-09-18 10:24:33.480 +0800] [33mWARN[39m (easyagent): [36mDocker 不可用，已降级为本地进程模式[39m
+    reason: &quot;Command failed: docker version --format \&quot;{{.Server.Version}}\&quot;\nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n&quot;
+    fallback: &quot;本地进程 (Windows Windows_NT)&quot;
+[2026-09-18 10:24:33.487 +0800] [33mWARN[39m (easyagent): [36m模型目录已过期：厂商新发布的模型不会出现在列表中。请运行 `node scripts/refresh-models-catalog.mjs` 重新生成目录[39m
+    generatedAt: &quot;2026-06-19T00:00:00Z&quot;
+    ageDays: 91.1
+    maxAgeDays: 30
+[2026-09-18 10:24:33.487 +0800] [33mWARN[39m (easyagent): [36mDocker 不可用，沙箱已降级为本地进程模式[39m
+    version: &quot;本地进程 (Windows Windows_NT)&quot;
+[2026-09-18 10:24:33.488 +0800] [32mINFO[39m (easyagent): [36m加载插件[39m
+    path: &quot;C:\Users\ht182\.easyagent\plugins\easyagent-plugin-obsidian-doc-viewer&quot;
+[2026-09-18 10:24:33.488 +0800] [32mINFO[39m (easyagent): [36m插件加载模式[39m
+    path: &quot;C:\Users\ht182\.easyagent\plugins\easyagent-plugin-obsidian-doc-viewer&quot;
+    mode: &quot;sandbox&quot;
+[2026-09-18 10:24:33.491 +0800] [32mINFO[39m (obsidian-doc-viewer): [36mManifest 验证通过[39m
+    valid: true
+    errors: 0
+[2026-09-18 10:24:33.509 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 10:24:33.517 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 10:24:33.524 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+[2026-09-18 10:24:33.525 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 10:24:33.527 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+[2026-09-18 10:24:33.528 +0800] [32mINFO[39m (easyagent): [36m客户端订阅会话[39m
+    sessionId: &quot;test_session&quot;
+[2026-09-18 10:24:33.540 +0800] [32mINFO[39m (easyagent): [36m插件沙箱启动成功[39m
+    plugin: &quot;obsidian-doc-viewer&quot;
+    version: &quot;0.1.0&quot;
+[2026-09-18 10:24:33.541 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;open-doc-viewer&quot;
+[2026-09-18 10:24:33.541 +0800] [32mINFO[39m (easyagent): [36m沙箱插件工具已注册[39m
+    plugin: &quot;obsidian-doc-viewer&quot;
+    count: 1
+[2026-09-18 10:24:33.541 +0800] [32mINFO[39m (easyagent): [36m插件(沙箱)加载成功[39m
+    plugin: &quot;obsidian-doc-viewer&quot;
+    version: &quot;0.1.0&quot;
+    mode: &quot;sandbox&quot;
+[2026-09-18 10:24:33.542 +0800] [32mINFO[39m (easyagent): [36m插件系统初始化完成[39m
+    count: 1
+[2026-09-18 10:24:34.040 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 10:24:34.041 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+[2026-09-18 10:24:34.043 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 10:24:34.044 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+ [32m✓[39m src/__tests__/plugin-market-service.test.ts [2m ([22m[2m32 tests[22m[2m)[22m[33m 3945[2mms[22m[39m
+ [32m✓[39m src/__tests__/websocket.test.ts [2m ([22m[2m5 tests[22m[2m)[22m[33m 1311[2mms[22m[39m
+[2026-09-18 10:24:34.555 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+[2026-09-18 10:24:47.413 +0800] [33mWARN[39m (easyagent): [36m模型目录下载失败(网络错误)[39m
+    url: &quot;https://raw.githubusercontent.com/ht182400-creator/easyagent/main/models-catalog.json&quot;
+    error: &quot;This operation was aborted&quot;
+[2026-09-18 10:24:47.750 +0800] [32mINFO[39m (easyagent): [36m模型目录已缓存到本地[39m
+[2026-09-18 10:24:47.751 +0800] [32mINFO[39m (easyagent): [36m模型目录已更新[39m
+    version: &quot;1.0.0&quot;
+    providers: 11
+[2026-09-18 10:24:47.752 +0800] [32mINFO[39m (easyagent): [36m配置加载完成[39m
+[2026-09-18 10:24:47.768 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 10:24:47.772 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 10:24:47.777 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 10:24:47.783 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 10:24:47.799 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 10:24:47.810 +0800] [33mWARN[39m (easyagent): [36m插件未加载，无法卸载[39m
+    plugin: &quot;nonexistent-plugin&quot;
+[2026-09-18 10:24:47.821 +0800] [32mINFO[39m (easyagent): [36m自定义技能已添加[39m
+    skill: &quot;test-custom-skill-int&quot;
+[2026-09-18 10:24:47.830 +0800] [32mINFO[39m (easyagent): [36m自定义技能已更新[39m
+    skill: &quot;test-custom-skill-int&quot;
+[2026-09-18 10:24:47.834 +0800] [32mINFO[39m (easyagent): [36m自定义技能已删除[39m
+    skill: &quot;test-custom-skill-int&quot;
+ [32m✓[39m src/__tests__/provider-config-api.test.ts [2m ([22m[2m30 tests[22m[2m)[22m[33m 17477[2mms[22m[39m
+ [32m✓[39m src/__tests__/automation-knowledge-api.test.ts [2m ([22m[2m33 tests[22m[2m)[22m[33m 25309[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m262 passed[39m[22m[90m (262)[39m
+[2m   Start at [22m 10:24:29
+[2m   Duration [22m 26.40s[2m (transform 1.48s, setup 2ms, collect 12.51s, tests 57.96s, environment 4ms, prepare 3.94s)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-server.json
+</pre></details>
+<details><summary>frontend — 前端共享包</summary>
+<pre class="tail">
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.0[39m [90mD:/Work_Area/AI/Claude Code  CN/packages/frontend[39m
+
+ [32m✓[39m src/__tests__/events.test.ts [2m ([22m[2m11 tests[22m[2m)[22m[90m 9[2mms[22m[39m
+ [32m✓[39m src/__tests__/pluginsStore.test.ts [2m ([22m[2m8 tests[22m[2m)[22m[90m 22[2mms[22m[39m
+ [32m✓[39m src/__tests__/request.test.ts [2m ([22m[2m11 tests[22m[2m)[22m[90m 16[2mms[22m[39m
+ [32m✓[39m src/__tests__/api.test.ts [2m ([22m[2m12 tests[22m[2m)[22m[90m 32[2mms[22m[39m
+ [32m✓[39m src/__tests__/langgraph/LangGraphPage.test.tsx [2m ([22m[2m7 tests[22m[2m)[22m[33m 446[2mms[22m[39m
+ [32m✓[39m src/__tests__/langgraph/MiniFlowGraph.test.tsx [2m ([22m[2m10 tests[22m[2m)[22m[90m 69[2mms[22m[39m
+ [32m✓[39m src/__tests__/langgraph/FlowZoomModal.test.tsx [2m ([22m[2m11 tests[22m[2m)[22m[90m 75[2mms[22m[39m
+ [32m✓[39m src/__tests__/langgraph/GraphCanvas.test.tsx [2m ([22m[2m8 tests[22m[2m)[22m[90m 95[2mms[22m[39m
+ [32m✓[39m src/__tests__/langgraph/ScenarioCard.test.tsx [2m ([22m[2m11 tests[22m[2m)[22m[90m 94[2mms[22m[39m
+ [32m✓[39m src/__tests__/markdown.test.ts [2m ([22m[2m32 tests[22m[2m)[22m[90m 84[2mms[22m[39m
+ [32m✓[39m src/__tests__/config.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 2[2mms[22m[39m
+ [32m✓[39m src/__tests__/mountApp.test.tsx [2m ([22m[2m5 tests[22m[2m)[22m[33m 757[2mms[22m[39m
+ [32m✓[39m src/__tests__/langgraph/langGraphStore.test.ts [2m ([22m[2m16 tests[22m[2m)[22m[33m 4115[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[32m145 passed[39m[22m[90m (145)[39m
+[2m   Start at [22m 10:24:57
+[2m   Duration [22m 6.07s[2m (transform 1.40s, setup 1ms, collect 3.50s, tests 5.82s, environment 11.47s, prepare 6.08s)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-frontend.json
+</pre></details>
+<details><summary>desktop — 桌面端</summary>
+<pre class="tail">
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.0[39m [90mD:/Work_Area/AI/Claude Code  CN/packages/desktop[39m
+
+ [32m✓[39m src/__tests__/ipc/preload.test.ts [2m ([22m[2m13 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m src/__tests__/main/auto-updater-state.test.ts [2m ([22m[2m60 tests[22m[2m)[22m[90m 12[2mms[22m[39m
+ [32m✓[39m src/__tests__/main/version.test.ts [2m ([22m[2m13 tests[22m[2m)[22m[90m 3[2mms[22m[39m
+ [32m✓[39m src/__tests__/stores/uiStore.test.ts [2m ([22m[2m24 tests[22m[2m)[22m[90m 22[2mms[22m[39m
+ [32m✓[39m src/__tests__/stores/sessionStore.test.ts [2m ([22m[2m20 tests[22m[2m)[22m[90m 93[2mms[22m[39m
+ [32m✓[39m src/__tests__/stores/chatStore.test.ts [2m ([22m[2m31 tests[22m[2m)[22m[90m 42[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/StatusBar.test.tsx [2m ([22m[2m9 tests[22m[2m)[22m[90m 154[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/TabBar.test.tsx [2m ([22m[2m8 tests[22m[2m)[22m[90m 149[2mms[22m[39m
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m基础渲染[2m &gt; [22m[2m应渲染&quot;检查更新&quot;按钮[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;idle&quot;,&quot;lastUpdateInfo&quot;:{}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m基础渲染[2m &gt; [22m[2m应显示当前版本号[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;idle&quot;,&quot;lastUpdateInfo&quot;:{}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m状态辅助函数 - getStatusCardStyle[2m &gt; [22m[2mdownloading 状态应显示蓝色卡片+进度条[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;downloading&quot;,&quot;lastUpdateInfo&quot;:{&quot;version&quot;:&quot;0.5.21&quot;,&quot;percent&quot;:45}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m状态辅助函数 - getStatusCardStyle[2m &gt; [22m[2merror 状态应显示黄色卡片+重试按钮[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;error&quot;,&quot;lastUpdateInfo&quot;:{&quot;version&quot;:&quot;0.5.21&quot;,&quot;error&quot;:&quot;ETIMEDOUT&quot;}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m状态辅助函数 - getStatusCardStyle[2m &gt; [22m[2mchecking 状态应显示蓝色卡片[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;checking&quot;,&quot;lastUpdateInfo&quot;:{}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m状态辅助函数 - getStatusCardStyle[2m &gt; [22m[2minstalling 状态应显示紫色卡片[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;installing&quot;,&quot;lastUpdateInfo&quot;:{&quot;version&quot;:&quot;0.5.21&quot;}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m按钮行为[2m &gt; [22m[2m点击&quot;立即重启安装&quot;应调用 installUpdate[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;downloaded&quot;,&quot;lastUpdateInfo&quot;:{&quot;version&quot;:&quot;0.5.21&quot;}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m按钮行为[2m &gt; [22m[2m点击&quot;立即重启安装&quot;应调用 installUpdate[22m[39m
+[Settings] 用户确认安装更新...
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m按钮行为[2m &gt; [22m[2m点击&quot;重试&quot;应调用 checkForUpdates[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;error&quot;,&quot;lastUpdateInfo&quot;:{&quot;error&quot;:&quot;ETIMEDOUT&quot;}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m按钮行为[2m &gt; [22m[2m点击&quot;重试&quot;应调用 checkForUpdates[22m[39m
+[Settings] 检查更新... 环境: Desktop
+[Settings] 后台更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;error&quot;,&quot;lastUpdateInfo&quot;:{&quot;error&quot;:&quot;ETIMEDOUT&quot;}}
+[Settings] Server API 返回: {&quot;version&quot;:&quot;0.5.20&quot;,&quot;codename&quot;:&quot;Test&quot;,&quot;releaseDate&quot;:&quot;2026-06-26&quot;,&quot;changelog&quot;:&quot;Test changelog&quot;}
+[Settings] 已是最新版本，清除更新状态
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m事件监听[2m &gt; [22m[2m应注册 onUpdateStatus 监听器[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;idle&quot;,&quot;lastUpdateInfo&quot;:{}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m事件监听[2m &gt; [22m[2m组件卸载时应清理监听器[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;idle&quot;,&quot;lastUpdateInfo&quot;:{}}
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m非桌面环境[2m &gt; [22m[2m没有 easyAgent 时不应崩溃[22m[39m
+[Settings] Web 环境，跳过 Desktop 更新监听
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m非桌面环境[2m &gt; [22m[2m没有 easyAgent 时仍显示检查更新按钮[22m[39m
+[Settings] Web 环境，跳过 Desktop 更新监听
+
+[90mstdout[2m | src/__tests__/components/Settings-update.test.tsx[2m &gt; [22m[2mSettings 页面 - 自动更新 UI[2m &gt; [22m[2m状态卡片条件渲染[2m &gt; [22m[2midle 状态且无 updateInfo 时不显示状态卡片[22m[39m
+[Settings] 初始更新状态: {&quot;isUpdateSupported&quot;:true,&quot;currentVersion&quot;:&quot;0.5.20&quot;,&quot;lastUpdateStatus&quot;:&quot;idle&quot;,&quot;lastUpdateInfo&quot;:{}}
+
+ [32m✓[39m src/__tests__/components/Settings-update.test.tsx [2m ([22m[2m37 tests[22m[2m)[22m[33m 572[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m      Tests [22m [1m[32m215 passed[39m[22m[90m (215)[39m
+[2m   Start at [22m 10:25:04
+[2m   Duration [22m 3.15s[2m (transform 1.15s, setup 4.67s, collect 2.25s, tests 1.05s, environment 8.23s, prepare 2.59s)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-desktop.json
+</pre></details>
+<details><summary>langgraph — LangGraph 引擎</summary>
+<pre class="tail">2026-09-18 02:25:11.327 INFO  [MemoryManager   ] 清空所有记忆 | {&quot;previousCount&quot;:0}
+2026-09-18 02:25:11.327 INFO  [Agent           ] Agent 已关闭，资源已释放
+
+[90mstdout[2m | __tests__/integration.test.ts[2m &gt; [22m[2m端到端集成[2m &gt; [22m[2m应该完成 纯文本对话（无工具）[22m[39m
+2026-09-18 02:25:11.328 DEBUG [Agent           ] Agent 构造开始 | {&quot;maxTurns&quot;:3,&quot;hasCheckpointer&quot;:false,&quot;hasMemory&quot;:false}
+2026-09-18 02:25:11.328 DEBUG [Checkpointer    ] Checkpointer 初始化 | {&quot;dbPath&quot;:&quot;C:\\Users\\ht182\\.easyagent\\data\\langgraph-checkpoints.db&quot;,&quot;cleanOnInit&quot;:false}
+2026-09-18 02:25:11.328 DEBUG [Checkpointer    ] 数据库连接 耗时: 0.58ms
+2026-09-18 02:25:11.329 DEBUG [Checkpointer    ] WAL 模式已启用
+2026-09-18 02:25:11.329 INFO  [Checkpointer    ] Checkpointer 初始化完成
+2026-09-18 02:25:11.329 DEBUG [Agent           ] Checkpointer 已初始化
+2026-09-18 02:25:11.329 DEBUG [MemoryManager   ] MemoryManager 初始化 | {&quot;maxMessagesBeforeSummary&quot;:100,&quot;maxMemoryItems&quot;:1000}
+2026-09-18 02:25:11.329 DEBUG [Agent           ] MemoryManager 已初始化
+2026-09-18 02:25:11.329 DEBUG [agentGraph      ] ▶ 进入 agentGraph | {&quot;name&quot;:&quot;EasyAgent-LangGraph&quot;,&quot;hasCheckpointer&quot;:true}
+2026-09-18 02:25:11.329 DEBUG [agentGraph      ] 创建节点函数 耗时: 0.00ms
+2026-09-18 02:25:11.330 DEBUG [agentGraph      ] 编译 耗时: 0.30ms
+2026-09-18 02:25:11.330 DEBUG [agentGraph      ] ◀ 退出 agentGraph | {&quot;name&quot;:&quot;EasyAgent-LangGraph&quot;,&quot;nodes&quot;:[&quot;think&quot;,&quot;act&quot;,&quot;observe&quot;],&quot;maxTurns&quot;:3}
+2026-09-18 02:25:11.330 DEBUG [Agent           ] StateGraph 编译 耗时: 0.46ms
+2026-09-18 02:25:11.330 INFO  [Agent           ] Agent 构造完成 | {&quot;systemPrompt&quot;:&quot;E2E 测试助手...&quot;,&quot;maxTurns&quot;:3}
+2026-09-18 02:25:11.330 DEBUG [Agent           ] ▶ 进入 Agent | {&quot;sessionId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;userMessage&quot;:&quot;测试&quot;,&quot;method&quot;:&quot;run&quot;}
+2026-09-18 02:25:11.330 DEBUG [Checkpointer    ] getTuple 耗时: 0.29ms | {&quot;threadId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;found&quot;:false}
+2026-09-18 02:25:11.336 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 4.75ms | {&quot;threadId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;checkpointId&quot;:&quot;ckpt_1789698311331_po5d2m51&quot;,&quot;step&quot;:-1}
+2026-09-18 02:25:11.336 DEBUG [Checkpointer    ] putWrites | {&quot;threadId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c865-6f31-ffff-c8214cd40af4&quot;,&quot;taskId&quot;:&quot;821737ae-07ad-5c0e-b377-e1b7a9699be3&quot;,&quot;writeCount&quot;:6}
+2026-09-18 02:25:11.337 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 0.15ms | {&quot;threadId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c865-6f31-ffff-c8214cd40af4&quot;,&quot;step&quot;:0}
+2026-09-18 02:25:11.337 DEBUG [thinkNode       ] ▶ 进入 thinkNode | {&quot;turnCount&quot;:0,&quot;maxTurns&quot;:3,&quot;msgCount&quot;:1}
+2026-09-18 02:25:11.337 DEBUG [thinkNode       ] 消息列表已构建 | {&quot;totalMsgCount&quot;:2,&quot;hasSystemPrompt&quot;:true}
+2026-09-18 02:25:11.337 DEBUG [thinkNode       ] 工具定义已获取 | {&quot;toolCount&quot;:1,&quot;toolNames&quot;:[&quot;echo&quot;]}
+2026-09-18 02:25:11.337 DEBUG [thinkNode       ] LLM 调用 耗时: 0.07ms | {&quot;finishReason&quot;:&quot;stop&quot;,&quot;contentLen&quot;:7,&quot;toolCallsCount&quot;:0}
+2026-09-18 02:25:11.337 DEBUG [thinkNode       ] LLM 返回纯文本 | {&quot;contentLen&quot;:7,&quot;finishReason&quot;:&quot;stop&quot;}
+2026-09-18 02:25:11.337 DEBUG [thinkNode       ] ◀ 退出 thinkNode | {&quot;turnCount&quot;:1}
+2026-09-18 02:25:11.338 INFO  [routeAfterThink ] 🔀 决策: 结束 (无 tool_calls) | {&quot;lastMsgType&quot;:&quot;ai&quot;}
+2026-09-18 02:25:11.338 DEBUG [Checkpointer    ] putWrites | {&quot;threadId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c874-6990-8000-b331d590cf40&quot;,&quot;taskId&quot;:&quot;9683008f-ced6-555a-b7e6-321384d20a89&quot;,&quot;writeCount&quot;:6}
+2026-09-18 02:25:11.338 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 0.11ms | {&quot;threadId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c874-6990-8000-b331d590cf40&quot;,&quot;step&quot;:1}
+2026-09-18 02:25:11.338 DEBUG [Agent           ] graph.invoke 耗时: 8.56ms
+2026-09-18 02:25:11.339 DEBUG [Agent           ] ◀ 退出 Agent | {&quot;sessionId&quot;:&quot;session_1789698311330_qakepqgq&quot;,&quot;turnCount&quot;:1,&quot;msgCount&quot;:2,&quot;responseLen&quot;:7,&quot;usage&quot;:{&quot;inputTokens&quot;:0,&quot;outputTokens&quot;:0,&quot;totalTokens&quot;:0}}
+2026-09-18 02:25:11.339 INFO  [Agent           ] Agent 关闭中...
+2026-09-18 02:25:11.339 INFO  [Checkpointer    ] 关闭数据库连接
+2026-09-18 02:25:11.343 INFO  [MemoryManager   ] 清空所有记忆 | {&quot;previousCount&quot;:0}
+2026-09-18 02:25:11.343 INFO  [Agent           ] Agent 已关闭，资源已释放
+
+[90mstdout[2m | __tests__/integration.test.ts[2m &gt; [22m[2m端到端集成[2m &gt; [22m[2m应该完成 工具调用 → 观察 → 最终回答 全路径[22m[39m
+2026-09-18 02:25:11.344 DEBUG [Agent           ] Agent 构造开始 | {&quot;maxTurns&quot;:5,&quot;hasCheckpointer&quot;:false,&quot;hasMemory&quot;:false}
+2026-09-18 02:25:11.344 DEBUG [Checkpointer    ] Checkpointer 初始化 | {&quot;dbPath&quot;:&quot;C:\\Users\\ht182\\.easyagent\\data\\langgraph-checkpoints.db&quot;,&quot;cleanOnInit&quot;:false}
+2026-09-18 02:25:11.344 DEBUG [Checkpointer    ] 数据库连接 耗时: 0.56ms
+2026-09-18 02:25:11.345 DEBUG [Checkpointer    ] WAL 模式已启用
+2026-09-18 02:25:11.345 INFO  [Checkpointer    ] Checkpointer 初始化完成
+2026-09-18 02:25:11.345 DEBUG [Agent           ] Checkpointer 已初始化
+2026-09-18 02:25:11.345 DEBUG [MemoryManager   ] MemoryManager 初始化 | {&quot;maxMessagesBeforeSummary&quot;:100,&quot;maxMemoryItems&quot;:1000}
+2026-09-18 02:25:11.345 DEBUG [Agent           ] MemoryManager 已初始化
+2026-09-18 02:25:11.345 DEBUG [agentGraph      ] ▶ 进入 agentGraph | {&quot;name&quot;:&quot;EasyAgent-LangGraph&quot;,&quot;hasCheckpointer&quot;:true}
+2026-09-18 02:25:11.345 DEBUG [agentGraph      ] 创建节点函数 耗时: 0.00ms
+2026-09-18 02:25:11.346 DEBUG [agentGraph      ] 编译 耗时: 0.34ms
+2026-09-18 02:25:11.346 DEBUG [agentGraph      ] ◀ 退出 agentGraph | {&quot;name&quot;:&quot;EasyAgent-LangGraph&quot;,&quot;nodes&quot;:[&quot;think&quot;,&quot;act&quot;,&quot;observe&quot;],&quot;maxTurns&quot;:5}
+2026-09-18 02:25:11.346 DEBUG [Agent           ] StateGraph 编译 耗时: 0.48ms
+2026-09-18 02:25:11.346 INFO  [Agent           ] Agent 构造完成 | {&quot;systemPrompt&quot;:&quot;E2E 工具测试...&quot;,&quot;maxTurns&quot;:5}
+2026-09-18 02:25:11.346 DEBUG [Agent           ] ▶ 进入 Agent | {&quot;sessionId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;userMessage&quot;:&quot;执行 E2E 工具测试&quot;,&quot;method&quot;:&quot;run&quot;}
+2026-09-18 02:25:11.346 DEBUG [Checkpointer    ] getTuple 耗时: 0.08ms | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;found&quot;:false}
+2026-09-18 02:25:11.351 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 4.47ms | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;ckpt_1789698311346_jt4wbd2g&quot;,&quot;step&quot;:-1}
+2026-09-18 02:25:11.351 DEBUG [Checkpointer    ] putWrites | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c88a-6921-ffff-20657c07de89&quot;,&quot;taskId&quot;:&quot;472c1153-71c5-5ec5-b2d5-b23093445826&quot;,&quot;writeCount&quot;:6}
+2026-09-18 02:25:11.352 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 0.14ms | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c88a-6921-ffff-20657c07de89&quot;,&quot;step&quot;:0}
+2026-09-18 02:25:11.352 DEBUG [thinkNode       ] ▶ 进入 thinkNode | {&quot;turnCount&quot;:0,&quot;maxTurns&quot;:5,&quot;msgCount&quot;:1}
+2026-09-18 02:25:11.352 DEBUG [thinkNode       ] 消息列表已构建 | {&quot;totalMsgCount&quot;:2,&quot;hasSystemPrompt&quot;:true}
+2026-09-18 02:25:11.352 DEBUG [thinkNode       ] 工具定义已获取 | {&quot;toolCount&quot;:1,&quot;toolNames&quot;:[&quot;echo&quot;]}
+2026-09-18 02:25:11.352 DEBUG [thinkNode       ] LLM 调用 耗时: 0.06ms | {&quot;finishReason&quot;:&quot;tool_calls&quot;,&quot;contentLen&quot;:0,&quot;toolCallsCount&quot;:1}
+2026-09-18 02:25:11.352 INFO  [thinkNode       ] LLM 返回 tool_calls | {&quot;tools&quot;:[{&quot;name&quot;:&quot;echo&quot;,&quot;argsLen&quot;:19}]}
+2026-09-18 02:25:11.353 DEBUG [thinkNode       ] ◀ 退出 thinkNode | {&quot;turnCount&quot;:1,&quot;hasToolCalls&quot;:true}
+2026-09-18 02:25:11.353 INFO  [routeAfterThink ] 🔀 决策: 路由 → act | {&quot;toolCount&quot;:1,&quot;toolNames&quot;:[&quot;echo&quot;]}
+2026-09-18 02:25:11.353 DEBUG [Checkpointer    ] putWrites | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c899-6380-8000-4692b0ed0e67&quot;,&quot;taskId&quot;:&quot;ef452d07-1ab4-5d5f-aa5a-bc1cd43baf72&quot;,&quot;writeCount&quot;:7}
+2026-09-18 02:25:11.354 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 0.16ms | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c899-6380-8000-4692b0ed0e67&quot;,&quot;step&quot;:1}
+2026-09-18 02:25:11.354 DEBUG [actNode         ] ▶ 进入 actNode | {&quot;turnCount&quot;:1,&quot;mode&quot;:&quot;并行&quot;}
+2026-09-18 02:25:11.354 INFO  [actNode         ] 工具调用列表 | {&quot;count&quot;:1,&quot;tools&quot;:[{&quot;name&quot;:&quot;echo&quot;,&quot;args&quot;:{&quot;message&quot;:&quot;E2E测试&quot;}}],&quot;mode&quot;:&quot;并行&quot;}
+2026-09-18 02:25:11.354 DEBUG [actNode         ] 工具执行成功: echo | {&quot;contentLen&quot;:11}
+2026-09-18 02:25:11.354 DEBUG [actNode         ] 工具并行执行 (1个) 耗时: 0.08ms | {&quot;toolCount&quot;:1}
+2026-09-18 02:25:11.354 DEBUG [actNode         ] 工具结果: echo | {&quot;success&quot;:true,&quot;contentLen&quot;:11,&quot;contentPreview&quot;:&quot;Echo: E2E测试&quot;}
+2026-09-18 02:25:11.354 DEBUG [actNode         ] ◀ 退出 actNode | {&quot;toolCount&quot;:1,&quot;resultCount&quot;:1,&quot;consecutiveFailures&quot;:0}
+2026-09-18 02:25:11.354 DEBUG [Checkpointer    ] putWrites | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c89b-6a91-8001-5de4257816d4&quot;,&quot;taskId&quot;:&quot;cfed0a2a-bafa-5059-8056-65d432990c20&quot;,&quot;writeCount&quot;:3}
+2026-09-18 02:25:11.355 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 0.14ms | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c89b-6a91-8001-5de4257816d4&quot;,&quot;step&quot;:2}
+2026-09-18 02:25:11.357 DEBUG [observeNode     ] ▶ 进入 observeNode | {&quot;turnCount&quot;:1,&quot;maxTurns&quot;:5,&quot;msgCount&quot;:3,&quot;enableSummary&quot;:false}
+2026-09-18 02:25:11.358 INFO  [observeNode     ] 🔀 决策: 继续循环 → think | {&quot;turnCount&quot;:1}
+2026-09-18 02:25:11.358 DEBUG [Checkpointer    ] putWrites | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c8a0-68b0-8002-52bbbfd39426&quot;,&quot;taskId&quot;:&quot;1ccabd61-0202-5bc4-8855-bc911d4b92a7&quot;,&quot;writeCount&quot;:2}
+2026-09-18 02:25:11.358 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 0.13ms | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c8a0-68b0-8002-52bbbfd39426&quot;,&quot;step&quot;:3}
+2026-09-18 02:25:11.359 DEBUG [thinkNode       ] ▶ 进入 thinkNode | {&quot;turnCount&quot;:1,&quot;maxTurns&quot;:5,&quot;msgCount&quot;:3}
+2026-09-18 02:25:11.359 DEBUG [thinkNode       ] 消息列表已构建 | {&quot;totalMsgCount&quot;:4,&quot;hasSystemPrompt&quot;:true}
+2026-09-18 02:25:11.359 DEBUG [thinkNode       ] 工具定义已获取 | {&quot;toolCount&quot;:1,&quot;toolNames&quot;:[&quot;echo&quot;]}
+2026-09-18 02:25:11.359 DEBUG [thinkNode       ] LLM 调用 耗时: 0.03ms | {&quot;finishReason&quot;:&quot;stop&quot;,&quot;contentLen&quot;:20,&quot;toolCallsCount&quot;:0}
+2026-09-18 02:25:11.359 DEBUG [thinkNode       ] LLM 返回纯文本 | {&quot;contentLen&quot;:20,&quot;finishReason&quot;:&quot;stop&quot;}
+2026-09-18 02:25:11.359 DEBUG [thinkNode       ] ◀ 退出 thinkNode | {&quot;turnCount&quot;:2}
+2026-09-18 02:25:11.359 INFO  [routeAfterThink ] 🔀 决策: 结束 (无 tool_calls) | {&quot;lastMsgType&quot;:&quot;ai&quot;}
+2026-09-18 02:25:11.359 DEBUG [Checkpointer    ] putWrites | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c8a7-6de0-8003-8007b5cf71c5&quot;,&quot;taskId&quot;:&quot;1f8064ce-e017-54d2-ae3e-d346b202f465&quot;,&quot;writeCount&quot;:6}
+2026-09-18 02:25:11.360 DEBUG [Checkpointer    ] put (保存 checkpoint) 耗时: 0.25ms | {&quot;threadId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;checkpointId&quot;:&quot;1f1b3082-c8a7-6de0-8003-8007b5cf71c5&quot;,&quot;step&quot;:4}
+2026-09-18 02:25:11.360 DEBUG [Agent           ] graph.invoke 耗时: 14.02ms
+2026-09-18 02:25:11.360 DEBUG [Agent           ] ◀ 退出 Agent | {&quot;sessionId&quot;:&quot;session_1789698311346_qzyao5qa&quot;,&quot;turnCount&quot;:2,&quot;msgCount&quot;:4,&quot;responseLen&quot;:20,&quot;usage&quot;:{&quot;inputTokens&quot;:0,&quot;outputTokens&quot;:0,&quot;totalTokens&quot;:0}}
+2026-09-18 02:25:11.360 INFO  [Agent           ] Agent 关闭中...
+2026-09-18 02:25:11.360 INFO  [Checkpointer    ] 关闭数据库连接
+2026-09-18 02:25:11.368 INFO  [MemoryManager   ] 清空所有记忆 | {&quot;previousCount&quot;:0}
+2026-09-18 02:25:11.368 INFO  [Agent           ] Agent 已关闭，资源已释放
+
+[2026-09-18 10:25:11.243 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;echo&quot;
+[2026-09-18 10:25:11.243 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;echo&quot;
+[2026-09-18 10:25:11.284 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;echo&quot;
+[2026-09-18 10:25:11.310 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;echo&quot;
+[2026-09-18 10:25:11.321 +0800] [31mERROR[39m (easyagent): [36m聊天请求失败[39m
+    provider: &quot;Test&quot;
+    error: {}
+[2026-09-18 10:25:11.327 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;echo&quot;
+[2026-09-18 10:25:11.343 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;echo&quot;
+ [32m✓[39m __tests__/integration.test.ts [2m ([22m[2m9 tests[22m[2m)[22m[90m 133[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m57 passed[39m[22m[90m (57)[39m
+[2m   Start at [22m 10:25:09
+[2m   Duration [22m 1.79s[2m (transform 682ms, setup 0ms, collect 3.79s, tests 571ms, environment 1ms, prepare 938ms)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-langgraph.json
+</pre></details>
+<details><summary>web — Web 壳</summary>
+<pre class="tail">
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.0[39m [90mD:/Work_Area/AI/Claude Code  CN/packages/web[39m
+
+ [32m✓[39m src/__tests__/main.test.ts [2m ([22m[2m2 tests[22m[2m)[22m[90m 14[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 10:25:12
+[2m   Duration [22m 1.16s[2m (transform 35ms, setup 0ms, collect 24ms, tests 14ms, environment 431ms, prepare 105ms)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-web.json
+</pre></details>
+
+<div class="foot">由 <code>scripts/run-tests-log.mjs</code> 生成 ・ 原始输出见同目录 <code>raw/</code></div>
+</body></html>

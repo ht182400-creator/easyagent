@@ -1,0 +1,51 @@
+[2026-09-18 10:24:10.097] [INFO ] [test-runner] ==============================================================================
+[2026-09-18 10:24:10.100] [INFO ] [test-runner] EasyAgent 回归测试开始 — 范围: 模型目录自动化全量回归（core, server, frontend, desktop, langgraph, web）
+[2026-09-18 10:24:10.100] [INFO ] [test-runner] 时间: 2026-09-18 10:24:10.100  提交: 1e785ec  Node: v24.13.0
+[2026-09-18 10:24:10.100] [INFO ] [test-runner] 日志目录: D:\Work_Area\AI\Claude Code  CN\logs\test-logs\2026-09-18_102410_模型目录自动化全量回归
+[2026-09-18 10:24:10.100] [INFO ] [test-runner] ==============================================================================
+[2026-09-18 10:24:10.102] [INFO ] [test-runner] ▶ 开始测试 [core] 核心引擎 — 工作目录 packages/core
+[2026-09-18 10:24:10.102] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 10:24:27.921] [DEBUG] [test-runner] [core] exit=1 耗时=17.8s 用例=1008 通过=997 失败=11 跳过=0
+[2026-09-18 10:24:27.921] [ERROR] [test-runner] [core] 存在 11 个失败用例：
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-manager.test.ts ::  PluginManager - 边界条件 重复加载同一沙箱插件应先关闭旧沙箱
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 有 manifest.json 的插件应使用 sandbox 模式加载
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 loadPluginSafe 应强制使用沙箱模式
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 沙箱插件应可在 ToolRegistry 中注册工具
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 卸载沙箱插件应清理插件和沙箱
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 destroy 应清理所有沙箱
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 getEnabledPlugins 应包含沙箱插件
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱模式集成 沙箱模式配置应传递给 PluginSandbox
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱错误处理 重复加载同一插件应先卸载旧版本
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱错误处理 函数式插件（export default function）应能加载并注册工具
+[2026-09-18 10:24:27.921] [ERROR] [test-runner]   ✗ __tests__/plugin-sandbox.test.ts ::  PluginManager - 沙箱错误处理 非函数非对象导出应抛出明确错误
+[2026-09-18 10:24:27.921] [INFO ] [test-runner] ❌ 结束测试 [core] 耗时 17.8s — 997/1008 通过，11 失败
+[2026-09-18 10:24:27.922] [INFO ] [test-runner] ▶ 开始测试 [server] 服务端 — 工作目录 packages/server
+[2026-09-18 10:24:27.922] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 10:24:55.797] [DEBUG] [test-runner] [server] exit=0 耗时=27.9s 用例=262 通过=262 失败=0 跳过=0
+[2026-09-18 10:24:55.797] [INFO ] [test-runner] ✅ 结束测试 [server] 耗时 27.9s — 262/262 通过
+[2026-09-18 10:24:55.798] [INFO ] [test-runner] ▶ 开始测试 [frontend] 前端共享包 — 工作目录 packages/frontend
+[2026-09-18 10:24:55.798] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 10:25:03.364] [DEBUG] [test-runner] [frontend] exit=0 耗时=7.6s 用例=145 通过=145 失败=0 跳过=0
+[2026-09-18 10:25:03.364] [INFO ] [test-runner] ✅ 结束测试 [frontend] 耗时 7.6s — 145/145 通过
+[2026-09-18 10:25:03.364] [INFO ] [test-runner] ▶ 开始测试 [desktop] 桌面端 — 工作目录 packages/desktop
+[2026-09-18 10:25:03.364] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 10:25:07.991] [DEBUG] [test-runner] [desktop] exit=0 耗时=4.6s 用例=215 通过=215 失败=0 跳过=0
+[2026-09-18 10:25:07.991] [INFO ] [test-runner] ✅ 结束测试 [desktop] 耗时 4.6s — 215/215 通过
+[2026-09-18 10:25:07.991] [INFO ] [test-runner] ▶ 开始测试 [langgraph] LangGraph 引擎 — 工作目录 packages/langgraph
+[2026-09-18 10:25:07.991] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 10:25:11.464] [DEBUG] [test-runner] [langgraph] exit=0 耗时=3.5s 用例=57 通过=57 失败=0 跳过=0
+[2026-09-18 10:25:11.464] [INFO ] [test-runner] ✅ 结束测试 [langgraph] 耗时 3.5s — 57/57 通过
+[2026-09-18 10:25:11.465] [INFO ] [test-runner] ▶ 开始测试 [web] Web 壳 — 工作目录 packages/web
+[2026-09-18 10:25:11.465] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 10:25:14.227] [DEBUG] [test-runner] [web] exit=0 耗时=2.8s 用例=2 通过=2 失败=0 跳过=0
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] ✅ 结束测试 [web] 耗时 2.8s — 2/2 通过
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] ------------------------------------------------------------------------------
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] 汇总: 1689 用例 / 1678 通过 / 11 失败 / 0 跳过 / 耗时 64.2s
+[2026-09-18 10:25:14.227] [ERROR] [test-runner] core       ❌ 失败  997/1008
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] server     ✅ 通过  262/262
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] frontend   ✅ 通过  145/145
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] desktop    ✅ 通过  215/215
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] langgraph  ✅ 通过  57/57
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] web        ✅ 通过  2/2
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] ❌ 结论: 存在失败，请查看下方明细与 HTML 报告
+[2026-09-18 10:25:14.227] [INFO ] [test-runner] ------------------------------------------------------------------------------

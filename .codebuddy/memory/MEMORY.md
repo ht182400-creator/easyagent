@@ -34,6 +34,33 @@
 | **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
 | **P1-2 思维链支持** | **已完成**：推理模型思考过程解析与展示，`reasoning_content` / `reasoning` 双字段归一化；契约是**正文与思考过程严格分离**（思考不入上下文） | `core/src/adapters/OpenAICompatibleAdapter.ts`、`docs/68` |
 | **校验体系去盲区** | **已完成**：新增 `pnpm verify:all`；全部 `verify-*.mjs` 统一输出 `__VERIFY_STATUS__=PASS\|FAIL\|SKIP` | `scripts/verify-all.mjs` |
+| **模型目录自动化** | **已完成**：目录自动生成 + 多源降级链 + 厂商 `/models` 直连补齐 + 来源可见 | `scripts/refresh-models-catalog.mjs`、`docs/69` |
+
+### 🧩 模型目录：更新通道设计（改这块前必读）
+
+**两类数据要分开看 —— 这是连不上 GitHub 时的解题关键**：
+
+| 数据类型 | 最佳通道 |
+|---|---|
+| **模型列表**（有哪些模型） | ⭐ **厂商 `/models` 直连**（国内可访问；厂商一发就有第一手数据） |
+| **模型元数据**（价格/上下文/能力） | 目录分发（CI 生成 + 社区维护） |
+
+**降级链**（任一步失败继续下一步）：
+`自定义 URL → 本地文件 → 额外镜像 → GitHub raw → jsDelivr → 本地缓存 → 应用内置`
+
+**环境变量**：`EASYAGENT_MODELS_CATALOG_URL` / `EASYAGENT_MODELS_CATALOG_FILE` /
+`EASYAGENT_MODELS_CATALOG_MIRRORS`（逗号分隔）。本项目有自建 Forgejo（`localhost:3000`），
+可作自主可控镜像源。
+
+**三条铁律**：
+1. **绝不让"连不上"变成"没有模型可选"** —— 所有远程源失败时继续用缓存，只告警、不清空
+2. **只增不删** —— 厂商端点抖动不得导致模型从列表消失
+3. **不假装元数据准确** —— 厂商 `/models` 不返回价格/上下文，自动发现的新模型标 `unverified`，
+   界面必须能区分，不能把保守默认值当真实规格呈现
+
+**排障第一问**：`GET /api/providers/catalog/status` 看 `source`（数据从哪来）与
+`stale`/`ageDays`（多旧）。**下载成功 ≠ 数据新鲜** —— 这是最容易误判的一点。
+目录过期用 `pnpm models:refresh` 重建；`pnpm verify:all` 会检查是否超 30 天。
 
 ### ✅ 校验体系的正确用法（v0.6.32 起）
 
@@ -206,7 +233,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1669**（模块映射口径，48 个映射文件）；**Vitest 已执行 1680，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1755 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1685**（模块映射口径，48 个映射文件）；**Vitest 已执行 1696，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1771 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

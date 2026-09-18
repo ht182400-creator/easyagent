@@ -44,6 +44,7 @@ const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
  * @property key   用于 --only / --skip 的短名
  * @property name  展示名
  * @property file  scripts/ 下的脚本文件名
+ * @property args  可选：传给该脚本的命令行参数（如 `['--check']`）
  * @property note  补充说明（会打印在结果旁）
  */
 const VERIFIERS = [
@@ -77,6 +78,19 @@ const VERIFIERS = [
     file: 'verify-runtime-log.mjs',
     note: '需先构建 server；验证日志落盘 + DEBUG 明细 + 毫秒时间戳',
   },
+  {
+    key: 'catalog',
+    name: '模型目录新鲜度',
+    file: 'refresh-models-catalog.mjs',
+    args: ['--check'],
+    note: 'models-catalog.json 超过 30 天未更新则失败（客户端会自动拉它，旧目录=新模型不出现）',
+  },
+  {
+    key: 'catalog-sources',
+    name: '目录多源降级',
+    file: 'verify-catalog-sources.mjs',
+    note: '需先构建 server；端到端验证自定义目录源生效（连不上 GitHub 时的兜底通道）',
+  },
 ];
 
 /** 子脚本超时保护（毫秒）—— 卡死时不至于挂住整个校验 */
@@ -107,7 +121,7 @@ function runOne(verifier) {
     const started = Date.now();
     // 注意：必须带上 `scripts/` 前缀。
     // Node 按 cwd 解析脚本参数，只传文件名会到项目根去找（MODULE_NOT_FOUND）。
-    const child = spawn(process.execPath, [join('scripts', verifier.file)], {
+    const child = spawn(process.execPath, [join('scripts', verifier.file), ...(verifier.args || [])], {
       cwd: PROJECT_ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
     });

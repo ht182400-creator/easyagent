@@ -209,9 +209,74 @@ export interface CreateAppOptions {
 export async function createApp(options: CreateAppOptions = {}) {
   // 启动时后台更新模型目录（不阻塞服务启动）
   const modelRegistry = getModelRegistry();
-  modelRegistry.initialize().catch((err) => {
-    logger.warn({ error: (err as Error).message }, '模型目录初始化失败');
-  });
+  modelRegistry
+    .initialize()
+    .then(async () => {
+      // 下载成功 ≠ 数据新鲜：若目录文件本身长期未重新生成，客户端每天都在
+      // 拉一份旧数据，厂商的新模型永远不会出现，而界面上看不出任何异常。
+      // 因此这里主动告警，把"看不见的过期"变成看得见的事实。
+      const freshness = modelRegistry.getFreshness();
+      const source = modelRegistry.getSource() || '未知';
+
+      if (freshness.stale) {
+        logger.warn(
+          {
+            generatedAt: freshness.generatedAt,
+            ageDays: freshness.ageDays,
+            maxAgeDays: freshness.maxAgeDays,
+            source,
+          },
+          '模型目录已过期：厂商新发布的模型不会出现在列表中。' +
+            '请运行 `node scripts/refresh-models-catalog.mjs` 重新生成目录',
+        );
+      }
+
+      // ── 厂商 API 直连补齐（不依赖 GitHub）──
+      //
+      // 内置的目录分发源（GitHub raw / jsDelivr）在部分网络环境下**都不可达**；
+      // 但厂商自己的 API 通常可以直连，且是"厂商一发新模型、/models 立刻就有"的
+      // 第一手数据。因此只要目录**不够新**（过期、或来自缓存/内置兜底），
+      // 就用已配置 API Key 的厂商直连把模型列表补齐。
+      //
+      // 注意：此处只**新增**、不删除；新增条目元数据未校准，会标记 unverified。
+      const needsEnrich = freshness.stale || /缓存|内置/.test(source);
+      if (needsEnrich) {
+        let totalAdded = 0;
+        for (const preset of PROVIDER_PRESETS) {
+          if (!preset.apiKey || !preset.baseURL) continue;
+          try {
+            const models = await fetchModelsFromProvider(preset);
+            if (models.length === 0) continue;
+            totalAdded += modelRegistry.mergeModels(
+              preset.id,
+              models.map((m) => m.id),
+              `厂商 API 直连（${preset.id}）`,
+            );
+          } catch (err) {
+            logger.debug(
+              { provider: preset.id, error: (err as Error).message },
+              '厂商 API 直连补齐失败（忽略，不影响启动）',
+            );
+          }
+        }
+        if (totalAdded > 0) {
+          logger.info({ totalAdded }, '已通过厂商 API 直连补齐模型列表（目录源不可用或过期）');
+        }
+      }
+
+      logger.info(
+        {
+          version: modelRegistry.getVersion(),
+          ageDays: freshness.ageDays,
+          source,
+          stale: freshness.stale,
+        },
+        '模型目录已就绪',
+      );
+    })
+    .catch((err) => {
+      logger.warn({ error: (err as Error).message }, '模型目录初始化失败');
+    });
 
   // 初始化配置
   const configManager = new ConfigManager();
@@ -1454,11 +1519,19 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   /** 获取模型目录状态 */
   app.get('/api/providers/catalog/status', (_req, res) => {
+    const freshness = modelRegistry.getFreshness();
     res.json({
       ready: modelRegistry.isReady(),
       version: modelRegistry.getVersion(),
       generatedAt: modelRegistry.getGeneratedAt(),
       providers: modelRegistry.getCatalog()?.providers.length || null,
+      // 数据来源：排障第一问 —— "模型列表不新"时先确认数据到底从哪来
+      // （远程源 / 自建镜像 / 本地缓存 / 内置兜底）
+      source: modelRegistry.getSource(),
+      // 新鲜度：下载成功 ≠ 数据新鲜（目录可能长期未重新生成）
+      stale: freshness.stale,
+      ageDays: freshness.ageDays,
+      maxAgeDays: freshness.maxAgeDays,
     });
   });
 

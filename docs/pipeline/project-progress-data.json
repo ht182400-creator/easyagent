@@ -1,9 +1,9 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.31",
-    "codename": "思维链支持",
-    "lastUpdated": "2026-09-18T02:02:42.108Z",
+    "version": "0.6.32",
+    "codename": "校验体系去盲区",
+    "lastUpdated": "2026-09-18T02:12:16.504Z",
     "engine": "auto-detected",
     "totalTests": 1669,
     "modelsSupported": 4
