@@ -9,6 +9,8 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { Message, Session, SessionMetadata, TokenUsage } from '../types/index.js';
 import { logger } from '../utils/logger.js';
+import { DatabaseMigrator } from '../db/DatabaseMigrator.js';
+import { SESSION_MIGRATIONS } from '../db/sessionMigrations.js';
 
 /** 默认数据目录 */
 const DATA_DIR = join(homedir(), '.easyagent', 'data');
@@ -29,23 +31,10 @@ export class SessionManager {
     // 启用WAL模式提高性能
     this.db.pragma('journal_mode = WAL');
 
-    // 创建会话表
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS sessions (
-        id TEXT PRIMARY KEY,
-        workspace TEXT NOT NULL,
-        provider TEXT NOT NULL,
-        model TEXT NOT NULL,
-        messages TEXT NOT NULL DEFAULT '[]',
-        title TEXT NOT NULL DEFAULT '',
-        status TEXT NOT NULL DEFAULT 'active',
-        token_usage TEXT NOT NULL DEFAULT '{"inputTokens":0,"outputTokens":0,"totalTokens":0}',
-        summary TEXT DEFAULT '',
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL,
-        tags TEXT DEFAULT '[]'
-      )
-    `);
+    // schema 迁移（P1-5）：建表/补列/索引统一走迁移机制（PRAGMA user_version 版本戳）。
+    // ⚠️ 迁移失败会向上抛出 —— 宁可会话功能不可用，也不能带着未知 schema 继续写库。
+    // 测试 mock 环境（pragma 无感知）会自动跳过迁移，行为与旧版一致。
+    new DatabaseMigrator(this.db, { name: 'sessions', migrations: SESSION_MIGRATIONS }).migrate();
 
     this.loadSessions();
     logger.info('会话管理器已初始化');

@@ -21,13 +21,16 @@ export { registerAutomationRoutes, type AutomationRoutesDeps } from './automatio
 export { registerConfigRoutes, fetchModelsFromProvider, type ConfigRoutesDeps } from './config.js';
 export { registerFilesRoutes, type FilesRoutesDeps } from './files.js';
 export { registerIMRoutes, type IMRoutesDeps } from './im.js';
+export { registerLangGraphRoutes, type LangGraphRoutesDeps } from './langgraph.js';
 export { registerPluginRoutes, type PluginRoutesDeps } from './plugins.js';
 export { registerKnowledgeRoutes, type KnowledgeRoutesDeps } from './knowledge.js';
 export { registerSandboxRoutes } from './sandbox.js';
 export { registerSemanticRoutes, type SemanticRoutesDeps } from './semantic.js';
+export { registerSessionRoutes, type SessionRoutesDeps } from './sessions.js';
 export {
   registerStaticRoutes,
   resolveDocViewerFallbackDir,
   type StaticRoutesDeps,
 } from './staticFiles.js';
 export { registerSystemRoutes, type SystemRoutesDeps } from './system.js';
+export { setupWebSocket, type WebSocketSetupDeps } from './websocket.js';

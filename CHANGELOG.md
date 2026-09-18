@@ -7,6 +7,54 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.40] - 2026-09-18
+
+> **本版主题：P1 收官日** —— 服务端拆分全部完成（3827 → **389 行，-89.8%**，达成 ≤500 目标）、
+> 数据库迁移机制（P1-5）、全局错误中间件 + CI 冒烟（P1-6 收尾）。
+> 进度：`docs/66` §5.4-5.5 · `docs/72` · `docs/73`
+
+### Changed
+
+- **P1-1 第五批（收官）**：`index.ts` 1672 → 785 行。`routes/langgraph.ts`（9 条）、
+  `routes/sessions.ts`（含 /api/chat，共 6 条）、`routes/websocket.ts`（`setupWebSocket`，~400 行）
+  迁出；订阅集合与广播函数由 index.ts 创建注入（多模块共享同一实例）
+- **P1-1 第六批（bootstrap）**：新增 `bootstrap.ts` 承接五块初始化装配
+  （模型目录后台初始化 / `createWsHub` / `createAutomationSystem` / `createIMManagerFor` /
+  `applySecurityMiddleware`），`index.ts` 785 → **389 行**；中间件栈按职责二次拆出
+  `middleware/securityStack.ts`
+- **P1-5 数据库迁移机制**：新增 `core/src/db/DatabaseMigrator.ts`（`PRAGMA user_version` 版本戳 +
+  事务化 + fail-fast + 断点续跑 + 测试 mock 环境自动跳过）；sessions.db（v1 幂等基线 +
+  v2 性能索引）与 langgraph-checkpoints.db（v1 基线）已接入。
+  **新增迁移只追加不改历史，基线必须幂等**（`docs/72`）
+- **P1-6 全局错误中间件**：`middleware/errorHandler.ts` —— /api/* 统一
+  `{ success:false, error:{ code, message } }`；堆栈只进日志不进响应；headersSent 防护；
+  新增 `asyncHandler()`（Express 4 不捕获 async 路由 rejection，新代码必须包裹）（`docs/73`）
+- **P1-6 CI 冒烟**：`scripts/smoke-test.mjs`（`pnpm smoke`）+ ci.yml `smoke-test` job ——
+  tests 全绿后构建 core+server 并真实启动，探测 /api/health 与 /api/sessions 全链路
+- **语义路由缓存**：`/api/semantic/map|search|references` 增加 60s 路由层缓存
+  （此前每次请求都同步全仓扫描），生产 UI 重复请求不再全量重扫
+
+### Fixed
+
+- **偶发超时根因修复**：`/api/semantic/map` 两个测试用例反复 15s 超时 —— 根因是
+  路由绕过缓存每请求全仓同步扫描（常态 1~3s vs 15s 预算余量仅 5~15 倍），
+  收官期"构建+探针+复验"连环负载让全部测试慢 ~1.8 倍后首先击穿。
+  修复 = 路由层缓存 + 用例超时放宽 30s；教训与根因链记录于 `docs/66` §5.5
+- 搬迁残留死导入清理 12 个（`relative`/`basename`/`AgentInstance`/`writeFileSync`/`rmSync`/
+  `CUSTOM_SKILLS_*`/`AgentEngine`/`AdapterFactory`/`getAnalyticsEngine`/`PluginManager` 等）
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 路由快照（93 条双向一致，未动基线） | ✅ |
+| 全量回归 | ✅ **1753 / 1753 通过，0 失败**（+24：迁移器 18 + 错误中间件 6） |
+| `verify:server-routes` | ✅ 6/6 PASS（多轮） |
+| 迁移器专项 + 真实存量库副本验证 | ✅ 数据零丢失，版本 0→2 |
+| 本地冒烟（真实启动） | ✅ health 200 + sessions 200 |
+
+---
+
 ## [0.6.39] - 2026-09-18
 
 > **本版主题：服务端入口拆分（P1-1 第四批·system）** —— `index.ts` 2146 → **1672 行**。

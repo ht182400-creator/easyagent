@@ -22,6 +22,30 @@ jobs:
     name: All Tests
     uses: ./.github/workflows/_test.yml
 
+  # 🔥 冒烟测试（P1-6）— 全部单测通过后，构建 core+server 并真实启动：
+  #    /api/health 200 + /api/sessions JSON（覆盖 SessionManager + SQLite + 迁移全链路）。
+  #    单测验证不了"能构建出可启动的服务端"，这一步补上运行时盲区。
+  smoke-test:
+    name: Smoke Test
+    needs: tests
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build core + server
+        run: |
+          cd packages/core && npx tsup
+          cd ../server && npx tsup
+      - name: Run smoke test
+        run: node scripts/smoke-test.mjs
+
   # 🔴 管线数据自动同步 — 所有测试通过后自动更新管线文件
   sync-pipeline:
     name: Sync Pipeline Data

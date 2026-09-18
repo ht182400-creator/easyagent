@@ -1,4 +1,4 @@
-# EasyAgent - AI编程助手 v0.4.0 (Gemini)
+# EasyAgent - AI编程助手 v0.6.40
 
 > 集成中国主流大模型的全功能AI编程助手  
 > 融合 WorkBuddy 设计风格 + 国产模型适配  
@@ -71,7 +71,9 @@
 - **Skills/Plugins 系统**: 插件生命周期管理 + 6 内置技能 (code-review/test/debug/refactor/explain/doc)
 - **MCP 协议**: JSON-RPC over stdio，多 MCP Server 管理
 - **i18n 国际化**: zh-CN / en-US 双语支持
-- **会话持久化**: SQLite 本地存储，完整对话历史，WAL 模式
+- **会话持久化**: SQLite 本地存储，完整对话历史，WAL 模式；**schema 迁移机制**（`PRAGMA user_version` 版本戳 + 事务化迁移，升级不丢数据）
+- **API 安全**: REST 鉴权（回环免鉴权 / 非回环强制令牌）+ 请求限流 + 默认仅监听 127.0.0.1 + 全局错误处理（统一错误响应格式）
+- **CI 冒烟测试**: 单测全绿后真实启动服务端，/api/health 与 /api/sessions 全链路探测（`pnpm smoke`）
 - **API密钥加密**: AES-256-GCM 加密存储
 - **Token统计**: 精确使用量追踪和预算控制
 - **流式输出**: WebSocket + SSE 实时响应

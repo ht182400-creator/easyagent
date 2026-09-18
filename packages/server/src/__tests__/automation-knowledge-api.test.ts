@@ -292,11 +292,14 @@ describe('Semantic Analysis', () => {
     expect(typeof res.body).toBe('object');
   });
 
+  // ⚠️ 以下两个用例触发 buildSemanticMap（同步全仓扫描，常态 1~3s）。
+  // 机器繁忙时（vitest 并行 worker / Defender 扫描新构建产物）可能慢 5~10 倍，
+  // 默认 15s 会假失败（2026-09-18 收官复验 b/c 实测），故放宽到 30s。
   it('GET /api/semantic/map 返回语义地图（需要 path 参数）', async () => {
     // 不带 path 可能返回错误或空结果
     const res = await request(app).get('/api/semantic/map');
     expect([200, 400, 500]).toContain(res.status);
-  });
+  }, 30_000);
 
   it('GET /api/semantic/map 带 path 参数返回地图数据', async () => {
     const res = await request(app).get('/api/semantic/map').query({ path: 'packages' });
@@ -304,5 +307,5 @@ describe('Semantic Analysis', () => {
     if (res.body.nodes) {
       expect(Array.isArray(res.body.nodes)).toBe(true);
     }
-  });
+  }, 30_000);
 });

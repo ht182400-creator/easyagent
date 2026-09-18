@@ -17,7 +17,9 @@ import type { Checkpoint, CheckpointTuple, CheckpointMetadata } from '@langchain
 import type { RunnableConfig } from '@langchain/core/runnables';
 import path from 'path';
 import fs from 'fs';
+import { DatabaseMigrator } from '@easyagent/core';
 import { Logger } from '../logger/Logger';
+import { CHECKPOINTER_MIGRATIONS } from './checkpointerMigrations';
 
 /** Checkpointer 模块 Logger */
 const log = new Logger('Checkpointer');
@@ -97,37 +99,16 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
 
   /**
    * 初始化数据库表结构
+   *
+   * P1-5：建表语句已迁入迁移清单（PRAGMA user_version 版本戳），
+   * 存量库（旧代码创建、user_version=0）由基线迁移幂等兼容。
+   * 迁移失败向上抛出 —— checkpoint 数据不完整比启动失败更危险。
    */
   private initTables(): void {
-    this.db.exec(`
-      -- 检查点主表：存储每次 SuperStep 后的完整 State
-      CREATE TABLE IF NOT EXISTS checkpoints (
-        thread_id TEXT NOT NULL,
-        checkpoint_id TEXT NOT NULL,
-        parent_id TEXT,
-        checkpoint TEXT NOT NULL,        -- 完整 State JSON
-        metadata TEXT DEFAULT '{}',       -- { source, step, ... }
-        created_at TEXT DEFAULT (datetime('now')),
-        PRIMARY KEY (thread_id, checkpoint_id)
-      );
-
-      -- 中间写入表：存储未完成的 task 写入
-      CREATE TABLE IF NOT EXISTS writes (
-        thread_id TEXT NOT NULL,
-        checkpoint_id TEXT NOT NULL,
-        task_id TEXT NOT NULL,
-        idx INTEGER NOT NULL DEFAULT 0,
-        channel TEXT NOT NULL,
-        value TEXT NOT NULL,
-        PRIMARY KEY (thread_id, checkpoint_id, task_id, idx)
-      );
-
-      -- 索引优化查询
-      CREATE INDEX IF NOT EXISTS idx_checkpoints_thread 
-        ON checkpoints(thread_id, created_at DESC);
-      CREATE INDEX IF NOT EXISTS idx_writes_thread_checkpoint 
-        ON writes(thread_id, checkpoint_id);
-    `);
+    new DatabaseMigrator(this.db, {
+      name: 'langgraph-checkpoints',
+      migrations: CHECKPOINTER_MIGRATIONS,
+    }).migrate();
   }
 
   // ============ BaseCheckpointSaver 接口实现 ============

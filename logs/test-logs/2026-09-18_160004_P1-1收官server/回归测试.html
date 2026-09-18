@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>EasyAgent 回归测试报告 — 2026-09-18 16:00:11.039</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;
+      --red:#f85149;--green:#3fb950;--amber:#d29922}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:var(--bg);color:var(--fg);
+     font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+h1{font-size:20px;margin:0 0 4px}
+h3{font-size:15px;margin:24px 0 8px}
+.meta{color:var(--dim);font-size:12px;margin-bottom:20px}
+.cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+      padding:12px 18px;min-width:120px}
+.card .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.card .v{font-size:22px;font-weight:600;margin-top:2px}
+.card.bad .v{color:var(--red)}
+.card.good .v{color:var(--green)}
+table{width:100%;border-collapse:collapse;background:var(--card);
+      border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd);font-size:13px}
+th{background:#1c2128;color:var(--dim);font-weight:600}
+tr.fail td{background:rgba(248,81,73,.08)}
+.red{color:var(--red)}.bold{font-weight:700}.ok td:nth-child(3){color:var(--green)}
+.case{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--red);
+      border-radius:6px;padding:10px 14px;margin-bottom:10px}
+.case-title{font-weight:600;margin-bottom:6px}
+pre.msg{margin:0;padding:8px;background:#0b0f14;border-radius:4px;overflow-x:auto;
+        color:#ffa198;font-size:12px;white-space:pre-wrap}
+details{margin-top:12px}summary{cursor:pointer;color:var(--dim)}
+pre.tail{background:#0b0f14;padding:10px;border-radius:6px;overflow-x:auto;
+         font-size:11.5px;color:var(--dim);max-height:320px}
+.foot{margin-top:28px;color:var(--dim);font-size:12px}
+</style></head><body>
+<h1>EasyAgent 回归测试报告</h1>
+<div class="meta">
+  运行时间：2026-09-18 16:00:11.039 ・ 范围：P1-1收官server ・
+  Node：v24.13.0 ・ 提交：a36d274 ・
+  耗时：6.7s ・ 结论：<span class="red bold">❌ 存在失败</span>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="k">用例总数</div><div class="v">215</div></div>
+  <div class="card good"><div class="k">通过</div><div class="v">215</div></div>
+  <div class="card "><div class="k">失败</div><div class="v">0</div></div>
+  <div class="card"><div class="k">跳过</div><div class="v">0</div></div>
+</div>
+
+<table>
+<thead><tr><th>包</th><th>说明</th><th>结果</th><th>用例</th><th>通过</th><th>失败</th><th>跳过</th><th>耗时</th></tr></thead>
+<tbody>
+<tr class="fail">
+  <td>server</td><td>服务端</td>
+  <td>❌ 执行异常</td>
+  <td>215</td><td>215</td>
+  <td class="">0</td>
+  <td>0</td>
+  <td>6.6s</td>
+</tr>
+</tbody></table>
+
+<h3 style="color:var(--green)">✅ 无失败用例</h3>
+
+<h3>各包控制台输出（尾部 120 行）</h3>
+<details><summary>server — 服务端</summary>
+<pre class="tail">
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.0[39m [90mD:/Work_Area/AI/Claude Code  CN/packages/server[39m
+
+ [33m❯[39m src/__tests__/route-inventory.test.ts [2m ([22m[2m0 test[22m[2m)[22m
+ [33m❯[39m src/__tests__/provider-config-api.test.ts [2m ([22m[2m33 tests[22m[2m)[22m[90m 11[2mms[22m[39m
+ [33m❯[39m src/__tests__/automation-knowledge-api.test.ts [2m ([22m[2m33 tests[22m[2m)[22m[90m 12[2mms[22m[39m
+ [33m❯[39m src/__tests__/chat-session-api.test.ts [2m ([22m[2m25 tests[22m[2m)[22m[90m 12[2mms[22m[39m
+ [33m❯[39m src/__tests__/api.test.ts [2m ([22m[2m0 test[22m[2m)[22m
+ [33m❯[39m src/__tests__/static-files.test.ts [2m ([22m[2m0 test[22m[2m)[22m
+ [33m❯[39m src/__tests__/middleware-security.test.ts [2m ([22m[2m18 tests[22m[2m)[22m[90m 19[2mms[22m[39m
+ [33m❯[39m src/__tests__/plugin-market-api.test.ts [2m ([22m[2m18 tests[22m[2m)[22m[90m 21[2mms[22m[39m
+[2026-09-18 16:00:07.931 +0800] [31mERROR[39m (easyagent): [36m⚠️ 危险配置：正在以 0.0.0.0 监听且未设置 EASYAGENT_API_TOKEN，所有 API 将对公网开放（含文件浏览、命令执行、密钥写入）。仅因设置了 EASYAGENT_ALLOW_REMOTE_NO_AUTH=1 而继续启动。[39m
+ [33m❯[39m src/__tests__/websocket.test.ts [2m ([22m[2m0 test[22m[2m)[22m
+[2026-09-18 16:00:08.005 +0800] [33mWARN[39m (easyagent): [36mAPI 鉴权失败[39m
+    ip: &quot;82.156.71.231&quot;
+    path: &quot;/api/secret&quot;
+    hasToken: false
+[2026-09-18 16:00:08.018 +0800] [33mWARN[39m (easyagent): [36mAPI 鉴权失败[39m
+    ip: &quot;82.156.71.231&quot;
+    path: &quot;/api/secret&quot;
+    hasToken: true
+[2026-09-18 16:00:08.067 +0800] [33mWARN[39m (easyagent): [36m拒绝非回环访问：未配置访问令牌[39m
+    ip: &quot;82.156.71.231&quot;
+    path: &quot;/api/secret&quot;
+[2026-09-18 16:00:08.073 +0800] [32mINFO[39m (easyagent): [36m浏览器已通过 ?token= 换取访问 Cookie[39m
+    ip: &quot;82.156.71.231&quot;
+[2026-09-18 16:00:08.081 +0800] [33mWARN[39m (easyagent): [36m浏览器携带的 ?token= 无效[39m
+    ip: &quot;82.156.71.231&quot;
+[2026-09-18 16:00:08.095 +0800] [31mERROR[39m (easyagent): [36mAPI 鉴权中间件异常，已按失败关闭处理[39m
+    stack: &quot;TypeError: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received an instance of Object\n    at Buffer.from (node:buffer:335:9)\n    at safeTokenEqual (D:\Work_Area\AI\Claude Code  CN\packages\server\src\middleware\apiSecurity.ts:140:23)\n    at apiAuth (D:\Work_Area\AI\Claude Code  CN\packages\server\src\middleware\apiSecurity.ts:384:23)\n    at Layer.handle [as handle_request] (D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\express@4.22.2\node_modules\express\lib\router\layer.js:95:5)\n    at trim_prefix (D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\express@4.22.2\node_modules\express\lib\router\index.js:328:13)\n    at D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\express@4.22.2\node_modules\express\lib\router\index.js:286:9\n    at router.process_params (D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\express@4.22.2\node_modules\express\lib\router\index.js:346:12)\n    at next (D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\express@4.22.2\node_modules\express\lib\router\index.js:280:10)\n    at D:\Work_Area\AI\Claude Code  CN\packages\server\src\__tests__\api-security.test.ts:53:5\n    at Layer.handle [as handle_request] (D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\express@4.22.2\node_modules\express\lib\router\layer.js:95:5)&quot;
+    error: &quot;The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received an instance of Object&quot;
+[2026-09-18 16:00:08.117 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 3
+    max: 2
+[2026-09-18 16:00:08.130 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 2
+    max: 1
+[2026-09-18 16:00:08.152 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 2
+    max: 1
+[2026-09-18 16:00:08.265 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 6
+    max: 5
+[2026-09-18 16:00:08.266 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 7
+    max: 5
+[2026-09-18 16:00:08.266 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 8
+    max: 5
+[2026-09-18 16:00:08.267 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 9
+    max: 5
+[2026-09-18 16:00:08.267 +0800] [33mWARN[39m (easyagent): [36m触发限流，已拒绝请求[39m
+    ip: &quot;9.9.9.9&quot;
+    path: &quot;/api/data&quot;
+    count: 10
+    max: 5
+ [32m✓[39m src/__tests__/api-security.test.ts [2m ([22m[2m43 tests[22m[2m)[22m[33m 366[2mms[22m[39m
+ [32m✓[39m src/__tests__/langgraph-engine.test.ts [2m ([22m[2m13 tests[22m[2m)[22m[90m 13[2mms[22m[39m
+ [32m✓[39m src/__tests__/plugin-market-service.test.ts [2m ([22m[2m32 tests[22m[2m)[22m[33m 462[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m9 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m88 passed[39m[22m[90m (215)[39m
+[2m   Start at [22m 16:00:05
+[2m   Duration [22m 4.95s[2m (transform 1.38s, setup 0ms, collect 5.61s, tests 916ms, environment 3ms, prepare 4.38s)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-server.json
+</pre></details>
+
+<div class="foot">由 <code>scripts/run-tests-log.mjs</code> 生成 ・ 原始输出见同目录 <code>raw/</code></div>
+</body></html>

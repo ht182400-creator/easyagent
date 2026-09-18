@@ -1,9 +1,9 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.38",
-    "codename": "服务端拆分第三批",
-    "lastUpdated": "2026-09-18T06:52:38.132Z",
+    "version": "0.6.39",
+    "codename": "服务端拆分第四批system",
+    "lastUpdated": "2026-09-18T07:12:54.174Z",
     "engine": "auto-detected",
     "totalTests": 1718,
     "modelsSupported": 4

@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789714196242.0742,
-      "size": 37564
+      "mtimeMs": 1789715351202.282,
+      "size": 39002
     },
     "MEMORY.md": {
-      "mtimeMs": 1789714215737.8525,
-      "size": 44453
+      "mtimeMs": 1789715368431.7988,
+      "size": 45103
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11308,10 +11308,21 @@
           "f14",
           "b3b"
         ]
+      },
+      {
+        "moduleId": "b2e",
+        "date": "2026-09-18",
+        "title": "[P1-1:重构] 服务端入口拆分第四批（system 部分）：2146 → 1672 行（累计 -",
+        "problem": "[P1-1:重构] 服务端入口拆分第四批（system 部分）：2146 → 1672 行（累计 -56%）",
+        "solution": "`routes/system.ts` 承接 9 条路由（health/version/status/open-panel + token-usage + 北极星×3）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "b2e"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-18T06:52:38.457Z"
+  "generatedAt": "2026-09-18T07:12:54.506Z"
 }

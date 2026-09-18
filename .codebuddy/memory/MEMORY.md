@@ -30,7 +30,9 @@
 | 附加 | web 构建解锁（原 `tsc` 11 个错误导致 `deploy-server.ps1` 整体失效） | `packages/web/tsconfig.json` |
 | 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
-| **P1-1 服务端拆分** | **第一~四批(system)完成：`index.ts` 3827 → 1672 行（-2155，-56%）**。已外移 10 组路由。剩余：langgraph(9) / sessions+chat(6) / websocket(~400 行，与 chat 强耦合最后做) | `packages/server/src/routes/`、`docs/66` |
+| **P1-5 数据库迁移** | **已完成**：`DatabaseMigrator`（`PRAGMA user_version` 版本戳 + 事务化 + fail-fast + mock 环境自动跳过）；sessions.db（v1 基线 + v2 索引）与 langgraph-checkpoints.db 已接入；真实存量库副本验证数据零丢失。**新增迁移只追加不改历史，基线必须幂等** | `core/src/db/`、`langgraph/src/memory/checkpointerMigrations.ts`、`docs/72` |
+| **P1-6 错误中间件 + CI 冒烟** | **已完成（收尾）**：`errorHandler`（/api/* 统一 `{success:false,error:{code,message}}`，堆栈只进日志，headersSent 防护）+ `asyncHandler`（**Express 4 不捕获 async 路由 rejection，async 路由必须包裹**）+ `scripts/smoke-test.mjs` + ci.yml `smoke-test` job（真实启动→health→sessions）；命令 `pnpm smoke` | `server/src/middleware/errorHandler.ts`、`scripts/smoke-test.mjs`、`docs/73` |
+| **P1-1 服务端拆分** | **✅ 六批全部完成（2026-09-18）：`index.ts` 3827 → 389 行（-89.8%），达成 ≤500 目标**。第六批抽 `bootstrap.ts`（模型目录初始化 / createWsHub / createAutomationSystem / createIMManagerFor / applySecurityMiddleware）。全量回归 1729/1729 | `packages/server/src/routes/`、`bootstrap.ts`、`docs/66` |
 
 ### 🔧 纯搬迁后的死导入核查（linter 不管这个）
 
@@ -62,36 +64,36 @@
 - **语言服务器不报 TDZ**（静态上完全合法）——又一个"编译通过 ≠ 运行正确"的实证
 - 解法：把被引用的 `const` 定义**上移**到注册点之前（函数声明有提升无需动）
 - 判别法：搬迁前先问"这段代码引用了哪些定义在**后面**的 const？"——有就要么上移，要么延迟注入
+
+### ⏳ 偶发超时的系统性根因（2026-09-18 已修复，改这块前必读）
+
+`GET /api/semantic/map` 假失败反复发生的机制 = **无缓存的同步重操作 + 紧超时预算 + 收官期负载尖峰**：
+
+1. `routes/semantic.ts` 的 map/search/references 原先**每次请求都同步全仓扫描**
+   （绕过了 core `SemanticTools` 的 60s 缓存）；常态 1~3s vs vitest 15s 超时，余量仅 5~15 倍
+2. 收官期连环重负载（tsup 重建 + verify:all 启动真实服务器探针 + 复验；实测整套 54s vs 常态 30s）
+   让最重的同步操作首先击穿预算
+
+**已修复**：路由层补 60s 缓存（key=`workspace|depth|maxFiles`，`refresh=true` 强制重建）+
+两个用例超时放宽到 30s。
+**教训**：① 请求处理器内的同步重扫描，超时预算必须按最坏负载（而非常态）设定；
+② 单包复验紧跟全量回归/构建跑出的超时，先复跑再定性。
+（详 `docs/66` §5.5、`docs/修复汇总.md` 2026-09-18 第六批条目）
 | **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
 | **P1-2 思维链支持** | **已完成**：推理模型思考过程解析与展示，`reasoning_content` / `reasoning` 双字段归一化；契约是**正文与思考过程严格分离**（思考不入上下文） | `core/src/adapters/OpenAICompatibleAdapter.ts`、`docs/68` |
 | **校验体系去盲区** | **已完成**：新增 `pnpm verify:all`；全部 `verify-*.mjs` 统一输出 `__VERIFY_STATUS__=PASS\|FAIL\|SKIP` | `scripts/verify-all.mjs` |
 | **模型目录自动化** | **已完成**：目录自动生成 + 多源降级链 + 厂商 `/models` 直连补齐 + 来源可见 | `scripts/refresh-models-catalog.mjs`、`docs/69` |
 
-### 🧩 模型目录：更新通道设计（改这块前必读）
+### 🧩 模型目录（详见 `docs/69`）
 
-**两类数据要分开看 —— 这是连不上 GitHub 时的解题关键**：
+**模型列表**走厂商 `/models` 直连（国内可达、第一手）；**元数据**走目录分发。
+降级链：`自定义URL → 本地文件 → 额外镜像 → GitHub raw → jsDelivr → 本地缓存 → 应用内置`。
+环境变量 `EASYAGENT_MODELS_CATALOG_URL/FILE/MIRRORS`；自建 Forgejo（localhost:3000）可作镜像源。
 
-| 数据类型 | 最佳通道 |
-|---|---|
-| **模型列表**（有哪些模型） | ⭐ **厂商 `/models` 直连**（国内可访问；厂商一发就有第一手数据） |
-| **模型元数据**（价格/上下文/能力） | 目录分发（CI 生成 + 社区维护） |
-
-**降级链**（任一步失败继续下一步）：
-`自定义 URL → 本地文件 → 额外镜像 → GitHub raw → jsDelivr → 本地缓存 → 应用内置`
-
-**环境变量**：`EASYAGENT_MODELS_CATALOG_URL` / `EASYAGENT_MODELS_CATALOG_FILE` /
-`EASYAGENT_MODELS_CATALOG_MIRRORS`（逗号分隔）。本项目有自建 Forgejo（`localhost:3000`），
-可作自主可控镜像源。
-
-**三条铁律**：
-1. **绝不让"连不上"变成"没有模型可选"** —— 所有远程源失败时继续用缓存，只告警、不清空
-2. **只增不删** —— 厂商端点抖动不得导致模型从列表消失
-3. **不假装元数据准确** —— 厂商 `/models` 不返回价格/上下文，自动发现的新模型标 `unverified`，
-   界面必须能区分，不能把保守默认值当真实规格呈现
-
-**排障第一问**：`GET /api/providers/catalog/status` 看 `source`（数据从哪来）与
-`stale`/`ageDays`（多旧）。**下载成功 ≠ 数据新鲜** —— 这是最容易误判的一点。
-目录过期用 `pnpm models:refresh` 重建；`pnpm verify:all` 会检查是否超 30 天。
+**三条铁律**：① 远程源失败只告警不清空（缓存兜底）② 厂商抖动不删模型（只增不删）
+③ 直连发现的新模型标 `unverified`，界面可区分，不把保守默认值当真实规格。
+排障第一问：`GET /api/providers/catalog/status` 看 `source`/`stale`/`ageDays`——**下载成功 ≠ 数据新鲜**。
+目录过期用 `pnpm models:refresh`；`pnpm verify:all` 检查是否超 30 天。
 
 ### ✅ 校验体系的正确用法（v0.6.32 起）
 
@@ -168,6 +170,7 @@
 | **中断的 install 会静默破坏其他包链接** | desktop 包 0 用例，报 `Failed to resolve "@testing-library/jest-dom"`，而前端测试全绿 | 跑**全量** `pnpm install` 修复。**改依赖后必须跑全量回归**——只看改动所在的包会漏掉跨包链接损伤 |
 | **DOMPurify 在 happy-dom 下不可靠** | 连 `<p>`/`<h2>`/`<span class>` 都被整类剥掉（默认配置亦然），多元素时 `<script>` 反而可能存活 → 安全断言会给出**错误结论** | 测试文件加单文件指令 `// @vitest-environment jsdom`。本仓库默认用 happy-dom（v0.6.22 为规避 React 重复实例），但**不渲染 React 的测试文件**可安全切 jsdom |
 | **引用不存在的定义不报错** | `prose prose-invert` 类（未装 `@tailwindcss/typography`）、Tailwind 令牌指向未定义 CSS 变量——都是静默失效 | 用脚本门禁兜底：`verify-css-tokens.mjs`；新引入第三方类名前先确认依赖已安装 |
+| **vitest 别名挡住原生 better-sqlite3** | core 的 vitest 把 `better-sqlite3` 别名到内存 mock（pragma 无感知）→ 依赖真实 SQLite 语义的代码在单测中拿不到 user_version/事务回滚 | 专项测试用 `createRequire(import.meta.url)('better-sqlite3')` **绕过 Vite 别名**加载真模块（P1-5 先例，`DatabaseMigrator.test.ts`）；迁移器对 mock 环境自动跳过（读到版本为 null） |
 
 ### 🛡️ 服务端重构的安全网（改 `server/src/index.ts` 前必读）
 
@@ -255,8 +258,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 
 ### 版本号现状（2026-09-18）
 
-- `version.json` = **0.6.26**，最新 tag = **v0.6.26**（本次发布）
-- ⚠️ CHANGELOG 中的 `0.6.24` / `0.6.25` **从未打 tag**（远端 tag 曾止于 v0.6.23），本版是 v0.6.23 之后的首个实际发布
+- `version.json` = **0.6.40**，tag = **v0.6.40**（本次发布：P1 收官——拆分/bootstrap/P1-5 迁移/P1-6 错误中间件+冒烟）
 - 发版后 post-commit 钩子会再次改写 `docs/pipeline/*.json` → **工作区长期残留这 5~6 个文件的差异属正常生成物行为**，用 `git commit --no-verify` 可收敛一次，但钩子会再跑一轮（不必继续追）
 
 ### 新增/变更的环境变量（服务端）
@@ -295,7 +297,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1718**（模块映射口径，48 个映射文件）；**Vitest 已执行 1729，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1804 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 / 1685 / 1696 / 1699 / 1710 / 1715 / 1726 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1718**（模块映射口径，48 个映射文件）；**Vitest 已执行 1753，全部通过，0 失败**（P1-5 迁移器 +18、P1-6 错误中间件 +6 后）。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 / 1685 / 1696 / 1699 / 1710 / 1715 / 1726 / 1729 / 1747 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 
@@ -307,7 +309,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 | 2 | **日志必分级** | debug=入口/出口/参数；info=状态变更；warn=可恢复；error=不可恢复（带 traceback/堆栈）。禁止裸 `console.log`（.mjs 用 `scripts/lib/logger.mjs`） |
 | 3 | **try-catch 不吞异常** | 文件 I/O / 网络 / 外部进程 / 输入解析必须包；catch 里 `log.error(..., { error, context })`，禁止 `pass` |
 | 4 | **禁止硬编码** | 魔法数字/字符串/路径/超时/阈值 → `UPPER_SNAKE_CASE` 常量（或 `_config`） |
-| 5 | **单文件 ≤500 行** | 超了按职责拆。⚠️ 现存超标：`server/src/index.ts` 3759 行、`docs/pipeline/index.html` 2201 行、8 个前端页面 700~1000 行 |
+| 5 | **单文件 ≤500 行** | 超了按职责拆。⚠️ 现存超标：`docs/pipeline/index.html` 2201 行、8 个前端页面 700~1000 行（`server/src/index.ts` 已拆至 389 行） |
 | 6 | **改签名 → 查所有调用方** | 搜全项目同步更新 |
 | 7 | **不猜 → 先搜** | 先搜官方文档/社区，禁止凭感觉写 |
 | 8 | **收尾更新文档** | `.codebuddy/memory/YYYY-MM-DD.md` + `docs/修复汇总.md` + 相关 `docs/` |
@@ -521,7 +523,7 @@ node --test docs/pipeline/__tests__/pipeline-*.test.mjs
 | 版本源 / 同步 | `version.json`、`scripts/sync-version.mjs` |
 | 核心引擎 | `packages/core/src/agent/AgentEngine.ts`、`packages/core/src/tools/{ToolRegistry,index}.ts` |
 | 模型预设 | `packages/core/src/config/ProviderPresets.ts`、`ModelRegistry.ts` |
-| 服务端 | `packages/server/src/index.ts`（3759 行，待拆）、`packages/server/src/langgraph/` |
+| 服务端 | `packages/server/src/index.ts`（389 行，P1-1 六批完成）、`packages/server/src/routes/`、`packages/server/src/bootstrap.ts` |
 | 前端 | `packages/frontend/src/{App.tsx,pages/*,components/*,stores/*}` |
 | 共享入口 | `packages/frontend/src/mountApp.tsx`（只导出，不自调用） |
 | 桌面 | `packages/desktop/src/main.ts`（1252 行）、`ipcBridge.ts`、`index.html` |

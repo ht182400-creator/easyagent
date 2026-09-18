@@ -92,6 +92,11 @@ export {
 // 会话管理
 export { SessionManager } from './session/SessionManager.js';
 
+// 数据库迁移机制 🆕（P1-5：PRAGMA user_version 版本戳 + 事务化迁移）
+export { DatabaseMigrator, getUserVersion, tableExists, columnExists, addColumnIfMissing } from './db/DatabaseMigrator.js';
+export type { Migration, MigrationResult } from './db/DatabaseMigrator.js';
+export { SESSION_MIGRATIONS } from './db/sessionMigrations.js';
+
 // 配置管理
 export { ConfigManager, getConfigManager } from './config/ConfigManager.js';
 export { PROVIDER_PRESETS } from './config/ProviderPresets.js';

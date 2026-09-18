@@ -5850,6 +5850,13 @@
           "problem": ": 管线仪表盘中 877 个用例显示为 \"❔ N/A\"，用户误以为这些用例未执行 [根因] : 1195（模块注册表代码扫描）vs 318（vitest 离散报告）之间存在计数口径差异。GitHub CI 实际已全部执行通过 (6/6 jobs)，但 vitest 报告格式不产生 1:1 的离散计数",
           "solution": "详见原文",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第四批（system 部分）：2146 → 1672 行（累计 -",
+          "problem": "[P1-1:重构] 服务端入口拆分第四批（system 部分）：2146 → 1672 行（累计 -56%）",
+          "solution": "`routes/system.ts` 承接 9 条路由（health/version/status/open-panel + token-usage + 北极星×3）",
+          "status": "resolved"
         }
       ]
     },
@@ -6109,8 +6116,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 848,
-  "_generatedAt": "2026-09-18T06:52:38.462Z",
+  "_totalIssues": 849,
+  "_generatedAt": "2026-09-18T07:12:54.513Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6141,6 +6148,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-18T06:52:38.484Z"
+    "exportedAt": "2026-09-18T07:12:54.530Z"
   }
 }

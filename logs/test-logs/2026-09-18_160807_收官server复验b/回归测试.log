@@ -1,0 +1,17 @@
+[2026-09-18 16:08:07.282] [INFO ] [test-runner] ==============================================================================
+[2026-09-18 16:08:07.283] [INFO ] [test-runner] EasyAgent 回归测试开始 — 范围: 收官server复验b（server）
+[2026-09-18 16:08:07.283] [INFO ] [test-runner] 时间: 2026-09-18 16:08:07.283  提交: a36d274  Node: v24.13.0
+[2026-09-18 16:08:07.283] [INFO ] [test-runner] 日志目录: D:\Work_Area\AI\Claude Code  CN\logs\test-logs\2026-09-18_160807_收官server复验b
+[2026-09-18 16:08:07.283] [INFO ] [test-runner] ==============================================================================
+[2026-09-18 16:08:07.284] [INFO ] [test-runner] ▶ 开始测试 [server] 服务端 — 工作目录 packages/server
+[2026-09-18 16:08:07.284] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-18 16:09:03.106] [DEBUG] [test-runner] [server] exit=1 耗时=55.8s 用例=265 通过=263 失败=2 跳过=0
+[2026-09-18 16:09:03.106] [ERROR] [test-runner] [server] 存在 2 个失败用例：
+[2026-09-18 16:09:03.107] [ERROR] [test-runner]   ✗ __tests__/automation-knowledge-api.test.ts ::  Semantic Analysis GET /api/semantic/map 返回语义地图（需要 path 参数）
+[2026-09-18 16:09:03.107] [ERROR] [test-runner]   ✗ __tests__/automation-knowledge-api.test.ts ::  Semantic Analysis GET /api/semantic/map 带 path 参数返回地图数据
+[2026-09-18 16:09:03.107] [INFO ] [test-runner] ❌ 结束测试 [server] 耗时 55.8s — 263/265 通过，2 失败
+[2026-09-18 16:09:03.108] [INFO ] [test-runner] ------------------------------------------------------------------------------
+[2026-09-18 16:09:03.108] [INFO ] [test-runner] 汇总: 265 用例 / 263 通过 / 2 失败 / 0 跳过 / 耗时 55.9s
+[2026-09-18 16:09:03.108] [ERROR] [test-runner] server     ❌ 失败  263/265
+[2026-09-18 16:09:03.108] [INFO ] [test-runner] ❌ 结论: 存在失败，请查看下方明细与 HTML 报告
+[2026-09-18 16:09:03.108] [INFO ] [test-runner] ------------------------------------------------------------------------------
