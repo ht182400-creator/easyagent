@@ -18,8 +18,10 @@
  */
 
 export { registerAutomationRoutes, type AutomationRoutesDeps } from './automations.js';
+export { registerConfigRoutes, fetchModelsFromProvider, type ConfigRoutesDeps } from './config.js';
 export { registerFilesRoutes, type FilesRoutesDeps } from './files.js';
 export { registerIMRoutes, type IMRoutesDeps } from './im.js';
+export { registerPluginRoutes, type PluginRoutesDeps } from './plugins.js';
 export { registerKnowledgeRoutes, type KnowledgeRoutesDeps } from './knowledge.js';
 export { registerSandboxRoutes } from './sandbox.js';
 export { registerSemanticRoutes, type SemanticRoutesDeps } from './semantic.js';

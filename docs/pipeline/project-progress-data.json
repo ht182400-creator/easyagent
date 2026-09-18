@@ -1,9 +1,9 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.36",
-    "codename": "元数据诚实性与类名门禁",
-    "lastUpdated": "2026-09-18T05:58:22.811Z",
+    "version": "0.6.37",
+    "codename": "服务端拆分第二批",
+    "lastUpdated": "2026-09-18T06:25:57.068Z",
     "engine": "auto-detected",
     "totalTests": 1718,
     "modelsSupported": 4

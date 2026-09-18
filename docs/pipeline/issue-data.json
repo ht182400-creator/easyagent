@@ -255,6 +255,13 @@
           "problem": ": P1-2 指出「缺 Anthropic / Google 两个 provider」",
           "solution": "详见原文",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
+          "problem": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
+          "solution": "搬迁 IM 适配器(7) / Docker 沙箱(6) / 语义分析(5) / 文件浏览(1) 四组路由到 `routes/`",
+          "status": "resolved"
         }
       ]
     },
@@ -2970,6 +2977,13 @@
           "problem": "插件函数式签名兼容 (23:25-23:30)",
           "solution": "1. **`PluginWorkerEntry.ts:83-95`**：增加 `if (typeof exported === 'function')` 分支；调用 `exported(sandboxContext)` 让函数式插件注册工具/技能/钩子；用 `manifest` 回填 `name/version/description`（函数式插件自身不带元信息） 2. **`PluginSandbox.ts:188-198`**：把 `manifest.{name,version,description,author}` 一并作为 `init` RPC 消息体传给 worker 3. **`PluginWorkerEntry.ts:23-29`**：增加 `PluginMeta` 类型和 `MainMessage` 扩展 4. **`PluginSandbox.ts:122-138`**：workerEntryPath 解析增强 — 优先用同目录 `PluginWorkerEntry.js`（生产），不存在则回退 `<core>/dist/PluginWorkerEntry.js`（vitest 跑 src 时 `_ 5. **删除 `src/plugins/PluginWorkerEntry.js`**（6.25 的历史残留，6.4KB，会被 vitest 错误地加载，掩盖真实新代码）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
+          "problem": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
+          "solution": "搬迁 IM 适配器(7) / Docker 沙箱(6) / 语义分析(5) / 文件浏览(1) 四组路由到 `routes/`",
+          "status": "resolved"
         }
       ]
     },
@@ -3506,6 +3520,13 @@
           "title": "[审核:更正] 纠正审核报告的一处错误结论",
           "problem": ": `docs/62` 称\"存在 30 个孤儿测试\" [根因] : 该结论来自 mtime 停在 2026-06-27 的 `_vitest-desktop.json` 过期快照；重跑 desktop 全量实际 **215/215 全通过**",
           "solution": "已在 `docs/63` §3.1 明确更正；`docs/62` 保留原样存证；教训: 判断测试状态必须重跑，不能只看管线快照",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
+          "problem": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
+          "solution": "搬迁 IM 适配器(7) / Docker 沙箱(6) / 语义分析(5) / 文件浏览(1) 四组路由到 `routes/`",
           "status": "resolved"
         }
       ]
@@ -6060,8 +6081,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 841,
-  "_generatedAt": "2026-09-18T05:58:23.128Z",
+  "_totalIssues": 844,
+  "_generatedAt": "2026-09-18T06:25:57.391Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6092,6 +6113,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-18T05:58:23.146Z"
+    "exportedAt": "2026-09-18T06:25:57.406Z"
   }
 }

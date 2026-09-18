@@ -30,7 +30,7 @@
 | 附加 | web 构建解锁（原 `tsc` 11 个错误导致 `deploy-server.ps1` 整体失效） | `packages/web/tsconfig.json` |
 | 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
-| **P1-1 服务端拆分** | **第一、二批完成：`index.ts` 3827 → 3074 行（-753）**。已外移 7 组路由：knowledge / automations / staticFiles（v0.6.28）+ im / sandbox / semantic / files（v0.6.37）。剩余：plugins 24 + config 12（第三批）、langgraph/sessions/chat/system/websocket（第四批） | `packages/server/src/routes/`、`docs/66` |
+| **P1-1 服务端拆分** | **第一~三批完成：`index.ts` 3827 → 2146 行（-1681，-44%）**。已外移 9 组路由：knowledge / automations / staticFiles（v0.6.28）+ im / sandbox / semantic / files（v0.6.37）+ config / plugins（v0.6.38）。剩余第四批：langgraph / sessions / chat / system / websocket（与 chat 强耦合，最后做） | `packages/server/src/routes/`、`docs/66` |
 
 ### 🔧 纯搬迁后的死导入核查（linter 不管这个）
 
@@ -41,6 +41,17 @@
 **做法**：搬迁完成后写一个临时 `.mjs` 脚本，对每个被搬走的符号做
 `new RegExp('\\b' + name + '\\b','g')` 全文计数 —— 计数 = 1（仅导入行）即死导入。
 **⚠️ 不要用 `node -e` 内联脚本做这事：本环境 shell 会剥引号，正则全部失效、计数恒为 0（假象）。**
+
+### ✂️ 大块删除/搬迁的双重验证（v0.6.38 教训）
+
+块级搬迁（>100 行的删除）用"首个 `{` 配对"脚本时，`Array<{...}>` 类型注解会让
+括号深度**提前归零** → 删除被截断，残留**语法合法但行为错误**的代码
+（如 `return` 裸露在函数外层会提前退出；语言服务器甚至 0 诊断，静默通过！）。
+
+**必须做双重验证，缺一不可**：
+1. **残留核查**：对每个被搬走的符号全文计数（过滤 `//` / `*` 注释行），
+   非注释残留 = 迁移不完整
+2. **路由快照比对**（服务端）或等价的"可证明等价"测试
 | **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
 | **P1-2 思维链支持** | **已完成**：推理模型思考过程解析与展示，`reasoning_content` / `reasoning` 双字段归一化；契约是**正文与思考过程严格分离**（思考不入上下文） | `core/src/adapters/OpenAICompatibleAdapter.ts`、`docs/68` |
 | **校验体系去盲区** | **已完成**：新增 `pnpm verify:all`；全部 `verify-*.mjs` 统一输出 `__VERIFY_STATUS__=PASS\|FAIL\|SKIP` | `scripts/verify-all.mjs` |

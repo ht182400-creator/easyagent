@@ -7,6 +7,40 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.38] - 2026-09-18
+
+> **本版主题：服务端入口拆分（P1-1 第三批）** —— `index.ts` 3074 → **2146 行**。
+> 累计从 3827 行减至 **2146 行（-1681，-44%）**。
+> 进度：`docs/66_P1-1服务端拆分方案与进度.md` §五 + §5.2
+
+### Changed
+
+- **拆分 `packages/server/src/index.ts`（净减 928 行，三批中减幅最大）**：
+  - `routes/config.ts` — 13 条配置/providers 路由，连同模型缓存（TTL 5 分钟）、
+    `fetchModelsFromProvider`、合并逻辑、`DEFAULT_TEMPLATES` 等约 450 行辅助。
+    模块头记录三条关键约定：**逐字段映射陷阱**（新增字段必须三处同改）、
+    `/api/config` GET 白名单脱敏、Anthropic `/v1/models` 的特殊鉴权头
+  - `routes/plugins.ts` — 20 条插件/技能/工具路由，连同自定义技能磁盘存储与
+    `getAllSkillsWithStatus`；模块头记录 `/api/plugins/load` 路径安全检查、
+    installed.json 反查补全 `id`、市场 ↔ PluginManager 接联回调不可遗漏
+- **跨段共享符号的处理**：
+  - `marketService`（全局单例，WebSocket 段共用）→ 创建留在 `index.ts`，deps 注入
+  - `fetchModelsFromProvider`（启动初始化块也消费）→ 提为**模块级导出**，两处共用
+- 清理死导入与孤儿辅助（`BUILTIN_SKILLS` / `getSkillByName` 等）
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 路由快照（比对模式） | ✅ 93 条与基线逐条一致（未动基线） |
+| 服务端全量测试 | ✅ 265 / 265 |
+| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
+| 类型检查（语言服务器） | ✅ 0 诊断 |
+| 构建（tsup） | ✅ 退出码 0 |
+| `pnpm verify:all` | ✅ 8 / 8（含路由顺序运行时探针） |
+
+---
+
 ## [0.6.37] - 2026-09-18
 
 > **本版主题：服务端入口拆分（P1-1 第二批）** —— `index.ts` 3401 → 3074 行，
