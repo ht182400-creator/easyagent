@@ -380,9 +380,21 @@ export function analyzeFile(filePath: string): FileSemanticInfo {
 
 /**
  * 构建完整语义地图
+ *
+ * @param rootPath - 扫描起点
+ * @param maxDepth - 目录扫描深度
+ * @param maxFiles - 最多分析的文件数
+ * @param options.expandToRepoRoot - 是否向上扩展到仓库根（默认 true 保持原行为）；
+ *        显式传入具体目录的调用方（如 REST API 带 path 参数）可传 false，
+ *        避免「查一个子目录却扫描整个 monorepo」的 10s 级等待（压测实测，见 docs/76）
  */
-export function buildSemanticMap(rootPath: string, maxDepth = 8, maxFiles = 500): SemanticMap {
-  const root = findRepoRoot(rootPath);
+export function buildSemanticMap(
+  rootPath: string,
+  maxDepth = 8,
+  maxFiles = 500,
+  options: { expandToRepoRoot?: boolean } = {},
+): SemanticMap {
+  const root = options.expandToRepoRoot === false ? path.resolve(rootPath) : findRepoRoot(rootPath);
   const sourceFiles = collectSourceFiles(root, maxDepth);
   const limitedFiles = sourceFiles.slice(0, maxFiles);
 

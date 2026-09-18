@@ -1,71 +1,253 @@
 /**
- * 语义分析路由（P1-1 第二批拆分产物）
+ * 语义分析路由（P1-1 第二批拆分产物；P2 压测后性能重构）
  *
- * ── ⚠️ 本模块的约定 ──
- *   1. **纯搬迁**：路由路径、方法、处理逻辑与拆分前完全一致（见 v0.6.28 拆分方案）；
- *   2. `projectRoot` 由调用方注入 —— 它取决于 `createApp` 的 `options.projectRoot`
- *      （Desktop 会传入自定义根目录），**不能**在本模块内从 `__dirname` 推导，
- *      否则"拆文件"会改变路径解析（这类 bug 极难定位）；
- *   3. `/api/semantic/file` 有**路径越界检查**（仅允许项目根目录内的文件），
- *      修改时不要破坏（`/api/files/browse` 同理）；
- *   4. 语义分析函数来自 `@easyagent/core`（本地符号索引，非 LSP 服务）。
+ * ── 性能设计（2026-09-18，依据压测 docs/76）──
+ *   buildSemanticMap 是同步 CPU 密集操作（全仓扫描，实测 10s+）。
+ *   三层防护：
+ *   1. **worker_threads**：扫描在长驻 Worker 内执行，主线程事件循环永不被冻结
+ *      （压测实锤：主线程同步扫描会冻结全部并发请求 10s+）；
+ *   2. **SWR 缓存**（stale-while-revalidate）：60s 内命中直接返回；过期时
+ *      **先返回陈旧结果 + 后台重建**（仅首次冷启动需等待 Worker 实际扫描）；
+ *   3. **路径语义修正**：显式 path 参数不再向上扩展到仓库根 ——
+ *      查子目录只扫子目录（此前 packages/server 的请求会被放大到全仓 10s+）。
+ *
+ * ── 与 core 的关系 ──
+ *   扫描逻辑仍来自 @easyagent/core 的 buildSemanticMap/searchSymbol/findReferences，
+ *   在 Worker 内通过动态 import 加载（core dist 为 ESM）。
  *
  * @module routes/semantic
  */
 
 import type { Express } from 'express';
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import {
-  buildSemanticMap,
-  searchSymbol,
-  findReferences,
-  getCodebaseOverview,
-  analyzeFile,
-  resetSemanticCache,
-} from '@easyagent/core';
+import { join, resolve } from 'node:path';
+import { Worker } from 'node:worker_threads';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { resetSemanticCache, getCodebaseOverview, analyzeFile } from '@easyagent/core';
 
-// ===================== 路由层语义地图缓存 =====================
-// 背景：buildSemanticMap 是同步全仓扫描（读文件 + 正则提符号），单次常态 1~3 秒。
-// 此前路由每次请求都直接重建，在机器繁忙时（vitest 并行 worker / Defender 扫描
-// 新构建产物）会被拖慢 5~10 倍，击穿测试 15s 超时（2026-09-18 收官复验 b/c 实测）。
-// core 的 SemanticTools 内部有 60s 缓存但仅限内部工具使用，REST 路由此前绕过了它，
-// 这里按同一策略在路由层补齐（TTL / 参数级 key / refresh 强制重建）。
+// ===================== Worker 宿主（长驻，扫描不冻结主线程） =====================
 
-/** 缓存有效期（毫秒），与 core SemanticTools.CACHE_TTL 一致 */
-const MAP_CACHE_TTL_MS = 60_000;
+/** Worker 单任务超时（毫秒）：全仓扫描实测可达 10s+，给足余量 */
+const WORKER_TIMEOUT_MS = 120_000;
 
-/** 缓存的语义地图（最近一次构建结果） */
-let cachedMap: ReturnType<typeof buildSemanticMap> | null = null;
-/** 缓存 key：workspace|depth|maxFiles 三元组，参数不同不共用 */
+/** Worker 内地图缓存有效期（毫秒）—— 与历史 60s 缓存策略一致 */
+const WORKER_MAP_TTL_MS = 60_000;
+
+/** 生成 Worker 源码（eval 模式：CJS 宿主 + 动态 import ESM 的 core dist） */
+function buildWorkerSource(coreUrl: string): string {
+  return `
+const { parentPort, workerData } = require('node:worker_threads');
+const TTL = ${WORKER_MAP_TTL_MS};
+let cachedMap = null;
 let cachedKey = '';
-/** 缓存写入时间戳 */
 let cachedAt = 0;
 
-/**
- * 取缓存的语义地图，未命中或参数变化时重建
- *
- * @param workspace - 扫描根目录（findRepoRoot 会向上扩展到仓库根）
- * @param maxDepth - 目录扫描深度
- * @param maxFiles - 最多分析的文件数
- * @param force - 为 true 时跳过缓存强制重建（对应 refresh=true）
- */
-function getOrBuildSemanticMap(
-  workspace: string,
-  maxDepth: number,
-  maxFiles: number,
-  force = false,
-): ReturnType<typeof buildSemanticMap> {
-  const key = `${workspace}|${maxDepth}|${maxFiles}`;
+async function getMap(m) {
+  const key = m.workspace + '|' + m.maxDepth + '|' + m.maxFiles + '|' + (m.expandToRepoRoot ? 1 : 0);
   const now = Date.now();
-  if (!force && cachedMap && cachedKey === key && now - cachedAt < MAP_CACHE_TTL_MS) {
-    return cachedMap;
-  }
-  cachedMap = buildSemanticMap(workspace, maxDepth, maxFiles);
+  if (!m.force && cachedMap && cachedKey === key && now - cachedAt < TTL) return cachedMap;
+  const { buildSemanticMap } = await import(workerData.coreUrl);
+  cachedMap = buildSemanticMap(m.workspace, m.maxDepth, m.maxFiles, { expandToRepoRoot: !!m.expandToRepoRoot });
   cachedKey = key;
   cachedAt = now;
   return cachedMap;
 }
+
+parentPort.on('message', async (msg) => {
+  try {
+    let payload;
+    if (msg.task === 'map') {
+      const map = await getMap(msg);
+      const topSymbols = [...map.symbolIndex.entries()]
+        .filter(([, syms]) => syms.length > 1)
+        .sort(([, a], [, b]) => b.length - a.length)
+        .slice(0, 50)
+        .map(([name, syms]) => ({
+          name,
+          count: syms.length,
+          locations: syms.slice(0, 5).map((s) => s.filePath + ':' + s.line),
+        }));
+      payload = {
+        success: true,
+        root: map.root,
+        stats: map.stats,
+        symbolCount: map.symbolIndex.size,
+        topSymbols,
+      };
+    } else if (msg.task === 'search') {
+      const map = await getMap(msg);
+      let results = [...map.symbolIndex.values()].flat().filter((s) =>
+        msg.caseSensitive ? s.name.includes(msg.query) : s.name.toLowerCase().includes(msg.query.toLowerCase()),
+      );
+      if (msg.kind) results = results.filter((s) => s.kind === msg.kind);
+      payload = {
+        success: true,
+        query: msg.query,
+        totalResults: results.length,
+        results: results.slice(0, 100).map((s) => ({
+          name: s.name, kind: s.kind, line: s.line, filePath: s.filePath, signature: s.signature,
+        })),
+      };
+    } else if (msg.task === 'references') {
+      const map = await getMap(msg);
+      const { findReferences } = await import(workerData.coreUrl);
+      const refs = findReferences(map, msg.symbol, msg.workspace);
+      payload = {
+        success: true,
+        symbol: msg.symbol,
+        totalReferences: refs.length,
+        definitions: refs.filter((r) => r.kind === 'definition').length,
+        usages: refs.filter((r) => r.kind === 'reference').length,
+        references: refs.slice(0, 200).map((r) => ({ filePath: r.filePath, line: r.line, kind: r.kind })),
+      };
+    } else {
+      throw new Error('未知任务类型: ' + msg.task);
+    }
+    parentPort.postMessage({ id: msg.id, ok: true, payload });
+  } catch (err) {
+    parentPort.postMessage({ id: msg.id, ok: false, error: err.message });
+  }
+});
+`;
+}
+
+/** 路由 → Worker 的请求消息 */
+interface WorkerTask {
+  task: 'map' | 'search' | 'references';
+  workspace: string;
+  maxDepth: number;
+  maxFiles: number;
+  expandToRepoRoot: boolean;
+  force?: boolean;
+  query?: string;
+  symbol?: string;
+  caseSensitive?: boolean;
+  kind?: string;
+}
+
+/** Worker 宿主单例（懒创建；异常后下次请求自动重建） */
+let worker: Worker | null = null;
+let workerSeq = 0;
+const pendingTasks = new Map<
+  number,
+  { resolve: (payload: unknown) => void; reject: (err: Error) => void; timer: NodeJS.Timeout }
+>();
+
+/**
+ * 解析 core dist 的 file:// URL（Worker 内动态 import 用）
+ *
+ * ⚠️ 不能用 require.resolve('@easyagent/core')：core 的 exports 未暴露入口子路径。
+ * 改为基于本模块位置探测（兼容 dist 打包与 src 测试两种布局）。
+ */
+function resolveCoreUrl(): string {
+  // fileURLToPath 得到本文件真实路径；再向上探测 core/dist/index.js
+  const selfPath = fileURLToPath(import.meta.url);
+  const candidates = [
+    // dist 布局: packages/server/dist/index.js → packages/core/dist/index.js
+    resolve(selfPath, '..', '..', '..', 'core', 'dist', 'index.js'),
+    // src 布局: packages/server/src/routes/semantic.ts → packages/core/dist/index.js
+    resolve(selfPath, '..', '..', '..', '..', 'core', 'dist', 'index.js'),
+  ];
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return pathToFileURL(candidate).href;
+    }
+  }
+  throw new Error('无法定位 @easyagent/core 的 dist 入口（candidates: ' + candidates.join(', ') + '）');
+}
+
+/** 获取（或重建）长驻 Worker */
+function getWorker(): Worker {
+  if (worker) return worker;
+  const w = new Worker(buildWorkerSource(resolveCoreUrl()), {
+    eval: true,
+    workerData: { coreUrl: resolveCoreUrl() },
+  });
+  w.on('message', (msg: { id: number; ok: boolean; payload?: unknown; error?: string }) => {
+    const p = pendingTasks.get(msg.id);
+    if (!p) return;
+    pendingTasks.delete(msg.id);
+    clearTimeout(p.timer);
+    if (msg.ok) p.resolve(msg.payload);
+    else p.reject(new Error(msg.error || 'Worker 任务失败'));
+  });
+  w.on('error', (err) => {
+    // Worker 崩溃：拒绝全部未决任务并丢弃实例（下次请求重建）
+    for (const [, p] of pendingTasks) {
+      clearTimeout(p.timer);
+      p.reject(new Error(`语义 Worker 崩溃: ${err.message}`));
+    }
+    pendingTasks.clear();
+    worker = null;
+  });
+  worker = w;
+  return w;
+}
+
+/**
+ * 向 Worker 提交任务并等待结果（Promise 封装 + 超时）
+ */
+function runWorkerTask(task: WorkerTask): Promise<unknown> {
+  const w = getWorker();
+  const id = ++workerSeq;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      pendingTasks.delete(id);
+      reject(new Error(`语义 Worker 任务超时（${WORKER_TIMEOUT_MS / 1000}s）: ${task.task}`));
+    }, WORKER_TIMEOUT_MS);
+    pendingTasks.set(id, {
+      resolve: (payload) => {
+        clearTimeout(timer);
+        resolve(payload);
+      },
+      reject: (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+      timer,
+    });
+    w.postMessage({ ...task, id });
+  });
+}
+
+// ===================== SWR 缓存（stale-while-revalidate，仅 map 任务） =====================
+
+/** map 结果缓存有效期（毫秒） */
+const MAP_CACHE_TTL_MS = 60_000;
+
+interface CacheEntry {
+  payload: unknown;
+  cachedAt: number;
+}
+const mapCache = new Map<string, CacheEntry>();
+/** 正在后台重建的 key（防重复触发） */
+const rebuilding = new Set<string>();
+
+/** 缓存 key */
+function mapKey(workspace: string, maxDepth: number, maxFiles: number): string {
+  return `${workspace}|${maxDepth}|${maxFiles}`;
+}
+
+/**
+ * 触发后台重建（fire-and-forget：完成后更新缓存，失败仅记日志）
+ *
+ * 内部用 force=true 绕过 Worker 内缓存，确保拿到新数据。
+ */
+function rebuildInBackground(task: WorkerTask, key: string): void {
+  if (rebuilding.has(key)) return;
+  rebuilding.add(key);
+  runWorkerTask({ ...task, force: true })
+    .then((payload) => {
+      mapCache.set(key, { payload, cachedAt: Date.now() });
+    })
+    .catch((err) => {
+      // 后台重建失败：保留陈旧缓存供后续 SWR，不影响已返回的响应
+      console.error(`[semantic] 后台重建失败: ${(err as Error).message}`);
+    })
+    .finally(() => rebuilding.delete(key));
+}
+
+// ===================== 路由注册 =====================
 
 /** 语义分析路由依赖 */
 export interface SemanticRoutesDeps {
@@ -86,42 +268,58 @@ export interface SemanticRoutesDeps {
 export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): void {
   const { projectRoot } = deps;
 
-  /** 获取代码库语义地图 */
+  /** 获取代码库语义地图（Worker 执行 + SWR 缓存，不阻塞事件循环） */
   app.get('/api/semantic/map', (req, res) => {
     try {
-      const workspace = (req.query.path as string) || process.cwd();
+      const explicitPath = req.query.path as string | undefined;
+      const workspace = explicitPath || process.cwd();
       const maxDepth = parseInt(req.query.depth as string) || 6;
       const maxFiles = parseInt(req.query.maxFiles as string) || 300;
       const forceRefresh = req.query.refresh === 'true';
 
+      // 路径语义修正：显式 path 只扫该目录（不再被 findRepoRoot 放大到仓库根）；
+      // 未传 path 时保留"扩展到仓库根"的原默认行为
+      const expandToRepoRoot = !explicitPath;
+
       if (forceRefresh) {
-        // refresh=true 时连带清空 core 工具层缓存，再强制重建路由层缓存
+        // refresh=true 时连带清空 core 工具层缓存
         resetSemanticCache();
       }
 
-      const map = getOrBuildSemanticMap(workspace, maxDepth, maxFiles, forceRefresh);
+      const key = mapKey(workspace, maxDepth, maxFiles);
+      const entry = mapCache.get(key);
 
-      res.json({
-        success: true,
-        root: map.root,
-        stats: map.stats,
-        symbolCount: map.symbolIndex.size,
-        topSymbols: [...map.symbolIndex.entries()]
-          .filter(([, syms]) => syms.length > 1)
-          .sort(([, a], [, b]) => b.length - a.length)
-          .slice(0, 50)
-          .map(([name, syms]) => ({
-            name,
-            count: syms.length,
-            locations: syms.slice(0, 5).map((s) => s.filePath + ':' + s.line),
-          })),
-      });
+      // ── SWR 分派 ──
+      if (entry && Date.now() - entry.cachedAt < MAP_CACHE_TTL_MS) {
+        // 新鲜命中
+        res.json(entry.payload);
+        return;
+      }
+      if (entry && !forceRefresh) {
+        // 过期：先返回陈旧结果，后台静默重建
+        rebuildInBackground(
+          { task: 'map', workspace, maxDepth, maxFiles, expandToRepoRoot },
+          key,
+        );
+        res.json(entry.payload);
+        return;
+      }
+
+      // 冷启动 / 强制刷新：等待 Worker 实际构建（不冻结其他请求）
+      runWorkerTask({ task: 'map', workspace, maxDepth, maxFiles, expandToRepoRoot, force: forceRefresh })
+        .then((payload) => {
+          mapCache.set(key, { payload, cachedAt: Date.now() });
+          res.json(payload);
+        })
+        .catch((err) => {
+          res.status(500).json({ success: false, error: (err as Error).message });
+        });
     } catch (error) {
       res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 
-  /** 搜索符号 */
+  /** 搜索符号（Worker 执行；Worker 内地图缓存复用，避免重复扫描） */
   app.get('/api/semantic/search', (req, res) => {
     try {
       const query = req.query.q as string;
@@ -133,31 +331,24 @@ export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): 
         return res.status(400).json({ error: '缺少 q 参数' });
       }
 
-      // search 与 map 共用路由层缓存（key 含参数，不会串用不同扫描配置的结果）
-      const map = getOrBuildSemanticMap(workspace, 8, 500);
-      let results = searchSymbol(map, query, caseSensitive);
-      if (kind) {
-        results = results.filter((s) => s.kind === kind);
-      }
-
-      res.json({
-        success: true,
+      runWorkerTask({
+        task: 'search',
+        workspace,
+        maxDepth: 8,
+        maxFiles: 500,
+        expandToRepoRoot: !req.query.path,
         query,
-        totalResults: results.length,
-        results: results.slice(0, 100).map((s) => ({
-          name: s.name,
-          kind: s.kind,
-          line: s.line,
-          filePath: s.filePath,
-          signature: s.signature,
-        })),
-      });
+        caseSensitive,
+        kind,
+      })
+        .then((payload) => res.json(payload))
+        .catch((err) => res.status(500).json({ success: false, error: (err as Error).message }));
     } catch (error) {
       res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 
-  /** 查找符号引用 */
+  /** 查找符号引用（Worker 执行） */
   app.get('/api/semantic/references', (req, res) => {
     try {
       const symbol = req.query.symbol as string;
@@ -167,22 +358,16 @@ export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): 
         return res.status(400).json({ error: '缺少 symbol 参数' });
       }
 
-      // references 与 map 共用路由层缓存（key 含参数，不会串用不同扫描配置的结果）
-      const map = getOrBuildSemanticMap(workspace, 8, 500);
-      const refs = findReferences(map, symbol, workspace);
-
-      res.json({
-        success: true,
+      runWorkerTask({
+        task: 'references',
+        workspace,
+        maxDepth: 8,
+        maxFiles: 500,
+        expandToRepoRoot: !req.query.path,
         symbol,
-        totalReferences: refs.length,
-        definitions: refs.filter((r) => r.kind === 'definition').length,
-        usages: refs.filter((r) => r.kind === 'reference').length,
-        references: refs.slice(0, 200).map((r) => ({
-          filePath: r.filePath,
-          line: r.line,
-          kind: r.kind,
-        })),
-      });
+      })
+        .then((payload) => res.json(payload))
+        .catch((err) => res.status(500).json({ success: false, error: (err as Error).message }));
     } catch (error) {
       res.status(500).json({ success: false, error: (error as Error).message });
     }
