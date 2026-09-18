@@ -82,6 +82,37 @@
 **新增校验脚本时必须遵守**：结尾打印 `__VERIFY_STATUS__=PASS|FAIL|SKIP`，
 并在 `verify-all.mjs` 的 `VERIFIERS` 清单里登记（否则不会被汇总到）。
 
+> **只验证"能通过"是不够的**：新增门禁必须做**负向测试**（故意注入一个违规样本，
+> 确认它真的失败）。不做这一步就等于加了一道假的安全网。
+> 已有先例见 `docs/71` §2.4（组件类名门禁的双向验证）。
+
+### ⚠️ 服务端响应字段是「逐字段映射」的（加字段前必读）
+
+`/api/providers` 等接口**不是整对象透传**，而是逐字段重新挑选。因此**新增模型/提供商字段时
+必须同时改三处**，否则字段会在无声无息中丢失：
+
+1. `formatPresetModel()`（服务端 `index.ts`）
+2. `/api/providers` 的 models 映射
+3. `/api/providers/all-models` 的映射
+
+> 实例：v0.6.33 引入的 `unverified` 就在这三处被丢掉，导致 v0.6.36 之前界面一直
+> 把厂商直连发现的模型的**保守默认值当成真实规格**显示（`¥0` 被读成"免费"）。
+
+### 🎨 样式类名：不存在也不会报错（本仓库已复发 3 次）
+
+| 时间 | 现象 |
+|------|------|
+| P0-5 | `tailwind.config.js` 引用未定义的 CSS 变量 |
+| v0.6.29 | `prose prose-invert` 依赖未安装的 `@tailwindcss/typography` |
+| v0.6.36 | `badge-green`(4)/`badge-yellow`(1)/`badge-blue`(1) 均不存在（实有 `badge-success/warning/error/info/neutral`） |
+
+**共同点：写错类名不会报错，只是"看起来有点不对"，肉眼极易放过。**
+
+- 校验命令：`pnpm verify:classes`（已并入 `pnpm verify:all`）
+- **新增组件类家族时必须登记进 `scripts/verify-component-classes.mjs` 的 `COMPONENT_FAMILIES`**，
+  否则该家族不受保护
+- 为何不自动派生前缀：会把 Tailwind 自身命名空间（`overflow-hidden` 等）也纳入校验 → 大量误报
+
 ### 📝 前端 HTML 渲染安全（改任何 `dangerouslySetInnerHTML` 前必读）
 
 **只有一条合法路径**：所有 Markdown 内容（AI 回复 / 知识库 / 插件市场 README）都走
@@ -233,7 +264,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1715**（模块映射口径，48 个映射文件）；**Vitest 已执行 1726，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1801 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 / 1685 / 1696 / 1699 / 1710 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1718**（模块映射口径，48 个映射文件）；**Vitest 已执行 1729，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1804 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 / 1685 / 1696 / 1699 / 1710 / 1715 / 1726 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

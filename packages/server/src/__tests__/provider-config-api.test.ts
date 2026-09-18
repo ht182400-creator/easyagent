@@ -298,3 +298,69 @@ describe('POST /api/tools/:name', () => {
     }
   });
 });
+
+// ==================== 模型「元数据未校准」标记透传 ====================
+//
+// v0.6.33 引入 `unverified`：由「厂商 API 直连」发现的新模型会带上它 ——
+// 厂商 `/models` 只返回模型 ID，不含价格/上下文/能力，那些字段只是**保守默认值**。
+//
+// ⚠️ 服务端在组装响应时是**逐字段重新映射**的（不是整对象透传），
+//    因此极易在后续改动中把该标记悄悄丢掉。一旦丢掉，前端就无从区分，
+//    界面会把 ¥0 当成"免费"、把 32K 当成真实上下文 —— 属于**静默的诚实性回归**。
+//    本用例锁住这条透传链路。
+
+describe('模型 unverified 标记透传', () => {
+  it('🛡️ /api/providers 必须透传 unverified（否则界面会把默认值当真实规格）', async () => {
+    const { PROVIDER_PRESETS } = await import('@easyagent/core');
+    const preset = PROVIDER_PRESETS[0];
+    const model = preset.models[0];
+    const original = model.unverified;
+
+    model.unverified = true;
+    try {
+      const res = await request(app).get('/api/providers');
+      expect(res.status).toBe(200);
+
+      const p = res.body.find((x: { id: string }) => x.id === preset.id);
+      expect(p, `响应中未找到提供商 ${preset.id}`).toBeTruthy();
+      const m = p.models.find((x: { id: string }) => x.id === model.id);
+      expect(m, `响应中未找到模型 ${model.id}`).toBeTruthy();
+      expect(m.unverified).toBe(true);
+    } finally {
+      model.unverified = original;
+    }
+  });
+
+  it('unverified 只应是布尔或未定义（不得是字符串等异常形态）', async () => {
+    const res = await request(app).get('/api/providers');
+    for (const p of res.body) {
+      for (const m of p.models || []) {
+        if (m.unverified !== undefined) {
+          expect(typeof m.unverified, `${p.id}/${m.id} 的 unverified 类型异常`).toBe('boolean');
+        }
+      }
+    }
+  });
+
+  it('/api/providers/all-models 也应透传 unverified（供模型下拉框标注）', async () => {
+    const { PROVIDER_PRESETS } = await import('@easyagent/core');
+    const preset = PROVIDER_PRESETS[0];
+    const model = preset.models[0];
+    const original = model.unverified;
+
+    model.unverified = true;
+    try {
+      const res = await request(app).get('/api/providers/all-models');
+      expect(res.status).toBe(200);
+      const models = Array.isArray(res.body) ? res.body : res.body.models || [];
+      const hit = models.find(
+        (m: { provider: string; modelId: string }) =>
+          m.provider === preset.id && m.modelId === model.id,
+      );
+      expect(hit, '未找到目标模型').toBeTruthy();
+      expect(hit.unverified).toBe(true);
+    } finally {
+      model.unverified = original;
+    }
+  });
+});

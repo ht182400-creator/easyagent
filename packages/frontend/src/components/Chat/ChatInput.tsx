@@ -23,6 +23,14 @@ interface DynamicModel {
   modelName: string;
   supportsTools: boolean;
   supportsVision: boolean;
+  /**
+   * 元数据未校准
+   *
+   * 由「厂商 API 直连」发现的新模型会带上它。此时 `supportsTools` /
+   * `supportsVision` 等字段也只是**保守默认值**，因此下方图标旁需给出提示，
+   * 避免用户按"它支持工具/图像"来做判断。
+   */
+  unverified?: boolean;
 }
 
 /**
@@ -356,6 +364,15 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
                               {m.supportsVision && (
                                 <span className="text-[10px] text-green-500" title="支持图像">
                                   👁
+                                </span>
+                              )}
+                              {/* 未校准：厂商 API 只返回模型 ID，上述能力/规格均为保守默认值 */}
+                              {m.unverified && (
+                                <span
+                                  className="text-[10px] text-amber-500"
+                                  title="元数据未校准：该模型由厂商 API 自动发现，此处的能力与规格为保守默认值，不代表真实情况"
+                                >
+                                  ⚠️
                                 </span>
                               )}
                             </div>

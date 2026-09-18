@@ -100,9 +100,13 @@ export default function Sessions() {
                     <span>
                       Token: {(session.metadata.tokenUsage?.totalTokens || 0).toLocaleString()}
                     </span>
+                    {/* 注意类名：可用的是 badge-success / badge-warning，
+                        历史上的 badge-green / badge-yellow **在 CSS 中并不存在**
+                        → 徽章会无样式裸奔（这一类"引用不存在的定义且不报错"的问题
+                        在本项目已出现多次，改动前请先在 styles/index.css 里搜索确认） */}
                     <span
                       className={`${
-                        session.metadata.status === 'active' ? 'badge-green' : 'badge-yellow'
+                        session.metadata.status === 'active' ? 'badge-success' : 'badge-warning'
                       }`}
                     >
                       {session.metadata.status}

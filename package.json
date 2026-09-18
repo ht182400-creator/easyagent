@@ -1,6 +1,6 @@
 {
   "name": "easyagent",
-  "version": "0.6.35",
+  "version": "0.6.36",
   "description": "AI编程助手 - 集成中国主流大模型的全功能AI Agent",
   "private": true,
   "packageManager": "pnpm@11.7.0",
@@ -34,6 +34,7 @@
     "verify:readme-format": "node scripts/verify-readme-format.mjs",
     "verify:all": "node scripts/verify-all.mjs",
     "verify:catalog-sources": "node scripts/verify-catalog-sources.mjs",
+    "verify:classes": "node scripts/verify-component-classes.mjs",
     "models:refresh": "node scripts/refresh-models-catalog.mjs",
     "models:check": "node scripts/refresh-models-catalog.mjs --check",
     "measure:context": "node scripts/measure-context.mjs",

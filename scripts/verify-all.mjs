@@ -91,6 +91,12 @@ const VERIFIERS = [
     file: 'verify-catalog-sources.mjs',
     note: '需先构建 server；端到端验证自定义目录源生效（连不上 GitHub 时的兜底通道）',
   },
+  {
+    key: 'classes',
+    name: '组件类名一致性',
+    file: 'verify-component-classes.mjs',
+    note: '源码里写的自定义组件类必须真有定义（badge-green 这类错名不会报错、只会静默失效）',
+  },
 ];
 
 /** 子脚本超时保护（毫秒）—— 卡死时不至于挂住整个校验 */

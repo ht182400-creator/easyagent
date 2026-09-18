@@ -1,6 +1,6 @@
 {
-  "version": "0.6.35",
-  "codename": "Anthropic 适配器",
+  "version": "0.6.36",
+  "codename": "元数据诚实性与类名门禁",
   "releaseDate": "2026-09-18",
   "electronVersion": "30.0.0",
   "nodeVersion": ">=18.0.0"

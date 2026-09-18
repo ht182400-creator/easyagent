@@ -33,6 +33,15 @@ export interface ModelInfo {
   supportsTools: boolean;
   supportsVision: boolean;
   pricing?: ModelPricing;
+  /**
+   * 元数据未校准
+   *
+   * 由「厂商 API 直连」发现的新模型会带上它（厂商 `/models` 只返回模型 ID，
+   * 不含价格/上下文等元数据，那些字段只是保守默认值）。
+   *
+   * ⚠️ 展示时必须区分，不能把默认值当作真实规格。
+   */
+  unverified?: boolean;
 }
 
 /**

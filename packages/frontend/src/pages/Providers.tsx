@@ -18,8 +18,26 @@ interface Provider {
     supportsTools: boolean;
     supportsVision: boolean;
     pricing?: { input: number; output: number };
+    /** 来自提供商 API 动态获取（非内置预设） */
+    fromDynamic?: boolean;
+    /**
+     * 元数据未校准
+     *
+     * 由「厂商 API 直连」发现的新模型会带上它：厂商 `/models` 通常只返回模型 ID，
+     * 不含价格/上下文等元数据，因此那些字段只是**保守默认值**。
+     *
+     * ⚠️ 界面必须区分呈现，否则用户会把 $0 当成"免费"、把 32K 当成真实上下文。
+     */
+    unverified?: boolean;
   }>;
 }
+
+/**
+ * 「未校准」徽章的说明文案（集中一处，避免多处文案漂移）
+ */
+const UNVERIFIED_HINT =
+  '该模型由厂商 API 自动发现，但厂商未提供价格/上下文等元数据。' +
+  '带 ~ 的数值为保守默认值，不代表真实规格；价格显示「未知」而非 0，避免误导。';
 
 export default function Providers() {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -229,7 +247,7 @@ export default function Providers() {
                 <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
                   可用模型
                   {provider.fromDynamic && (
-                    <span className="badge-green text-[10px] px-1.5 py-0.5">含动态</span>
+                    <span className="badge-success text-[10px] px-1.5 py-0.5">含动态</span>
                   )}
                 </h4>
                 <div className="space-y-2">
@@ -237,38 +255,57 @@ export default function Providers() {
                     <div
                       key={model.id}
                       className={`bg-gray-800 rounded-lg p-3 flex items-center justify-between ${
-                        (model as any).fromDynamic ? 'ring-1 ring-green-500/30' : ''
+                        model.fromDynamic ? 'ring-1 ring-green-500/30' : ''
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <code className="text-sm text-primary-300">{model.id}</code>
                         <span className="text-gray-500">-</span>
                         <span className="text-sm">{model.name}</span>
-                        {(model as any).fromDynamic && (
+                        {model.fromDynamic && (
                           <span
-                            className="badge-green text-[10px] px-1.5 py-0"
-                            title="来自提供商API动态获取"
+                            className="badge-success text-[10px] px-1.5 py-0"
+                            title="来自提供商 API 动态获取"
                           >
                             动态
                           </span>
                         )}
+                        {model.unverified && (
+                          <span
+                            className="badge-warning text-[10px] px-1.5 py-0"
+                            title={UNVERIFIED_HINT}
+                          >
+                            ⚠️ 未校准
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span>{model.maxContextTokens / 1000}K ctx</span>
+                        {/* 未校准时用 ~ 明确标出这是默认值，而不是实测规格 */}
+                        <span title={model.unverified ? '保守默认值，非真实规格' : undefined}>
+                          {model.unverified ? '~' : ''}
+                          {model.maxContextTokens / 1000}K ctx
+                        </span>
                         {model.supportsTools && (
-                          <span className="badge-blue" title="支持工具调用">
+                          <span className="badge-info" title="支持工具调用">
                             🛠️
                           </span>
                         )}
                         {model.supportsVision && (
-                          <span className="badge-green" title="支持图像">
+                          <span className="badge-success" title="支持图像">
                             👁️
                           </span>
                         )}
-                        {model.pricing && (
-                          <span title="价格/百万token">
-                            ¥{model.pricing.input}/¥{model.pricing.output}
+                        {model.unverified ? (
+                          /* 未校准时刻意**不显示** ¥0/¥0 —— 那会被读成"免费"，属于主动误导 */
+                          <span className="text-gray-600" title={UNVERIFIED_HINT}>
+                            价格未知
                           </span>
+                        ) : (
+                          model.pricing && (
+                            <span title="价格/百万token">
+                              ¥{model.pricing.input}/¥{model.pricing.output}
+                            </span>
+                          )
                         )}
                       </div>
                     </div>

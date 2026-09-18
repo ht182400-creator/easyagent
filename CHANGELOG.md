@@ -7,6 +7,72 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.36] - 2026-09-18
+
+> **本版主题：元数据诚实性 + 堵住复发三次的组件类名静默失效**
+> 详见 `docs/71_元数据诚实性与组件类名门禁.md`
+
+### 背景
+
+v0.6.33 引入 `unverified`（由「厂商 API 直连」发现的新模型，元数据只是保守默认值）后，
+**界面从未呈现该标记** —— 等于默认把默认值当真实规格显示。补 UI 时核实类名，
+又发现 **6 处徽章类名在 CSS 中根本不存在**。
+
+### Security / 正确性
+
+- **`unverified` 全链路打通**（此前在服务端边界被静默丢弃）
+  - 服务端响应是**逐字段重新映射**的：`formatPresetModel` / `/api/providers` /
+    `/api/providers/all-models` 三处补透传；core 的 `ModelInfo` 显式声明该字段
+  - 前端 `Providers.tsx` + `ChatInput.tsx`：
+    - 徽章 `⚠️ 未校准`（`badge-warning`），悬停给出完整解释
+    - 上下文显示 `~32K ctx`，`~` 明确标出这是默认值
+    - **价格不再显示 `¥0/¥0`，改为「价格未知」** —— 那个会被用户读成"免费"，属主动误导
+    - 能力图标旁附 `⚠️`（能力字段同样未校准）
+- **修复 6 处不存在的组件类名**：`badge-green`(4) / `badge-yellow`(1) / `badge-blue`(1)
+  → `badge-success` / `badge-warning` / `badge-info`。这些徽章此前一直**无样式裸奔**
+
+### Added
+
+- **`scripts/verify-component-classes.mjs`**（`pnpm verify:classes`）—— 组件类名一致性门禁
+  - 解析 CSS 已定义类名 → 扫描源码 `className` 字面量 → 报出「被使用但未定义」
+  - **用显式家族列表而非自动派生前缀**：自动派生会把 Tailwind 自身命名空间
+    （`overflow-hidden` 等）也纳入校验，产生大量误报
+  - 已登记进 `verify:all`（现 **8 项**）
+- 服务端测试 3 条：`/api/providers` 透传 / 类型校验 / `/api/providers/all-models` 透传
+
+### Changed
+
+- 前端 `ModelInfo`（`providerStore`）与 `Providers.tsx` 内联类型补 `fromDynamic` / `unverified`
+  （顺带去掉 `(model as any)` 强转）
+- 测试基线刷新：定义用例 **1718** / Vitest 已执行 **1729 全部通过** / Node **75** / 合计 **1804**
+
+### 门禁做了双向验证
+
+只验证「能通过」是不够的，必须证明它**真的能失败**：
+
+| 验证 | 结果 |
+|------|------|
+| 正常运行 | ✅ 46 个已定义类 / 91 个源码文件 / 18 个组件类 → 零未定义 |
+| **负向测试** | ✅ 注入含 `badge-green`、`btn-outline-primary` 的临时文件 → **精准抓到 2 个** + 文件位置，退出码 1 |
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 服务端测试 | ✅ 33 / 33（+3） |
+| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
+| `pnpm verify:all` | ✅ **8 / 8** |
+| 类型检查（语言服务器） | ✅ 0 诊断 |
+| 构建 core / server / web | ✅ 全部退出码 0 |
+
+### 沉淀的约定
+
+1. **服务端响应是逐字段映射的** → 新增字段必须同时改三处，否则静默丢失
+2. **不知道就显示「不知道」** → 默认值须用 `~` / `未知` 区分，不得伪装成实测值
+3. **引用样式类名前先确认存在** → 新家族登记进 `COMPONENT_FAMILIES`；校验用 `pnpm verify:classes`
+
+---
+
 ## [0.6.35] - 2026-09-18
 
 > **本版主题：实现 AnthropicAdapter** —— provider 覆盖收尾（P1-2）

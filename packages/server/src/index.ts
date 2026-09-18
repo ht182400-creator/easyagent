@@ -1423,6 +1423,16 @@ export async function createApp(options: CreateAppOptions = {}) {
     supportsTools?: boolean;
     supportsVision?: boolean;
     pricing?: { input: number; output: number };
+    /**
+     * 元数据未校准标记
+     *
+     * 由 ModelRegistry 的「厂商 API 直连」通道发现的新模型会带上它：
+     * 厂商 `/models` 通常只返回模型 ID，不含价格/上下文等元数据，
+     * 因此那些字段只是**保守默认值**。
+     *
+     * ⚠️ 必须透传到前端 —— 否则界面会把 $0、32K 这类默认值当作真实规格展示。
+     */
+    unverified?: boolean;
   }): ModelInfo {
     return {
       id: m.id,
@@ -1432,6 +1442,7 @@ export async function createApp(options: CreateAppOptions = {}) {
       supportsTools: m.supportsTools !== false,
       supportsVision: m.supportsVision || false,
       pricing: m.pricing,
+      unverified: m.unverified,
     };
   }
 
@@ -1509,6 +1520,9 @@ export async function createApp(options: CreateAppOptions = {}) {
             supportsVision: m.supportsVision || false,
             pricing: m.pricing,
             fromDynamic: m.fromDynamic,
+            // 透传「元数据未校准」标记：前端据此区分展示，
+            // 不能把厂商 API 发现时填入的保守默认值当作真实规格呈现
+            unverified: m.unverified,
           })),
         };
       }),
@@ -1593,6 +1607,7 @@ export async function createApp(options: CreateAppOptions = {}) {
         supportsTools: boolean;
         supportsVision: boolean;
         fromDynamic: boolean;
+        unverified?: boolean;
       }> = [];
 
       for (const p of PROVIDER_PRESETS) {
@@ -1606,6 +1621,8 @@ export async function createApp(options: CreateAppOptions = {}) {
             supportsTools: m.supportsTools !== false,
             supportsVision: m.supportsVision || false,
             fromDynamic: m.fromDynamic,
+            // 供模型下拉框标注「未校准」（元数据为保守默认值）
+            unverified: m.unverified,
           });
         }
       }

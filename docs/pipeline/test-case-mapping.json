@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-18T05:40:34.857Z",
+    "generatedAt": "2026-09-18T05:54:57.215Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1715,
+    "totalTestCases": 1718,
     "unmappedCases": 518,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
@@ -123,11 +123,11 @@
     },
     "f8": {
       "moduleId": "f8",
-      "totalCases": 192,
+      "totalCases": 195,
       "subModules": {
         "server": {
           "name": "Web Dashboard v4·服务器",
-          "cases": 100,
+          "cases": 103,
           "files": [
             {
               "path": "packages/server/src/__tests__/api.test.ts",
@@ -139,7 +139,7 @@
             },
             {
               "path": "packages/server/src/__tests__/provider-config-api.test.ts",
-              "cases": 30
+              "cases": 33
             },
             {
               "path": "packages/server/src/__tests__/static-files.test.ts",

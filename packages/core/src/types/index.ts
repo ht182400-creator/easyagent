@@ -173,6 +173,14 @@ export interface ModelInfo {
   supportsTools: boolean;
   /** 是否支持视觉 */
   supportsVision: boolean;
+  /**
+   * 元数据未校准标记（见 {@link ModelConfig.unverified}）
+   *
+   * 由「厂商 API 直连」发现的新模型会带上它：厂商 `/models` 通常只返回模型 ID，
+   * 不含价格/上下文/能力，因此那些字段只是**保守默认值**。
+   * 界面必须据此区分展示，不能当作真实规格。
+   */
+  unverified?: boolean;
   /** 价格(每百万token) */
   pricing?: {
     input: number; // 每百万输入token价格(元)

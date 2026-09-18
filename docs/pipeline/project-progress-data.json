@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.34",
-    "codename": "Google 与适配器路由加固",
-    "lastUpdated": "2026-09-18T05:34:11.922Z",
+    "version": "0.6.35",
+    "codename": "Anthropic 适配器",
+    "lastUpdated": "2026-09-18T05:43:37.925Z",
     "engine": "auto-detected",
-    "totalTests": 1699,
+    "totalTests": 1715,
     "modelsSupported": 4
   },
   "phases": [
