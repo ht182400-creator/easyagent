@@ -2,11 +2,28 @@
  * 预览和媒体工具测试
  * 覆盖 StartServerTool, PreviewURLTool, DiffFilesTool, AskUserTool,
  * ReadImageTool, GenerateImageTool, ScreenshotTool
+ *
+ * ⚠️ 副作用阻断（重要）：PreviewURLTool 内部会 execSync('start "" <url>') 打开系统浏览器。
+ * 此前未 mock，导致每次全量回归都真实弹出 https://example.com/page 浏览器页签。
+ * 测试只应验证「URL 校验 + 打开命令构造」，不应产生真实副作用 —— 故 mock execSync
+ * （spawn 保持真实现，StartServerTool 等不受影响），并在用例中断言命令内容。
  */
-import { describe, it, expect, beforeEach, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterEach, vi } from 'vitest';
+import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
+
+vi.mock('node:child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:child_process')>();
+  const mockExecSync = vi.fn(() => Buffer.from(''));
+  return {
+    ...actual,
+    execSync: mockExecSync,
+    // CJS 互操作兜底
+    default: { ...actual, execSync: mockExecSync },
+  };
+});
 
 function createTestDir(): string {
   const dir = resolve(
@@ -39,19 +56,27 @@ describe('PreviewURLTool - URL预览', () => {
     } catch (_) { /* 测试清理失败不影响结果 */ }
   });
 
-  it('有效HTTP URL应成功', async () => {
+  it('有效HTTP URL应成功（不真开浏览器，仅校验打开命令）', async () => {
     const result = await PreviewURLTool.execute({ url: 'http://localhost:3000' }, ctx(workspace));
     expect(result.success).toBe(true);
     expect(result.content).toContain('localhost:3000');
+    // 副作用断言：execSync 收到的应是打开命令（含 URL），而非真实执行
+    const calls = vi.mocked(execSync).mock.calls as unknown as Array<[string]>;
+    const last = calls[calls.length - 1]?.[0] ?? '';
+    expect(last).toContain('http://localhost:3000');
   });
 
-  it('有效HTTPS URL应成功', async () => {
+  it('有效HTTPS URL应成功（不真开浏览器，仅校验打开命令）', async () => {
     const result = await PreviewURLTool.execute(
       { url: 'https://example.com/page' },
       ctx(workspace),
     );
     expect(result.success).toBe(true);
     expect(result.content).toContain('example.com');
+    const calls = vi.mocked(execSync).mock.calls as unknown as Array<[string]>;
+    const last = calls[calls.length - 1]?.[0] ?? '';
+    // Windows 平台命令形如 start "" "<url>"
+    expect(last).toContain('https://example.com/page');
   });
 
   it('无效URL应返回错误', async () => {
