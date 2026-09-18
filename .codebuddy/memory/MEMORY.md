@@ -310,7 +310,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 | 2 | **日志必分级** | debug=入口/出口/参数；info=状态变更；warn=可恢复；error=不可恢复（带 traceback/堆栈）。禁止裸 `console.log`（.mjs 用 `scripts/lib/logger.mjs`） |
 | 3 | **try-catch 不吞异常** | 文件 I/O / 网络 / 外部进程 / 输入解析必须包；catch 里 `log.error(..., { error, context })`，禁止 `pass` |
 | 4 | **禁止硬编码** | 魔法数字/字符串/路径/超时/阈值 → `UPPER_SNAKE_CASE` 常量（或 `_config`） |
-| 5 | **单文件 ≤500 行** | 超了按职责拆。⚠️ 现存超标：`docs/pipeline/index.html` 2201 行、8 个前端页面 700~1000 行（`server/src/index.ts` 已拆至 389 行） |
+| 5 | **单文件 ≤500 行** | 超了按职责拆。⚠️ 现存超标：`docs/pipeline/index.html` 2201 行、6 个前端页面 664~747 行（**用户 2026-09-18 决策保留不拆**：行数无运行时性能影响，可维护性可接受；仅当某页因迭代膨胀 >1000 行时再按 `pages/<page>/` 范式拆）。`server/src/index.ts` 已拆至 389 行 |
 | 6 | **改签名 → 查所有调用方** | 搜全项目同步更新 |
 | 7 | **不猜 → 先搜** | 先搜官方文档/社区，禁止凭感觉写 |
 | 8 | **收尾更新文档** | `.codebuddy/memory/YYYY-MM-DD.md` + `docs/修复汇总.md` + 相关 `docs/` |
