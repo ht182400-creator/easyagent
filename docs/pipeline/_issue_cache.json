@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789694635303.204,
-      "size": 17504
+      "mtimeMs": 1789695757824.2354,
+      "size": 20198
     },
     "MEMORY.md": {
-      "mtimeMs": 1789694604552.8562,
-      "size": 37808
+      "mtimeMs": 1789695729367.0105,
+      "size": 37956
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11115,10 +11115,21 @@
           "f8",
           "b1a"
         ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-09-18",
+        "title": "[P1-4 续:安全] 消除远程 HTML 信任面：服务端 README 改取原始 Markdown",
+        "problem": ": v0.6.29 把「裸 HTML 无消毒」修成「DOMPurify 事后消毒」，但本质仍是**先引入危险内容再过滤**",
+        "solution": "服务端改 `Accept: application/vnd.github.raw` 取原始 Markdown；前端与聊天共用 `renderMarkdown()`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f8"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-18T01:41:36.194Z"
+  "generatedAt": "2026-09-18T01:59:29.996Z"
 }

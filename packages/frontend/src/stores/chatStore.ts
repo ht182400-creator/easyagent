@@ -47,6 +47,13 @@ export type ChatConnectionState = 'disconnected' | 'connecting' | 'connected' | 
 interface PerSessionState {
   messages: ChatMessage[];
   streamingText: string;
+  /**
+   * 流式「思考过程」（推理模型的思维链）
+   *
+   * 与 `streamingText` 分开存放 —— 思维链是模型自我推导过程，
+   * 混进正文会让用户看到大段"让我想想…不对，应该是…"的碎碎念。
+   */
+  streamingReasoning: string;
   streamingToolInput: string;
   connectionState: ChatConnectionState;
   isGenerating: boolean;
@@ -80,6 +87,10 @@ interface ChatState {
   ) => void;
   setStreamingText: (sessionId: string, text: string) => void;
   appendStreamingText: (sessionId: string, delta: string) => void;
+  /** 覆盖流式思考过程（新一轮开始前清空上一轮的思维链） */
+  setStreamingReasoning: (sessionId: string, text: string) => void;
+  /** 追加流式思考过程（推理模型思维链） */
+  appendStreamingReasoning: (sessionId: string, delta: string) => void;
   setGenerating: (sessionId: string, generating: boolean) => void;
   setConnectionState: (sessionId: string, state: ChatConnectionState) => void;
   setComposerPrefill: (text: string) => void;
@@ -107,6 +118,7 @@ function ensureSession(state: ChatState, sessionId: string): PerSessionState {
     state.sessions[sessionId] = {
       messages: [],
       streamingText: '',
+      streamingReasoning: '',
       streamingToolInput: '',
       connectionState: 'disconnected',
       isGenerating: false,
@@ -189,6 +201,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
       return { sessions: { ...s.sessions, [sessionId]: session } };
     }),
 
+  setStreamingReasoning: (sessionId, text) =>
+    set((s) => {
+      const session = { ...ensureSession(s, sessionId) };
+      session.streamingReasoning = text;
+      return { sessions: { ...s.sessions, [sessionId]: session } };
+    }),
+
+  appendStreamingReasoning: (sessionId, delta) =>
+    set((s) => {
+      const session = { ...ensureSession(s, sessionId) };
+      session.streamingReasoning += delta;
+      return { sessions: { ...s.sessions, [sessionId]: session } };
+    }),
+
   setGenerating: (sessionId, generating) =>
     set((s) => {
       const session = { ...ensureSession(s, sessionId) };
@@ -211,6 +237,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const session = { ...ensureSession(s, sessionId) };
       session.messages = [];
       session.streamingText = '';
+      session.streamingReasoning = '';
       return { sessions: { ...s.sessions, [sessionId]: session } };
     }),
 
@@ -361,6 +388,17 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
   switch (data.type) {
     case 'text_delta': {
       store.appendStreamingText(sessionId, data.delta as string);
+      break;
+    }
+
+    /**
+     * 思考过程增量（推理模型的思维链）
+     *
+     * 与正文分开累积 —— 混进正文会让用户看到模型的自我修正碎碎念，
+     * 直接丢弃又会导致思考期间界面空白、看起来像卡死。
+     */
+    case 'reasoning_delta': {
+      store.appendStreamingReasoning(sessionId, (data.delta as string) || '');
       break;
     }
 

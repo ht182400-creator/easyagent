@@ -104,6 +104,18 @@ export interface ChatResponse {
   id: string;
   model: string;
   content: string;
+  /**
+   * 模型「思考过程」（推理内容）
+   *
+   * 推理模型（DeepSeek-R1 / Qwen3-thinking / GLM-Z1 / o 系列等）会在正式回答前
+   * 先输出一段思维链。各厂商字段名不统一，适配器统一归一化为本字段：
+   *   · `reasoning_content` —— DeepSeek / 通义千问 / 智谱 等
+   *   · `reasoning`         —— OpenAI o 系列 等
+   *
+   * ⚠️ 与 `content` 必须**分开存放**：思考过程混进正式回答会让用户看到一堆
+   *    自我修正的碎碎念，也会污染上下文与知识库。
+   */
+  reasoning?: string;
   /** 工具调用 */
   toolCalls?: ToolCall[];
   /** 停止原因 */
@@ -114,8 +126,10 @@ export interface ChatResponse {
 
 /** 流式聊天块 */
 export interface ChatChunk {
-  /** 增量内容 */
+  /** 增量内容（正文） */
   delta?: string;
+  /** 增量思考过程（见 {@link ChatResponse.reasoning} 的字段名说明） */
+  reasoningDelta?: string;
   /** 增量工具调用 */
   toolCallDelta?: Partial<ToolCall>;
   /** 完成原因(仅最后一个chunk) */

@@ -142,7 +142,15 @@ export class AgentEngine {
     options?: {
       sessionId?: string;
       workspace?: string;
+      /** 正式回答正文的增量回调 */
       onPartialResponse?: (text: string) => void;
+      /**
+       * 思考过程（思维链）的增量回调
+       *
+       * 推理模型（DeepSeek-R1 / Qwen3-thinking / GLM-Z1 / o 系列等）在正式回答前
+       * 会先输出思维链。通过本回调可让界面在思考期间展示进度，而不是一片空白。
+       */
+      onReasoning?: (text: string) => void;
     },
   ): Promise<string> {
     const sessionId = options?.sessionId || `session_${Date.now()}`;
@@ -259,9 +267,14 @@ export class AgentEngine {
 
         let response: ChatResponse;
 
-        if (options?.onPartialResponse) {
+        if (options?.onPartialResponse || options?.onReasoning) {
           // 流式输出
-          response = await this.streamChat(messages, chatOptions, options.onPartialResponse);
+          response = await this.streamChat(
+            messages,
+            chatOptions,
+            options.onPartialResponse ?? (() => {}),
+            options.onReasoning,
+          );
         } else {
           response = await this.adapter.chat(messages, chatOptions);
         }
@@ -397,13 +410,20 @@ export class AgentEngine {
 
   /**
    * 流式聊天(带回调)
+   *
+   * @param onChunk - 正式回答正文的增量回调
+   * @param onReasoningChunk - 思考过程（思维链）的增量回调。
+   *   推理模型会先输出大段思维链再给正式回答；这里与正文**分开**上抛，
+   *   不传则思考内容仅累积到返回值的 `reasoning` 字段（界面会表现为思考期间空白）。
    */
   private async streamChat(
     messages: Message[],
     options: ChatOptions,
     onChunk: (text: string) => void,
+    onReasoningChunk?: (text: string) => void,
   ): Promise<ChatResponse> {
     let fullContent = '';
+    let fullReasoning = '';
     let finalUsage: TokenUsage | undefined;
     let finalFinishReason: ChatResponse['finishReason'] = 'stop';
     let toolCalls: ToolCall[] | undefined;
@@ -415,6 +435,11 @@ export class AgentEngine {
       if (chunk.delta) {
         fullContent += chunk.delta;
         onChunk(chunk.delta);
+      }
+
+      if (chunk.reasoningDelta) {
+        fullReasoning += chunk.reasoningDelta;
+        onReasoningChunk?.(chunk.reasoningDelta);
       }
 
       if (chunk.toolCallDelta) {
@@ -459,6 +484,8 @@ export class AgentEngine {
       id: `chat_${Date.now()}`,
       model: this.adapter.currentModel,
       content: fullContent,
+      // 思考过程单独返回（无内容时不产出该字段，保持与非推理模型一致的响应形状）
+      reasoning: fullReasoning || undefined,
       toolCalls,
       finishReason: finalFinishReason,
       usage: finalUsage,

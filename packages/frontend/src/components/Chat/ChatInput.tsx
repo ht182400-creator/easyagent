@@ -103,6 +103,9 @@ export function ChatInput({ sessionId, placeholder }: ChatInputProps) {
       timestamp: Date.now(),
     });
 
+    // 清空上一轮的思考过程（推理模型思维链），避免与新回复混在一起
+    store.setStreamingReasoning(sessionId, '');
+
     // 通过 WebSocket 发送
     store.sendViaWebSocket({
       type: 'chat',

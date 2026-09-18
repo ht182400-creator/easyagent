@@ -22,6 +22,14 @@ interface OpenAIChatResponse {
     message: {
       role: string;
       content: string | null;
+      /**
+       * 思考过程（推理模型的思维链）。各厂商字段名不统一，
+       * 由 {@link extractReasoning} 统一归一化。
+       *   · DeepSeek / 通义千问 / 智谱 → `reasoning_content`
+       *   · OpenAI o 系列            → `reasoning`
+       */
+      reasoning_content?: string | null;
+      reasoning?: string | null;
       tool_calls?: Array<{
         id: string;
         type: 'function';
@@ -46,6 +54,9 @@ interface OpenAIChatStreamChunk {
     delta: {
       role?: string;
       content?: string;
+      /** 思考过程增量，字段名说明见 {@link OpenAIChatResponse} 的 message 注释 */
+      reasoning_content?: string | null;
+      reasoning?: string | null;
       tool_calls?: Array<{
         index: number;
         id?: string;
@@ -60,6 +71,27 @@ interface OpenAIChatStreamChunk {
     completion_tokens: number;
     total_tokens: number;
   };
+}
+
+/**
+ * 从响应片段中归一化提取「思考过程」文本
+ *
+ * 各厂商字段名不统一，这里统一收敛，避免调用方各自判断：
+ *   · `reasoning_content` —— DeepSeek / 通义千问(Qwen) / 智谱(GLM) 等国产推理模型
+ *   · `reasoning`         —— OpenAI o 系列等
+ *
+ * 只在**有实际内容**时返回字符串，其余情况返回 undefined ——
+ * 这样调用方用 `if (x)` 即可判断，无需再判空串。
+ *
+ * @param source - 响应 message 或流式 delta 对象
+ * @returns 思考过程文本；无内容时 undefined
+ */
+function extractReasoning(source?: {
+  reasoning_content?: string | null;
+  reasoning?: string | null;
+}): string | undefined {
+  const raw = source?.reasoning_content ?? source?.reasoning;
+  return typeof raw === 'string' && raw.length > 0 ? raw : undefined;
 }
 
 /**
@@ -161,6 +193,8 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
         id: data.id,
         model: data.model,
         content: message.content || '',
+        // 思考过程与正文分开返回 —— 混在一起会让用户看到模型的自我修正碎碎念
+        reasoning: extractReasoning(message),
         toolCalls: message.tool_calls?.map((tc) => ({
           id: tc.id,
           type: 'function' as const,
@@ -254,9 +288,20 @@ export class OpenAICompatibleAdapter extends BaseAdapter {
 
             const result: ChatChunk = {};
 
-            // 文本增量
+            // 文本增量（正式回答正文）
             if (delta.content) {
               result.delta = delta.content;
+            }
+
+            // 思考过程增量
+            //
+            // 推理模型会先输出一长串思维链，再输出正式回答。
+            // 若不加区分地当正文处理，用户会看到大段"让我想想…不对，应该是…"的碎碎念；
+            // 若直接丢弃，则在思考期间界面完全空白、看起来像卡死。
+            // 因此单独作为 reasoningDelta 上抛，由上层决定如何展示。
+            const reasoningDelta = extractReasoning(delta);
+            if (reasoningDelta) {
+              result.reasoningDelta = reasoningDelta;
             }
 
             // 工具调用增量

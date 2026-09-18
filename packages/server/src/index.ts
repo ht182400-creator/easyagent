@@ -3206,6 +3206,7 @@ export async function createApp(options: CreateAppOptions = {}) {
               wsAbortControllers.set(ws, abortController);
 
               const startTime = Date.now();
+              let fullReasoning = '';
 
               await agent.run(message, {
                 sessionId: sid,
@@ -3215,6 +3216,18 @@ export async function createApp(options: CreateAppOptions = {}) {
                   chunkCount++;
                   safeSend(ws, {
                     type: 'text_delta',
+                    delta: text,
+                  });
+                },
+                // 思考过程（推理模型的思维链）单独转发
+                //
+                // 为什么不并入 text_delta：思维链是模型的自我推导，混进正文会让用户
+                // 看到大段"让我想想…不对，应该是…"；但直接丢弃又会导致思考期间界面
+                // 完全空白、看起来像卡死。因此用独立消息类型上抛，由前端分栏展示。
+                onReasoning: (text: string) => {
+                  fullReasoning += text;
+                  safeSend(ws, {
+                    type: 'reasoning_delta',
                     delta: text,
                   });
                 },
@@ -3237,7 +3250,16 @@ export async function createApp(options: CreateAppOptions = {}) {
                 logger.warn({ sid, error: (usageErr as Error).message }, '获取 Token 用量失败');
               }
 
-              logger.info({ sid, chunkCount, responseLen: fullResponse.length, durationMs }, 'Agent 执行完成');
+              logger.info(
+                {
+                  sid,
+                  chunkCount,
+                  responseLen: fullResponse.length,
+                  reasoningLen: fullReasoning.length,
+                  durationMs,
+                },
+                'Agent 执行完成',
+              );
               // 发送完成信号，附带本轮耗时
               safeSend(ws, {
                 type: 'text_done',

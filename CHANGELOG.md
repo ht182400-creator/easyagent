@@ -7,6 +7,62 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.31] - 2026-09-18
+
+> **本版主题：推理模型「思考过程」（思维链）支持** —— 思维链与正文严格分离。
+> 方案与实现：`docs/68_推理模型思考过程支持方案.md`
+> 审核依据：`docs/62_专家团最终审核报告.md`（P1-2「推理通道 `reasoning_content` 未解析」）
+
+### Added
+
+- **推理模型的思考过程解析与展示**（四层打通）
+  - 类型：`ChatResponse.reasoning`、`ChatChunk.reasoningDelta`
+  - 适配器：`extractReasoning()` 归一化厂商字段名差异 ——
+    DeepSeek / 通义千问 / 智谱 用 `reasoning_content`，OpenAI o 系列 用 `reasoning`，
+    **两者都支持**（只支持一个会让另一半厂商 silently 失效）
+  - 引擎：`run()` 新增可选 `onReasoning` 回调（不传则行为完全不变）
+  - 服务端：WS 新增 `reasoning_delta` 消息类型（**不并入 `text_delta`**）
+  - 前端：气泡顶部渲染**可折叠**的「思考过程」块，发新消息时清空上一轮
+- **`pnpm verify:readme-format`** —— 直接打真实 GitHub API 校验 README 仍是原始 Markdown
+  （v0.6.30 的约束在服务端配置层，单测用 mock 测不出来；网络不可用时跳过并退出 0）
+- 测试：`core/src/__tests__/openai-reasoning.test.ts` 共 **8 条**
+
+### Changed
+
+- `MessageList` 流式气泡渲染条件由 `if (streamingText)` 改为
+  **`if (streamingText || streamingReasoning)`** ——
+  否则推理模型在思考阶段（正文未到）界面依旧空白，等于没修
+- 测试基线刷新：定义用例 **1669** / Vitest 已执行 **1680 全部通过** / Node **75** / 合计 **1755**
+
+### 设计契约（重要）
+
+```
+content / delta        ← 正式回答，唯一进入上下文与知识库的内容
+reasoning / reasoningDelta ← 思考过程，仅用于展示，不污染上下文
+```
+
+思考过程含大量试错与自我否定：**应当可见**（让用户知道在动）但**不应当入档**。
+思维链按**纯文本**渲染，不进 `dangerouslySetInnerHTML`。
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 推理解析模块测试 | ✅ 8 / 8 |
+| 全量回归 | ✅ **1680 / 1680 通过，0 失败** |
+| 类型检查（语言服务器） | ✅ 0 诊断 |
+| 构建（core / server / web） | ✅ 全部退出码 0 |
+| 真实链路冒烟 | ✅ 服务健康 / README 为 Markdown / 未匹配 API 404 |
+| `verify:readme-format` | ✅ 未回退为 HTML |
+
+### 已知边界
+
+1. 仅 **WS 聊天路径**接通思考过程；HTTP SSE 与自动化任务执行器暂未转发
+2. 思考过程**不持久化**（本轮结束即清空），也不参与后续上下文拼装
+3. P1-2 另两项（provider 预设刷新、缺失 provider 补齐）**尚未动**
+
+---
+
 ## [0.6.30] - 2026-09-18
 
 > **本版主题：消除远程 HTML 信任面** —— 服务端 GitHub README 改取**原始 Markdown**，

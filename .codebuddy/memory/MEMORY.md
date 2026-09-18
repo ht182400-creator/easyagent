@@ -32,6 +32,7 @@
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
 | **P1-1 服务端拆分** | **第一阶段完成：`index.ts` 3827 → 3401 行**（knowledge / automations / staticFiles 三组路由外移） | `packages/server/src/routes/`、`docs/66` |
 | **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
+| **P1-2 思维链支持** | **已完成**：推理模型思考过程解析与展示，`reasoning_content` / `reasoning` 双字段归一化；契约是**正文与思考过程严格分离**（思考不入上下文） | `core/src/adapters/OpenAICompatibleAdapter.ts`、`docs/68` |
 
 ### 📝 前端 HTML 渲染安全（改任何 `dangerouslySetInnerHTML` 前必读）
 
@@ -184,7 +185,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1661**（模块映射口径，48 个映射文件）；**Vitest 已执行 1672，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1747 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1669**（模块映射口径，48 个映射文件）；**Vitest 已执行 1680，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1755 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 

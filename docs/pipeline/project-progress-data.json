@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.29",
-    "codename": "Markdown 加固",
-    "lastUpdated": "2026-09-18T01:26:29.397Z",
+    "version": "0.6.30",
+    "codename": "消除远程 HTML 信任面",
+    "lastUpdated": "2026-09-18T01:44:31.607Z",
     "engine": "auto-detected",
-    "totalTests": 1664,
+    "totalTests": 1661,
     "modelsSupported": 4
   },
   "phases": [
