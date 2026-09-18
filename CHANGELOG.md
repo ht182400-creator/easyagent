@@ -7,6 +7,40 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.37] - 2026-09-18
+
+> **本版主题：服务端入口拆分（P1-1 第二批）** —— `index.ts` 3401 → 3074 行，
+> 累计从 3827 行减至 **3074 行（-753，-20%）**。
+> 进度：`docs/66_P1-1服务端拆分方案与进度.md` §五
+
+### Changed
+
+- **拆分 `packages/server/src/index.ts`（3401 → 3074 行，净减 327 行）**，
+  新增 `packages/server/src/routes/` 四个模块（延续第一批四原则：纯搬迁 /
+  显式依赖注入 / 路径基准由调用方传入 / 顺序约束写两处注释）：
+  - `routes/im.ts` — 7 条 IM 适配器路由（注入 `imManager`，其持有 messageHandler 闭包；
+    模块头注明 `/api/im/config` GET 必须保持敏感字段脱敏）
+  - `routes/sandbox.ts` — 6 条 Docker 沙箱路由（**零注入**：`SandboxManager` 自包含单例随模块迁出）
+  - `routes/semantic.ts` — 5 条语义分析路由（注入 `projectRoot`，路径越界检查的基准）
+  - `routes/files.ts` — 1 条文件浏览路由（注入 `projectRoot`；模块头注明
+    `BROWSEABLE_EXTENSIONS` 白名单只加不删）
+- 清理搬迁后残留的 **12 个死导入**（`SandboxManager` / `checkDockerAvailability` /
+  6 个语义函数 / `AnyIMConfig` / `IMPlatform` / `readdirSync` / `statSync`）——
+  这些符号只剩导入行，语言服务器不报错
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 路由快照（比对模式） | ✅ 5/5，**93 条与基线逐条一致**（未动基线） |
+| 服务端全量测试 | ✅ 265 / 265 |
+| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
+| 类型检查（语言服务器） | ✅ `packages/server/src` 0 诊断 |
+| 构建（tsup） | ✅ 退出码 0 |
+| `pnpm verify:all` | ✅ 8 / 8（含路由顺序运行时探针） |
+
+---
+
 ## [0.6.36] - 2026-09-18
 
 > **本版主题：元数据诚实性 + 堵住复发三次的组件类名静默失效**

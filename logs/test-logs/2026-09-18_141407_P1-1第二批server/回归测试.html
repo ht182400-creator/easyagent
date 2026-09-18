@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>EasyAgent 回归测试报告 — 2026-09-18 14:14:34.352</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;
+      --red:#f85149;--green:#3fb950;--amber:#d29922}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:var(--bg);color:var(--fg);
+     font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+h1{font-size:20px;margin:0 0 4px}
+h3{font-size:15px;margin:24px 0 8px}
+.meta{color:var(--dim);font-size:12px;margin-bottom:20px}
+.cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+      padding:12px 18px;min-width:120px}
+.card .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.card .v{font-size:22px;font-weight:600;margin-top:2px}
+.card.bad .v{color:var(--red)}
+.card.good .v{color:var(--green)}
+table{width:100%;border-collapse:collapse;background:var(--card);
+      border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd);font-size:13px}
+th{background:#1c2128;color:var(--dim);font-weight:600}
+tr.fail td{background:rgba(248,81,73,.08)}
+.red{color:var(--red)}.bold{font-weight:700}.ok td:nth-child(3){color:var(--green)}
+.case{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--red);
+      border-radius:6px;padding:10px 14px;margin-bottom:10px}
+.case-title{font-weight:600;margin-bottom:6px}
+pre.msg{margin:0;padding:8px;background:#0b0f14;border-radius:4px;overflow-x:auto;
+        color:#ffa198;font-size:12px;white-space:pre-wrap}
+details{margin-top:12px}summary{cursor:pointer;color:var(--dim)}
+pre.tail{background:#0b0f14;padding:10px;border-radius:6px;overflow-x:auto;
+         font-size:11.5px;color:var(--dim);max-height:320px}
+.foot{margin-top:28px;color:var(--dim);font-size:12px}
+</style></head><body>
+<h1>EasyAgent 回归测试报告</h1>
+<div class="meta">
+  运行时间：2026-09-18 14:14:34.352 ・ 范围：P1-1第二批server ・
+  Node：v24.13.0 ・ 提交：af97ec1 ・
+  耗时：27.3s ・ 结论：<span class="">✅ 全部通过</span>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="k">用例总数</div><div class="v">265</div></div>
+  <div class="card good"><div class="k">通过</div><div class="v">265</div></div>
+  <div class="card "><div class="k">失败</div><div class="v">0</div></div>
+  <div class="card"><div class="k">跳过</div><div class="v">0</div></div>
+</div>
+
+<table>
+<thead><tr><th>包</th><th>说明</th><th>结果</th><th>用例</th><th>通过</th><th>失败</th><th>跳过</th><th>耗时</th></tr></thead>
+<tbody>
+<tr class="ok">
+  <td>server</td><td>服务端</td>
+  <td>✅ 通过</td>
+  <td>265</td><td>265</td>
+  <td class="">0</td>
+  <td>0</td>
+  <td>27.2s</td>
+</tr>
+</tbody></table>
+
+<h3 style="color:var(--green)">✅ 无失败用例</h3>
+
+<h3>各包控制台输出（尾部 120 行）</h3>
+<details><summary>server — 服务端</summary>
+<pre class="tail">    tool: &quot;git_reflog&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_semantic_map&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_symbol_search&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_find_references&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_overview&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;code_file_structure&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_load&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_run&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_report&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;benchmark_scan&quot;
+[2026-09-18 14:14:12.233 +0800] [32mINFO[39m (easyagent): [36m开始初始化插件系统[39m
+[2026-09-18 14:14:12.236 +0800] [32mINFO[39m (easyagent): [36m自动化管理器已初始化[39m
+    path: &quot;C:\Users\ht182\.easyagent\data\automations.json&quot;
+    interval: 30000
+[2026-09-18 14:14:12.237 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-18 14:14:12.237 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-18 14:14:12.436 +0800] [33mWARN[39m (easyagent): [36mDocker 不可用: Command failed: docker version --format &quot;{{.Server.Version}}&quot;
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+[39m
+[2026-09-18 14:14:12.438 +0800] [32mINFO[39m (easyagent): [36m文档浏览器静态文件已托管[39m
+    path: &quot;C:\Users\ht182\.easyagent\plugins\easyagent-plugin-obsidian-doc-viewer\dist&quot;
+    source: &quot;已安装插件: easyagent-plugin-obsidian-doc-viewer&quot;
+[2026-09-18 14:14:12.439 +0800] [33mWARN[39m (easyagent): [36mDocker 不可用，已降级为本地进程模式[39m
+    reason: &quot;Command failed: docker version --format \&quot;{{.Server.Version}}\&quot;\nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n&quot;
+    fallback: &quot;本地进程 (Windows Windows_NT)&quot;
+[2026-09-18 14:14:12.453 +0800] [33mWARN[39m (easyagent): [36mDocker 不可用，沙箱已降级为本地进程模式[39m
+    version: &quot;本地进程 (Windows Windows_NT)&quot;
+[2026-09-18 14:14:12.454 +0800] [32mINFO[39m (easyagent): [36m加载插件[39m
+    path: &quot;C:\Users\ht182\.easyagent\plugins\easyagent-plugin-obsidian-doc-viewer&quot;
+[2026-09-18 14:14:12.454 +0800] [32mINFO[39m (easyagent): [36m插件加载模式[39m
+    path: &quot;C:\Users\ht182\.easyagent\plugins\easyagent-plugin-obsidian-doc-viewer&quot;
+    mode: &quot;sandbox&quot;
+[2026-09-18 14:14:12.456 +0800] [32mINFO[39m (obsidian-doc-viewer): [36mManifest 验证通过[39m
+    valid: true
+    errors: 0
+[2026-09-18 14:14:12.473 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 14:14:12.479 +0800] [32mINFO[39m (easyagent): [36m模型目录已就绪[39m
+    version: &quot;1.0.1&quot;
+    ageDays: 0.2
+    source: &quot;jsDelivr CDN（缓存）&quot;
+    stale: false
+[2026-09-18 14:14:12.489 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 14:14:12.495 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+[2026-09-18 14:14:12.496 +0800] [32mINFO[39m (easyagent): [36m插件沙箱启动成功[39m
+    plugin: &quot;obsidian-doc-viewer&quot;
+    version: &quot;0.1.0&quot;
+[2026-09-18 14:14:12.498 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 14:14:12.499 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;open-doc-viewer&quot;
+[2026-09-18 14:14:12.500 +0800] [32mINFO[39m (easyagent): [36m沙箱插件工具已注册[39m
+    plugin: &quot;obsidian-doc-viewer&quot;
+    count: 1
+[2026-09-18 14:14:12.501 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+[2026-09-18 14:14:12.501 +0800] [32mINFO[39m (easyagent): [36m插件(沙箱)加载成功[39m
+    plugin: &quot;obsidian-doc-viewer&quot;
+    version: &quot;0.1.0&quot;
+    mode: &quot;sandbox&quot;
+[2026-09-18 14:14:12.501 +0800] [32mINFO[39m (easyagent): [36m插件系统初始化完成[39m
+    count: 1
+[2026-09-18 14:14:12.502 +0800] [32mINFO[39m (easyagent): [36m客户端订阅会话[39m
+    sessionId: &quot;test_session&quot;
+[2026-09-18 14:14:13.015 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 14:14:13.016 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+[2026-09-18 14:14:13.020 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已连接[39m
+    ip: &quot;127.0.0.1&quot;
+    authRequired: false
+[2026-09-18 14:14:13.021 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+ [32m✓[39m src/__tests__/websocket.test.ts [2m ([22m[2m5 tests[22m[2m)[22m[33m 1322[2mms[22m[39m
+[2026-09-18 14:14:13.538 +0800] [32mINFO[39m (easyagent): [36mWebSocket 客户端已断开[39m
+ [32m✓[39m src/__tests__/plugin-market-service.test.ts [2m ([22m[2m32 tests[22m[2m)[22m[33m 4377[2mms[22m[39m
+[2026-09-18 14:14:26.488 +0800] [33mWARN[39m (easyagent): [36m模型目录下载失败(网络错误)[39m
+    url: &quot;https://raw.githubusercontent.com/ht182400-creator/easyagent/main/models-catalog.json&quot;
+    error: &quot;This operation was aborted&quot;
+[2026-09-18 14:14:26.740 +0800] [32mINFO[39m (easyagent): [36m模型目录已缓存到本地[39m
+[2026-09-18 14:14:26.740 +0800] [32mINFO[39m (easyagent): [36m模型目录已更新[39m
+    version: &quot;1.0.2&quot;
+    providers: 12
+    source: &quot;jsDelivr CDN&quot;
+[2026-09-18 14:14:26.741 +0800] [32mINFO[39m (easyagent): [36m配置加载完成[39m
+[2026-09-18 14:14:26.757 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 14:14:26.761 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 14:14:26.765 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 14:14:26.769 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 14:14:26.785 +0800] [32mINFO[39m (easyagent): [36m配置已保存[39m
+[2026-09-18 14:14:26.796 +0800] [33mWARN[39m (easyagent): [36m插件未加载，无法卸载[39m
+    plugin: &quot;nonexistent-plugin&quot;
+[2026-09-18 14:14:26.805 +0800] [32mINFO[39m (easyagent): [36m自定义技能已添加[39m
+    skill: &quot;test-custom-skill-int&quot;
+[2026-09-18 14:14:26.813 +0800] [32mINFO[39m (easyagent): [36m自定义技能已更新[39m
+    skill: &quot;test-custom-skill-int&quot;
+[2026-09-18 14:14:26.817 +0800] [32mINFO[39m (easyagent): [36m自定义技能已删除[39m
+    skill: &quot;test-custom-skill-int&quot;
+ [32m✓[39m src/__tests__/provider-config-api.test.ts [2m ([22m[2m33 tests[22m[2m)[22m[33m 17301[2mms[22m[39m
+ [32m✓[39m src/__tests__/automation-knowledge-api.test.ts [2m ([22m[2m33 tests[22m[2m)[22m[33m 24704[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m265 passed[39m[22m[90m (265)[39m
+[2m   Start at [22m 14:14:08
+[2m   Duration [22m 25.81s[2m (transform 1.50s, setup 1ms, collect 12.23s, tests 56.71s, environment 3ms, prepare 3.96s)[22m
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-server.json
+</pre></details>
+
+<div class="foot">由 <code>scripts/run-tests-log.mjs</code> 生成 ・ 原始输出见同目录 <code>raw/</code></div>
+</body></html>

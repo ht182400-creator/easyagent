@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.35",
-    "codename": "Anthropic 适配器",
-    "lastUpdated": "2026-09-18T05:43:37.925Z",
+    "version": "0.6.36",
+    "codename": "元数据诚实性与类名门禁",
+    "lastUpdated": "2026-09-18T05:58:22.811Z",
     "engine": "auto-detected",
-    "totalTests": 1715,
+    "totalTests": 1718,
     "modelsSupported": 4
   },
   "phases": [

@@ -18,7 +18,11 @@
  */
 
 export { registerAutomationRoutes, type AutomationRoutesDeps } from './automations.js';
+export { registerFilesRoutes, type FilesRoutesDeps } from './files.js';
+export { registerIMRoutes, type IMRoutesDeps } from './im.js';
 export { registerKnowledgeRoutes, type KnowledgeRoutesDeps } from './knowledge.js';
+export { registerSandboxRoutes } from './sandbox.js';
+export { registerSemanticRoutes, type SemanticRoutesDeps } from './semantic.js';
 export {
   registerStaticRoutes,
   resolveDocViewerFallbackDir,

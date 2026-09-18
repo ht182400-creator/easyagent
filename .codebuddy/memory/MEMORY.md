@@ -30,7 +30,17 @@
 | 附加 | web 构建解锁（原 `tsc` 11 个错误导致 `deploy-server.ps1` 整体失效） | `packages/web/tsconfig.json` |
 | 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
-| **P1-1 服务端拆分** | **第一阶段完成：`index.ts` 3827 → 3401 行**（knowledge / automations / staticFiles 三组路由外移） | `packages/server/src/routes/`、`docs/66` |
+| **P1-1 服务端拆分** | **第一、二批完成：`index.ts` 3827 → 3074 行（-753）**。已外移 7 组路由：knowledge / automations / staticFiles（v0.6.28）+ im / sandbox / semantic / files（v0.6.37）。剩余：plugins 24 + config 12（第三批）、langgraph/sessions/chat/system/websocket（第四批） | `packages/server/src/routes/`、`docs/66` |
+
+### 🔧 纯搬迁后的死导入核查（linter 不管这个）
+
+纯搬迁式重构后，源文件会残留**只剩导入行的死导入**（如 v0.6.37 清理的 12 个：
+`SandboxManager` / `checkDockerAvailability` / 6 个语义函数 / `AnyIMConfig` / `IMPlatform` /
+`readdirSync` / `statSync`）。语言服务器**不报错**，靠逐符号计数核查发现。
+
+**做法**：搬迁完成后写一个临时 `.mjs` 脚本，对每个被搬走的符号做
+`new RegExp('\\b' + name + '\\b','g')` 全文计数 —— 计数 = 1（仅导入行）即死导入。
+**⚠️ 不要用 `node -e` 内联脚本做这事：本环境 shell 会剥引号，正则全部失效、计数恒为 0（假象）。**
 | **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
 | **P1-2 思维链支持** | **已完成**：推理模型思考过程解析与展示，`reasoning_content` / `reasoning` 双字段归一化；契约是**正文与思考过程严格分离**（思考不入上下文） | `core/src/adapters/OpenAICompatibleAdapter.ts`、`docs/68` |
 | **校验体系去盲区** | **已完成**：新增 `pnpm verify:all`；全部 `verify-*.mjs` 统一输出 `__VERIFY_STATUS__=PASS\|FAIL\|SKIP` | `scripts/verify-all.mjs` |

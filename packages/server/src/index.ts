@@ -11,8 +11,6 @@ import {
   mkdirSync,
   readFileSync,
   writeFileSync,
-  readdirSync,
-  statSync,
   rmSync,
 } from 'node:fs';
 import { dirname, join, resolve, relative, basename } from 'node:path';
@@ -43,20 +41,12 @@ import {
   BUILTIN_SKILLS,
   getSkillByName,
   IMManager,
-  SandboxManager,
-  checkDockerAvailability,
-  buildSemanticMap,
-  searchSymbol,
-  findReferences,
-  getCodebaseOverview,
-  analyzeFile,
-  resetSemanticCache,
   KnowledgeService,
   AutomationManager,
   logger,
   describeLogTarget,
 } from '@easyagent/core';
-import type { AnyIMConfig, IMPlatform, IMMessage } from '@easyagent/core';
+import type { IMMessage } from '@easyagent/core';
 
 // ========== 插件市场服务 ==========
 import { getPluginMarketService, type MarketPlugin, type InstallJob } from './services/PluginMarketService.js';
@@ -78,7 +68,11 @@ import {
 // 每个 register* 负责一组路由的注册；依赖通过显式对象注入，不依赖闭包。
 import {
   registerAutomationRoutes,
+  registerFilesRoutes,
+  registerIMRoutes,
   registerKnowledgeRoutes,
+  registerSandboxRoutes,
+  registerSemanticRoutes,
   registerStaticRoutes,
   resolveDocViewerFallbackDir,
 } from './routes/index.js';
@@ -2561,471 +2555,23 @@ export async function createApp(options: CreateAppOptions = {}) {
   });
 
   // ========== IM 适配器管理 API ==========
-
-  /** 获取 IM 平台状态 */
-  app.get('/api/im/status', (_req, res) => {
-    res.json(imManager.getStatus());
-  });
-
-  /** 获取 IM 配置列表 */
-  app.get('/api/im/config', (_req, res) => {
-    const configs = imManager.getAllConfigs();
-    // 脱敏处理: 隐藏敏感字段
-    const safe = configs.map((c: AnyIMConfig) => {
-      const copy = { ...c } as Record<string, unknown>;
-      if (copy.botToken) copy.botToken = '••••••••';
-      if (copy.appSecret) copy.appSecret = '••••••••';
-      if (copy.encodingAESKey) copy.encodingAESKey = '••••••••';
-      if (copy.verificationToken) copy.verificationToken = '••••••••';
-      return copy;
-    });
-    res.json(safe);
-  });
-
-  /** 配置/更新 IM 平台 */
-  app.put('/api/im/config', (req, res) => {
-    try {
-      const config = req.body as AnyIMConfig;
-      if (!config.platform || !config.name) {
-        return res.status(400).json({ error: '缺少 platform 或 name 字段' });
-      }
-      imManager.updateConfig(config);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
-
-  /** 启动指定 IM 平台 */
-  app.post('/api/im/:platform/start', async (req, res) => {
-    try {
-      const platform = req.params.platform as IMPlatform;
-      await imManager.startPlatform(platform);
-      res.json({ success: true, platform, status: 'running' });
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
-
-  /** 停止指定 IM 平台 */
-  app.post('/api/im/:platform/stop', async (req, res) => {
-    try {
-      const platform = req.params.platform as IMPlatform;
-      await imManager.stopPlatform(platform);
-      res.json({ success: true, platform, status: 'stopped' });
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
-
-  /** 删除 IM 平台配置 */
-  app.delete('/api/im/:platform', (req, res) => {
-    try {
-      const platform = req.params.platform as IMPlatform;
-      imManager.removeConfig(platform);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
-
-  /** IM Webhook 接收端点 (飞书/微信) */
-  app.all('/api/im/webhook/:platform', async (req, res) => {
-    try {
-      const platform = req.params.platform as IMPlatform;
-      const result = await imManager.handleWebhook(platform, {
-        method: req.method,
-        query: req.query as Record<string, string>,
-        body: req.body,
-      });
-      // 飞书 URL 验证需返回纯文本
-      if (result && typeof result === 'object' && 'challenge' in result) {
-        res.json(result);
-      } else {
-        res.json(result || { success: true });
-      }
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
+  // 【P1-1 拆分】7 条路由的实现已迁至 routes/im.ts，此处仅做注册。
+  // ⚠️ /api/im/config 的 GET 在模块内做了敏感字段脱敏。
+  registerIMRoutes(app, { imManager });
 
   // ========== Docker 沙箱 API 🆕 ==========
-
-  /** 初始化沙箱管理器 */
-  const sandboxManager = SandboxManager.getInstance({
-    maxSandboxes: 10,
-    defaultTimeout: 300000,
-    idleTimeout: 600000,
-  });
-  // 异步初始化 (不阻塞服务启动)
-  sandboxManager.init().then((result) => {
-    if (result.mode === 'docker') {
-      logger.info({ version: result.version }, 'Docker 沙箱系统就绪');
-    } else if (result.mode === 'local') {
-      logger.warn({ version: result.version }, 'Docker 不可用，沙箱已降级为本地进程模式');
-    } else {
-      logger.warn('沙箱功能已禁用');
-    }
-  });
-
-  /** 获取沙箱状态 */
-  app.get('/api/sandbox/status', async (_req, res) => {
-    try {
-      const dockerCheck = await checkDockerAvailability();
-      const overview = sandboxManager.getOverview();
-      res.json({
-        docker: dockerCheck,
-        sandbox: overview,
-        mode: overview.localMode ? 'local' : dockerCheck.available ? 'docker' : 'disabled',
-      });
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
-
-  /** 创建沙箱 */
-  app.post('/api/sandbox', async (req, res) => {
-    try {
-      const { image, workspace, readOnly, allowNetwork, memoryLimit, cpuLimit } = req.body;
-      const sandbox = await sandboxManager.createSandbox({
-        image: image || 'node:20-alpine',
-        workspace: workspace || process.cwd(),
-        readOnly: !!readOnly,
-        allowNetwork: !!allowNetwork,
-        limits: {
-          memory: memoryLimit || '512m',
-          cpuCores: cpuLimit || 0.5,
-          maxPids: 50,
-        },
-      });
-      res.json({ success: true, sandbox: sandbox.getStatus() });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
-
-  /** 在沙箱中执行命令 */
-  app.post('/api/sandbox/:id/exec', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { command, timeout } = req.body;
-      if (!command) {
-        return res.status(400).json({ error: '缺少 command 参数' });
-      }
-      const sandbox = sandboxManager.getSandbox(id);
-      if (!sandbox) {
-        return res.status(404).json({ error: '沙箱不存在或已过期' });
-      }
-      const result = await sandbox.exec(command, timeout || 30000);
-      res.json({ success: result.success, ...result });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
-
-  /** 查看沙箱信息 */
-  app.get('/api/sandbox/:id', (req, res) => {
-    const { id } = req.params;
-    const sandbox = sandboxManager.getSandbox(id);
-    if (!sandbox) {
-      return res.status(404).json({ error: '沙箱不存在或已过期' });
-    }
-    res.json(sandbox.getStatus());
-  });
-
-  /** 销毁沙箱 */
-  app.delete('/api/sandbox/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      await sandboxManager.destroySandbox(id);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
-
-  /** 列出所有沙箱 */
-  app.get('/api/sandbox', (_req, res) => {
-    res.json(sandboxManager.listSandboxes());
-  });
+  // 【P1-1 拆分】6 条路由的实现已迁至 routes/sandbox.ts（含管理器单例创建与异步 init）。
+  registerSandboxRoutes(app);
 
   // ========== 语义分析 API 🆕 ==========
-
-  /** 获取代码库语义地图 */
-  app.get('/api/semantic/map', (req, res) => {
-    try {
-      const workspace = (req.query.path as string) || process.cwd();
-      const maxDepth = parseInt(req.query.depth as string) || 6;
-      const maxFiles = parseInt(req.query.maxFiles as string) || 300;
-      const forceRefresh = req.query.refresh === 'true';
-
-      if (forceRefresh) {
-        resetSemanticCache();
-      }
-
-      const map = buildSemanticMap(workspace, maxDepth, maxFiles);
-
-      res.json({
-        success: true,
-        root: map.root,
-        stats: map.stats,
-        symbolCount: map.symbolIndex.size,
-        topSymbols: [...map.symbolIndex.entries()]
-          .filter(([, syms]) => syms.length > 1)
-          .sort(([, a], [, b]) => b.length - a.length)
-          .slice(0, 50)
-          .map(([name, syms]) => ({
-            name,
-            count: syms.length,
-            locations: syms.slice(0, 5).map((s) => s.filePath + ':' + s.line),
-          })),
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
-
-  /** 搜索符号 */
-  app.get('/api/semantic/search', (req, res) => {
-    try {
-      const query = req.query.q as string;
-      const workspace = (req.query.path as string) || process.cwd();
-      const caseSensitive = req.query.case === 'true';
-      const kind = req.query.kind as string | undefined;
-
-      if (!query) {
-        return res.status(400).json({ error: '缺少 q 参数' });
-      }
-
-      const map = buildSemanticMap(workspace);
-      let results = searchSymbol(map, query, caseSensitive);
-
-      if (kind) {
-        results = results.filter((s) => s.kind === kind);
-      }
-
-      res.json({
-        success: true,
-        query,
-        totalResults: results.length,
-        results: results.slice(0, 100).map((s) => ({
-          name: s.name,
-          kind: s.kind,
-          line: s.line,
-          filePath: s.filePath,
-          signature: s.signature,
-        })),
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
-
-  /** 查找符号引用 */
-  app.get('/api/semantic/references', (req, res) => {
-    try {
-      const symbol = req.query.symbol as string;
-      const workspace = (req.query.path as string) || process.cwd();
-
-      if (!symbol) {
-        return res.status(400).json({ error: '缺少 symbol 参数' });
-      }
-
-      const map = buildSemanticMap(workspace);
-      const refs = findReferences(map, symbol, workspace);
-
-      res.json({
-        success: true,
-        symbol,
-        totalReferences: refs.length,
-        definitions: refs.filter((r) => r.kind === 'definition').length,
-        usages: refs.filter((r) => r.kind === 'reference').length,
-        references: refs.slice(0, 200).map((r) => ({
-          filePath: r.filePath,
-          line: r.line,
-          kind: r.kind,
-        })),
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
-
-  /** 获取代码库概览 */
-  app.get('/api/semantic/overview', (req, res) => {
-    try {
-      const workspace = (req.query.path as string) || process.cwd();
-      const overview = getCodebaseOverview(workspace);
-      res.json({
-        success: true,
-        root: overview.root,
-        stats: overview.stats,
-        fileTree: overview.fileTree,
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
-
-  /** 分析单个文件 */
-  app.get('/api/semantic/file', async (req, res) => {
-    try {
-      const filePath = req.query.path as string;
-      if (!filePath) {
-        return res.status(400).json({ error: '缺少 path 参数' });
-      }
-      // 路径安全检查：确保不越出项目根目录
-      const resolvedPath = resolve(filePath);
-      if (!resolvedPath.startsWith(PROJECT_ROOT)) {
-        return res.status(403).json({ error: '路径越界，仅允许访问项目目录内的文件' });
-      }
-      const { existsSync } = await import('node:fs');
-      if (!existsSync(resolvedPath)) {
-        return res.status(404).json({ error: '文件不存在' });
-      }
-      const info = analyzeFile(resolvedPath);
-      res.json({
-        success: true,
-        filePath: info.filePath,
-        language: info.language,
-        symbols: info.symbols,
-        imports: info.imports,
-        exports: info.exports,
-        lineCount: info.lineCount,
-        size: info.size,
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
+  // 【P1-1 拆分】5 条路由的实现已迁至 routes/semantic.ts。
+  // ⚠️ projectRoot 必须传入：/api/semantic/file 的路径越界检查以此为基准。
+  registerSemanticRoutes(app, { projectRoot: PROJECT_ROOT });
 
   // ========== 文件浏览 API ==========
-
-  /** 可导入的文件扩展名（文本类型） */
-  const BROWSEABLE_EXTENSIONS = new Set([
-    '.md',
-    '.txt',
-    '.json',
-    '.yaml',
-    '.yml',
-    '.toml',
-    '.xml',
-    '.csv',
-    '.tsv',
-    '.js',
-    '.jsx',
-    '.ts',
-    '.tsx',
-    '.mjs',
-    '.cjs',
-    '.py',
-    '.rs',
-    '.go',
-    '.java',
-    '.c',
-    '.cpp',
-    '.h',
-    '.hpp',
-    '.css',
-    '.scss',
-    '.less',
-    '.html',
-    '.htm',
-    '.sh',
-    '.bat',
-    '.ps1',
-    '.env',
-    '.gitignore',
-    '.vue',
-    '.svelte',
-  ]);
-
-  /** 忽略的目录名 */
-  const IGNORED_DIRS = new Set([
-    'node_modules',
-    '.git',
-    '.codebuddy',
-    'dist',
-    '.next',
-    '.nuxt',
-    '__pycache__',
-    '.venv',
-    'venv',
-    'target',
-    '.svn',
-    '.hg',
-    '.easyagent',
-  ]);
-
-  /** 浏览工作区文件 */
-  app.get('/api/files/browse', (req, res) => {
-    try {
-      const relPath = (req.query.path as string) || '';
-      const fullPath = relPath ? resolve(PROJECT_ROOT, relPath) : PROJECT_ROOT;
-
-      // 安全检查：确保不越出工作区
-      if (!fullPath.startsWith(PROJECT_ROOT)) {
-        return res.status(403).json({ success: false, error: '路径越界' });
-      }
-      if (!existsSync(fullPath)) {
-        return res.status(404).json({ success: false, error: `路径不存在: ${relPath}` });
-      }
-
-      const entries = readdirSync(fullPath, { withFileTypes: true });
-      const dirs: { name: string; itemCount: number }[] = [];
-      const files: { name: string; ext: string; size: number; relativePath: string }[] = [];
-
-      for (const entry of entries) {
-        if (entry.name.startsWith('.') || IGNORED_DIRS.has(entry.name)) continue;
-
-        const entryPath = join(fullPath, entry.name);
-        const entryRelPath = relPath ? `${relPath}/${entry.name}` : entry.name;
-
-        if (entry.isDirectory()) {
-          try {
-            const subEntries = readdirSync(entryPath, { withFileTypes: true });
-            const itemCount = subEntries.filter(
-              (e) => !e.name.startsWith('.') && !IGNORED_DIRS.has(e.name),
-            ).length;
-            dirs.push({ name: entry.name, itemCount });
-          } catch (err) {
-            dirs.push({ name: entry.name, itemCount: 0 });
-          }
-        } else if (entry.isFile()) {
-          const ext = entry.name.includes('.')
-            ? entry.name.slice(entry.name.lastIndexOf('.')).toLowerCase()
-            : '';
-          if (BROWSEABLE_EXTENSIONS.has(ext)) {
-            try {
-              const stats = statSync(entryPath);
-              files.push({
-                name: entry.name,
-                ext,
-                size: stats.size,
-                relativePath: entryRelPath,
-              });
-            } catch (err) {
-              // 跳过无法读取的文件
-            }
-          }
-        }
-      }
-
-      // 排序：目录在前，文件在后；各自按名称排序
-      dirs.sort((a, b) => a.name.localeCompare(b.name));
-      files.sort((a, b) => a.name.localeCompare(b.name));
-
-      res.json({
-        success: true,
-        currentPath: relPath || '',
-        dirs,
-        files,
-        parentPath: relPath ? relPath.split('/').slice(0, -1).join('/') || '' : null,
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, error: (error as Error).message });
-    }
-  });
+  // 【P1-1 拆分】实现已迁至 routes/files.ts。
+  // ⚠️ projectRoot 必须传入：/api/files/browse 的路径越界检查以此为基准。
+  registerFilesRoutes(app, { projectRoot: PROJECT_ROOT });
 
   // ========== 知识库 API（支持 project/global 双作用域） ==========
   // 【P1-1 拆分】8 条路由的实现已迁至 routes/knowledge.ts，此处仅做注册。
