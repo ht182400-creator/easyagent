@@ -2,10 +2,11 @@
 
 > **建立日期**: 2026-09-18
 > **来源**: `docs/62_专家团最终审核报告.md` —— P1-2 指出「缺 Anthropic / Google 两个 provider」
-> **当前状态**:
+> **当前状态**（v0.6.35 更新）:
 > - ✅ **Google Gemini 已补齐**（走官方 OpenAI 兼容端点，无需新适配器）
 > - ✅ **修复了适配器路由的静默失败陷阱**
-> - ⏳ **Anthropic 适配器尚未实现**（需专用适配器，方案见 §四）
+> - ✅ **AnthropicAdapter 已实现**（`packages/core/src/adapters/AnthropicAdapter.ts`）
+>   —— 原方案见 §四，实现说明见 §四末尾「实现完成记录」
 
 ---
 
@@ -121,6 +122,30 @@ Anthropic Messages API 与 OpenAI 格式在**四个层面**都不同：
 
 约 1 人日（适配器 ~350 行 + 测试 ~200 行 + 预设 + 文档）。
 风险点集中在**流式事件类型**与**工具调用块结构**两处，建议先写这两块的解析测试。
+
+### 4.4 实现完成记录（v0.6.35）
+
+| 项 | 结果 |
+|----|------|
+| 适配器 | `packages/core/src/adapters/AnthropicAdapter.ts`（约 430 行） |
+| 工厂接入 | `case 'anthropic'` 由「显式抛错」改为 `new AnthropicAdapter(...)` |
+| 预设 | `ProviderId` 新增 `'anthropic'`；4 个模型；`apiFormat: 'anthropic'` |
+| 动态刷新 | `fetchModelsFromProvider` 增加 Anthropic 分支（`x-api-key` + `anthropic-version`，解析 `display_name`） |
+| 测试 | **16 条**（`anthropic-adapter.test.ts`）+ 预设测试更新 |
+
+**实现中处理的三个易错点**：
+1. **`max_tokens` 必填** —— 取 `options.maxTokens` → 模型配置 `maxOutputTokens` → 兜底 4096
+2. **工具参数分片** —— Anthropic 用 `input_json_delta.partial_json` 分片下发，
+   必须按 `index` 累积到 `content_block_stop` 才能拼成完整 JSON（已加专测）
+3. **图片块** —— Anthropic 的图片 `source` **只接受 base64**，URL 形式会直接 400；
+   base64 原样透传，URL 降级为文字说明（宁可少一张图，也不要整条请求失败）
+
+**thinking 块**已接入 v0.6.31 建立的 `reasoningDelta` 契约（与推理模型一致）。
+
+**模型 ID 的可信度（如实说明）**：预设中的 4 个 ID 的**命名规范与家族版本**来自
+2026-08 的公开 Model ID 汇总清单，与本项目 2026-09 检索结果一致；
+但 Anthropic **未提供机器可校验的公开清单**，无法像 OpenAI 那样逐条比对官方模型页。
+因此同时打通了 `GET /v1/models` 直连通道作为补偿 —— 配置 Key 后可拉到实时清单。
 
 ---
 

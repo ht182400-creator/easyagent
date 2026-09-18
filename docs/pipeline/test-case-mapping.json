@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-18T05:30:42.330Z",
+    "generatedAt": "2026-09-18T05:40:34.857Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1699,
-    "unmappedCases": 502,
+    "totalTestCases": 1715,
+    "unmappedCases": 518,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -471,12 +471,16 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 502,
+      "totalCases": 518,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 502,
+          "cases": 518,
           "files": [
+            {
+              "path": "packages/core/src/__tests__/anthropic-adapter.test.ts",
+              "cases": 16
+            },
             {
               "path": "packages/core/src/__tests__/context-manager.test.ts",
               "cases": 63

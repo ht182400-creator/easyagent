@@ -5,6 +5,7 @@
 import type { ProviderConfig, ProviderId } from '../types/index.js';
 import { BaseAdapter } from './BaseAdapter.js';
 import { OpenAICompatibleAdapter } from './OpenAICompatibleAdapter.js';
+import { AnthropicAdapter } from './AnthropicAdapter.js';
 import { ErnieAdapter } from './ErnieAdapter.js';
 import { HunyuanAdapter } from './HunyuanAdapter.js';
 import { logger } from '../utils/logger.js';
@@ -29,21 +30,15 @@ export class AdapterFactory {
         return AdapterFactory.createCustomAdapter(config, modelName);
 
       /**
-       * Anthropic Messages API 与 OpenAI 格式**不兼容**（鉴权头、请求体结构、
-       * 流式 SSE 事件类型、工具调用块结构都不同），必须专用适配器。
+       * Anthropic Messages API 与 OpenAI 格式**不兼容**（鉴权头、`system` 位置、
+       * `max_tokens` 必填、流式命名事件、工具调用块结构），必须专用适配器。
        *
-       * ⚠️ 这里**显式抛错**而不是落到 default 分支：
-       *    若静默回退到 OpenAI 兼容适配器，请求会以 400/401 失败，
-       *    而错误信息与真实原因（"格式选错了"）毫无关系，排查成本极高。
-       *    **明确的失败远好于悄悄用错的实现。**
-       *
-       * 待实现：见 docs/70（Anthropic 适配器）。实现后改回 `new AnthropicAdapter(...)`。
+       * 历史注记：在本适配器落地前，这里曾**显式抛错**而非静默落到 default ——
+       * 因为用 OpenAI 格式去请求 Anthropic 会得到 400/401，错误信息与真实原因
+       * （"格式选错"）毫无关系，排查成本极高。**明确的失败远好于悄悄用错的实现。**
        */
       case 'anthropic':
-        throw new Error(
-          `提供商 ${config.id} 使用 anthropic 格式，但当前版本尚未实现 Anthropic 适配器。` +
-            '请改用 OpenAI 兼容端点，或等待该适配器落地（见 docs/70）。',
-        );
+        return new AnthropicAdapter(config, modelName);
 
       case 'openai':
       default:
@@ -92,4 +87,10 @@ export class AdapterFactory {
   }
 }
 
-export { BaseAdapter, OpenAICompatibleAdapter, ErnieAdapter, HunyuanAdapter };
+export {
+  BaseAdapter,
+  OpenAICompatibleAdapter,
+  AnthropicAdapter,
+  ErnieAdapter,
+  HunyuanAdapter,
+};

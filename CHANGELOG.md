@@ -7,6 +7,59 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.35] - 2026-09-18
+
+> **本版主题：实现 AnthropicAdapter** —— provider 覆盖收尾（P1-2）
+> 详见 `docs/70_Provider覆盖与Anthropic适配器方案.md` §4.4
+
+### Added
+
+- **`packages/core/src/adapters/AnthropicAdapter.ts`**（约 430 行）—— Anthropic Messages API 适配器
+  - 鉴权：`x-api-key` + **`anthropic-version`**（不是 `Authorization: Bearer`）
+  - `system` 消息抽到**顶层字段**，不留在 messages 里
+  - **`max_tokens` 必填**：取 `options.maxTokens` → 模型 `maxOutputTokens` → 兜底 4096
+  - 流式：解析**命名事件**（`content_block_delta` / `message_delta` / `message_stop`）
+  - 工具：`tool_use` 块的 `input` 对象 ↔ 内部 `ToolCall.function.arguments` JSON 字符串
+  - 工具结果：内部 `role: 'tool'` → user 消息里的 `tool_result` 内容块
+  - `thinking` 块 → `reasoningDelta`（接入 v0.6.31 的推理模型契约）
+- **Anthropic provider 预设**（4 个模型），`ProviderId` 新增 `'anthropic'`
+- **Anthropic 模型清单直连刷新**：`fetchModelsFromProvider` 增加 anthropic 分支
+  （`x-api-key` + `anthropic-version`，优先取 `display_name`）
+- 测试 `anthropic-adapter.test.ts` 共 **16 条**
+
+### Changed
+
+- `AdapterFactory` 的 `case 'anthropic'` 由「显式抛错」改为 `new AnthropicAdapter(...)`
+  （该抛错是 v0.6.34 为拒绝静默降级而加的临时护栏，现已由真实实现取代）
+- 目录重建：**12 家 / 54 → 13 家 / 58 个模型**
+- 测试基线刷新：定义用例 **1715** / Vitest 已执行 **1726 全部通过** / Node **75** / 合计 **1801**
+
+### 实现中处理的三个易错点
+
+1. **`max_tokens` 必填** —— 缺失直接 400
+2. **工具参数分片** —— Anthropic 用 `input_json_delta.partial_json` **分片**下发，
+   必须按 `index` 累积到 `content_block_stop` 才能拼成完整 JSON（已加专测锁定）
+3. **图片块只接受 base64** —— URL 形式会 400；base64 原样透传，URL 降级为文字说明
+   （宁可少一张图，也不要整条请求失败）
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| Anthropic 适配器 + 预设测试 | ✅ 30 / 30 |
+| 目录刷新 | ✅ 13 家 / 58 个模型 |
+| 全量回归 | ✅ **1726 / 1726 通过，0 失败** |
+| `pnpm verify:all` | ✅ **7 / 7** |
+
+### 边界（如实说明）
+
+预设中 4 个模型 ID 的**命名规范与家族版本**来自 2026-08 的公开 Model ID 汇总清单，
+与本项目 2026-09 检索结果一致；但 Anthropic **未提供机器可校验的公开清单**，
+无法像 OpenAI 那样逐条比对官方模型页。已打通 `GET /v1/models` 直连通道作为补偿 ——
+配置 Key 后即可拉到实时清单。
+
+---
+
 ## [0.6.34] - 2026-09-18
 
 > **本版主题：补齐 Google provider + 修复适配器路由的静默失败陷阱**

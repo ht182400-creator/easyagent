@@ -25,6 +25,13 @@ export type ProviderId =
    * 无需新适配器。
    */
   | 'google'
+  /**
+   * Anthropic Claude —— 使用 **Messages API**（与 OpenAI 格式不兼容）
+   *
+   * `https://api.anthropic.com`，`x-api-key` + `anthropic-version` 头，
+   * 由专用 `AnthropicAdapter` 处理。
+   */
+  | 'anthropic'
   | 'custom';
 
 /** 消息角色 */

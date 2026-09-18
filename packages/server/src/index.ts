@@ -1343,21 +1343,35 @@ export async function createApp(options: CreateAppOptions = {}) {
       }
     }
 
-    // 其他 OpenAI 兼容提供商: GET {baseURL}/models
+    // 其他提供商：GET {baseURL}/v1/models
     if (!preset.apiKey || !preset.baseURL) return [];
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       const baseUrl = preset.baseURL.replace(/\/v1\/?$/, '');
-      const res = await fetch(`${baseUrl}/v1/models`, {
-        headers: { Authorization: `Bearer ${preset.apiKey}` },
-        signal: controller.signal,
-      });
+
+      /**
+       * Anthropic 的 `/v1/models` 存在，但**鉴权方式与 OpenAI 不同**：
+       * 需要 `x-api-key` + `anthropic-version`，用 Bearer 会被判为未授权。
+       * 返回结构为 `{ data: [{ id, display_name, ... }] }`。
+       *
+       * 打通这条通道的意义：Anthropic 没有稳定公开的机器可读模型清单，
+       * 预设里的 ID 只能靠人工维护 —— 能直连问厂商，就不必依赖手工更新。
+       */
+      const isAnthropic = preset.apiFormat === 'anthropic';
+      const headers: Record<string, string> = isAnthropic
+        ? {
+            'x-api-key': preset.apiKey,
+            'anthropic-version': '2023-06-01',
+          }
+        : { Authorization: `Bearer ${preset.apiKey}` };
+
+      const res = await fetch(`${baseUrl}/v1/models`, { headers, signal: controller.signal });
       clearTimeout(timeout);
       if (!res.ok) return [];
 
       const data = await res.json();
-      const modelList: Array<{ id: string }> = data.data || data.models || [];
+      const modelList: Array<{ id: string; display_name?: string }> = data.data || data.models || [];
       return modelList
         .filter(
           (m) =>
@@ -1366,7 +1380,8 @@ export async function createApp(options: CreateAppOptions = {}) {
         .slice(0, 20) // 限制数量避免 UI 过长
         .map((m) => ({
           id: m.id,
-          name: modelIdToName(m.id),
+          // Anthropic 会返回 display_name（如 "Claude Opus 4.8"），有则优先使用
+          name: m.display_name || modelIdToName(m.id),
           maxContextTokens: inferContextSize(m.id),
           maxOutputTokens: 8192,
           supportsTools: true,

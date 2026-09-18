@@ -13,7 +13,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { PROVIDER_PRESETS } from '../config/ProviderPresets.js';
-import { AdapterFactory, OpenAICompatibleAdapter } from '../adapters/index.js';
+import {
+  AdapterFactory,
+  OpenAICompatibleAdapter,
+  AnthropicAdapter,
+} from '../adapters/index.js';
 import type { ProviderConfig } from '../types/index.js';
 
 // ===================== 预设完整性 =====================
@@ -97,8 +101,8 @@ describe('Google Gemini 预设', () => {
 
 // ===================== 适配器路由的显式失败 =====================
 
-describe('AdapterFactory — 不支持的 apiFormat 必须显式失败', () => {
-  it('🛡️ apiFormat=anthropic 应抛错，而不是静默回退到 OpenAI 适配器', () => {
+describe('AdapterFactory — apiFormat 路由', () => {
+  it('🛡️ apiFormat=anthropic 必须返回 AnthropicAdapter，不得静默回退到 OpenAI 适配器', () => {
     const config = {
       id: 'anthropic' as ProviderConfig['id'],
       name: 'Anthropic',
@@ -109,8 +113,11 @@ describe('AdapterFactory — 不支持的 apiFormat 必须显式失败', () => {
       defaultModel: 'claude-x',
     } as unknown as ProviderConfig;
 
-    // 静默回退会让请求以 400/401 失败，错误信息与真实原因（格式选错）无关，极难排查
-    expect(() => AdapterFactory.create(config)).toThrow(/anthropic/i);
+    const adapter = AdapterFactory.create(config);
+    // 若回退到 OpenAI 适配器，请求会以 400/401 失败，且错误信息与真实原因
+    // （格式选错）毫无关系 —— 这正是本用例要守住的契约
+    expect(adapter).toBeInstanceOf(AnthropicAdapter);
+    expect(adapter).not.toBeInstanceOf(OpenAICompatibleAdapter);
   });
 
   it('apiFormat=openai 应返回 OpenAICompatibleAdapter', () => {

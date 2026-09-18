@@ -1,6 +1,6 @@
 {
-  "version": "1.0.2",
-  "generatedAt": "2026-09-18T05:28:13.555Z",
+  "version": "1.0.3",
+  "generatedAt": "2026-09-18T05:39:00.936Z",
   "description": "EasyAgent 模型目录 — 由 scripts/refresh-models-catalog.mjs 自动生成。启动时客户端自动下载更新（远程优先，本地缓存 24h，内置数据兜底）。",
   "providers": [
     {
@@ -745,6 +745,64 @@
           "pricing": {
             "input": 0,
             "output": 0
+          }
+        }
+      ]
+    },
+    {
+      "provider": "anthropic",
+      "providerName": "Anthropic Claude",
+      "baseURL": "https://api.anthropic.com",
+      "apiKeyEnv": "ANTHROPIC_API_KEY",
+      "apiFormat": "anthropic",
+      "defaultModel": "claude-opus-4-8",
+      "models": [
+        {
+          "id": "claude-opus-4-8",
+          "name": "Claude Opus 4.8",
+          "maxContextTokens": 200000,
+          "maxOutputTokens": 32000,
+          "supportsTools": true,
+          "supportsVision": true,
+          "pricing": {
+            "input": 15,
+            "output": 75
+          }
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "name": "Claude Sonnet 4.6",
+          "maxContextTokens": 200000,
+          "maxOutputTokens": 64000,
+          "supportsTools": true,
+          "supportsVision": true,
+          "pricing": {
+            "input": 3,
+            "output": 15
+          }
+        },
+        {
+          "id": "claude-haiku-4-5",
+          "name": "Claude Haiku 4.5",
+          "maxContextTokens": 200000,
+          "maxOutputTokens": 32000,
+          "supportsTools": true,
+          "supportsVision": true,
+          "pricing": {
+            "input": 1,
+            "output": 5
+          }
+        },
+        {
+          "id": "claude-fable-5",
+          "name": "Claude Fable 5（长文创作）",
+          "maxContextTokens": 200000,
+          "maxOutputTokens": 32000,
+          "supportsTools": true,
+          "supportsVision": false,
+          "pricing": {
+            "input": 3,
+            "output": 15
           }
         }
       ]

@@ -685,6 +685,75 @@ export const PROVIDER_PRESETS: ProviderConfig[] = [
     ],
   },
 
+  // ========== Anthropic Claude（Messages API，需专用适配器）==========
+  {
+    id: 'anthropic' as ProviderId,
+    name: 'Anthropic Claude',
+    // ⚠️ baseURL **不含** /v1 —— 适配器内部会拼 `/v1/messages`
+    baseURL: 'https://api.anthropic.com',
+    apiKey: '',
+    apiKeyEnv: 'ANTHROPIC_API_KEY',
+    // Messages API 与 OpenAI 格式不兼容，必须走 AnthropicAdapter
+    apiFormat: 'anthropic',
+    defaultModel: 'claude-opus-4-8',
+    /**
+     * ── 模型 ID 的命名规范（改这里前先读）──
+     * Anthropic 的 ID 形如 `claude-<家族>-<主版本>-<次版本>`：
+     *   · 不带尾部日期 = **别名**，指向该版本的最新快照（推荐用这个，会自动跟进补丁）
+     *   · 带尾部日期（如 `claude-opus-4-5-20251101`）= **固定快照**，行为不会随更新变化
+     *
+     * ── 数据来源与可信度（如实说明）──
+     * 下面这批 ID 的**命名规范**与**家族/版本**来自 2026-08 的公开 Model ID 汇总清单，
+     * 与本项目 2026-09 的检索结果一致；但 Anthropic **未提供机器可校验的公开清单**，
+     * 因此无法像 OpenAI 那样逐条核对官方模型页。
+     *
+     * 若某个 ID 报 404/invalid_model，处理方式：
+     *   ① 优先用本文件的命名规范自行推断正确别名；
+     *   ② 调用 Anthropic `GET /v1/models`（需 `x-api-key` + `anthropic-version`）取实时清单；
+     *   ③ 在「设置 → 模型提供商」中手动填入模型 ID。
+     *
+     * 这与 Google 的处理保持一致：**能实时问厂商的就不要写死**。
+     */
+    models: [
+      {
+        id: 'claude-opus-4-8',
+        name: 'Claude Opus 4.8',
+        maxContextTokens: 200000,
+        maxOutputTokens: 32000,
+        supportsTools: true,
+        supportsVision: true,
+        pricing: { input: 15, output: 75 },
+      },
+      {
+        id: 'claude-sonnet-4-6',
+        name: 'Claude Sonnet 4.6',
+        maxContextTokens: 200000,
+        maxOutputTokens: 64000,
+        supportsTools: true,
+        supportsVision: true,
+        pricing: { input: 3, output: 15 },
+      },
+      {
+        id: 'claude-haiku-4-5',
+        name: 'Claude Haiku 4.5',
+        maxContextTokens: 200000,
+        maxOutputTokens: 32000,
+        supportsTools: true,
+        supportsVision: true,
+        pricing: { input: 1, output: 5 },
+      },
+      {
+        id: 'claude-fable-5',
+        name: 'Claude Fable 5（长文创作）',
+        maxContextTokens: 200000,
+        maxOutputTokens: 32000,
+        supportsTools: true,
+        supportsVision: false,
+        pricing: { input: 3, output: 15 },
+      },
+    ],
+  },
+
   // ========== 自定义 ==========
   {
     id: 'custom' as ProviderId,

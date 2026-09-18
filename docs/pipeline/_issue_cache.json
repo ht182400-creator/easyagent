@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789699590864.4458,
-      "size": 26397
+      "mtimeMs": 1789709557806.6475,
+      "size": 28639
     },
     "MEMORY.md": {
-      "mtimeMs": 1789699593356.5007,
-      "size": 41073
+      "mtimeMs": 1789709473962.9897,
+      "size": 41087
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11174,10 +11174,49 @@
           "f13",
           "f14"
         ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-09-18",
+        "title": "[P1-2 之三] 补齐 Google provider + 修复适配器路由的静默失败陷阱",
+        "problem": ": P1-2 指出「缺 Anthropic / Google 两个 provider」",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-09-18",
+        "title": "[P1-2 之三] 补齐 Google provider + 修复适配器路由的静默失败陷阱",
+        "problem": ": P1-2 指出「缺 Anthropic / Google 两个 provider」",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-09-18",
+        "title": "[P1-2 之三] 补齐 Google provider + 修复适配器路由的静默失败陷阱",
+        "problem": ": P1-2 指出「缺 Anthropic / Google 两个 provider」",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f14",
+          "b3b"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-18T05:30:42.562Z"
+  "generatedAt": "2026-09-18T05:40:35.060Z"
 }

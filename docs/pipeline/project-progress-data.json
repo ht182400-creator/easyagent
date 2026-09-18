@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.33",
-    "codename": "模型目录自动化",
-    "lastUpdated": "2026-09-18T02:48:14.206Z",
+    "version": "0.6.34",
+    "codename": "Google 与适配器路由加固",
+    "lastUpdated": "2026-09-18T05:34:11.922Z",
     "engine": "auto-detected",
-    "totalTests": 1685,
+    "totalTests": 1699,
     "modelsSupported": 4
   },
   "phases": [
