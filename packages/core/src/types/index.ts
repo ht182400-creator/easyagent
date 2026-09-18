@@ -17,6 +17,14 @@ export type ProviderId =
   | 'minimax'
   | 'ollama'
   | 'openai'
+  /**
+   * Google Gemini —— 走官方 **OpenAI 兼容端点**
+   *
+   * `https://generativelanguage.googleapis.com/v1beta/openai/`（末尾 `/openai/` 不能漏），
+   * 鉴权为标准 Bearer（`GEMINI_API_KEY`）。因此可复用 `OpenAICompatibleAdapter`，
+   * 无需新适配器。
+   */
+  | 'google'
   | 'custom';
 
 /** 消息角色 */

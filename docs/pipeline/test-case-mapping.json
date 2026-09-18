@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-18T02:44:53.703Z",
+    "generatedAt": "2026-09-18T05:30:42.330Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1685,
-    "unmappedCases": 488,
+    "totalTestCases": 1699,
+    "unmappedCases": 502,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -471,11 +471,11 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 488,
+      "totalCases": 502,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 488,
+          "cases": 502,
           "files": [
             {
               "path": "packages/core/src/__tests__/context-manager.test.ts",
@@ -488,6 +488,10 @@
             {
               "path": "packages/core/src/__tests__/openai-reasoning.test.ts",
               "cases": 8
+            },
+            {
+              "path": "packages/core/src/__tests__/provider-presets.test.ts",
+              "cases": 14
             },
             {
               "path": "packages/desktop/src/__tests__/components/settings-update.test.tsx",

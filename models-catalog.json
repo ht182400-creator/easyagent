@@ -1,6 +1,6 @@
 {
-  "version": "1.0.1",
-  "generatedAt": "2026-09-18T02:20:15.488Z",
+  "version": "1.0.2",
+  "generatedAt": "2026-09-18T05:28:13.555Z",
   "description": "EasyAgent 模型目录 — 由 scripts/refresh-models-catalog.mjs 自动生成。启动时客户端自动下载更新（远程优先，本地缓存 24h，内置数据兜底）。",
   "providers": [
     {
@@ -687,11 +687,23 @@
       "baseURL": "https://api.openai.com/v1",
       "apiKeyEnv": "OPENAI_API_KEY",
       "apiFormat": "openai",
-      "defaultModel": "gpt-4o",
+      "defaultModel": "gpt-6-astra",
       "models": [
         {
+          "id": "gpt-6-astra",
+          "name": "GPT-6 Astra",
+          "maxContextTokens": 1050000,
+          "maxOutputTokens": 128000,
+          "supportsTools": true,
+          "supportsVision": true,
+          "pricing": {
+            "input": 10,
+            "output": 50
+          }
+        },
+        {
           "id": "gpt-4o",
-          "name": "GPT-4o",
+          "name": "GPT-4o (Legacy)",
           "maxContextTokens": 128000,
           "maxOutputTokens": 16384,
           "supportsTools": true,
@@ -703,7 +715,7 @@
         },
         {
           "id": "gpt-4o-mini",
-          "name": "GPT-4o Mini",
+          "name": "GPT-4o Mini (Legacy)",
           "maxContextTokens": 128000,
           "maxOutputTokens": 16384,
           "supportsTools": true,
@@ -711,6 +723,28 @@
           "pricing": {
             "input": 1,
             "output": 4
+          }
+        }
+      ]
+    },
+    {
+      "provider": "google",
+      "providerName": "Google Gemini",
+      "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai/",
+      "apiKeyEnv": "GEMINI_API_KEY",
+      "apiFormat": "openai",
+      "defaultModel": "gemini-3.5-flash",
+      "models": [
+        {
+          "id": "gemini-3.5-flash",
+          "name": "Gemini 3.5 Flash",
+          "maxContextTokens": 1048576,
+          "maxOutputTokens": 65536,
+          "supportsTools": true,
+          "supportsVision": true,
+          "pricing": {
+            "input": 0,
+            "output": 0
           }
         }
       ]

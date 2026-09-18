@@ -3813,6 +3813,13 @@
           "problem": ": 点击安装后只有旋转图标，无文字进度（\"下载中 X%\"等） [根因] : `initPluginProgressListener()` 定义了 handler 但未订阅 WebSocket/事件总线，实际上从未收到 `plugin:install:progress` 消息",
           "solution": "复用 `chatStore` 已有的全局 WebSocket 和事件总线 — `chatStore.ts` 新增 `case 'plugin:install:progress': emit(...)` 转发 → `pluginsStore.ts` 中 `on('plugin:install:progress')` 真正订阅 → `App.tsx` useEffect 挂载监听器；测试: 新增 5 用例，frontend 12 文件 110/110 通过 ✅",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-2 之二:模型目录] 目录自动化 + 多源降级（回答「连不上 GitHub 怎么办」）",
+          "problem": ": ① 厂商发新模型能否自动升级 ② 连不上 GitHub 怎么办",
+          "solution": "详见原文",
+          "status": "resolved"
         }
       ]
     },
@@ -4035,6 +4042,13 @@
           "title": "双缓存问题彻底修复 (22:48)",
           "problem": "双缓存问题彻底修复 (22:48)",
           "solution": "| 文件 | 改动 | |------|------| | `githubClient.ts` | 新增 `RELEASE_CACHE_TTL=5min`；`getLatestRelease`/`getManifest` 新增 `skipCache` 参数；`getCache` 支持自定义 TTL | | `PluginMarketService.ts` | `listMarket(forceRefresh=true)` 先调 `client.clearCache()` 再 `{skipCache:true}` 传到 `searchPluginRepos`/`getLatestRelease`/` | `PluginMarketService.ts` | `executeInstall` 的 `getLatestRelease` 传 `skipCache=true`（安装时必须拿最新版） | | `index.ts` | 新增 `POST /api/plugins/market/refresh` 端点 |",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-2 之二:模型目录] 目录自动化 + 多源降级（回答「连不上 GitHub 怎么办」）",
+          "problem": ": ① 厂商发新模型能否自动升级 ② 连不上 GitHub 怎么办",
+          "solution": "详见原文",
           "status": "resolved"
         }
       ]
@@ -6025,8 +6039,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 836,
-  "_generatedAt": "2026-09-18T02:44:53.927Z",
+  "_totalIssues": 838,
+  "_generatedAt": "2026-09-18T05:30:42.566Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6057,6 +6071,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-18T02:44:53.948Z"
+    "exportedAt": "2026-09-18T05:30:42.581Z"
   }
 }

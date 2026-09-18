@@ -650,6 +650,41 @@ export const PROVIDER_PRESETS: ProviderConfig[] = [
     ],
   },
 
+  // ========== Google Gemini（走官方 OpenAI 兼容端点）==========
+  {
+    id: 'google' as ProviderId,
+    name: 'Google Gemini',
+    // ⚠️ 末尾的 `/openai/` 不能漏 —— 这是官方 OpenAI 兼容层的路径，
+    //    直接写 https://generativelanguage.googleapis.com/v1beta 会 404。
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+    apiKey: '',
+    apiKeyEnv: 'GEMINI_API_KEY',
+    apiFormat: 'openai',
+    defaultModel: 'gemini-3.5-flash',
+    /**
+     * ⚠️ 这里**故意只放一个已核实的模型**，而不是硬编码一份"看起来完整"的清单。
+     *
+     * 原因：Google 官方兼容性文档明确说明其示例中的模型名仅为示例，
+     * 权威清单应以官方文档或 `models.list` 实时返回为准。
+     * 凭记忆/推测填一串模型 ID，正是本项目一直在修的那类「过期/失真数据」。
+     *
+     * 真实清单由**动态拉取**补齐：配置了 GEMINI_API_KEY 后，
+     * 服务端会调用 `{baseURL}/models` 获取实际可用模型（见
+     * `/api/providers/:id/models/refresh` 与 ModelRegistry 的厂商直连通道）。
+     */
+    models: [
+      {
+        id: 'gemini-3.5-flash',
+        name: 'Gemini 3.5 Flash',
+        maxContextTokens: 1048576,
+        maxOutputTokens: 65536,
+        supportsTools: true,
+        supportsVision: true,
+        pricing: { input: 0, output: 0 },
+      },
+    ],
+  },
+
   // ========== 自定义 ==========
   {
     id: 'custom' as ProviderId,

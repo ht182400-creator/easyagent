@@ -7,6 +7,54 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.34] - 2026-09-18
+
+> **本版主题：补齐 Google provider + 修复适配器路由的静默失败陷阱**
+> 详见 `docs/70_Provider覆盖与Anthropic适配器方案.md`
+
+### Added
+
+- **Google Gemini provider** —— 走官方 OpenAI 兼容端点，复用 `OpenAICompatibleAdapter`
+  - Base URL：`https://generativelanguage.googleapis.com/v1beta/openai/`（**末尾 `/openai/` 不能漏**）
+  - 鉴权：标准 Bearer，环境变量 `GEMINI_API_KEY`
+  - 预设**只放一个已核实的模型**（`gemini-3.5-flash`）—— Google 官方文档明确说明
+    示例模型名仅供参考、权威清单应以 `models.list` 为准。真实清单由 v0.6.33 的
+    **厂商直连通道**动态补齐，**不凭推测硬编码**
+- 测试 `provider-presets.test.ts` 共 **14 条**：
+  12 家预设的结构完整性、Google 专项（锁住 `/openai/` 路径）、适配器路由契约
+
+### Security / 正确性
+
+- **🛡️ 修复适配器路由的静默失败陷阱**
+  `AdapterFactory.create()` 的 switch 原本只有 `custom` 与 `default: openai`，
+  而类型里 `apiFormat` 是 `'openai' | 'anthropic' | 'custom'` —— **`'anthropic'` 无分支处理**。
+  一旦配置为 anthropic 格式，会**静默用 OpenAI 格式的适配器**去请求 Anthropic API：
+  得到 400/401，而错误信息与真实原因（格式选错）**毫无关系**，排查成本极高。
+  现改为**显式抛错**并附明确指引 —— **明确的失败远好于悄悄用错的实现**。
+
+### Changed
+
+- `ProviderId` 新增 `'google'`
+- 目录重建：**11 家 / 52 → 12 家 / 54 个模型**（无重复 ID，合计校验一致）
+- 测试基线刷新：定义用例 **1699** / Vitest 已执行 **1710 全部通过** / Node **75** / 合计 **1785**
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 预设与路由测试 | ✅ 14 / 14 |
+| 目录刷新 | ✅ 12 家 / 54 个模型（无重复、合计一致） |
+| 全量回归 | ✅ **1710 / 1710 通过，0 失败** |
+| `pnpm verify:all` | ✅ **7 / 7** |
+
+### 未完成（透明）
+
+- **Anthropic 适配器尚未实现**。Messages API 与 OpenAI 在鉴权头、`system` 位置、
+  `max_tokens` 必填、流式事件类型、工具调用块结构**五个层面**均不同，必须专用适配器。
+  方案与实现要点见 `docs/70` §四，预估约 1 人日
+
+---
+
 ## [0.6.33] - 2026-09-18
 
 > **本版主题：模型目录自动化与多源降级** —— 让厂商发布的新模型能自动进入客户端可见范围，

@@ -28,6 +28,23 @@ export class AdapterFactory {
       case 'custom':
         return AdapterFactory.createCustomAdapter(config, modelName);
 
+      /**
+       * Anthropic Messages API 与 OpenAI 格式**不兼容**（鉴权头、请求体结构、
+       * 流式 SSE 事件类型、工具调用块结构都不同），必须专用适配器。
+       *
+       * ⚠️ 这里**显式抛错**而不是落到 default 分支：
+       *    若静默回退到 OpenAI 兼容适配器，请求会以 400/401 失败，
+       *    而错误信息与真实原因（"格式选错了"）毫无关系，排查成本极高。
+       *    **明确的失败远好于悄悄用错的实现。**
+       *
+       * 待实现：见 docs/70（Anthropic 适配器）。实现后改回 `new AnthropicAdapter(...)`。
+       */
+      case 'anthropic':
+        throw new Error(
+          `提供商 ${config.id} 使用 anthropic 格式，但当前版本尚未实现 Anthropic 适配器。` +
+            '请改用 OpenAI 兼容端点，或等待该适配器落地（见 docs/70）。',
+        );
+
       case 'openai':
       default:
         return new OpenAICompatibleAdapter(config, modelName);

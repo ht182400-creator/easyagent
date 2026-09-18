@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789696849098.309,
-      "size": 22663
+      "mtimeMs": 1789699590864.4458,
+      "size": 26397
     },
     "MEMORY.md": {
-      "mtimeMs": 1789697494652.5393,
-      "size": 39311
+      "mtimeMs": 1789699593356.5007,
+      "size": 41073
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11150,10 +11150,34 @@
           "f1",
           "f8"
         ]
+      },
+      {
+        "moduleId": "f13",
+        "date": "2026-09-18",
+        "title": "[P1-2 之二:模型目录] 目录自动化 + 多源降级（回答「连不上 GitHub 怎么办」）",
+        "problem": ": ① 厂商发新模型能否自动升级 ② 连不上 GitHub 怎么办",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f13",
+          "f14"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-09-18",
+        "title": "[P1-2 之二:模型目录] 目录自动化 + 多源降级（回答「连不上 GitHub 怎么办」）",
+        "problem": ": ① 厂商发新模型能否自动升级 ② 连不上 GitHub 怎么办",
+        "solution": "详见原文",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f13",
+          "f14"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-18T02:44:53.920Z"
+  "generatedAt": "2026-09-18T05:30:42.562Z"
 }

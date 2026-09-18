@@ -1,11 +1,11 @@
 {
   "meta": {
     "repo": "ht182400-creator/easyagent",
-    "version": "0.6.32",
-    "codename": "校验体系去盲区",
-    "lastUpdated": "2026-09-18T02:12:16.504Z",
+    "version": "0.6.33",
+    "codename": "模型目录自动化",
+    "lastUpdated": "2026-09-18T02:48:14.206Z",
     "engine": "auto-detected",
-    "totalTests": 1669,
+    "totalTests": 1685,
     "modelsSupported": 4
   },
   "phases": [

@@ -1,6 +1,6 @@
 {
-  "version": "0.6.33",
-  "codename": "模型目录自动化",
+  "version": "0.6.34",
+  "codename": "Google 与适配器路由加固",
   "releaseDate": "2026-09-18",
   "electronVersion": "30.0.0",
   "nodeVersion": ">=18.0.0"

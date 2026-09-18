@@ -233,7 +233,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 - **Monorepo（12 包）**: `core`(引擎/工具/适配器) / `langgraph`(StateGraph 引擎) / `server`(Express API+WS) / `frontend`(共享 UI) / `web`(薄壳) / `desktop`(Electron) / `cli` / `vscode`(未完成) / `plugin-template` / `easyagent-plugin-obsidian-doc-viewer`
 - **双引擎**: `AgentEngine`（ReAct while 循环，默认）+ `@easyagent/langgraph`（Think-Act-Observe 图）。三级优先级选择：CLI `--engine` > `EASYAGENT_ENGINE` > `engine.config.json` > 默认 `legacy`。详见 `docs/53`、`docs/54`
 - **模型接入**: `PROVIDER_PRESETS` 11 家；模型目录四级降级（远程 GitHub/CDN → 本地缓存 24h → 内置 `models-catalog.json` → 硬编码兜底）
-- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1685**（模块映射口径，48 个映射文件）；**Vitest 已执行 1696，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1771 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
+- **⚠️ 2026-09-18 实测基线（勿再用旧数字）**: 定义用例 **1699**（模块映射口径，48 个映射文件）；**Vitest 已执行 1710，全部通过，0 失败**；Node.js Test Runner 75 全通过；合计已执行 **1785 全通过**。**历史值 1195 / 1260 / 1514 / 1561 / 1572 / 1624 / 1635 / 1629 / 1640 / 1664 / 1675 / 1661 / 1672 / 1669 / 1680 / 1685 / 1696 均已过期**。真源 = `docs/pipeline/test-case-mapping.json`，由 `node scripts/verify-data-consistency.mjs` 作为 CI 门禁校验（见 §12）
 
 ---
 
