@@ -30,3 +30,4 @@ export {
   resolveDocViewerFallbackDir,
   type StaticRoutesDeps,
 } from './staticFiles.js';
+export { registerSystemRoutes, type SystemRoutesDeps } from './system.js';

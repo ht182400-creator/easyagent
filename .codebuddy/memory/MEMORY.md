@@ -30,7 +30,7 @@
 | 附加 | web 构建解锁（原 `tsc` 11 个错误导致 `deploy-server.ps1` 整体失效） | `packages/web/tsconfig.json` |
 | 附加 | 测试日志改为项目内持久资产（禁写系统临时目录） | `scripts/run-tests-log.mjs`、`logs/test-logs/` |
 | P0-6 数据刷新 | `unified-sync.mjs` 已重跑，`_stale` 清零 | `docs/pipeline/*.json` |
-| **P1-1 服务端拆分** | **第一~三批完成：`index.ts` 3827 → 2146 行（-1681，-44%）**。已外移 9 组路由：knowledge / automations / staticFiles（v0.6.28）+ im / sandbox / semantic / files（v0.6.37）+ config / plugins（v0.6.38）。剩余第四批：langgraph / sessions / chat / system / websocket（与 chat 强耦合，最后做） | `packages/server/src/routes/`、`docs/66` |
+| **P1-1 服务端拆分** | **第一~四批(system)完成：`index.ts` 3827 → 1672 行（-2155，-56%）**。已外移 10 组路由。剩余：langgraph(9) / sessions+chat(6) / websocket(~400 行，与 chat 强耦合最后做) | `packages/server/src/routes/`、`docs/66` |
 
 ### 🔧 纯搬迁后的死导入核查（linter 不管这个）
 
@@ -52,6 +52,16 @@
 1. **残留核查**：对每个被搬走的符号全文计数（过滤 `//` / `*` 注释行），
    非注释残留 = 迁移不完整
 2. **路由快照比对**（服务端）或等价的"可证明等价"测试
+
+### ⏱️ TDZ 陷阱：注册式搬迁会"提前求值"（v0.6.39 教训）
+
+旧代码把对 `const` 的引用写在**路由回调里**（请求时才执行，createApp 早已完成），
+因此引用"定义在后"的变量从未报错。改成**注册式**后，依赖注入让引用在 createApp
+**立即求值** → `ReferenceError: Cannot access 'x' before initialization`，测试文件直接加载失败。
+
+- **语言服务器不报 TDZ**（静态上完全合法）——又一个"编译通过 ≠ 运行正确"的实证
+- 解法：把被引用的 `const` 定义**上移**到注册点之前（函数声明有提升无需动）
+- 判别法：搬迁前先问"这段代码引用了哪些定义在**后面**的 const？"——有就要么上移，要么延迟注入
 | **P1-4 Markdown 加固** | **已完成**：修掉 2 个 XSS 缺口（`"` 未转义导致属性逃逸、`javascript:` 协议未过滤）+ README 裸 HTML 无消毒；补上表格/有序列表/代码高亮 | `packages/frontend/src/utils/markdown.ts`、`docs/67` |
 | **P1-2 思维链支持** | **已完成**：推理模型思考过程解析与展示，`reasoning_content` / `reasoning` 双字段归一化；契约是**正文与思考过程严格分离**（思考不入上下文） | `core/src/adapters/OpenAICompatibleAdapter.ts`、`docs/68` |
 | **校验体系去盲区** | **已完成**：新增 `pnpm verify:all`；全部 `verify-*.mjs` 统一输出 `__VERIFY_STATUS__=PASS\|FAIL\|SKIP` | `scripts/verify-all.mjs` |

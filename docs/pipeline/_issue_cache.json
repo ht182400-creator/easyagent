@@ -73,12 +73,12 @@
       "size": 4593
     },
     "2026-09-18.md": {
-      "mtimeMs": 1789712691073.7358,
-      "size": 36103
+      "mtimeMs": 1789714196242.0742,
+      "size": 37564
     },
     "MEMORY.md": {
-      "mtimeMs": 1789712699514.074,
-      "size": 43772
+      "mtimeMs": 1789714215737.8525,
+      "size": 44453
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
@@ -11252,10 +11252,66 @@
           "f6",
           "f11"
         ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-09-18",
+        "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-09-18",
+        "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "f14",
+        "date": "2026-09-18",
+        "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f14",
+          "b3b"
+        ]
+      },
+      {
+        "moduleId": "b3b",
+        "date": "2026-09-18",
+        "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+        "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f10",
+          "f14",
+          "b3b"
+        ]
       }
     ],
     "MEMORY.md": [],
     "README.md": []
   },
-  "generatedAt": "2026-09-18T06:25:57.387Z"
+  "generatedAt": "2026-09-18T06:52:38.457Z"
 }

@@ -262,6 +262,13 @@
           "problem": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
           "solution": "搬迁 IM 适配器(7) / Docker 沙箱(6) / 语义分析(5) / 文件浏览(1) 四组路由到 `routes/`",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
+          "status": "resolved"
         }
       ]
     },
@@ -3256,6 +3263,13 @@
           "problem": "卸载后刷新插件又出现 (幽灵插件) → 卸载链 3 处 Bug 修复 (23:03)",
           "solution": "1. 精确匹配 manifest.name 2. pluginId 解析：`nameOrId.split('/').pop()` 当 manifest.name 找 3. 兜底遍历：匹配 `value.plugin.name` 或 `value.sourcePath` 的 basename async unloadPlugin(nameOrId: string): Promise<void> { let loaded = this.plugins.get(nameOrId); if (!loaded) { const candidate = nameOrId.includes('/') ? nameOrId.split('/').pop() : null; if (candidate) { loaded = this.plugins.get(candidate); if (loaded) nameOrId = candidate; } if (!loaded) { for (const [key, value] of this.plugins.entries()) { if (value.plugin.name === nameOrId) { loaded = value; nameOrId = key; break; } const short = nameOrId.includes('/') ? nameOrId.split('/').pop() : null; if (short && value.plugin.name === short) { loaded = value; nameOrId = key; break; } if (value.sourcePath) { const parts = value.sourcePath.split(/[\\\\/]/); const base = parts[parts.length - 1] || ''; if (short && base === short) { loaded = value; nameOrId = key; break; } if (base === nameOrId) { loaded = value; nameOrId = key; break; } // ... 后续 this.plugins.delete(name)",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
+          "status": "resolved"
         }
       ]
     },
@@ -4084,6 +4098,13 @@
           "title": "[P1-2 之三] 补齐 Google provider + 修复适配器路由的静默失败陷阱",
           "problem": ": P1-2 指出「缺 Anthropic / Google 两个 provider」",
           "solution": "详见原文",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
           "status": "resolved"
         }
       ]
@@ -6072,6 +6093,13 @@
           "problem": ": P1-2 指出「缺 Anthropic / Google 两个 provider」",
           "solution": "详见原文",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
+          "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
+          "status": "resolved"
         }
       ]
     },
@@ -6081,8 +6109,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 844,
-  "_generatedAt": "2026-09-18T06:25:57.391Z",
+  "_totalIssues": 848,
+  "_generatedAt": "2026-09-18T06:52:38.462Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6113,6 +6141,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-18T06:25:57.406Z"
+    "exportedAt": "2026-09-18T06:52:38.484Z"
   }
 }

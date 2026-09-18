@@ -7,6 +7,40 @@ All notable changes to EasyAgent will be documented in this file.
 
 ---
 
+## [0.6.39] - 2026-09-18
+
+> **本版主题：服务端入口拆分（P1-1 第四批·system）** —— `index.ts` 2146 → **1672 行**。
+> 累计从 3827 行减至 **1672 行（-2155，-56%）**。
+> 进度：`docs/66_P1-1服务端拆分方案与进度.md` §5.3
+
+### Changed
+
+- **拆分 `packages/server/src/index.ts`（净减约 470 行）**，新增 `routes/system.ts`：
+  系统(5) + Token 用量分析(1) + 北极星指标(3) 共 9 条路由，连同 `MODEL_PRICES` 价格表
+- 依赖注入：`appVersion`（解析块留在 index.ts，入口段也用）/ `serverDir` / `port` /
+  `wsSubscriptions` + `safeSend`（与 WebSocket 段共享同一实例）
+- `wsSubscriptions` 定义**上移**到系统段之前（见 Fixed 项），WS 段删除重复定义
+
+### Fixed
+
+- **TDZ 运行时错误（拆分过程中发现并修复）**：`/api/test/open-panel` 依赖 WS 段的
+  `wsSubscriptions`（`const`）。旧代码把引用写在回调里（请求时才执行）所以从未暴露；
+  注册式搬迁让引用在 `createApp` **立即求值** → `ReferenceError: Cannot access
+  'wsSubscriptions' before initialization`，3 个测试文件加载失败。
+  语言服务器不报 TDZ（静态上合法）—— **"编译通过"不等于"运行正确"的又一实证**
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 路由快照（比对模式） | ✅ 93 条与基线逐条一致（未动基线） |
+| 服务端全量测试 | ✅ 265 / 265 |
+| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
+| 类型检查 / 构建 | ✅ 0 诊断 / tsup 退出码 0 |
+| `pnpm verify:all` | ✅ 8 / 8（含路由顺序运行时探针） |
+
+---
+
 ## [0.6.38] - 2026-09-18
 
 > **本版主题：服务端入口拆分（P1-1 第三批）** —— `index.ts` 3074 → **2146 行**。
