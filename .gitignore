@@ -13,6 +13,8 @@ tsconfig.tsbuildinfo
 *.zip
 *.blockmap
 *.tgz
+# 压测诊断快照（数值随机器浮动，不入库）
+benchmarks/load-latest.json
 *.tar.gz
 release/
 desktop/release/
