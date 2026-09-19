@@ -55,6 +55,12 @@ const VERIFIERS = [
     note: '文档数字必须与真源一致（防"文档说 100% 实际在失败"）',
   },
   {
+    key: 'traps',
+    name: '陷阱计数一致性',
+    file: 'verify-trap-count.mjs',
+    note: '"陷阱清单 XX 条"散落 5+ 处且无单一真源（一天内失同步 3 次）；以清单 A 节实际行数为真源逐一比对',
+  },
+  {
     key: 'tokens',
     name: '设计令牌',
     file: 'verify-css-tokens.mjs',
