@@ -163,6 +163,14 @@ export class AgentEngine {
       model: this.config.model,
     });
 
+    // 首条消息作为会话标题（2026-09-19）：默认标题"会话 <时间>"只有时间没有信息量，
+    // 历史会话列表里一排"会话 2026/9/19 19:12:57"完全无法分辨内容。取首条用户消息前 30 字；
+    // 只在仍是默认标题（"会话 "前缀）时覆盖 —— 恢复老会话不改名。
+    if (session.metadata.title.startsWith('会话 ') && userMessage.trim()) {
+      session.metadata.title = userMessage.trim().replace(/\s+/g, ' ').slice(0, 30);
+      this.sessions.save(session);
+    }
+
     // 初始化中止控制器
     this.abortController = new AbortController();
     this.state = 'thinking';

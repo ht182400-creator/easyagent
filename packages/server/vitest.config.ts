@@ -33,10 +33,8 @@ export default defineConfig({
       },
     },
   },
-  resolve: {
-    alias: {
-      // 复用 core 包的 mock
-      'better-sqlite3': resolve(__dirname, '..', 'core', 'src', '__mocks__', 'better-sqlite3.ts'),
-    },
-  },
+  // 注：旧版这里有 `better-sqlite3 → core/src/__mocks__/better-sqlite3.ts` 的 alias。
+  // 2026-09-19 驱动适配层落地后假库 mock 已删除（测试直连真实 DB），
+  // 该 alias 指向不存在的文件且用了 ESM 下未定义的 resolve/__dirname，会让整个配置加载失败
+  // （"ReferenceError: resolve is not defined"）—— 已随 mock 一起移除。
 });

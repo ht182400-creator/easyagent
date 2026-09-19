@@ -35,20 +35,19 @@ export function registerSessionRoutes(app: Express, deps: SessionRoutesDeps): vo
     const status = req.query.status as string;
     const sessions = sessionManager.list(status as Parameters<typeof sessionManager.list>[0]);
     // 格式化返回
-    const formatted = sessions.map((s: Record<string, unknown>) => ({
-      id: s.id || s.sessionId,
-      workspace: s.workspace || '',
+    // ⚠️ list() 返回的是 **Session 对象**（metadata.xxx，camelCase），不是 DB 行。
+    // 旧写法按 DB 行取 `s.title / s.createdAt / s.tokenUsage`，全部落进 `|| 默认值`：
+    // 标题变成 id、时间全变成"页面加载时刻"、Token 永远显示 0（2026-09-19 用户实测抓到）。
+    const formatted = sessions.map((s) => ({
+      id: s.id,
+      workspace: s.workspace,
       metadata: {
-        title: s.title || s.id || '未命名',
-        createdAt: s.createdAt || new Date().toISOString(),
-        updatedAt: s.updatedAt || new Date().toISOString(),
-        status: s.status || 'active',
-        tokenUsage: s.tokenUsage || {
-          inputTokens: 0,
-          outputTokens: 0,
-          totalTokens: 0,
-        },
-        messageCount: Array.isArray(s.messages) ? (s.messages as unknown[]).length : 0,
+        title: s.metadata.title || s.id || '未命名',
+        createdAt: s.metadata.createdAt,
+        updatedAt: s.metadata.updatedAt,
+        status: s.metadata.status,
+        tokenUsage: s.metadata.tokenUsage,
+        messageCount: s.messages.length,
       },
     }));
     res.json(formatted);

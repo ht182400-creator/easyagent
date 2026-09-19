@@ -77,8 +77,8 @@
       "size": 50260
     },
     "2026-09-19.md": {
-      "mtimeMs": 1789825471329.0935,
-      "size": 64461
+      "mtimeMs": 1789826376996.1584,
+      "size": 66827
     },
     "MEMORY.md": {
       "mtimeMs": 1789825462076.8904,
@@ -12844,6 +12844,102 @@
         ]
       },
       {
+        "moduleId": "f2",
+        "date": "2026-09-19",
+        "title": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导",
+        "problem": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导航/标题（22:00）",
+        "solution": "AgentEngine 生命周期内稳定 `currentChatSessionId`。⚠️ **已装旧 EXE 仍带此缺陷**，重新打包覆盖后才根治；③ Chat 页两处 UI 缺陷: 标题 `slice(0,8)` 正好截掉的不够看（\"session_\" 恰好 8 字符 → 只剩 \"session_...\"）→ 改显会话真实 title；返回键裸 `<a href=\"/sessions\">` 在桌面 HashRouter 下直接回主菜单 →；验证: langgraph **57/57** · desktop **215/215** · 前端类型 0 错误 · tsup 构建成功 · 端到端 curl 三连 ✓；待办: 用户确认后可清理 sessions.db 中 114 条 session_* 垃圾记录（备份后删）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "b2c",
+          "b3a"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-09-19",
+        "title": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导",
+        "problem": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导航/标题（22:00）",
+        "solution": "AgentEngine 生命周期内稳定 `currentChatSessionId`。⚠️ **已装旧 EXE 仍带此缺陷**，重新打包覆盖后才根治；③ Chat 页两处 UI 缺陷: 标题 `slice(0,8)` 正好截掉的不够看（\"session_\" 恰好 8 字符 → 只剩 \"session_...\"）→ 改显会话真实 title；返回键裸 `<a href=\"/sessions\">` 在桌面 HashRouter 下直接回主菜单 →；验证: langgraph **57/57** · desktop **215/215** · 前端类型 0 错误 · tsup 构建成功 · 端到端 curl 三连 ✓；待办: 用户确认后可清理 sessions.db 中 114 条 session_* 垃圾记录（备份后删）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "b2c",
+          "b3a"
+        ]
+      },
+      {
+        "moduleId": "f8",
+        "date": "2026-09-19",
+        "title": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导",
+        "problem": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导航/标题（22:00）",
+        "solution": "AgentEngine 生命周期内稳定 `currentChatSessionId`。⚠️ **已装旧 EXE 仍带此缺陷**，重新打包覆盖后才根治；③ Chat 页两处 UI 缺陷: 标题 `slice(0,8)` 正好截掉的不够看（\"session_\" 恰好 8 字符 → 只剩 \"session_...\"）→ 改显会话真实 title；返回键裸 `<a href=\"/sessions\">` 在桌面 HashRouter 下直接回主菜单 →；验证: langgraph **57/57** · desktop **215/215** · 前端类型 0 错误 · tsup 构建成功 · 端到端 curl 三连 ✓；待办: 用户确认后可清理 sessions.db 中 114 条 session_* 垃圾记录（备份后删）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "b2c",
+          "b3a"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-09-19",
+        "title": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导",
+        "problem": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导航/标题（22:00）",
+        "solution": "AgentEngine 生命周期内稳定 `currentChatSessionId`。⚠️ **已装旧 EXE 仍带此缺陷**，重新打包覆盖后才根治；③ Chat 页两处 UI 缺陷: 标题 `slice(0,8)` 正好截掉的不够看（\"session_\" 恰好 8 字符 → 只剩 \"session_...\"）→ 改显会话真实 title；返回键裸 `<a href=\"/sessions\">` 在桌面 HashRouter 下直接回主菜单 →；验证: langgraph **57/57** · desktop **215/215** · 前端类型 0 错误 · tsup 构建成功 · 端到端 curl 三连 ✓；待办: 用户确认后可清理 sessions.db 中 114 条 session_* 垃圾记录（备份后删）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "b2c",
+          "b3a"
+        ]
+      },
+      {
+        "moduleId": "b2c",
+        "date": "2026-09-19",
+        "title": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导",
+        "problem": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导航/标题（22:00）",
+        "solution": "AgentEngine 生命周期内稳定 `currentChatSessionId`。⚠️ **已装旧 EXE 仍带此缺陷**，重新打包覆盖后才根治；③ Chat 页两处 UI 缺陷: 标题 `slice(0,8)` 正好截掉的不够看（\"session_\" 恰好 8 字符 → 只剩 \"session_...\"）→ 改显会话真实 title；返回键裸 `<a href=\"/sessions\">` 在桌面 HashRouter 下直接回主菜单 →；验证: langgraph **57/57** · desktop **215/215** · 前端类型 0 错误 · tsup 构建成功 · 端到端 curl 三连 ✓；待办: 用户确认后可清理 sessions.db 中 114 条 session_* 垃圾记录（备份后删）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "b2c",
+          "b3a"
+        ]
+      },
+      {
+        "moduleId": "b3a",
+        "date": "2026-09-19",
+        "title": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导",
+        "problem": "[F47:缺陷] 三连修：Checkpoint 面板实数据 + 桌面聊天会话刷屏 + Chat 页导航/标题（22:00）",
+        "solution": "AgentEngine 生命周期内稳定 `currentChatSessionId`。⚠️ **已装旧 EXE 仍带此缺陷**，重新打包覆盖后才根治；③ Chat 页两处 UI 缺陷: 标题 `slice(0,8)` 正好截掉的不够看（\"session_\" 恰好 8 字符 → 只剩 \"session_...\"）→ 改显会话真实 title；返回键裸 `<a href=\"/sessions\">` 在桌面 HashRouter 下直接回主菜单 →；验证: langgraph **57/57** · desktop **215/215** · 前端类型 0 错误 · tsup 构建成功 · 端到端 curl 三连 ✓；待办: 用户确认后可清理 sessions.db 中 114 条 session_* 垃圾记录（备份后删）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f2",
+          "f7",
+          "f8",
+          "f9",
+          "b2c",
+          "b3a"
+        ]
+      },
+      {
         "moduleId": "f11",
         "date": "2026-09-19",
         "title": "[F42:数据库] 第一步落地：SQLite 驱动适配层 + 清掉假库 mock（19:20）",
@@ -12859,5 +12955,5 @@
     "README.md": [],
     "关键陷阱清单.md": []
   },
-  "generatedAt": "2026-09-19T13:44:36.595Z"
+  "generatedAt": "2026-09-19T13:59:43.381Z"
 }
