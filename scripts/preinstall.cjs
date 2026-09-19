@@ -1,16 +1,28 @@
 /**
  * preinstall 脚本 - Node.js 版本兼容性检查
- * 在 pnpm install 前自动运行，拦截不兼容的 Node.js 版本
+ * 在 pnpm install 前自动运行
  *
- * 兼容范围: Node.js 18.x / 20.x / 22.x
- * 拦截版本: Node.js 24.x 及以上 (better-sqlite3 无预编译二进制)
+ * 兼容范围: Node.js >= 18（推荐 20/22 LTS）
+ * - < 18:              硬拦（缺 ES2022+ 特性，跑不了）
+ * - >= 24:             **警告放行**（2026-09-19 起不再硬拦，见下）
  *
- * 参考: docs/09_EasyAgent项目Review与优化建议报告.md P0-1
+ * ── 为什么 Node ≥24 从"硬拦"改为"警告放行"（2026-09-19）──
+ * 原硬拦理由："better-sqlite3 在 Node 24 无预编译二进制"——这**仍是事实**
+ * （12.11.1 无 ABI 137 预编译资产，无 C++ 工具链的机器装不上）。
+ * 但"跑不了"的结论已过时：
+ *   ① 有工具链时源码编译一次即可（本机实测 ABI 137 读写正常）；
+ *   ② 驱动适配层（packages/core/src/db/sqlite.ts）支持 EASYAGENT_SQLITE_DRIVER=node
+ *      用 Node 内置 node:sqlite（≥22.5），零原生依赖。
+ * 且硬拦把整个 pnpm install 打断（LangGraph Demo 实测被拦），
+ * 而 engines 版本上界会随时间腐烂（本条 2026-06 上线，09-19 已误伤 3 个月）。
+ *
+ * EASYAGENT_SKIP_NODE_CHECK=1 已无实际作用（保留仅为兼容旧脚本/文档）。
+ *
+ * 参考: docs/09_EasyAgent项目Review与优化建议报告.md P0-1（历史决策）
  */
 'use strict';
 
 const MIN_NODE = 18;
-const MAX_NODE = 23; // 24.x 以下 (即 <24.0.0)
 
 // 颜色辅助 (不使用第三方库，纯 ANSI)
 const RED = '\x1b[31m';
@@ -19,10 +31,6 @@ const YELLOW = '\x1b[33m';
 const CYAN = '\x1b[36m';
 const BOLD = '\x1b[1m';
 const RESET = '\x1b[0m';
-
-/** 获取平台相关的环境变量设置命令 */
-const isWindows = process.platform === 'win32';
-const SET_ENV_CMD = isWindows ? 'set EASYAGENT_SKIP_NODE_CHECK=1' : 'export EASYAGENT_SKIP_NODE_CHECK=1';
 
 /**
  * 解析 Node.js 版本号
@@ -51,71 +59,52 @@ function main() {
   if (major < MIN_NODE) {
     console.error(
       `${RED}${BOLD}╔══════════════════════════════════════════════════════════════╗${RESET}\n` +
-      `${RED}${BOLD}║  不兼容的 Node.js 版本: ${fullVersion}  ║${RESET}\n` +
-      `${RED}${BOLD}╠══════════════════════════════════════════════════════════════╣${RESET}\n` +
-      `${RED}║  EasyAgent 要求 Node.js >= ${MIN_NODE}.0.0                       ${RESET}\n` +
-      `${RED}║  当前版本: ${fullVersion} 过于陈旧，不支持 ES2022+ 特性      ${RESET}\n` +
-      `${RED}║                                                            ${RESET}\n` +
-      `${CYAN}║  推荐操作:                                                  ${RESET}\n` +
-      `${CYAN}║  1. 安装 Node.js 20 LTS: https://nodejs.org               ${RESET}\n` +
-      `${CYAN}║  2. 或使用 nvm/nvm-windows 切换版本                        ${RESET}\n` +
-      `${RED}${BOLD}╚══════════════════════════════════════════════════════════════╝${RESET}`
+        `${RED}${BOLD}║  不兼容的 Node.js 版本: ${fullVersion}  ║${RESET}\n` +
+        `${RED}${BOLD}╠══════════════════════════════════════════════════════════════╣${RESET}\n` +
+        `${RED}║  EasyAgent 要求 Node.js >= ${MIN_NODE}.0.0                       ${RESET}\n` +
+        `${RED}║  当前版本: ${fullVersion} 过于陈旧，不支持 ES2022+ 特性      ${RESET}\n` +
+        `${RED}║                                                            ${RESET}\n` +
+        `${CYAN}║  推荐操作:                                                  ${RESET}\n` +
+        `${CYAN}║  1. 安装 Node.js 20 LTS: https://nodejs.org               ${RESET}\n` +
+        `${CYAN}║  2. 或使用 nvm/nvm-windows 切换版本                        ${RESET}\n` +
+        `${RED}${BOLD}╚══════════════════════════════════════════════════════════════╝${RESET}`,
     );
     process.exit(1);
   }
 
-  // 2. 最高版本检查 (Node.js < 24.0.0)
-  // better-sqlite3 在 Node.js 24.x 上无预编译二进制，必须从源码编译
-  // 源码编译需要 C++ 工具链 + Python，成功率低，直接拦截
+  // 2. Node.js >= 24 —— **警告放行**（2026-09-19 起不再硬拦，理由见文件头注释）
   if (major >= 24) {
-    console.error(
+    console.warn(
       `${RED}${BOLD}╔══════════════════════════════════════════════════════════════╗${RESET}\n` +
-      `${RED}${BOLD}║  ⚠️  不兼容的 Node.js 版本: ${fullVersion}                          ║${RESET}\n` +
-      `${RED}${BOLD}╠══════════════════════════════════════════════════════════════╣${RESET}\n` +
-      `${RED}║  EasyAgent 当前不支持 Node.js >= 24.0.0                     ${RESET}\n` +
-      `${RED}║  原因: better-sqlite3 (核心数据库) 在 Node 24 上无预编译   ${RESET}\n` +
-      `${RED}║        二进制文件，必须从源码编译 C++ 扩展，成功率仅 ~60%  ${RESET}\n` +
-      `${RED}║                                                            ${RESET}\n` +
-      `${YELLOW}║  两种解决方式:                                              ${RESET}\n` +
-      `${YELLOW}║                                                            ${RESET}\n` +
-      `${GREEN}║  方式一 (推荐): 降级到 Node.js 20 LTS 或 22 LTS            ${RESET}\n` +
-      `${GREEN}║    • nvm install 20                                        ${RESET}\n` +
-      `${GREEN}║    • nvm use 20                                            ${RESET}\n` +
-      `${GREEN}║    • 官网: https://nodejs.org                              ${RESET}\n` +
-      `${GREEN}║                                                            ${RESET}\n` +
-      `${YELLOW}║  方式二 (高级): 保留 ${fullVersion}，手动编译 better-sqlite3  ${RESET}\n` +
-      `${YELLOW}║    • ${SET_ENV_CMD.padEnd(55)}${RESET}\n` +
-      `${YELLOW}║    • 确保已安装 C++ 编译工具链 (VS Build Tools / Xcode)    ${RESET}\n` +
-      `${YELLOW}║    • pnpm install                                          ${RESET}\n` +
-      `${YELLOW}║    • cd packages/core && pnpm rebuild better-sqlite3        ${RESET}\n` +
-      `${RED}║                                                            ${RESET}\n` +
-      `${RED}║  官方 Node 24 支持预计在 better-sqlite3 下一大版本发布     ${RESET}\n` +
-      `${RED}║  跟踪: https://github.com/WiseLibs/better-sqlite3/issues    ${RESET}\n` +
-      `${RED}${BOLD}╚══════════════════════════════════════════════════════════════╝${RESET}`
+        `${YELLOW}${BOLD}║  ⚠️  非推荐版本: ${fullVersion}（推荐 20/22 LTS）                  ║${RESET}\n` +
+        `${YELLOW}${BOLD}╠══════════════════════════════════════════════════════════════╣${RESET}\n` +
+        `${YELLOW}║  better-sqlite3 在 Node 24 无官方预编译二进制，将继续安装， ${RESET}\n` +
+        `${YELLOW}║  但需注意:                                                  ${RESET}\n` +
+        `${YELLOW}║                                                            ${RESET}\n` +
+        `${GREEN}║  • 已装 C++ 工具链 (VS Build Tools / Xcode + Python):      ${RESET}\n` +
+        `${GREEN}║    安装时会自动源码编译一次，之后一切正常                  ${RESET}\n` +
+        `${YELLOW}║  • 无工具链: pnpm install 会在编译 better-sqlite3 时失败   ${RESET}\n` +
+        `${YELLOW}║    → 降级 LTS (nvm install 20)，或:                        ${RESET}\n` +
+        `${CYAN}║  • 免编译替代 (Node >= 22.5): 设                           ${RESET}\n` +
+        `${CYAN}║      EASYAGENT_SQLITE_DRIVER=node                          ${RESET}\n` +
+        `${CYAN}║    使用 Node 内置 node:sqlite（零原生依赖，测试/服务端均可）${RESET}\n` +
+        `${YELLOW}${BOLD}╚══════════════════════════════════════════════════════════════╝${RESET}`,
     );
-
-    // 允许高级用户通过环境变量跳过检查 (自担风险)
-    if (process.env.EASYAGENT_SKIP_NODE_CHECK === '1') {
-      console.warn(
-        `${YELLOW}${BOLD}⚠ EASYAGENT_SKIP_NODE_CHECK=1 已设置，跳过版本检查 (自担风险)${RESET}`
-      );
-      return;
-    }
-
-    process.exit(1);
+    // 放行：让 better-sqlite3 自己的 install 脚本决定能否编译（有工具链即成功）
+    return;
   }
 
   // 3. 警告: 非 LTS 版本
   const isLTS = major === 18 || major === 20 || major === 22;
   if (!isLTS) {
     console.warn(
-      `${YELLOW}⚠ 注意: Node.js ${fullVersion} 不是 LTS 版本，建议切换到 20 LTS 或 22 LTS${RESET}`
+      `${YELLOW}⚠ 注意: Node.js ${fullVersion} 不是 LTS 版本，建议切换到 20 LTS 或 22 LTS${RESET}`,
     );
   }
 
   // 4. 成功
   console.log(
-    `${GREEN}✓ Node.js ${fullVersion} 版本检查通过 (兼容范围: >=${MIN_NODE}.0.0 <${MAX_NODE + 1}.0.0)${RESET}`
+    `${GREEN}✓ Node.js ${fullVersion} 版本检查通过 (要求 >=${MIN_NODE}.0.0；推荐 20/22 LTS)${RESET}`,
   );
 }
 

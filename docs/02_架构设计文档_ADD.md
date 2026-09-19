@@ -55,19 +55,19 @@
 
 ## 二、技术选型
 
-| 层级     | 技术                        | 理由                               | 注意事项                             |
-| -------- | --------------------------- | ---------------------------------- | ------------------------------------ |
-| 运行时   | Node.js 18+                 | Windows兼容性最好，生态丰富        | 推荐 20 LTS                          |
-| 语言     | TypeScript 5.x              | 类型安全，ESM 输出                 |                                      |
-| CLI框架  | Ink (React Terminal)        | 类似Claude Code的终端体验          | Banner/Chat/StatusBar 组件           |
-| Web框架  | Express + React 18 + Vite   | 轻量高效                           | Zustand + WebSocket 流式             |
-| 桌面框架 | Electron 30 + React/Vite    | 原生桌面体验                       | 四件套: Shell/Sidebar/TabBar/Content |
-| 数据库   | **better-sqlite3** (SQLite) | 零配置，本地存储                   | ⚠️ Node 24 需编译工具链              |
-| 测试     | Vitest                      | 快速，Vite生态                     | better-sqlite3 通过 alias mock       |
-| 构建     | tsup + Vite                 | 快速TypeScript打包 + 前端构建      | 多 entry 打包                        |
-| 包管理   | pnpm                        | monorepo workspace                 |                                      |
-| 插件系统 | 自研 PluginManager          | 生命周期 + 钩子 + 技能注册         | IPlugin/ISkill 接口                  |
-| IM协议   | 原生 fetch (零外部依赖)     | Telegram Bot API / 飞书 / 企业微信 | 长轮询 + Webhook                     |
+| 层级     | 技术                        | 理由                               | 注意事项                                                       |
+| -------- | --------------------------- | ---------------------------------- | -------------------------------------------------------------- |
+| 运行时   | Node.js 18+                 | Windows兼容性最好，生态丰富        | 推荐 20 LTS                                                    |
+| 语言     | TypeScript 5.x              | 类型安全，ESM 输出                 |                                                                |
+| CLI框架  | Ink (React Terminal)        | 类似Claude Code的终端体验          | Banner/Chat/StatusBar 组件                                     |
+| Web框架  | Express + React 18 + Vite   | 轻量高效                           | Zustand + WebSocket 流式                                       |
+| 桌面框架 | Electron 30 + React/Vite    | 原生桌面体验                       | 四件套: Shell/Sidebar/TabBar/Content                           |
+| 数据库   | **better-sqlite3** (SQLite) | 零配置，本地存储                   | Node 24 需工具链编译，或 `EASYAGENT_SQLITE_DRIVER=node` 免编译 |
+| 测试     | Vitest                      | 快速，Vite生态                     | better-sqlite3 通过 alias mock                                 |
+| 构建     | tsup + Vite                 | 快速TypeScript打包 + 前端构建      | 多 entry 打包                                                  |
+| 包管理   | pnpm                        | monorepo workspace                 |                                                                |
+| 插件系统 | 自研 PluginManager          | 生命周期 + 钩子 + 技能注册         | IPlugin/ISkill 接口                                            |
+| IM协议   | 原生 fetch (零外部依赖)     | Telegram Bot API / 飞书 / 企业微信 | 长轮询 + Webhook                                               |
 
 ## 三、核心模块设计
 
