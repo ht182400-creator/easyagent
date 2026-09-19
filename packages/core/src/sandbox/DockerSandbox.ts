@@ -16,6 +16,7 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { logger } from '../utils/logger.js';
+import { checkCommand } from './commandSafety.js';
 
 // ==================== 类型定义 ====================
 
@@ -317,52 +318,18 @@ export class DockerSandbox {
   // ==================== 私有方法 ====================
 
   /**
-   * 验证命令是否安全，检测shell元字符以防止命令注入
-   * @param command - 待执行的命令字符串
-   * @throws 如果命令包含不安全的shell元字符
+   * 校验命令可否安全地交给容器内的 `sh -c` 执行
+   *
+   * ⚠️ Docker 模式**必须**经 shell（`docker exec ... sh -c "<command>"`），
+   * 所以「引号外」的元字符仍一律拒绝（管道/重定向/链式 + 变量展开）。
+   * 但引号内是字面量 —— 旧黑名单把引号内的 `(` `)` 也当子 shell 拦掉，
+   * 导致 `node -e 'console.log(1+1)'` 这类命令完全无法执行（2026-09-19 根治）。
    */
   private validateCommand(command: string): void {
-    if (this.containsShellMetacharacters(command)) {
-      throw new Error(
-        `命令包含不安全的 shell 元字符，已被拒绝执行。` +
-          `允许的字符: 字母数字、空格、路径字符(/ \\ . : - _)、引号(用于路径)和常见参数标识符。` +
-          `命令: ${command.slice(0, 200)}`,
-      );
+    const result = checkCommand(command, true);
+    if (result.error) {
+      throw new Error(result.error);
     }
-  }
-
-  /**
-   * 检测字符串是否包含危险的shell元字符
-   * @param input - 待检测的字符串
-   * @returns 如果包含危险字符返回true
-   */
-  private containsShellMetacharacters(input: string): boolean {
-    // 检测以下危险字符和模式:
-    // ;  - 命令分隔符
-    // |  - 管道符
-    // &  - 后台执行 / 命令链接
-    // $  - 变量替换
-    // `  - 命令替换（反引号）
-    // ( ) - 子shell
-    // && || - 逻辑链接符
-    // > < - 重定向
-    // \n \r - 换行注入
-    // # - 注释（可用于截断命令）
-    const dangerousPatterns = [
-      /[;&|`$()><#\x00-\x08\x0B\x0C\x0E-\x1F]/, // 单个危险字符 + 控制字符
-      /&&/, // 逻辑与
-      /\|\|/, // 逻辑或
-      /\n/, // 换行符
-      /\r/, // 回车符
-    ];
-
-    for (const pattern of dangerousPatterns) {
-      if (pattern.test(input)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   /**

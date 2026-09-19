@@ -1,7 +1,7 @@
 {
   "_comment": "路由清单基线（由 __tests__/route-inventory.test.ts 生成）。任何增删改都会让测试失败——这是重构安全网，请 review diff 后再更新。",
-  "_generatedAt": "2026-09-17T16:53:56.301Z",
-  "_count": 93,
+  "_generatedAt": "2026-09-19T05:00:03.992Z",
+  "_count": 95,
   "routes": [
     {
       "method": "GET",
@@ -10,6 +10,14 @@
     {
       "method": "ALL",
       "path": "/api/*"
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/answer"
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/questions"
     },
     {
       "method": "GET",

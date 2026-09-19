@@ -117,7 +117,9 @@ async function main() {
     const errorLines = lines.filter((l) => l.includes('"level":"error"'));
 
     // ── 校验时间戳毫秒精度（ISO 8601 含 .SSS） ──
-    const hasMsTimestamp = lines.some((l) => /"time":"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z"/.test(l));
+    const hasMsTimestamp = lines.some((l) =>
+      /"time":"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z"/.test(l),
+    );
 
     console.log(`\n[verify-runtime-log] ${logFile} 共 ${lines.length} 行`);
     console.log(`  debug 行: ${debugLines.length}`);

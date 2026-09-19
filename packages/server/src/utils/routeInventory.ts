@@ -111,7 +111,9 @@ export function listRoutes(app: Express): RouteRecord[] {
   const router = (app as any)._router as { stack?: ExpressLayer[] } | undefined;
   walk(router?.stack, '');
 
-  return out.sort((a, b) => (a.path === b.path ? a.method.localeCompare(b.method) : a.path.localeCompare(b.path)));
+  return out.sort((a, b) =>
+    a.path === b.path ? a.method.localeCompare(b.method) : a.path.localeCompare(b.path),
+  );
 }
 
 /** 拼接前缀与路径，避免出现 `//` */
@@ -133,10 +135,7 @@ function joinPath(prefix: string, path: string): string {
  */
 function normalizeMethods(methods: readonly string[]): string[] {
   if (methods.includes('_all')) return ['ALL'];
-  if (
-    methods.length >= ALL_METHODS_MIN_COUNT &&
-    methods.every((m) => HTTP_METHOD_SET.has(m))
-  ) {
+  if (methods.length >= ALL_METHODS_MIN_COUNT && methods.every((m) => HTTP_METHOD_SET.has(m))) {
     return ['ALL'];
   }
   return methods.map((m) => m.toUpperCase()).sort();

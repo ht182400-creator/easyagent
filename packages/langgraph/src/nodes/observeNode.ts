@@ -1,11 +1,11 @@
 /**
  * observeNode — 观察与结果处理节点
- * 
+ *
  * 在工具执行后运行，负责：
  * 1. 验证工具执行结果
  * 2. 将结果追加到消息历史（已在 actNode 中通过 ToolMessage 完成）
  * 3. 决定是否继续循环
- * 
+ *
  * 此节点在 actNode 之后、回 loop 之前执行。
  */
 import { AgentState } from '../state/AgentState';
@@ -23,7 +23,7 @@ export interface ObserveNodeConfig {
 
 /**
  * 创建 observe 节点函数
- * 
+ *
  * @param config - 观察节点配置
  * @returns 节点函数
  */
@@ -31,13 +31,21 @@ export function createObserveNode(config: ObserveNodeConfig = {}) {
   const { enableSummary = false, maxResultLength = 2000 } = config;
 
   return async function observeNode(
-    state: typeof AgentState.State
+    state: typeof AgentState.State,
   ): Promise<Partial<typeof AgentState.State>> {
-    log.enter({ turnCount: state.turnCount, maxTurns: state.maxTurns, msgCount: state.messages.length, enableSummary });
+    log.enter({
+      turnCount: state.turnCount,
+      maxTurns: state.maxTurns,
+      msgCount: state.messages.length,
+      enableSummary,
+    });
 
     // 检查轮次是否超限
     if (state.turnCount >= state.maxTurns) {
-      log.warn('轮次超限 → shouldContinue=false', { turnCount: state.turnCount, maxTurns: state.maxTurns });
+      log.warn('轮次超限 → shouldContinue=false', {
+        turnCount: state.turnCount,
+        maxTurns: state.maxTurns,
+      });
       return {
         shouldContinue: false,
         finalResponse: '已达到最大对话轮次。',

@@ -11,10 +11,7 @@ import { resolveWikiLink } from '../services/wikiLinkParser';
  * SyntaxHighlighter 错误边界
  * 防止 SyntaxHighlighter 内部访问不存在的 DOM 节点导致白屏
  */
-class SyntaxErrorBoundary extends Component<
-  { children: ReactNode },
-  { hasError: boolean }
-> {
+class SyntaxErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode }) {
     super(props);
     this.state = { hasError: false };
@@ -95,40 +92,38 @@ export function MarkdownPreview({ docId }: MarkdownPreviewProps) {
         <article className="prose prose-sm max-w-none prose-indigo">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={{
-              code: ({ className, children }) => {
-                const match = /language-(\w+)/.exec(className || '');
-                const text = String(children).replace(/\n$/, '');
-                return match ? (
-                  <SyntaxErrorBoundary>
-                    <SyntaxHighlighter
-                      style={oneLight as any}
-                      language={match[1]}
-                      PreTag="div"
+            components={
+              {
+                code: ({ className, children }) => {
+                  const match = /language-(\w+)/.exec(className || '');
+                  const text = String(children).replace(/\n$/, '');
+                  return match ? (
+                    <SyntaxErrorBoundary>
+                      <SyntaxHighlighter style={oneLight as any} language={match[1]} PreTag="div">
+                        {text}
+                      </SyntaxHighlighter>
+                    </SyntaxErrorBoundary>
+                  ) : (
+                    <code className={className}>{children}</code>
+                  );
+                },
+                a: ({ href, children }) => {
+                  if (href && !href.startsWith('http')) {
+                    return <WikiLink href={href}>{children}</WikiLink>;
+                  }
+                  return (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600"
                     >
-                      {text}
-                    </SyntaxHighlighter>
-                  </SyntaxErrorBoundary>
-                ) : (
-                  <code className={className}>{children}</code>
-                );
-              },
-              a: ({ href, children }) => {
-                if (href && !href.startsWith('http')) {
-                  return <WikiLink href={href}>{children}</WikiLink>;
-                }
-                return (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600"
-                  >
-                    {children}
-                  </a>
-                );
-              },
-            } as Components}
+                      {children}
+                    </a>
+                  );
+                },
+              } as Components
+            }
           >
             {doc.content || ''}
           </ReactMarkdown>

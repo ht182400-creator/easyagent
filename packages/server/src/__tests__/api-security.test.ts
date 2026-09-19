@@ -187,15 +187,15 @@ describe('assertSecurityOk() — 启动期 fail-fast 自检', () => {
   });
 
   it('非回环监听 + 无令牌 → 抛错拒绝启动（核心安全保证）', () => {
-    expect(() => assertSecurityOk('0.0.0.0', makeConfig({ token: null, tokenSource: 'none' }))).toThrow(
-      /拒绝启动/,
-    );
+    expect(() =>
+      assertSecurityOk('0.0.0.0', makeConfig({ token: null, tokenSource: 'none' })),
+    ).toThrow(/拒绝启动/);
   });
 
   it('非回环监听 + 仅自动生成令牌 → 抛错（自动生成的令牌无法被远端记住）', () => {
-    expect(() =>
-      assertSecurityOk('0.0.0.0', makeConfig({ tokenSource: 'generated' })),
-    ).toThrow(/拒绝启动/);
+    expect(() => assertSecurityOk('0.0.0.0', makeConfig({ tokenSource: 'generated' }))).toThrow(
+      /拒绝启动/,
+    );
   });
 
   it('显式设置 EASYAGENT_ALLOW_REMOTE_NO_AUTH 时放行（承担风险）', () => {

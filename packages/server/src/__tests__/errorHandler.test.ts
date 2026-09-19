@@ -19,24 +19,33 @@ function buildApp() {
     throw new Error('同步爆炸');
   });
 
-  app.get('/api/async-reject', asyncHandler(async () => {
-    throw new Error('异步爆炸');
-  }));
+  app.get(
+    '/api/async-reject',
+    asyncHandler(async () => {
+      throw new Error('异步爆炸');
+    }),
+  );
 
-  app.get('/api/status-error', asyncHandler(async (_req, res) => {
-    // 模拟业务错误：带 statusCode 与 code
-    const err = new Error('资源不存在') as Error & { statusCode?: number; code?: string };
-    err.statusCode = 404;
-    err.code = 'SESSION_NOT_FOUND';
-    throw err;
-  }));
+  app.get(
+    '/api/status-error',
+    asyncHandler(async (_req, res) => {
+      // 模拟业务错误：带 statusCode 与 code
+      const err = new Error('资源不存在') as Error & { statusCode?: number; code?: string };
+      err.statusCode = 404;
+      err.code = 'SESSION_NOT_FOUND';
+      throw err;
+    }),
+  );
 
-  app.get('/api/dirty-status', asyncHandler(async () => {
-    // 脏 statusCode（3xx）应回退 500
-    const err = new Error('脏状态码') as Error & { statusCode?: number };
-    err.statusCode = 302;
-    throw err;
-  }));
+  app.get(
+    '/api/dirty-status',
+    asyncHandler(async () => {
+      // 脏 statusCode（3xx）应回退 500
+      const err = new Error('脏状态码') as Error & { statusCode?: number };
+      err.statusCode = 302;
+      throw err;
+    }),
+  );
 
   // 非 API 路径的错误
   app.get('/some-page', () => {

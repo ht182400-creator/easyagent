@@ -145,17 +145,19 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
   fetchInstalled: async () => {
     set({ loading: true });
     try {
-      const loadedPlugins = await apiRequest<Array<{
-        id?: string;
-        name: string;
-        version: string;
-        description?: string;
-        author?: string;
-        enabled: boolean;
-        sourcePath?: string;
-        installedAt?: string;
-        source?: 'market' | 'local';
-      }>>('/api/plugins').catch(() => []);
+      const loadedPlugins = await apiRequest<
+        Array<{
+          id?: string;
+          name: string;
+          version: string;
+          description?: string;
+          author?: string;
+          enabled: boolean;
+          sourcePath?: string;
+          installedAt?: string;
+          source?: 'market' | 'local';
+        }>
+      >('/api/plugins').catch(() => []);
 
       // 按 name 去重（同名插件不会重复加载）
       const merged = new Map<string, InstalledPlugin>();
@@ -163,7 +165,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
         if (!p || !p.name) continue;
         const key = p.name;
         // 优先用后端返回的 id；如果后端没给（极少见），才用 name 兜底
-        const id = p.id && !p.id.startsWith('local:') ? p.id : (p.id || p.name);
+        const id = p.id && !p.id.startsWith('local:') ? p.id : p.id || p.name;
         merged.set(key, {
           id,
           name: p.name,
@@ -202,10 +204,14 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
       // 而 marketplace 中 id 是插件名（如 "obsidian-doc-viewer"）。统一用 name 来匹配。
       const { installed } = get();
       const installedNames = new Set(
-        installed.map((p) => p.name).filter((n): n is string => typeof n === 'string' && n.length > 0),
+        installed
+          .map((p) => p.name)
+          .filter((n): n is string => typeof n === 'string' && n.length > 0),
       );
       const installedIds = new Set(
-        installed.map((p) => p.id).filter((id): id is string => typeof id === 'string' && id.length > 0),
+        installed
+          .map((p) => p.id)
+          .filter((id): id is string => typeof id === 'string' && id.length > 0),
       );
       const enriched = (Array.isArray(plugins) ? plugins : []).map((p) => ({
         ...p,
@@ -318,9 +324,7 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
 
       set((s) => ({
         installed: s.installed.filter((p) => p.id !== pluginId),
-        marketplace: s.marketplace.map((p) =>
-          p.id === pluginId ? { ...p, installed: false } : p,
-        ),
+        marketplace: s.marketplace.map((p) => (p.id === pluginId ? { ...p, installed: false } : p)),
       }));
 
       useAppStore.getState().addNotification({
@@ -441,9 +445,11 @@ export const usePluginsStore = create<PluginsState>((set, get) => ({
         }));
         // 异步重新拉取 installed 列表，更新真实版本号（首次安装或升级时均需要）
         // 解决"已装插件页版本号滞后于磁盘"的问题
-        void get().fetchInstalled().then(() => {
-          void get().checkUpdates();
-        });
+        void get()
+          .fetchInstalled()
+          .then(() => {
+            void get().checkUpdates();
+          });
         useAppStore.getState().addNotification({
           type: 'success',
           message: `插件安装完成`,

@@ -38,22 +38,31 @@ interface EdgeDirection {
 
 /** 默认 6 节点 */
 export const DEFAULT_NODES: GraphNode[] = [
-  { id: 'START',  label: 'START',  type: 'start',    x: 375, y: 40,  w: 90, h: 50, desc: '用户输入' },
-  { id: 'think',  label: 'think',  type: 'process',  x: 375, y: 130, w: 90, h: 56, desc: 'LLM 思考' },
-  { id: 'route',  label: 'route',  type: 'decision', x: 375, y: 240, w: 90, h: 56, desc: '条件路由' },
-  { id: 'observe',label: 'observe',type: 'process',  x: 180, y: 130, w: 90, h: 56, desc: '观察结果' },
-  { id: 'act',    label: 'act',    type: 'process',  x: 180, y: 240, w: 90, h: 56, desc: '执行工具' },
-  { id: 'END',    label: 'END',    type: 'end',      x: 610, y: 240, w: 90, h: 50, desc: '结束' },
+  { id: 'START', label: 'START', type: 'start', x: 375, y: 40, w: 90, h: 50, desc: '用户输入' },
+  { id: 'think', label: 'think', type: 'process', x: 375, y: 130, w: 90, h: 56, desc: 'LLM 思考' },
+  { id: 'route', label: 'route', type: 'decision', x: 375, y: 240, w: 90, h: 56, desc: '条件路由' },
+  {
+    id: 'observe',
+    label: 'observe',
+    type: 'process',
+    x: 180,
+    y: 130,
+    w: 90,
+    h: 56,
+    desc: '观察结果',
+  },
+  { id: 'act', label: 'act', type: 'process', x: 180, y: 240, w: 90, h: 56, desc: '执行工具' },
+  { id: 'END', label: 'END', type: 'end', x: 610, y: 240, w: 90, h: 50, desc: '结束' },
 ];
 
 /** 默认 6 条边 */
 export const DEFAULT_EDGES: GraphEdge[] = [
-  { from: 'START',  to: 'think',   type: 'solid',       label: 'addEdge' },
-  { from: 'think',  to: 'route',   type: 'solid',       label: 'addEdge' },
-  { from: 'route',  to: 'act',     type: 'conditional', label: '有 tool_calls', condition: '>0' },
-  { from: 'route',  to: 'END',     type: 'conditional', label: '无 tool_calls', condition: '=0' },
-  { from: 'act',    to: 'observe', type: 'solid',       label: 'addEdge' },
-  { from: 'observe',to: 'think',   type: 'dashed',      label: '循环',          condition: '<maxTurns' },
+  { from: 'START', to: 'think', type: 'solid', label: 'addEdge' },
+  { from: 'think', to: 'route', type: 'solid', label: 'addEdge' },
+  { from: 'route', to: 'act', type: 'conditional', label: '有 tool_calls', condition: '>0' },
+  { from: 'route', to: 'END', type: 'conditional', label: '无 tool_calls', condition: '=0' },
+  { from: 'act', to: 'observe', type: 'solid', label: 'addEdge' },
+  { from: 'observe', to: 'think', type: 'dashed', label: '循环', condition: '<maxTurns' },
 ];
 
 // ==================== 几何计算工具 ====================
@@ -63,10 +72,10 @@ function getPortOffset(node: GraphNode) {
   const cx = node.x + node.w / 2;
   const cy = node.y + node.h / 2;
   return {
-    top:    { x: cx, y: node.y },
+    top: { x: cx, y: node.y },
     bottom: { x: cx, y: node.y + node.h },
-    left:   { x: node.x, y: cy },
-    right:  { x: node.x + node.w, y: cy },
+    left: { x: node.x, y: cy },
+    right: { x: node.x + node.w, y: cy },
     cx,
     cy,
   };
@@ -79,13 +88,9 @@ function getEdgeDirection(from: GraphNode, to: GraphNode): EdgeDirection {
   const dx = t.cx - f.cx;
   const dy = t.cy - f.cy;
   if (Math.abs(dx) < 50) {
-    return dy > 0
-      ? { fromSide: 'bottom', toSide: 'top' }
-      : { fromSide: 'top', toSide: 'bottom' };
+    return dy > 0 ? { fromSide: 'bottom', toSide: 'top' } : { fromSide: 'top', toSide: 'bottom' };
   }
-  return dx > 0
-    ? { fromSide: 'right', toSide: 'left' }
-    : { fromSide: 'left', toSide: 'right' };
+  return dx > 0 ? { fromSide: 'right', toSide: 'left' } : { fromSide: 'left', toSide: 'right' };
 }
 
 /** 生成 SVG 路径 d 属性 */
@@ -114,23 +119,26 @@ function getEdgeLabelPos(from: GraphNode, to: GraphNode): { x: number; y: number
   if (dir.fromSide === 'right' || dir.fromSide === 'left') {
     return { x: (fp[dir.fromSide].x + tp[dir.toSide].x) / 2, y: Math.min(from.y, to.y) - 6 };
   }
-  return { x: (fp[dir.fromSide].x + tp[dir.toSide].x) / 2, y: (fp[dir.fromSide].y + tp[dir.toSide].y) / 2 - 8 };
+  return {
+    x: (fp[dir.fromSide].x + tp[dir.toSide].x) / 2,
+    y: (fp[dir.fromSide].y + tp[dir.toSide].y) / 2 - 8,
+  };
 }
 
 // ==================== 节点颜色映射 ====================
 
 const NODE_COLORS: Record<string, string> = {
-  start:    '#8899aa',
-  process:  '#00e5ff',
+  start: '#8899aa',
+  process: '#00e5ff',
   decision: '#ffb74d',
-  end:      '#8899aa',
+  end: '#8899aa',
 };
 
 const NODE_BG: Record<string, string> = {
-  start:    '#141e26',
-  process:  '#0e1a22',
+  start: '#141e26',
+  process: '#0e1a22',
   decision: '#1a1610',
-  end:      '#111a1e',
+  end: '#111a1e',
 };
 
 // ==================== Props ====================
@@ -178,10 +186,7 @@ export default function GraphCanvas({
   }, [nodes]);
 
   // 循环边计数
-  const loopEdgeCount = useMemo(
-    () => edges.filter((e) => e.type === 'dashed').length,
-    [edges],
-  );
+  const loopEdgeCount = useMemo(() => edges.filter((e) => e.type === 'dashed').length, [edges]);
   const hasCycle = loopEdgeCount > 0;
 
   return (
@@ -192,9 +197,7 @@ export default function GraphCanvas({
       {/* 头部 */}
       {showMeta && (
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1a2530] bg-black/20">
-          <h2 className="text-sm font-medium text-[#00e5ff] tracking-wider">
-            ◈ 有向图结构
-          </h2>
+          <h2 className="text-sm font-medium text-[#00e5ff] tracking-wider">◈ 有向图结构</h2>
           <div className="flex gap-4 text-[11px] text-[#4a5568]">
             <span>节点: {nodes.length}</span>
             <span>边: {edges.length}</span>
@@ -239,7 +242,9 @@ export default function GraphCanvas({
                   fill="none"
                   stroke={isActive ? '#00e5ff' : '#2a3a4a'}
                   strokeWidth={isActive ? 2.5 : 2}
-                  strokeDasharray={edge.type === 'conditional' ? '6 4' : edge.type === 'dashed' ? '4 6' : undefined}
+                  strokeDasharray={
+                    edge.type === 'conditional' ? '6 4' : edge.type === 'dashed' ? '4 6' : undefined
+                  }
                   markerEnd={`url(#arrow-${edge.type}${isActive ? '-active' : ''})`}
                   style={{
                     filter: isActive ? 'drop-shadow(0 0 4px rgba(0,229,255,0.4))' : undefined,
@@ -291,9 +296,7 @@ export default function GraphCanvas({
                   stroke={color}
                   strokeWidth={2}
                   style={{
-                    filter: isHighlighted
-                      ? 'drop-shadow(0 0 12px rgba(0,229,255,0.6))'
-                      : undefined,
+                    filter: isHighlighted ? 'drop-shadow(0 0 12px rgba(0,229,255,0.6))' : undefined,
                     transition: 'all 0.3s ease',
                   }}
                   className={isHighlighted ? 'animate-node-glow' : ''}
@@ -374,10 +377,24 @@ const defsMarkers = (
       const activeColor = type === 'conditional' ? '#ffb74d' : '#00e5ff';
       return (
         <React.Fragment key={type}>
-          <marker id={`arrow-${type}`} markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <marker
+            id={`arrow-${type}`}
+            markerWidth="10"
+            markerHeight="7"
+            refX="10"
+            refY="3.5"
+            orient="auto"
+          >
             <path d="M0,0 L10,3.5 L0,7 Z" fill={baseColor} />
           </marker>
-          <marker id={`arrow-${type}-active`} markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <marker
+            id={`arrow-${type}-active`}
+            markerWidth="10"
+            markerHeight="7"
+            refX="10"
+            refY="3.5"
+            orient="auto"
+          >
             <path d="M0,0 L10,3.5 L0,7 Z" fill={activeColor} />
           </marker>
         </React.Fragment>

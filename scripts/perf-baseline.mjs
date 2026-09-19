@@ -107,7 +107,12 @@ function getRandomPort() {
 async function measureStartupOnce(port) {
   const baseUrl = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, [SERVER_ENTRY], {
-    env: { ...process.env, PORT: String(port), HOST: '127.0.0.1', EASYAGENT_DISABLE_RATE_LIMIT: '1' },
+    env: {
+      ...process.env,
+      PORT: String(port),
+      HOST: '127.0.0.1',
+      EASYAGENT_DISABLE_RATE_LIMIT: '1',
+    },
     stdio: 'ignore',
   });
 
@@ -176,8 +181,12 @@ async function measureAll() {
 
   // ── 3. 工具 schema token（复用 core 的估算器，与 measure-context 口径一致）──
   process.env.LOG_LEVEL = process.env.LOG_LEVEL || 'silent';
-  const coreRequire = createRequire(pathToFileURL(join(process.cwd(), 'packages', 'core', 'dist', 'index.js')).href);
-  const core = await import(pathToFileURL(join(process.cwd(), 'packages', 'core', 'dist', 'index.js')).href);
+  const coreRequire = createRequire(
+    pathToFileURL(join(process.cwd(), 'packages', 'core', 'dist', 'index.js')).href,
+  );
+  const core = await import(
+    pathToFileURL(join(process.cwd(), 'packages', 'core', 'dist', 'index.js')).href
+  );
   const registry = new core.ToolRegistry();
   registry.registerAll(core.getAllBuiltinTools());
   const toolDefs = registry.getDefinitions();
@@ -205,7 +214,8 @@ async function measureAll() {
     },
     notes: {
       tokenPerTask: '需要 provider key；本地 pnpm benchmark 跑出后人工补录',
-      method: 'startupMs/healthRttMs 为多次测量中位数；toolSchemaTokens 复用 core estimateToolDefinitionsTokens',
+      method:
+        'startupMs/healthRttMs 为多次测量中位数；toolSchemaTokens 复用 core estimateToolDefinitionsTokens',
     },
   };
 }
@@ -242,7 +252,9 @@ function checkAgainstBaseline(current, baseline) {
     } else if (deltaPct > warnPct) {
       log.warn(`⚠️ [WARN] ${line} — 劣化超过 ${warnPct}%`);
       // GitHub Actions 注解（windows runner 上无效但无副作用）
-      console.log(`::warning::性能回归 ${label} 劣化 ${deltaPct.toFixed(1)}%（基线 ${base} → ${now}）`);
+      console.log(
+        `::warning::性能回归 ${label} 劣化 ${deltaPct.toFixed(1)}%（基线 ${base} → ${now}）`,
+      );
     } else {
       log.info(`✅ ${line}`);
     }

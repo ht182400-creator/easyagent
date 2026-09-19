@@ -536,9 +536,7 @@ function normalizeContent(content: string | ContentBlock[]): string | AnthropicC
 function safeParseJson(text: string): Record<string, unknown> {
   try {
     const parsed = JSON.parse(text || '{}');
-    return typeof parsed === 'object' && parsed !== null
-      ? (parsed as Record<string, unknown>)
-      : {};
+    return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : {};
   } catch {
     return {};
   }

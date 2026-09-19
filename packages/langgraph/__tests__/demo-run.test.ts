@@ -10,13 +10,23 @@ import { createAgentGraph } from '../src/graph/agentGraph';
 
 // ==================== Mock 工厂 ====================
 
-function mockChat(responses: Array<{ c?: string; tc?: Array<{ id: string; n: string; a: Record<string, unknown> }>; fr?: string }>) {
+function mockChat(
+  responses: Array<{
+    c?: string;
+    tc?: Array<{ id: string; n: string; a: Record<string, unknown> }>;
+    fr?: string;
+  }>,
+) {
   let i = 0;
   return vi.fn((_m: unknown[], _o?: unknown) => {
     const r = responses[i++] || { c: '', fr: 'stop' };
     return Promise.resolve({
       content: r.c || '',
-      toolCalls: r.tc?.map(t => ({ id: t.id, type: 'function' as const, function: { name: t.n, arguments: JSON.stringify(t.a) } })),
+      toolCalls: r.tc?.map((t) => ({
+        id: t.id,
+        type: 'function' as const,
+        function: { name: t.n, arguments: JSON.stringify(t.a) },
+      })),
       finishReason: r.fr || 'stop',
       usage: { inputTokens: 10, outputTokens: 5 },
     });
@@ -26,7 +36,7 @@ function mockChat(responses: Array<{ c?: string; tc?: Array<{ id: string; n: str
 function mockExec(results: Record<string, { ok: boolean; out: string }> = {}) {
   return {
     execute: vi.fn((name: string, _p: Record<string, unknown>) =>
-      Promise.resolve(results[name] || { success: true, content: `${name} 完成` })
+      Promise.resolve(results[name] || { success: true, content: `${name} 完成` }),
     ),
   };
 }
@@ -95,7 +105,8 @@ describe('LangGraph 有向图 运行 Demo', () => {
     console.log('  输入: HumanMessage("你好")');
     const r = await graph.invoke({
       messages: [new HumanMessage({ content: '你好' })],
-      sessionId: 'demo-1', maxTurns: 5,
+      sessionId: 'demo-1',
+      maxTurns: 5,
     });
 
     const msgs = r.messages as any[];
@@ -120,22 +131,38 @@ describe('LangGraph 有向图 运行 Demo', () => {
 
     const chat = mockChat([
       // 第 1 轮: LLM 决定调用工具
-      { c: '让我查询北京天气', tc: [{ id: 'c1', n: 'get_weather', a: { city: '北京' } }], fr: 'tool_calls' },
+      {
+        c: '让我查询北京天气',
+        tc: [{ id: 'c1', n: 'get_weather', a: { city: '北京' } }],
+        fr: 'tool_calls',
+      },
       // 第 2 轮: LLM 收到工具结果后回复
       { c: '北京今天晴天，气温 25°C，适合出行。', fr: 'stop' },
     ]);
     const exec = mockExec({ get_weather: { ok: true, out: '晴天 25°C' } });
     const graph = createAgentGraph({
-      think: { chat, getToolDefinitions: () => [
-        { name: 'get_weather', description: '查询天气', parameters: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] } },
-      ] },
+      think: {
+        chat,
+        getToolDefinitions: () => [
+          {
+            name: 'get_weather',
+            description: '查询天气',
+            parameters: {
+              type: 'object',
+              properties: { city: { type: 'string' } },
+              required: ['city'],
+            },
+          },
+        ],
+      },
       act: { toolExecutor: exec },
     });
 
     console.log('  输入: HumanMessage("北京今天天气怎么样？")');
     const r = await graph.invoke({
       messages: [new HumanMessage({ content: '北京今天天气怎么样？' })],
-      sessionId: 'demo-2', maxTurns: 5,
+      sessionId: 'demo-2',
+      maxTurns: 5,
     });
 
     const msgs = r.messages as any[];
@@ -166,24 +193,35 @@ describe('LangGraph 有向图 运行 Demo', () => {
     console.log('─'.repeat(55));
 
     const chat = mockChat([
-      { c: '并发查询', tc: [
-        { id: 'c1', n: 'get_weather', a: { city: '深圳' } },
-        { id: 'c2', n: 'get_time', a: {} },
-      ], fr: 'tool_calls' },
+      {
+        c: '并发查询',
+        tc: [
+          { id: 'c1', n: 'get_weather', a: { city: '深圳' } },
+          { id: 'c2', n: 'get_time', a: {} },
+        ],
+        fr: 'tool_calls',
+      },
       { c: '深圳今天多云，当前时间 2026-06-28 14:30', fr: 'stop' },
     ]);
-    const exec = mockExec({ get_weather: { ok: true, out: '多云 30°C' }, get_time: { ok: true, out: '2026-06-28 14:30' } });
+    const exec = mockExec({
+      get_weather: { ok: true, out: '多云 30°C' },
+      get_time: { ok: true, out: '2026-06-28 14:30' },
+    });
     const graph = createAgentGraph({
-      think: { chat, getToolDefinitions: () => [
-        { name: 'get_weather', description: '', parameters: { type: 'object', properties: {} } },
-        { name: 'get_time', description: '', parameters: { type: 'object', properties: {} } },
-      ] },
+      think: {
+        chat,
+        getToolDefinitions: () => [
+          { name: 'get_weather', description: '', parameters: { type: 'object', properties: {} } },
+          { name: 'get_time', description: '', parameters: { type: 'object', properties: {} } },
+        ],
+      },
       act: { toolExecutor: exec },
     });
 
     const r = await graph.invoke({
       messages: [new HumanMessage({ content: '深圳天气和时间' })],
-      sessionId: 'demo-3', maxTurns: 5,
+      sessionId: 'demo-3',
+      maxTurns: 5,
     });
 
     const msgs = r.messages as any[];
@@ -212,19 +250,23 @@ describe('LangGraph 有向图 运行 Demo', () => {
     console.log('─'.repeat(55));
 
     const chat = mockChat(
-      Array(10).fill({ c: '仍在计算...', tc: [{ id: 'cx', n: 'loop', a: {} }], fr: 'tool_calls' })
+      Array(10).fill({ c: '仍在计算...', tc: [{ id: 'cx', n: 'loop', a: {} }], fr: 'tool_calls' }),
     );
     const exec = mockExec({ loop: { ok: true, out: 'looping' } });
     const graph = createAgentGraph({
-      think: { chat, getToolDefinitions: () => [
-        { name: 'loop', description: '', parameters: { type: 'object', properties: {} } },
-      ] },
+      think: {
+        chat,
+        getToolDefinitions: () => [
+          { name: 'loop', description: '', parameters: { type: 'object', properties: {} } },
+        ],
+      },
       act: { toolExecutor: exec },
     });
 
     const r = await graph.invoke({
       messages: [new HumanMessage({ content: '开始无限循环' })],
-      sessionId: 'demo-4', maxTurns: 3,
+      sessionId: 'demo-4',
+      maxTurns: 3,
     });
 
     console.log('  节点流转:');
@@ -300,5 +342,4 @@ describe('LangGraph 有向图 运行 Demo', () => {
   it('打印图结构', () => {
     console.log(GRAPH_ASCII);
   });
-
 });

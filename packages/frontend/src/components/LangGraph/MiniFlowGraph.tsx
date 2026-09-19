@@ -8,12 +8,12 @@ import type { Scenario, MiniNodePos, MiniFlowGraphProps } from './types';
 // ==================== 迷你节点布局 ====================
 
 const MINI_NODE_POS: Record<string, MiniNodePos> = {
-  START:   { cx: 375, cy: 30,  w: 56, h: 30, color: '#6b7b8d', label: '入口' },
-  think:   { cx: 375, cy: 110, w: 56, h: 34, color: '#00e5ff', label: 'LLM 思考' },
-  route:   { cx: 375, cy: 200, w: 56, h: 34, color: '#ffb74d', label: '条件路由' },
-  act:     { cx: 195, cy: 200, w: 56, h: 34, color: '#ff5252', label: '执行工具' },
+  START: { cx: 375, cy: 30, w: 56, h: 30, color: '#6b7b8d', label: '入口' },
+  think: { cx: 375, cy: 110, w: 56, h: 34, color: '#00e5ff', label: 'LLM 思考' },
+  route: { cx: 375, cy: 200, w: 56, h: 34, color: '#ffb74d', label: '条件路由' },
+  act: { cx: 195, cy: 200, w: 56, h: 34, color: '#ff5252', label: '执行工具' },
   observe: { cx: 195, cy: 110, w: 56, h: 34, color: '#00ff88', label: '观察结果' },
-  END:     { cx: 570, cy: 200, w: 56, h: 30, color: '#6b7b8d', label: '结束' },
+  END: { cx: 570, cy: 200, w: 56, h: 30, color: '#6b7b8d', label: '结束' },
 };
 
 // ==================== 遍历分析 ====================
@@ -29,12 +29,12 @@ function computeSegments(path: string[]): { node: string; step: number; isEnd: b
 
 /** 计算所有可能的边 */
 const ALL_EDGES: { from: string; to: string; type: string }[] = [
-  { from: 'START',  to: 'think',   type: 'solid' },
-  { from: 'think',  to: 'route',   type: 'solid' },
-  { from: 'route',  to: 'act',     type: 'conditional' },
-  { from: 'route',  to: 'END',     type: 'conditional' },
-  { from: 'act',    to: 'observe', type: 'solid' },
-  { from: 'observe',to: 'think',   type: 'loop' },
+  { from: 'START', to: 'think', type: 'solid' },
+  { from: 'think', to: 'route', type: 'solid' },
+  { from: 'route', to: 'act', type: 'conditional' },
+  { from: 'route', to: 'END', type: 'conditional' },
+  { from: 'act', to: 'observe', type: 'solid' },
+  { from: 'observe', to: 'think', type: 'loop' },
 ];
 
 // ==================== 迷你边路径计算 ====================
@@ -66,7 +66,7 @@ function getMiniEdgePath(
 function computeOffsets(count: number): number[] {
   const spacing = 6;
   if (count === 1) return [0];
-  const start = -(count - 1) * spacing / 2;
+  const start = (-(count - 1) * spacing) / 2;
   return Array.from({ length: count }, (_, i) => start + i * spacing);
 }
 
@@ -123,10 +123,24 @@ export default function MiniFlowGraph({
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <marker id={`mini-arrow-${scenario.id}`} markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+        <marker
+          id={`mini-arrow-${scenario.id}`}
+          markerWidth="6"
+          markerHeight="5"
+          refX="6"
+          refY="2.5"
+          orient="auto"
+        >
           <path d="M0,0 L6,2.5 L0,5 Z" fill="#00e5ff" opacity="0.8" />
         </marker>
-        <marker id={`mini-arrow-dim-${scenario.id}`} markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+        <marker
+          id={`mini-arrow-dim-${scenario.id}`}
+          markerWidth="6"
+          markerHeight="5"
+          refX="6"
+          refY="2.5"
+          orient="auto"
+        >
           <path d="M0,0 L6,2.5 L0,5 Z" fill="#1a2530" opacity="0.4" />
         </marker>
       </defs>

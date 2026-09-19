@@ -1,6 +1,6 @@
 /**
  * actNode — 工具执行节点
- * 
+ *
  * 解析 AIMessage 中的 tool_calls，按依赖关系并行或串行执行工具。
  * 支持：
  * - 独立工具并行执行（默认）
@@ -28,10 +28,7 @@ export interface ToolExecutor {
    * @param params - 工具参数
    * @returns 执行结果
    */
-  execute(
-    name: string,
-    params: Record<string, unknown>
-  ): Promise<ToolResult>;
+  execute(name: string, params: Record<string, unknown>): Promise<ToolResult>;
 }
 
 /**
@@ -60,7 +57,7 @@ export interface ActNodeConfig {
 
 /**
  * 创建 act 节点函数
- * 
+ *
  * @param config - 工具执行配置
  * @returns 节点函数
  */
@@ -68,7 +65,7 @@ export function createActNode(config: ActNodeConfig) {
   const { toolExecutor, forceSequential = false, toolTimeout = 120_000 } = config;
 
   return async function actNode(
-    state: typeof AgentState.State
+    state: typeof AgentState.State,
   ): Promise<Partial<typeof AgentState.State>> {
     log.enter({ turnCount: state.turnCount, mode: forceSequential ? '串行' : '并行' });
 
@@ -85,11 +82,13 @@ export function createActNode(config: ActNodeConfig) {
       return {};
     }
 
-    const toolCalls = (lastMessage as unknown as Record<string, unknown>).tool_calls as NonNullable<AIMessage['tool_calls']>;
+    const toolCalls = (lastMessage as unknown as Record<string, unknown>).tool_calls as NonNullable<
+      AIMessage['tool_calls']
+    >;
 
     log.info('工具调用列表', {
       count: toolCalls.length,
-      tools: toolCalls.map(tc => ({ name: tc.name, args: tc.args })),
+      tools: toolCalls.map((tc) => ({ name: tc.name, args: tc.args })),
       mode: forceSequential ? '串行' : '并行',
     });
 
@@ -102,14 +101,17 @@ export function createActNode(config: ActNodeConfig) {
         const toolTimer = log.startTimer(`工具执行 [串行] ${tc.name}`);
         const msg = await executeSingleTool(tc.id!, tc.name, tc.args, toolExecutor, toolTimeout);
         const contentStr = msg.content as string;
-        toolTimer({ name: tc.name, success: !contentStr.startsWith('工具执行失败') && !contentStr.startsWith('工具执行异常') });
+        toolTimer({
+          name: tc.name,
+          success: !contentStr.startsWith('工具执行失败') && !contentStr.startsWith('工具执行异常'),
+        });
         results.push(msg);
       }
     } else {
       // 并行执行所有工具（默认）
       const parallelTimer = log.startTimer(`工具并行执行 (${toolCalls.length}个)`);
       const promises = toolCalls.map((tc) =>
-        executeSingleTool(tc.id!, tc.name, tc.args, toolExecutor, toolTimeout)
+        executeSingleTool(tc.id!, tc.name, tc.args, toolExecutor, toolTimeout),
       );
       results = await Promise.all(promises);
       parallelTimer({ toolCount: toolCalls.length });
@@ -122,7 +124,8 @@ export function createActNode(config: ActNodeConfig) {
       const r = results[i];
       const tc = toolCalls[i];
       const rContent = r.content as string;
-      const isSuccess = rContent && !rContent.startsWith('工具执行失败') && !rContent.startsWith('工具执行异常');
+      const isSuccess =
+        rContent && !rContent.startsWith('工具执行失败') && !rContent.startsWith('工具执行异常');
       if (isSuccess) {
         successCount++;
       } else {
@@ -136,7 +139,8 @@ export function createActNode(config: ActNodeConfig) {
     }
 
     // 连续失败计数：只要本轮有任意工具成功就重置为 0，否则累加失败数
-    const consecutiveFailures = successCount > 0 ? 0 : (state.consecutiveFailures || 0) + failureCount;
+    const consecutiveFailures =
+      successCount > 0 ? 0 : (state.consecutiveFailures || 0) + failureCount;
     if (consecutiveFailures > 0) {
       log.warn('本轮工具全部失败', { successCount, failureCount, consecutiveFailures });
     }
@@ -157,7 +161,7 @@ async function executeSingleTool(
   name: string,
   args: Record<string, unknown>,
   executor: ToolExecutor,
-  timeout: number
+  timeout: number,
 ): Promise<ToolMessage> {
   try {
     // 带超时的工具执行
@@ -170,7 +174,7 @@ async function executeSingleTool(
             content: '',
             error: `工具 "${name}" 执行超时 (${timeout / 1000}s)`,
           });
-        }, timeout)
+        }, timeout),
       ),
     ]);
 
@@ -191,7 +195,9 @@ async function executeSingleTool(
       const contentStr =
         typeof result.content === 'string'
           ? result.content
-          : (result.content == null ? '' : String(result.content));
+          : result.content == null
+            ? ''
+            : String(result.content);
       return new ToolMessage({
         tool_call_id: callId,
         name,

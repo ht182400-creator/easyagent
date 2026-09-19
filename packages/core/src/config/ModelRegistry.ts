@@ -236,7 +236,11 @@ async function loadCatalogFromSources(): Promise<CatalogLoadResult | null> {
   if (fallback) return { catalog: fallback, source: 'jsDelivr CDN' };
 
   logger.warn(
-    { triedCustomUrl: !!CUSTOM_CATALOG_URL, triedFile: !!CUSTOM_CATALOG_FILE, mirrors: CATALOG_MIRRORS.length },
+    {
+      triedCustomUrl: !!CUSTOM_CATALOG_URL,
+      triedFile: !!CUSTOM_CATALOG_FILE,
+      mirrors: CATALOG_MIRRORS.length,
+    },
     '所有模型目录源均不可用，将退回本地缓存/内置数据',
   );
   return null;
@@ -353,14 +357,21 @@ export class ModelRegistry {
           this.source = loaded.source;
           writeLocalCache(loaded.catalog, loaded.source);
           logger.info(
-            { version: loaded.catalog.version, providers: loaded.catalog.providers.length, source: loaded.source },
+            {
+              version: loaded.catalog.version,
+              providers: loaded.catalog.providers.length,
+              source: loaded.source,
+            },
             '模型目录已更新',
           );
         } else if (localCache) {
           // 所有远程源都失败，使用本地缓存（**不因网络问题丢弃已有数据**）
           this.catalog = localCache.catalog;
           this.source = `${localCache.source}（缓存，远程不可达）`;
-          logger.warn({ cachedSource: localCache.source }, '所有目录源不可达，使用本地缓存模型目录');
+          logger.warn(
+            { cachedSource: localCache.source },
+            '所有目录源不可达，使用本地缓存模型目录',
+          );
         } else {
           // 远程和缓存都失败，尝试项目内置的 models-catalog.json 兜底
           const bundled = readBundledCatalog();
@@ -489,7 +500,9 @@ export class ModelRegistry {
   getFreshness(maxAgeDays = DEFAULT_CATALOG_MAX_AGE_DAYS): CatalogFreshness {
     const generatedAt = this.catalog?.generatedAt || null;
     const parsed = generatedAt ? Date.parse(generatedAt) : NaN;
-    const age = Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : (Date.now() - parsed) / 86_400_000;
+    const age = Number.isNaN(parsed)
+      ? Number.POSITIVE_INFINITY
+      : (Date.now() - parsed) / 86_400_000;
     return {
       generatedAt,
       ageDays: Number.isFinite(age) ? Number(age.toFixed(1)) : null,

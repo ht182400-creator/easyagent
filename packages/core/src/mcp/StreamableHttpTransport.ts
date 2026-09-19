@@ -70,10 +70,7 @@ export class StreamableHttpTransport {
    * @returns 响应的 result
    * @throws 服务器返回 JSON-RPC error / HTTP 错误 / 会话失效 / 超时
    */
-  async request(
-    message: JsonRpcMessage,
-    onNotification?: NotificationHandler,
-  ): Promise<unknown> {
+  async request(message: JsonRpcMessage, onNotification?: NotificationHandler): Promise<unknown> {
     const result = await this.send(message, onNotification);
     if (result.error) {
       throw new Error(result.error.message || `MCP JSON-RPC 错误 (code=${result.error.code})`);
@@ -99,7 +96,10 @@ export class StreamableHttpTransport {
         signal: AbortSignal.timeout(5000),
       });
     } catch (err) {
-      logger.debug({ url: this.url, error: (err as Error).message }, 'MCP 会话终止请求失败（忽略）');
+      logger.debug(
+        { url: this.url, error: (err as Error).message },
+        'MCP 会话终止请求失败（忽略）',
+      );
     }
   }
 

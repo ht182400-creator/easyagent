@@ -142,7 +142,11 @@ describe('PluginMarketService — 安装流程 (installPlugin)', () => {
   });
 
   afterEach(() => {
-    try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.clearAllMocks();
   });
 
@@ -208,21 +212,31 @@ describe('PluginMarketService — 卸载流程 (uninstallPlugin)', () => {
     // 写入 installed.json
     writeFileSync(
       join(tmpDir, 'installed.json'),
-      JSON.stringify({
-        plugins: [{
-          id: 'test/existing-plugin',
-          name: 'existing-plugin',
-          version: '1.0.0',
-          installedAt: new Date().toISOString(),
-          source: 'market',
-        }],
-      }, null, 2),
+      JSON.stringify(
+        {
+          plugins: [
+            {
+              id: 'test/existing-plugin',
+              name: 'existing-plugin',
+              version: '1.0.0',
+              installedAt: new Date().toISOString(),
+              source: 'market',
+            },
+          ],
+        },
+        null,
+        2,
+      ),
       'utf-8',
     );
   });
 
   afterEach(() => {
-    try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.clearAllMocks();
   });
 
@@ -265,9 +279,7 @@ describe('PluginMarketService — 卸载流程 (uninstallPlugin)', () => {
 
   it('卸载不存在的插件不应抛出异常', async () => {
     // 不应抛出异常
-    await expect(
-      service.uninstallPlugin('test/nonexistent-plugin'),
-    ).resolves.not.toThrow();
+    await expect(service.uninstallPlugin('test/nonexistent-plugin')).resolves.not.toThrow();
   });
 
   it('unload 回调失败不应阻断卸载流程', async () => {
@@ -275,9 +287,7 @@ describe('PluginMarketService — 卸载流程 (uninstallPlugin)', () => {
     service.setPluginUnloadCallback(unloadCb);
 
     // 不应抛出异常
-    await expect(
-      service.uninstallPlugin('test/existing-plugin'),
-    ).resolves.not.toThrow();
+    await expect(service.uninstallPlugin('test/existing-plugin')).resolves.not.toThrow();
 
     // 即使回调失败，目录仍应被删除
     expect(existsSync(join(tmpDir, 'existing-plugin'))).toBe(false);
@@ -295,30 +305,38 @@ describe('PluginMarketService — 已安装插件查询', () => {
     // 预写 installed.json
     writeFileSync(
       join(tmpDir, 'installed.json'),
-      JSON.stringify({
-        plugins: [
-          {
-            id: 'alice/plugin-a',
-            name: 'plugin-a',
-            version: '1.0.0',
-            installedAt: '2026-06-01T00:00:00Z',
-            source: 'market',
-          },
-          {
-            id: 'bob/plugin-b',
-            name: 'plugin-b',
-            version: '0.5.0',
-            installedAt: '2026-06-15T00:00:00Z',
-            source: 'local',
-          },
-        ],
-      }, null, 2),
+      JSON.stringify(
+        {
+          plugins: [
+            {
+              id: 'alice/plugin-a',
+              name: 'plugin-a',
+              version: '1.0.0',
+              installedAt: '2026-06-01T00:00:00Z',
+              source: 'market',
+            },
+            {
+              id: 'bob/plugin-b',
+              name: 'plugin-b',
+              version: '0.5.0',
+              installedAt: '2026-06-15T00:00:00Z',
+              source: 'local',
+            },
+          ],
+        },
+        null,
+        2,
+      ),
       'utf-8',
     );
   });
 
   afterEach(() => {
-    try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.clearAllMocks();
   });
 
@@ -369,30 +387,38 @@ describe('PluginMarketService — 更新检查 (checkAllUpdates)', () => {
 
     writeFileSync(
       join(tmpDir, 'installed.json'),
-      JSON.stringify({
-        plugins: [
-          {
-            id: 'test/old-plugin',
-            name: 'old-plugin',
-            version: '1.0.0',
-            installedAt: '2026-01-01T00:00:00Z',
-            source: 'market',
-          },
-          {
-            id: 'test/new-plugin',
-            name: 'new-plugin',
-            version: '2.0.0',
-            installedAt: '2026-01-01T00:00:00Z',
-            source: 'market',
-          },
-        ],
-      }, null, 2),
+      JSON.stringify(
+        {
+          plugins: [
+            {
+              id: 'test/old-plugin',
+              name: 'old-plugin',
+              version: '1.0.0',
+              installedAt: '2026-01-01T00:00:00Z',
+              source: 'market',
+            },
+            {
+              id: 'test/new-plugin',
+              name: 'new-plugin',
+              version: '2.0.0',
+              installedAt: '2026-01-01T00:00:00Z',
+              source: 'market',
+            },
+          ],
+        },
+        null,
+        2,
+      ),
       'utf-8',
     );
   });
 
   afterEach(() => {
-    try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.clearAllMocks();
   });
 
@@ -421,7 +447,7 @@ describe('PluginMarketService — 更新检查 (checkAllUpdates)', () => {
     const updates = await service.checkAllUpdates();
 
     expect(updates.get('test/old-plugin')).toBe('1.5.0'); // 有更新
-    expect(updates.get('test/new-plugin')).toBeNull();     // 已是最新
+    expect(updates.get('test/new-plugin')).toBeNull(); // 已是最新
   });
 
   it('所有插件都是最新时应全部返回 null', async () => {
@@ -491,7 +517,11 @@ describe('PluginMarketService — 市场列表 (listMarket)', () => {
   });
 
   afterEach(() => {
-    try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.clearAllMocks();
   });
 
@@ -550,25 +580,35 @@ describe('PluginMarketService — 市场列表 (listMarket)', () => {
     // 两个仓库：一个有 manifest，一个没有
     mockGitHubClient.searchPluginRepos.mockResolvedValue([
       {
-        id: 1, full_name: 'test/valid-plugin', name: 'valid-plugin',
-        description: 'valid', html_url: 'https://github.com/test/valid-plugin',
-        stargazers_count: 10, forks_count: 0,
-        topics: ['easyagent-plugin'], updated_at: '2026-06-01T00:00:00Z',
+        id: 1,
+        full_name: 'test/valid-plugin',
+        name: 'valid-plugin',
+        description: 'valid',
+        html_url: 'https://github.com/test/valid-plugin',
+        stargazers_count: 10,
+        forks_count: 0,
+        topics: ['easyagent-plugin'],
+        updated_at: '2026-06-01T00:00:00Z',
         owner: { login: 'test', avatar_url: '' },
       },
       {
-        id: 2, full_name: 'test/invalid-no-manifest', name: 'invalid-no-manifest',
-        description: 'no manifest', html_url: 'https://github.com/test/invalid-no-manifest',
-        stargazers_count: 5, forks_count: 0,
-        topics: ['easyagent-plugin'], updated_at: '2026-06-01T00:00:00Z',
+        id: 2,
+        full_name: 'test/invalid-no-manifest',
+        name: 'invalid-no-manifest',
+        description: 'no manifest',
+        html_url: 'https://github.com/test/invalid-no-manifest',
+        stargazers_count: 5,
+        forks_count: 0,
+        topics: ['easyagent-plugin'],
+        updated_at: '2026-06-01T00:00:00Z',
         owner: { login: 'test', avatar_url: '' },
       },
     ]);
 
     // getManifest: 第一个有 manifest，第二个返回 null（无 manifest.json）
     mockGitHubClient.getManifest
-      .mockResolvedValueOnce({ name: 'Valid Plugin', permissions: {} })  // valid-plugin
-      .mockResolvedValueOnce(null);                                        // invalid-no-manifest → 应跳过
+      .mockResolvedValueOnce({ name: 'Valid Plugin', permissions: {} }) // valid-plugin
+      .mockResolvedValueOnce(null); // invalid-no-manifest → 应跳过
 
     const plugins = await service.listMarket(true);
     expect(plugins).toHaveLength(1);
@@ -603,7 +643,11 @@ describe('PluginMarketService — 插件详情 (getPluginDetail)', () => {
   });
 
   afterEach(() => {
-    try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.clearAllMocks();
   });
 
@@ -649,7 +693,11 @@ describe('PluginMarketService — addToInstalled (版本覆盖/更新)', () => {
   });
 
   afterEach(() => {
-    try { rmSync(tmpDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.clearAllMocks();
   });
 
@@ -659,15 +707,21 @@ describe('PluginMarketService — addToInstalled (版本覆盖/更新)', () => {
     const manifestPath = join(tmpDir, 'installed.json');
     writeFileSync(
       manifestPath,
-      JSON.stringify({
-        plugins: [{
-          id: 'test/plugin-x',
-          name: 'plugin-x',
-          version: '1.0.0',
-          installedAt: '2026-01-01T00:00:00Z',
-          source: 'market',
-        }],
-      }, null, 2),
+      JSON.stringify(
+        {
+          plugins: [
+            {
+              id: 'test/plugin-x',
+              name: 'plugin-x',
+              version: '1.0.0',
+              installedAt: '2026-01-01T00:00:00Z',
+              source: 'market',
+            },
+          ],
+        },
+        null,
+        2,
+      ),
       'utf-8',
     );
 

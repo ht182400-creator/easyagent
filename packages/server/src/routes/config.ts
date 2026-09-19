@@ -194,8 +194,7 @@ export async function fetchModelsFromProvider(
         maxContextTokens: inferContextSize(m.id),
         maxOutputTokens: 8192,
         supportsTools: true,
-        supportsVision:
-          m.id.toLowerCase().includes('vision') || m.id.toLowerCase().includes('vl'),
+        supportsVision: m.id.toLowerCase().includes('vision') || m.id.toLowerCase().includes('vl'),
         pricing: preset.models?.[0]?.pricing || { input: 0, output: 0 },
       }));
   } catch (err) {

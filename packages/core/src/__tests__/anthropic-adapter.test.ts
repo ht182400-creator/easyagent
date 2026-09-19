@@ -51,9 +51,7 @@ let lastRequest: { url: string; init: RequestInit } | null = null;
 
 /** 构造 Anthropic 命名事件 SSE 流 */
 function sseResponse(events: Array<{ type: string; [k: string]: unknown }>): Response {
-  const payload = events
-    .map((e) => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`)
-    .join('');
+  const payload = events.map((e) => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`).join('');
   const stream = new ReadableStream({
     start(controller) {
       controller.enqueue(new TextEncoder().encode(payload));
@@ -148,7 +146,10 @@ describe('AnthropicAdapter — 请求形状', () => {
         {
           name: 'read_file',
           description: '读文件',
-          parameters: { type: 'object', properties: { path: { type: 'string', description: '路径' } } },
+          parameters: {
+            type: 'object',
+            properties: { path: { type: 'string', description: '路径' } },
+          },
         },
       ],
     });
@@ -175,7 +176,11 @@ describe('AnthropicAdapter — 请求形状', () => {
         role: 'assistant',
         content: '',
         tool_calls: [
-          { id: 'call_1', type: 'function', function: { name: 'read_file', arguments: '{"p":"a"}' } },
+          {
+            id: 'call_1',
+            type: 'function',
+            function: { name: 'read_file', arguments: '{"p":"a"}' },
+          },
         ],
       },
       { role: 'tool', content: '文件内容', tool_call_id: 'call_1' },
@@ -269,7 +274,9 @@ describe('AnthropicAdapter — 非流式响应解析', () => {
 
   it('HTTP 错误应抛出且带上响应体（便于排障）', async () => {
     globalThis.fetch = (async () =>
-      new Response('{"error":{"message":"invalid x-api-key"}}', { status: 401 })) as unknown as typeof fetch;
+      new Response('{"error":{"message":"invalid x-api-key"}}', {
+        status: 401,
+      })) as unknown as typeof fetch;
 
     await expect(
       new AnthropicAdapter(makeConfig()).chat([{ role: 'user', content: 'hi' }]),
@@ -284,8 +291,16 @@ describe('AnthropicAdapter — 流式命名事件解析', () => {
     globalThis.fetch = (async () =>
       sseResponse([
         { type: 'message_start', message: { usage: { input_tokens: 7 } } },
-        { type: 'content_block_start', index: 0, content_block: { type: 'thinking', thinking: '' } },
-        { type: 'content_block_delta', index: 0, delta: { type: 'thinking_delta', thinking: '思考中' } },
+        {
+          type: 'content_block_start',
+          index: 0,
+          content_block: { type: 'thinking', thinking: '' },
+        },
+        {
+          type: 'content_block_delta',
+          index: 0,
+          delta: { type: 'thinking_delta', thinking: '思考中' },
+        },
         { type: 'content_block_stop', index: 0 },
         { type: 'content_block_start', index: 1, content_block: { type: 'text', text: '' } },
         { type: 'content_block_delta', index: 1, delta: { type: 'text_delta', text: '你好' } },
@@ -321,8 +336,16 @@ describe('AnthropicAdapter — 流式命名事件解析', () => {
           index: 0,
           content_block: { type: 'tool_use', id: 'toolu_9', name: 'write_file', input: {} },
         },
-        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"pa' } },
-        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: 'th":"a.ts"}' } },
+        {
+          type: 'content_block_delta',
+          index: 0,
+          delta: { type: 'input_json_delta', partial_json: '{"pa' },
+        },
+        {
+          type: 'content_block_delta',
+          index: 0,
+          delta: { type: 'input_json_delta', partial_json: 'th":"a.ts"}' },
+        },
         { type: 'content_block_stop', index: 0 },
         { type: 'message_delta', delta: { stop_reason: 'tool_use' } },
       ])) as unknown as typeof fetch;

@@ -31,7 +31,7 @@ import type { ToolExecutor } from '../nodes/actNode';
  */
 export function createToolBridge(
   registry: ToolRegistry,
-  getContext: () => ToolContext
+  getContext: () => ToolContext,
 ): ToolExecutor {
   return {
     execute: async (name, params) => {

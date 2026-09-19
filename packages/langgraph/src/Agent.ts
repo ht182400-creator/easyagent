@@ -1,6 +1,6 @@
 /**
  * Agent — LangGraph Agent 主类
- * 
+ *
  * 封装 StateGraph 的调用、流式输出、状态管理。
  * 对外接口兼容现有 AgentEngine，便于渐进式替换。
  */
@@ -79,7 +79,7 @@ export interface AgentConfig extends AgentGraphConfig {
 
 /**
  * LangGraph Agent — 对外主类
- * 
+ *
  * 使用方式:
  * ```
  * const agent = new LangGraphAgent({
@@ -88,7 +88,7 @@ export interface AgentConfig extends AgentGraphConfig {
  *   systemPrompt: '你是一个有帮助的助手',
  *   checkpointerConfig: { dbPath: './checkpoints.db' },
  * });
- * 
+ *
  * const result = await agent.run('你好');
  * console.log(result.response);
  * ```
@@ -103,8 +103,14 @@ export class LangGraphAgent {
   private abortController: AbortController | null = null;
 
   constructor(config: AgentConfig) {
-    log.debug('Agent 构造开始', { maxTurns: config.maxTurns, hasCheckpointer: !!config.checkpointerConfig, hasMemory: !!config.memoryConfig });
-    this.systemPrompt = config.systemPrompt || `你是一个有帮助的 AI 编程助手。
+    log.debug('Agent 构造开始', {
+      maxTurns: config.maxTurns,
+      hasCheckpointer: !!config.checkpointerConfig,
+      hasMemory: !!config.memoryConfig,
+    });
+    this.systemPrompt =
+      config.systemPrompt ||
+      `你是一个有帮助的 AI 编程助手。
 
 ## 行为准则
 - 普通聊天、问候、解释性问题时，直接回复文本，**不要调用工具**。
@@ -133,14 +139,17 @@ export class LangGraphAgent {
       name: 'EasyAgent-LangGraph',
     });
     compileTimer();
-    log.info('Agent 构造完成', { systemPrompt: this.systemPrompt.substring(0, 50) + '...', maxTurns: this.maxTurns });
+    log.info('Agent 构造完成', {
+      systemPrompt: this.systemPrompt.substring(0, 50) + '...',
+      maxTurns: this.maxTurns,
+    });
   }
 
   // ============ 核心运行方法 ============
 
   /**
    * 执行 Agent 对话（非流式）
-   * 
+   *
    * @param userMessage - 用户消息
    * @param options - 运行选项
    * @returns 执行结果
@@ -173,7 +182,7 @@ export class LangGraphAgent {
         {
           configurable: { thread_id: sessionId },
           signal: options.signal || this.abortController.signal,
-        }
+        },
       );
       invokeTimer();
 
@@ -181,9 +190,7 @@ export class LangGraphAgent {
       const messages = result.messages as BaseMessage[];
       const lastMessage = messages[messages.length - 1];
       const response =
-        lastMessage && typeof lastMessage.content === 'string'
-          ? lastMessage.content
-          : '';
+        lastMessage && typeof lastMessage.content === 'string' ? lastMessage.content : '';
 
       // 提取关键信息到长期记忆
       const memItemsBefore = this.memory.getItems().length;
@@ -197,8 +204,7 @@ export class LangGraphAgent {
         inputTokens: (result.totalInputTokens as number) || 0,
         outputTokens: (result.totalOutputTokens as number) || 0,
         totalTokens:
-          ((result.totalInputTokens as number) || 0) +
-          ((result.totalOutputTokens as number) || 0),
+          ((result.totalInputTokens as number) || 0) + ((result.totalOutputTokens as number) || 0),
       };
 
       log.exit({
@@ -230,7 +236,7 @@ export class LangGraphAgent {
 
   /**
    * 从 Checkpoint 恢复会话并继续执行
-   * 
+   *
    * @param sessionId - 会话 ID
    * @param userMessage - 追加的用户消息（可选，不提供则继续之前的状态）
    * @returns 执行结果
@@ -243,7 +249,10 @@ export class LangGraphAgent {
       log.error('会话不存在，无法恢复', { sessionId });
       throw new Error(`会话 ${sessionId} 不存在，无法恢复`);
     }
-    log.debug('已恢复 checkpoint', { turnCount: latestState.turnCount, msgCount: (latestState.messages as unknown[])?.length });
+    log.debug('已恢复 checkpoint', {
+      turnCount: latestState.turnCount,
+      msgCount: (latestState.messages as unknown[])?.length,
+    });
 
     // 如果提供了新消息，追加到状态
     const input: Record<string, unknown> = { ...latestState, sessionId };
@@ -272,8 +281,7 @@ export class LangGraphAgent {
       inputTokens: (result.totalInputTokens as number) || 0,
       outputTokens: (result.totalOutputTokens as number) || 0,
       totalTokens:
-        ((result.totalInputTokens as number) || 0) +
-        ((result.totalOutputTokens as number) || 0),
+        ((result.totalInputTokens as number) || 0) + ((result.totalOutputTokens as number) || 0),
     };
     log.exit({ sessionId, turnCount: result.turnCount, msgCount: messages.length, usage });
 
@@ -290,15 +298,12 @@ export class LangGraphAgent {
 
   /**
    * 流式执行 Agent 对话
-   * 
+   *
    * @param userMessage - 用户消息
    * @param options - 运行选项
    * @returns 异步生成器，产生 AgentEvent
    */
-  async *stream(
-    userMessage: string,
-    options: RunOptions = {}
-  ): AsyncGenerator<AgentEvent> {
+  async *stream(userMessage: string, options: RunOptions = {}): AsyncGenerator<AgentEvent> {
     const sessionId = options.sessionId || generateSessionId();
     this.abortController = new AbortController();
     log.enter({ sessionId, userMessage: userMessage.substring(0, 100), method: 'stream' });
@@ -326,7 +331,7 @@ export class LangGraphAgent {
           version: 'v2',
           signal: options.signal || this.abortController.signal,
           recursionLimit,
-        }
+        },
       );
 
       for await (const event of eventStream) {
@@ -335,7 +340,10 @@ export class LangGraphAgent {
           this.emit(agentEvent);
           yield agentEvent;
           eventCount++;
-          if (agentEvent.type === 'response' && (agentEvent.data as { content?: string })?.content) {
+          if (
+            agentEvent.type === 'response' &&
+            (agentEvent.data as { content?: string })?.content
+          ) {
             hasResponseContent = true;
           }
         }
@@ -439,8 +447,7 @@ export class LangGraphAgent {
       inputTokens: (state.totalInputTokens as number) || 0,
       outputTokens: (state.totalOutputTokens as number) || 0,
       totalTokens:
-        ((state.totalInputTokens as number) || 0) +
-        ((state.totalOutputTokens as number) || 0),
+        ((state.totalInputTokens as number) || 0) + ((state.totalOutputTokens as number) || 0),
     };
   }
 
@@ -610,7 +617,7 @@ function extractMessageContent(msg: unknown): string {
       const texts = kwContent
         .map((b: unknown) => {
           if (b && typeof b === 'object' && (b as Record<string, unknown>).type === 'text') {
-            return (b as Record<string, unknown>).text as string || '';
+            return ((b as Record<string, unknown>).text as string) || '';
           }
           return '';
         })
@@ -626,7 +633,7 @@ function extractMessageContent(msg: unknown): string {
     const texts = content
       .map((b: unknown) => {
         if (b && typeof b === 'object' && (b as Record<string, unknown>).type === 'text') {
-          return (b as Record<string, unknown>).text as string || '';
+          return ((b as Record<string, unknown>).text as string) || '';
         }
         return '';
       })

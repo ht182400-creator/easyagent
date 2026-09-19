@@ -98,20 +98,24 @@ export function resolveContextOptions(
   }
 
   const toolResultLimit =
-    overrides.toolResultLimit ?? readNumberEnv('EASYAGENT_CONTEXT_RESULT_LIMIT', DEFAULT_TOOL_RESULT_LIMIT);
+    overrides.toolResultLimit ??
+    readNumberEnv('EASYAGENT_CONTEXT_RESULT_LIMIT', DEFAULT_TOOL_RESULT_LIMIT);
   const compactEnabled = readBoolEnv('EASYAGENT_CONTEXT_COMPACT', true);
 
   return {
     enabled: true,
-    usableRatio: overrides.usableRatio ?? readRatioEnv('EASYAGENT_CONTEXT_USABLE_RATIO', DEFAULT_USABLE_RATIO),
+    usableRatio:
+      overrides.usableRatio ?? readRatioEnv('EASYAGENT_CONTEXT_USABLE_RATIO', DEFAULT_USABLE_RATIO),
     toolResultLimit: compactEnabled ? toolResultLimit : 0,
     toolResultHeadChars: overrides.toolResultHeadChars ?? DEFAULT_TOOL_RESULT_HEAD,
     toolResultTailChars: overrides.toolResultTailChars ?? DEFAULT_TOOL_RESULT_TAIL,
     keepRecentMessages:
       overrides.keepRecentMessages ??
       (compactEnabled ? DEFAULT_KEEP_RECENT_MESSAGES : Number.MAX_SAFE_INTEGER),
-    enableToolTiering: overrides.enableToolTiering ?? readBoolEnv('EASYAGENT_CONTEXT_TOOL_TIER', true),
-    dedupeToolDescriptions: overrides.dedupeToolDescriptions ?? readBoolEnv('EASYAGENT_CONTEXT_DEDUPE_DESC', true),
+    enableToolTiering:
+      overrides.enableToolTiering ?? readBoolEnv('EASYAGENT_CONTEXT_TOOL_TIER', true),
+    dedupeToolDescriptions:
+      overrides.dedupeToolDescriptions ?? readBoolEnv('EASYAGENT_CONTEXT_DEDUPE_DESC', true),
     persistTruncatedResults: overrides.persistTruncatedResults ?? true,
     // 未显式指定时由 ContextManager 按「工作区 + CONTEXT_DIR_RELATIVE」计算
     contextDir: overrides.contextDir,

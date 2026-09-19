@@ -61,7 +61,8 @@ const argv = process.argv.slice(2);
 const DRY_RUN = argv.includes('--dry-run');
 const CHECK_ONLY = argv.includes('--check');
 const maxAgeIdx = argv.indexOf('--max-age');
-const MAX_AGE_DAYS = maxAgeIdx >= 0 ? Number(argv[maxAgeIdx + 1]) || DEFAULT_MAX_AGE_DAYS : DEFAULT_MAX_AGE_DAYS;
+const MAX_AGE_DAYS =
+  maxAgeIdx >= 0 ? Number(argv[maxAgeIdx + 1]) || DEFAULT_MAX_AGE_DAYS : DEFAULT_MAX_AGE_DAYS;
 
 // ===================== 工具 =====================
 
@@ -123,7 +124,9 @@ async function main() {
       return 1;
     }
     const age = ageDays(current.generatedAt);
-    console.log(`[models-catalog] generatedAt=${current.generatedAt}  年龄=${age.toFixed(1)} 天  阈值=${MAX_AGE_DAYS} 天`);
+    console.log(
+      `[models-catalog] generatedAt=${current.generatedAt}  年龄=${age.toFixed(1)} 天  阈值=${MAX_AGE_DAYS} 天`,
+    );
     if (age > MAX_AGE_DAYS) {
       console.error(
         `❌ 模型目录已过期（${age.toFixed(0)} 天未更新）—— 客户端每天都在自动下载这份旧数据，\n` +

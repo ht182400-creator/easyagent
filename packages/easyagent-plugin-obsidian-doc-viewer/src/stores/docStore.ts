@@ -3,7 +3,12 @@ import type { AppSettings, DocNode, GraphData, GraphMode, SearchResult } from '.
 import { buildGraphData, filterGraphByNeighbors } from '../services/graphBuilder';
 import { createSearchIndex, searchDocuments } from '../services/searchIndex';
 import { sampleDocs } from '../services/sampleData';
-import { scanDirectoryStructure, loadFileContents, rebuildDocumentLinks, AbortError } from '../services/fileLoader';
+import {
+  scanDirectoryStructure,
+  loadFileContents,
+  rebuildDocumentLinks,
+  AbortError,
+} from '../services/fileLoader';
 import { analyzeKeywordCooccurrence } from '../services/keywordCooccurrence';
 import { buildGroupColorMap } from '../utils/groupColor';
 
@@ -232,9 +237,7 @@ export const useDocStore = create<DocState>((set, get) => ({
 function buildGraphWithWeakLinks(docs: DocNode[]): GraphData {
   // 分析关键字共现，建立弱关联边
   const weakPairs = analyzeKeywordCooccurrence(docs, 2);
-  console.log(
-    `[docStore] 关键字共现分析完成: ${weakPairs.length} 条弱关联 (阈值≥2 共同关键字)`,
-  );
+  console.log(`[docStore] 关键字共现分析完成: ${weakPairs.length} 条弱关联 (阈值≥2 共同关键字)`);
   return buildGraphData(docs, weakPairs);
 }
 

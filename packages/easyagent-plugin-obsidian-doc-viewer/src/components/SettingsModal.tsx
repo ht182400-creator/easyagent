@@ -11,15 +11,8 @@ interface SettingsModalProps {
  * 支持目录信息查看、图谱模式、搜索限制、示例数据加载
  */
 export function SettingsModal({ open, onClose }: SettingsModalProps) {
-  const {
-    settings,
-    updateSettings,
-    openDirectory,
-    loadSampleDocs,
-    rootNodes,
-    docs,
-    isLoading,
-  } = useDocStore();
+  const { settings, updateSettings, openDirectory, loadSampleDocs, rootNodes, docs, isLoading } =
+    useDocStore();
 
   if (!open) return null;
 
@@ -45,9 +38,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
               <div className="flex items-center gap-2 text-sm text-slate-700">
                 <FolderOpen size={16} className="text-indigo-600" />
-                <span className="font-medium">
-                  {settings.directoryName || '未选择目录'}
-                </span>
+                <span className="font-medium">{settings.directoryName || '未选择目录'}</span>
               </div>
               <div className="mt-2 text-xs text-slate-500">
                 Markdown 文件: <strong>{fileCount}</strong> 个

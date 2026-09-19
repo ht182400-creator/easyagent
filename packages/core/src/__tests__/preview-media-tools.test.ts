@@ -53,7 +53,9 @@ describe('PreviewURLTool - URL预览', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('有效HTTP URL应成功（不真开浏览器，仅校验打开命令）', async () => {
@@ -121,7 +123,9 @@ describe('DiffFilesTool - 文件对比', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('两个相同文件应返回(较小篇幅)diff输出', async () => {
@@ -184,7 +188,9 @@ describe('AskUserTool - 用户交互', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('无选项时应为确认型问题', async () => {
@@ -252,7 +258,9 @@ describe('ReadImageTool - 读取图片', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('文件不存在应返回错误', async () => {
@@ -315,7 +323,9 @@ describe('GenerateImageTool - AI图片生成', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('有效prompt应返回生成配置', async () => {
@@ -392,7 +402,9 @@ describe('ScreenshotTool - 截图', () => {
   afterEach(() => {
     try {
       rmSync(workspace, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('有效URL应返回截图配置', async () => {
@@ -456,5 +468,48 @@ describe('PreviewTools & MediaTools - 导出完整性', () => {
     expect(names).toContain('read_image');
     expect(names).toContain('generate_image');
     expect(names).toContain('screenshot');
+  });
+});
+
+// ==================== StartServerTool 端口分配（2026-09-19 回归） ====================
+// 背景：旧实现把默认端口写死 3000 且从不检测占用，而本机 3000 常被自建 Forgejo 占用
+// （见 docs/64），启动预览服务器会直接 EADDRINUSE。现改为 3500-3599 内自动选空闲端口。
+describe('StartServerTool - 端口分配与冲突告警', () => {
+  it('未指定端口：不在 3000 上启动，而是在 3500-3599 内自动选空闲端口', async () => {
+    const mod = await import('../tools/PreviewTools.js');
+    // ⚠️ workspace 直接用系统临时目录：spawn 出的子进程会持有 cwd，
+    // Windows 下导致目录删不掉（rmSync EPERM），故不建临时子目录、无需清理
+    const res: any = await mod.StartServerTool.execute(
+      { command: 'node --version' },
+      ctx(tmpdir()),
+    );
+    expect(res.success).toBe(true);
+    expect(res.metadata.autoSelected).toBe(true);
+    expect(res.metadata.port).toBeGreaterThanOrEqual(3500);
+    expect(res.metadata.port).toBeLessThanOrEqual(3599);
+    // 3000 常被其他服务占用（如自建 Forgejo），绝不能再作为默认端口
+    expect(res.metadata.port).not.toBe(3000);
+    expect(res.content).toContain('自动选择');
+  });
+
+  it('显式指定端口被占用：如实告警且不擅自改端口', async () => {
+    const { createServer } = await import('node:net');
+    const mod = await import('../tools/PreviewTools.js');
+    const occupied = 3566;
+    const blocker = createServer();
+    await new Promise<void>((r) => blocker.listen(occupied, '127.0.0.1', () => r()));
+    try {
+      const res: any = await mod.StartServerTool.execute(
+        { command: 'node --version', port: occupied },
+        ctx(tmpdir()),
+      );
+      expect(res.success).toBe(true);
+      expect(res.metadata.port).toBe(occupied);
+      expect(res.metadata.autoSelected).toBe(false);
+      expect(res.metadata.portConflict).toBe(true);
+      expect(res.content).toContain('已被占用');
+    } finally {
+      blocker.close();
+    }
   });
 });

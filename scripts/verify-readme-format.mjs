@@ -77,7 +77,9 @@ async function main() {
     return { code: 1, status: 'FAIL' };
   }
   if (looksLikeJson) {
-    console.error('❌ FAIL — README 取回的是 **JSON**，Accept 头可能写错（如用了 vnd.github+json）');
+    console.error(
+      '❌ FAIL — README 取回的是 **JSON**，Accept 头可能写错（如用了 vnd.github+json）',
+    );
     return { code: 1, status: 'FAIL' };
   }
   if (text.length === 0) {

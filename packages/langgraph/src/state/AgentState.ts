@@ -1,6 +1,6 @@
 /**
  * AgentState — LangGraph 工作流状态定义
- * 
+ *
  * 使用 Annotation API 声明状态结构及合并策略 (Reducer)。
  * 参考 LangGraph 官方模式：https://langchain-ai.github.io/langgraph/how-tos/create-react-agent/
  */
@@ -9,7 +9,7 @@ import type { BaseMessage } from '@langchain/core/messages';
 
 /**
  * LangGraph Agent 工作流状态注解
- * 
+ *
  * 使用 Annotation.Root 定义顶层状态，每个字段可配置 reducer 和 default 值。
  * - messages 字段自动追加（不覆盖），符合对话历史累积语义
  * - 其他控制字段使用替换策略

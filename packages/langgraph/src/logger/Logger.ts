@@ -245,7 +245,8 @@ export class Logger {
         const json = JSON.stringify(entry.data);
         // 限制附加数据长度，避免日志膨胀
         const maxDataLen = 2000;
-        const truncated = json.length > maxDataLen ? json.substring(0, maxDataLen) + '...(截断)' : json;
+        const truncated =
+          json.length > maxDataLen ? json.substring(0, maxDataLen) + '...(截断)' : json;
         line += ' | ' + truncated;
       } catch {
         line += ' | [无法序列化]';
@@ -286,7 +287,6 @@ export class Logger {
     this.fileStream = fs.createWriteStream(filePath, { flags: 'a' });
     this.filePath = filePath;
   }
-
 }
 
 // ============================================================
@@ -383,6 +383,11 @@ export function setupFromEnv(): void {
   // 模块过滤
   const modules = process.env['LANGGRAPH_LOG_MODULES'];
   if (modules) {
-    setModuleFilter(modules.split(',').map((s: string) => s.trim()).filter(Boolean));
+    setModuleFilter(
+      modules
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean),
+    );
   }
 }

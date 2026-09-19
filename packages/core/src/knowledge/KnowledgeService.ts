@@ -69,10 +69,11 @@ export class KnowledgeService {
    */
   static getGlobal(): KnowledgeService {
     if (!KnowledgeService.globalInstance) {
-      KnowledgeService.globalInstance = new KnowledgeService(
-        resolve(homedir(), '.easyagent'),
-        'global',
-      );
+      // ⚠️ 允许用 EASYAGENT_GLOBAL_KB_DIR 覆盖基准目录（**测试隔离用**）：
+      // 默认 ~/.easyagent 是用户的真实数据目录，测试若不覆盖会直接写入真实数据，
+      // 并与并行运行的其它包互相污染（2026-09-19 假失败根因）
+      const base = process.env.EASYAGENT_GLOBAL_KB_DIR || resolve(homedir(), '.easyagent');
+      KnowledgeService.globalInstance = new KnowledgeService(base, 'global');
     }
     return KnowledgeService.globalInstance;
   }
@@ -143,9 +144,21 @@ export class KnowledgeService {
         return { success: false, error: '请提供 content 或 filePath 参数' };
       }
 
-      const docId = `doc_${Date.now()}_${createHash('md5').update(title).digest('hex').slice(0, 8)}`;
+      const newDocId = `doc_${Date.now()}_${createHash('md5').update(title).digest('hex').slice(0, 8)}`;
 
-      // 分块存储
+      // 索引与同名判定必须在写分块**之前**完成 —— 同名文档要复用旧 id，
+      // 否则会出现「索引指向旧 id、分块写在新 id 目录」的错位 + 孤儿目录
+      const index = this.loadIndex();
+      const existingIdx = index.findIndex((d) => d.title === title);
+      /**
+       * 实际落库的文档 id
+       *
+       * ⚠️ 同名文档 → 复用原 id。旧实现「索引存旧 id、返回值给新 id」，
+       * 调用方拿 addDocument 返回的 docId 查不到文档 → 假失败（2026-09-19 修复）
+       */
+      const docId = existingIdx >= 0 ? index[existingIdx].id : newDocId;
+
+      // 分块存储（覆盖式：先清旧目录，避免残留过期分块）
       const chunkSize = 1000;
       const chunks: string[] = [];
       for (let i = 0; i < content.length; i += chunkSize) {
@@ -153,14 +166,13 @@ export class KnowledgeService {
       }
 
       const chunkDir = join(this.knowledgeDir, docId);
+      if (existsSync(chunkDir)) {
+        rmSync(chunkDir, { recursive: true, force: true });
+      }
       mkdirSync(chunkDir, { recursive: true });
       chunks.forEach((chunk, i) => {
         writeFileSync(join(chunkDir, `chunk_${String(i).padStart(4, '0')}.txt`), chunk, 'utf-8');
       });
-
-      // 更新索引
-      const index = this.loadIndex();
-      const existingIdx = index.findIndex((d) => d.title === title);
 
       const docEntry: DocIndex = {
         id: docId,
@@ -177,7 +189,7 @@ export class KnowledgeService {
       };
 
       if (existingIdx >= 0) {
-        index[existingIdx] = { ...index[existingIdx], ...docEntry, id: index[existingIdx].id };
+        index[existingIdx] = { ...index[existingIdx], ...docEntry, id: docId };
       } else {
         index.push(docEntry);
       }

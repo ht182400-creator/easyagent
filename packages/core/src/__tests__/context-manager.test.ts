@@ -29,7 +29,11 @@ import {
 } from '../agent/context/toolSelection.js';
 import { truncateToolResult } from '../agent/context/toolResultTruncator.js';
 import { compactHistory } from '../agent/context/historyCompactor.js';
-import { ContextManager, getContextManager, resetContextManager } from '../agent/context/ContextManager.js';
+import {
+  ContextManager,
+  getContextManager,
+  resetContextManager,
+} from '../agent/context/ContextManager.js';
 import { resolveContextOptions, CONTEXT_DIR_RELATIVE } from '../agent/context/options.js';
 
 // ==================== 测试辅助 ====================
@@ -39,7 +43,11 @@ function makeTool(name: string, descLen = 20): ToolDefinition {
   return {
     name,
     description: 'x'.repeat(descLen),
-    parameters: { type: 'object', properties: { p: { type: 'string', description: 'd' } }, required: ['p'] },
+    parameters: {
+      type: 'object',
+      properties: { p: { type: 'string', description: 'd' } },
+      required: ['p'],
+    },
   };
 }
 
@@ -144,7 +152,13 @@ describe('estimateMessagesTokens() — 消息数组估算', () => {
   });
 
   it('应计入 assistant 的 tool_calls（JSON 序列化后估算）', () => {
-    const withCalls = [msg('assistant', '', { tool_calls: [{ id: 'a', type: 'function', function: { name: 'read_file', arguments: '{}' } }] })];
+    const withCalls = [
+      msg('assistant', '', {
+        tool_calls: [
+          { id: 'a', type: 'function', function: { name: 'read_file', arguments: '{}' } },
+        ],
+      }),
+    ];
     const withoutCalls = [msg('assistant', '')];
     expect(estimateMessagesTokens(withCalls)).toBeGreaterThan(estimateMessagesTokens(withoutCalls));
   });
@@ -216,7 +230,9 @@ describe('selectToolDefinitions() — 工具分级筛选', () => {
     expect(selectToolDefinitions(tools, 'medium', true).selected.map((t) => t.name)).toContain(NEW);
     expect(selectToolDefinitions(tools, 'large', true).selected.map((t) => t.name)).toContain(NEW);
     // small 是白名单制，未登记即不暴露（预期行为）
-    expect(selectToolDefinitions(tools, 'small', true).selected.map((t) => t.name)).not.toContain(NEW);
+    expect(selectToolDefinitions(tools, 'small', true).selected.map((t) => t.name)).not.toContain(
+      NEW,
+    );
   });
 
   it('关闭分级时仍排除 benchmark（该排除有独立证据支持）', () => {
@@ -277,7 +293,11 @@ describe('truncateToolResult() — 工具结果截断与落盘', () => {
   const baseOpts = resolveContextOptions({ enabled: true });
 
   it('未超阈值时原样返回', () => {
-    const r = truncateToolResult('short', { workspace, sessionId: 's1', toolName: 'read_file' }, baseOpts);
+    const r = truncateToolResult(
+      'short',
+      { workspace, sessionId: 's1', toolName: 'read_file' },
+      baseOpts,
+    );
     expect(r.truncated).toBe(false);
     expect(r.content).toBe('short');
     expect(r.originalChars).toBe(5);
@@ -359,7 +379,12 @@ describe('truncateToolResult() — 工具结果截断与落盘', () => {
     const r = truncateToolResult(
       content,
       { workspace, sessionId: 's1', toolName: 'exec' },
-      { ...baseOpts, toolResultLimit: 100, toolResultHeadChars: 10_000, toolResultTailChars: 10_000 },
+      {
+        ...baseOpts,
+        toolResultLimit: 100,
+        toolResultHeadChars: 10_000,
+        toolResultTailChars: 10_000,
+      },
     );
     expect(r.truncated).toBe(true);
     // 保留部分不应超过阈值本身（提示文案另计，故给一定余量）
@@ -375,7 +400,9 @@ describe('truncateToolResult() — 工具结果截断与落盘', () => {
     );
     expect(r.persistedPath).toBeTruthy();
     expect(r.persistedPath!).not.toContain('..');
-    expect(join(workspace, r.persistedPath!).startsWith(join(workspace, CONTEXT_DIR_RELATIVE))).toBe(true);
+    expect(
+      join(workspace, r.persistedPath!).startsWith(join(workspace, CONTEXT_DIR_RELATIVE)),
+    ).toBe(true);
   });
 });
 
@@ -418,7 +445,9 @@ describe('compactHistory() — 历史压缩', () => {
       msg('assistant', 'A1' + 'b'.repeat(400)),
       msg('user', 'U2'),
       msg('assistant', '准备调用工具', {
-        tool_calls: [{ id: 'call_1', type: 'function', function: { name: 'read_file', arguments: '{}' } }],
+        tool_calls: [
+          { id: 'call_1', type: 'function', function: { name: 'read_file', arguments: '{}' } },
+        ],
       }),
       msg('tool', 'T'.repeat(800), { tool_call_id: 'call_1' }),
       msg('assistant', '结果已处理'),
@@ -583,7 +612,9 @@ describe('ContextManager.build() — 上下文构建', () => {
     const cm = new ContextManager({ enabled: true, dedupeToolDescriptions: true });
     expect(cm.getOptions().dedupeToolDescriptions).toBe(true);
     expect(cm.build(makeInput()).systemPrompt).toContain('工具索引');
-    expect(cm.build(makeInput({ dedupeToolDescriptions: false })).systemPrompt).not.toContain('工具索引');
+    expect(cm.build(makeInput({ dedupeToolDescriptions: false })).systemPrompt).not.toContain(
+      '工具索引',
+    );
   });
 });
 
@@ -607,7 +638,10 @@ describe('ContextManager.truncateToolResult() — 编排层截断', () => {
     expect(r.originalChars).toBe(10_000);
     // 清理本次落盘
     try {
-      rmSync(join(process.cwd(), CONTEXT_DIR_RELATIVE, 's-truncate-test'), { recursive: true, force: true });
+      rmSync(join(process.cwd(), CONTEXT_DIR_RELATIVE, 's-truncate-test'), {
+        recursive: true,
+        force: true,
+      });
     } catch {
       /* ignore */
     }

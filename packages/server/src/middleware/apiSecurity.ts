@@ -185,7 +185,10 @@ function generateToken(): string {
     }
     logger.info(`已生成 API 访问令牌并保存到 ${TOKEN_FILE}`);
   } catch (err) {
-    logger.warn({ error: (err as Error).message }, 'API 令牌持久化失败（本次运行仍可使用内存令牌）');
+    logger.warn(
+      { error: (err as Error).message },
+      'API 令牌持久化失败（本次运行仍可使用内存令牌）',
+    );
   }
   return token;
 }
@@ -277,9 +280,7 @@ export function assertSecurityOk(bindHost: string, config: SecurityConfig): void
  */
 export function describeSecurityConfig(bindHost: string, config: SecurityConfig): string {
   const authPart =
-    config.token === null
-      ? '鉴权: 关闭'
-      : `鉴权: 开启（令牌来源=${config.tokenSource}）`;
+    config.token === null ? '鉴权: 关闭' : `鉴权: 开启（令牌来源=${config.tokenSource}）`;
   return (
     `监听=${bindHost} · ${authPart} · ` +
     `限流=${config.rateLimitEnabled ? '开启' : '关闭'} · ` +

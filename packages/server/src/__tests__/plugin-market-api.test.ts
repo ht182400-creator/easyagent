@@ -31,47 +31,58 @@ function mockGitHubFetch(url: string): Response {
 
   // 搜索仓库
   if (url.includes('/search/repositories')) {
-    return new Response(JSON.stringify({
-      items: [
-        {
-          id: 1,
-          full_name: 'test-org/easyagent-plugin-hello',
-          name: 'easyagent-plugin-hello',
-          description: 'A hello world plugin for EasyAgent',
-          html_url: 'https://github.com/test-org/easyagent-plugin-hello',
-          stargazers_count: 10,
-          forks_count: 2,
-          topics: ['easyagent-plugin'],
-          updated_at: '2026-06-01T00:00:00Z',
-          owner: { login: 'test-org', avatar_url: 'https://avatar.url' },
-        },
-      ],
-    }), { status: 200, headers });
+    return new Response(
+      JSON.stringify({
+        items: [
+          {
+            id: 1,
+            full_name: 'test-org/easyagent-plugin-hello',
+            name: 'easyagent-plugin-hello',
+            description: 'A hello world plugin for EasyAgent',
+            html_url: 'https://github.com/test-org/easyagent-plugin-hello',
+            stargazers_count: 10,
+            forks_count: 2,
+            topics: ['easyagent-plugin'],
+            updated_at: '2026-06-01T00:00:00Z',
+            owner: { login: 'test-org', avatar_url: 'https://avatar.url' },
+          },
+        ],
+      }),
+      { status: 200, headers },
+    );
   }
 
   // 获取最新 Release
   if (url.includes('/releases/latest')) {
-    return new Response(JSON.stringify({
-      tag_name: 'v1.0.0',
-      name: 'v1.0.0',
-      published_at: '2026-06-01T00:00:00Z',
-      body: 'First release',
-      zipball_url: 'https://api.github.com/repos/test/repo/zipball/v1.0.0',
-      assets: [{ name: 'plugin.zip', size: 1024, download_count: 50, browser_download_url: '' }],
-    }), { status: 200, headers });
+    return new Response(
+      JSON.stringify({
+        tag_name: 'v1.0.0',
+        name: 'v1.0.0',
+        published_at: '2026-06-01T00:00:00Z',
+        body: 'First release',
+        zipball_url: 'https://api.github.com/repos/test/repo/zipball/v1.0.0',
+        assets: [{ name: 'plugin.zip', size: 1024, download_count: 50, browser_download_url: '' }],
+      }),
+      { status: 200, headers },
+    );
   }
 
   // 获取 manifest.json
   if (url.includes('/contents/manifest.json')) {
-    return new Response(JSON.stringify({
-      content: Buffer.from(JSON.stringify({
-        name: 'Hello Plugin',
-        version: '1.0.0',
-        description: 'A hello world plugin',
-        permissions: { filesystem: { read: true } },
-      })).toString('base64'),
-      encoding: 'base64',
-    }), { status: 200, headers });
+    return new Response(
+      JSON.stringify({
+        content: Buffer.from(
+          JSON.stringify({
+            name: 'Hello Plugin',
+            version: '1.0.0',
+            description: 'A hello world plugin',
+            permissions: { filesystem: { read: true } },
+          }),
+        ).toString('base64'),
+        encoding: 'base64',
+      }),
+      { status: 200, headers },
+    );
   }
 
   // 获取 README（raw Markdown —— v0.6.30 起服务端改用 vnd.github.raw 取原文）
@@ -91,7 +102,10 @@ function mockGitHubFetch(url: string): Response {
     // 使用空 Buffer，安装会失败在 manifest 阶段，但 API 端点本身已经验证
     return new Response(Buffer.alloc(0), {
       status: 200,
-      headers: new Headers({ 'Content-Type': 'application/octet-stream', ...Object.fromEntries(headers.entries()) }),
+      headers: new Headers({
+        'Content-Type': 'application/octet-stream',
+        ...Object.fromEntries(headers.entries()),
+      }),
     });
   }
 
@@ -126,7 +140,11 @@ afterAll(async () => {
   if (server) {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
-  try { rmSync(testPluginsDir, { recursive: true, force: true }); } catch { /* ignore */ }
+  try {
+    rmSync(testPluginsDir, { recursive: true, force: true });
+  } catch {
+    /* ignore */
+  }
   vi.restoreAllMocks();
 });
 
@@ -232,8 +250,7 @@ describe('插件市场 API — GET /api/plugins/install/:jobId', () => {
 
 describe('插件市场 API — POST /api/plugins/uninstall/:id', () => {
   it('应返回 success（即使插件未安装也返回 200）', async () => {
-    const res = await request(app)
-      .post('/api/plugins/uninstall/test-org%2Fnonexistent-plugin');
+    const res = await request(app).post('/api/plugins/uninstall/test-org%2Fnonexistent-plugin');
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('success', true);
   });
@@ -262,25 +279,19 @@ describe('插件市场 API — POST /api/plugins/update-check', () => {
 
 describe('插件市场 API — POST /api/plugins/safe-mode', () => {
   it('启用安全模式应返回 safeMode: true', async () => {
-    const res = await request(app)
-      .post('/api/plugins/safe-mode')
-      .send({ enabled: true });
+    const res = await request(app).post('/api/plugins/safe-mode').send({ enabled: true });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('safeMode', true);
   });
 
   it('禁用安全模式应返回 safeMode: false', async () => {
-    const res = await request(app)
-      .post('/api/plugins/safe-mode')
-      .send({ enabled: false });
+    const res = await request(app).post('/api/plugins/safe-mode').send({ enabled: false });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('safeMode', false);
   });
 
   it('缺少 enabled 字段应正常处理', async () => {
-    const res = await request(app)
-      .post('/api/plugins/safe-mode')
-      .send({});
+    const res = await request(app).post('/api/plugins/safe-mode').send({});
     expect(res.status).toBe(200);
     // JSON.stringify 会移除 undefined 值，所以 safeMode key 可能不存在或为 undefined/false
     const val = res.body.safeMode;

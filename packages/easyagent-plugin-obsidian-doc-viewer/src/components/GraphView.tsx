@@ -12,7 +12,8 @@ const FALLBACK_SIZE = 600;
  */
 export function GraphView() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { graphData, groupColorMap, selectedDocId, selectDoc, settings, setGraphMode } = useDocStore();
+  const { graphData, groupColorMap, selectedDocId, selectDoc, settings, setGraphMode } =
+    useDocStore();
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -59,7 +60,10 @@ export function GraphView() {
         )
         .force('charge', d3.forceManyBody<GraphNode>().strength(-300))
         .force('center', d3.forceCenter<GraphNode>(width / 2, height / 2))
-        .force('collide', d3.forceCollide<GraphNode>().radius((d) => (d.radius ?? 10) + 10))
+        .force(
+          'collide',
+          d3.forceCollide<GraphNode>().radius((d) => (d.radius ?? 10) + 10),
+        )
         .force(
           'groupX',
           d3
@@ -147,16 +151,16 @@ export function GraphView() {
       // 模拟更新位置
       simulation.on('tick', () => {
         strongLink
-          .attr('x1', (d) => ((d.source as unknown) as GraphNode).x ?? 0)
-          .attr('y1', (d) => ((d.source as unknown) as GraphNode).y ?? 0)
-          .attr('x2', (d) => ((d.target as unknown) as GraphNode).x ?? 0)
-          .attr('y2', (d) => ((d.target as unknown) as GraphNode).y ?? 0);
+          .attr('x1', (d) => (d.source as unknown as GraphNode).x ?? 0)
+          .attr('y1', (d) => (d.source as unknown as GraphNode).y ?? 0)
+          .attr('x2', (d) => (d.target as unknown as GraphNode).x ?? 0)
+          .attr('y2', (d) => (d.target as unknown as GraphNode).y ?? 0);
 
         weakLink
-          .attr('x1', (d) => ((d.source as unknown) as GraphNode).x ?? 0)
-          .attr('y1', (d) => ((d.source as unknown) as GraphNode).y ?? 0)
-          .attr('x2', (d) => ((d.target as unknown) as GraphNode).x ?? 0)
-          .attr('y2', (d) => ((d.target as unknown) as GraphNode).y ?? 0);
+          .attr('x1', (d) => (d.source as unknown as GraphNode).x ?? 0)
+          .attr('y1', (d) => (d.source as unknown as GraphNode).y ?? 0)
+          .attr('x2', (d) => (d.target as unknown as GraphNode).x ?? 0)
+          .attr('y2', (d) => (d.target as unknown as GraphNode).y ?? 0);
 
         node.attr('transform', (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
       });
@@ -189,15 +193,19 @@ export function GraphView() {
 /**
  * 图谱模式切换按钮
  */
-function GraphModeToggle({ mode, onChange }: { mode: GraphMode; onChange: (mode: GraphMode) => void }) {
+function GraphModeToggle({
+  mode,
+  onChange,
+}: {
+  mode: GraphMode;
+  onChange: (mode: GraphMode) => void;
+}) {
   return (
     <div className="absolute right-3 top-3 z-10 flex gap-1 rounded-md bg-white/90 p-1 shadow-sm">
       <button
         onClick={() => onChange('global')}
         className={`rounded px-2.5 py-1 text-xs font-medium ${
-          mode === 'global'
-            ? 'bg-indigo-100 text-indigo-700'
-            : 'text-slate-600 hover:bg-slate-100'
+          mode === 'global' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-slate-100'
         }`}
       >
         全局

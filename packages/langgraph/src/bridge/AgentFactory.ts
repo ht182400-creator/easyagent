@@ -50,11 +50,7 @@ function isBaseAdapter(obj: unknown): obj is BaseAdapter {
  */
 function isProviderConfig(obj: unknown): obj is ProviderConfig {
   return (
-    obj != null &&
-    typeof obj === 'object' &&
-    'id' in obj &&
-    'baseURL' in obj &&
-    'apiKey' in obj
+    obj != null && typeof obj === 'object' && 'id' in obj && 'baseURL' in obj && 'apiKey' in obj
   );
 }
 
@@ -82,7 +78,7 @@ function isProviderConfig(obj: unknown): obj is ProviderConfig {
 export async function createLangGraphAgent(
   adapterOrConfig: BaseAdapter | ProviderConfig,
   tools: ToolRegistry,
-  options: LangGraphAgentOptions = {}
+  options: LangGraphAgentOptions = {},
 ): Promise<LangGraphAgent> {
   // 1. 解析适配器
   let adapter: BaseAdapter;
@@ -94,7 +90,9 @@ export async function createLangGraphAgent(
     const { AdapterFactory } = await import('@easyagent/core');
     adapter = AdapterFactory.create(adapterOrConfig, options.model);
   } else {
-    throw new Error('createLangGraphAgent: 第一个参数必须是 BaseAdapter 实例或 ProviderConfig 对象');
+    throw new Error(
+      'createLangGraphAgent: 第一个参数必须是 BaseAdapter 实例或 ProviderConfig 对象',
+    );
   }
 
   // 2. 创建适配器桥接
@@ -118,9 +116,7 @@ export async function createLangGraphAgent(
         // 结构在运行时完全兼容，仅类型定义不同
         // 过滤掉仅用于评测场景的 benchmark_* 工具，避免普通聊天误触发。
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return tools
-          .getDefinitions()
-          .filter((def) => !def.name.startsWith('benchmark_')) as any;
+        return tools.getDefinitions().filter((def) => !def.name.startsWith('benchmark_')) as any;
       },
       systemPrompt: options.systemPrompt,
     },

@@ -28,7 +28,10 @@ import {
 export function applySecurityMiddleware(app: Express, securityConfig: SecurityConfig): void {
   const corsEnv = process.env.CORS_ORIGIN;
   const allowedCorsOrigins = corsEnv
-    ? corsEnv.split(',').map((s) => s.trim()).filter(Boolean)
+    ? corsEnv
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
     : [];
 
   // 同源预判定中间件（保留 cors 包做真正的头设置；此处只判定“是否同源”）

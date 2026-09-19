@@ -57,10 +57,7 @@ const DEFAULT_LOG_CONFIG: Required<LogConfigFile> = {
 };
 
 /** 自动发现时尝试的文件名列表 */
-const DISCOVER_FILENAMES = [
-  'langgraph.config.json',
-  'langgraph.log.config.json',
-];
+const DISCOVER_FILENAMES = ['langgraph.config.json', 'langgraph.log.config.json'];
 
 // ============================================================
 // 核心函数
@@ -81,9 +78,7 @@ const DISCOVER_FILENAMES = [
  */
 export function loadLogConfig(configPath?: string): boolean {
   // 1. 定位配置文件
-  const resolvedPath = configPath
-    ? path.resolve(configPath)
-    : discoverConfigFile();
+  const resolvedPath = configPath ? path.resolve(configPath) : discoverConfigFile();
 
   if (!resolvedPath) {
     // 没有找到配置文件，尝试环境变量兜底
@@ -122,7 +117,7 @@ export function loadLogConfig(configPath?: string): boolean {
 
   console.log(
     `[LogConfig] 配置已加载: ${resolvedPath} ` +
-    `(level=${merged.level}, file=${merged.file || '无'}, modules=${merged.modules.join(',') || '全部'}, console=${merged.console})`
+      `(level=${merged.level}, file=${merged.file || '无'}, modules=${merged.modules.join(',') || '全部'}, console=${merged.console})`,
   );
   return true;
 }
@@ -255,7 +250,12 @@ function setupFromEnvFallback(): void {
 
   const modules = process.env['LANGGRAPH_LOG_MODULES'];
   if (modules) {
-    setModuleFilter(modules.split(',').map((s: string) => s.trim()).filter(Boolean));
+    setModuleFilter(
+      modules
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean),
+    );
     applied = true;
   }
 

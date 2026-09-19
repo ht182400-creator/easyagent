@@ -25,7 +25,15 @@ describe('wikiLinkParser', () => {
 
   it('rebuildLinks 应正确构建 backlinks', () => {
     const docs: DocNode[] = [
-      { id: 'A.md', name: 'A', type: 'file', path: 'A.md', content: '[[B]]', links: [], backlinks: [] },
+      {
+        id: 'A.md',
+        name: 'A',
+        type: 'file',
+        path: 'A.md',
+        content: '[[B]]',
+        links: [],
+        backlinks: [],
+      },
       { id: 'B.md', name: 'B', type: 'file', path: 'B.md', content: '', links: [], backlinks: [] },
     ];
 

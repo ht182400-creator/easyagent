@@ -93,7 +93,13 @@ export {
 export { SessionManager } from './session/SessionManager.js';
 
 // 数据库迁移机制 🆕（P1-5：PRAGMA user_version 版本戳 + 事务化迁移）
-export { DatabaseMigrator, getUserVersion, tableExists, columnExists, addColumnIfMissing } from './db/DatabaseMigrator.js';
+export {
+  DatabaseMigrator,
+  getUserVersion,
+  tableExists,
+  columnExists,
+  addColumnIfMissing,
+} from './db/DatabaseMigrator.js';
 export type { Migration, MigrationResult } from './db/DatabaseMigrator.js';
 export { SESSION_MIGRATIONS } from './db/sessionMigrations.js';
 
@@ -166,7 +172,12 @@ export type {
 } from './plugins/index.js';
 
 // Docker 沙箱系统 🆕
-export { DockerSandbox, SandboxManager, checkDockerAvailability } from './sandbox/index.js';
+export {
+  DockerSandbox,
+  SandboxManager,
+  checkDockerAvailability,
+  resetDockerCache,
+} from './sandbox/index.js';
 export type {
   SandboxOptions,
   SandboxResult,
@@ -179,11 +190,15 @@ export type {
 // 语义分析系统 🆕
 export {
   buildSemanticMap,
+  buildSemanticMapAsync,
   searchSymbol,
   findReferences,
   formatSemanticMap,
   getCodebaseOverview,
+  getCodebaseOverviewAsync,
   analyzeFile,
+  analyzeFileCached,
+  clearAnalysisCache,
   extractSymbols,
   collectSourceFiles,
   findRepoRoot,
@@ -193,6 +208,7 @@ export type {
   ReferenceInfo,
   FileSemanticInfo,
   SemanticMap,
+  CodebaseOverview,
   SupportedLanguage,
 } from './semantic/index.js';
 

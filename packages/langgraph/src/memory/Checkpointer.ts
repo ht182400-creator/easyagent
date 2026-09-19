@@ -1,12 +1,12 @@
 /**
  * Checkpointer — LangGraph SQLite 状态持久化
- * 
+ *
  * 实现 LangGraph 的 BaseCheckpointSaver 接口，使用 better-sqlite3 作为后端。
  * 支持：
  * - 每个 SuperStep 自动保存 State 快照
  * - 跨进程恢复（进程重启后可 resume）
  * - 多会话隔离（通过 thread_id）
- * 
+ *
  * 表结构:
  *   checkpoints: thread_id, checkpoint_id, parent_id, checkpoint(JSON), metadata(JSON), created_at
  *   writes:      thread_id, checkpoint_id, task_id, idx, channel, value(JSON)
@@ -54,7 +54,7 @@ export interface CheckpointerConfig {
 
 /**
  * SQLite Checkpoint 持久化器
- * 
+ *
  * 实现 BaseCheckpointSaver 接口供 LangGraph 自动调用。
  * 同时提供业务层查询接口 (listThreads, getLatestState)。
  */
@@ -66,7 +66,8 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
     super();
     // 默认路径：与现有 SessionManager 共用 data 目录
     const homeDir = process.env.USERPROFILE || process.env.HOME || '/tmp';
-    this.dbPath = config.dbPath || path.join(homeDir, '.easyagent', 'data', 'langgraph-checkpoints.db');
+    this.dbPath =
+      config.dbPath || path.join(homeDir, '.easyagent', 'data', 'langgraph-checkpoints.db');
 
     log.debug('Checkpointer 初始化', { dbPath: this.dbPath, cleanOnInit: !!config.cleanOnInit });
 
@@ -121,13 +122,17 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
     const threadId = config.configurable?.thread_id || 'default';
     const timer = log.startTimer('getTuple');
 
-    const row = this.db.prepare(`
+    const row = this.db
+      .prepare(
+        `
       SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata
       FROM checkpoints
       WHERE thread_id = ?
       ORDER BY rowid DESC
       LIMIT 1
-    `).get(threadId) as CheckpointRow | undefined;
+    `,
+      )
+      .get(threadId) as CheckpointRow | undefined;
 
     if (!row) {
       timer({ threadId, found: false });
@@ -159,7 +164,10 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
    * 列出指定 thread 和 checkpoint 之前的所有 checkpoint
    * LangGraph 自动调用
    */
-  async *list(config: RunnableConfig, options?: { limit?: number; before?: RunnableConfig; filter?: Record<string, unknown> }): AsyncGenerator<CheckpointTuple> {
+  async *list(
+    config: RunnableConfig,
+    options?: { limit?: number; before?: RunnableConfig; filter?: Record<string, unknown> },
+  ): AsyncGenerator<CheckpointTuple> {
     const threadId = config.configurable?.thread_id || 'default';
     const beforeId = options?.before?.configurable?.checkpoint_id;
     const limit = options?.limit || 100;
@@ -167,29 +175,41 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
     let rows: CheckpointRow[];
     if (beforeId) {
       // 通过 rowid 确定顺序：查询早于指定 checkpoint 的记录
-      const beforeRow = this.db.prepare(`
+      const beforeRow = this.db
+        .prepare(
+          `
         SELECT rowid FROM checkpoints WHERE thread_id = ? AND checkpoint_id = ?
-      `).get(threadId, beforeId) as { rowid: number } | undefined;
+      `,
+        )
+        .get(threadId, beforeId) as { rowid: number } | undefined;
 
       if (beforeRow) {
-        rows = this.db.prepare(`
+        rows = this.db
+          .prepare(
+            `
           SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata, created_at
           FROM checkpoints
           WHERE thread_id = ? AND rowid < ?
           ORDER BY rowid DESC
           LIMIT ?
-        `).all(threadId, beforeRow.rowid, limit) as CheckpointRow[];
+        `,
+          )
+          .all(threadId, beforeRow.rowid, limit) as CheckpointRow[];
       } else {
         rows = [];
       }
     } else {
-      rows = this.db.prepare(`
+      rows = this.db
+        .prepare(
+          `
         SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata, created_at
         FROM checkpoints
         WHERE thread_id = ?
         ORDER BY rowid DESC
         LIMIT ?
-      `).all(threadId, limit) as CheckpointRow[];
+      `,
+        )
+        .all(threadId, limit) as CheckpointRow[];
     }
 
     for (const row of rows) {
@@ -222,16 +242,26 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
     config: RunnableConfig,
     checkpoint: Checkpoint,
     metadata: CheckpointMetadata,
-    newVersions: Record<string, string | number>
+    newVersions: Record<string, string | number>,
   ): Promise<RunnableConfig> {
     const threadId = config.configurable?.thread_id || 'default';
     const checkpointId = config.configurable?.checkpoint_id || generateId();
     const timer = log.startTimer('put (保存 checkpoint)');
 
-    this.db.prepare(`
+    this.db
+      .prepare(
+        `
       INSERT OR REPLACE INTO checkpoints (thread_id, checkpoint_id, parent_id, checkpoint, metadata)
       VALUES (?, ?, ?, ?, ?)
-    `).run(threadId, checkpointId, (metadata as unknown as Record<string, unknown>).parent_checkpoint_id || null, JSON.stringify(checkpoint), JSON.stringify(metadata));
+    `,
+      )
+      .run(
+        threadId,
+        checkpointId,
+        (metadata as unknown as Record<string, unknown>).parent_checkpoint_id || null,
+        JSON.stringify(checkpoint),
+        JSON.stringify(metadata),
+      );
 
     timer({ threadId, checkpointId, step: metadata.step });
     return {
@@ -246,7 +276,7 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
   async putWrites(
     config: RunnableConfig,
     writes: Array<[string, unknown]>,
-    taskId: string
+    taskId: string,
   ): Promise<void> {
     const threadId = config.configurable?.thread_id || 'default';
     const checkpointId = config.configurable?.checkpoint_id || '';
@@ -274,7 +304,9 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
   listThreads(): CheckpointSummary[] {
     const timer = log.startTimer('listThreads');
     // 每个 thread 取最新 checkpoint (按 rowid 排序)
-    const rows = this.db.prepare(`
+    const rows = this.db
+      .prepare(
+        `
       SELECT c.thread_id, c.checkpoint_id, c.parent_id, 
              c.metadata, c.created_at
       FROM checkpoints c
@@ -284,7 +316,9 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
         GROUP BY thread_id
       ) latest ON c.thread_id = latest.thread_id AND c.rowid = latest.max_rowid
       ORDER BY c.rowid DESC
-    `).all() as CheckpointRow[];
+    `,
+      )
+      .all() as CheckpointRow[];
 
     const result = rows.map((row) => {
       const metadata = JSON.parse(row.metadata);
@@ -308,12 +342,16 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
    */
   getLatestState(threadId: string): Record<string, unknown> | null {
     const timer = log.startTimer('getLatestState');
-    const row = this.db.prepare(`
+    const row = this.db
+      .prepare(
+        `
       SELECT checkpoint FROM checkpoints
       WHERE thread_id = ?
       ORDER BY rowid DESC
       LIMIT 1
-    `).get(threadId) as { checkpoint: string } | undefined;
+    `,
+      )
+      .get(threadId) as { checkpoint: string } | undefined;
 
     if (!row) {
       timer({ threadId, found: false });
@@ -374,4 +412,3 @@ interface CheckpointRow {
 function generateId(): string {
   return `ckpt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
-

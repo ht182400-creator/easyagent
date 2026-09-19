@@ -166,7 +166,9 @@ export function selectToolDefinitions(
   const excludedNames: string[] = [];
 
   for (const def of defs) {
-    const visible = enableTiering ? isVisible(def.name, scale) : !ALWAYS_EXCLUDED_TOOLS.includes(def.name);
+    const visible = enableTiering
+      ? isVisible(def.name, scale)
+      : !ALWAYS_EXCLUDED_TOOLS.includes(def.name);
     if (visible) selected.push(def);
     else excludedNames.push(def.name);
   }
@@ -189,7 +191,8 @@ export function buildToolIndexText(defs: readonly ToolDefinition[], maxDescChars
     .map((d) => {
       // 只取第一句/第一行，避免把整段描述再抄一遍
       const firstLine = (d.description || '').split(/[\n。；;]/)[0]?.trim() ?? '';
-      const desc = firstLine.length > maxDescChars ? `${firstLine.slice(0, maxDescChars)}…` : firstLine;
+      const desc =
+        firstLine.length > maxDescChars ? `${firstLine.slice(0, maxDescChars)}…` : firstLine;
       return `- ${d.name}: ${desc}`;
     })
     .join('\n');

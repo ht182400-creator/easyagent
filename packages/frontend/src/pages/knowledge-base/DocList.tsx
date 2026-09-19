@@ -8,7 +8,11 @@
  */
 
 import { BookOpen, Search, Trash2, RefreshCw, FileText } from 'lucide-react';
-import { KB_CATEGORIES, type KnowledgeDocument, type KBSearchResult } from '../../stores/knowledgeBaseStore';
+import {
+  KB_CATEGORIES,
+  type KnowledgeDocument,
+  type KBSearchResult,
+} from '../../stores/knowledgeBaseStore';
 import { CATEGORY_ICONS, formatSize } from './helpers';
 
 /** 文档列表属性 */

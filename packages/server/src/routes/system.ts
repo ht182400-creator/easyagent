@@ -42,7 +42,16 @@ export interface SystemRoutesDeps {
  * 注册系统 / Token 用量 / 北极星指标路由
  */
 export function registerSystemRoutes(app: Express, deps: SystemRoutesDeps): void {
-  const { appVersion, serverDir, port, sessionManager, toolRegistry, config, wsSubscriptions, safeSend } = deps;
+  const {
+    appVersion,
+    serverDir,
+    port,
+    sessionManager,
+    toolRegistry,
+    config,
+    wsSubscriptions,
+    safeSend,
+  } = deps;
   void serverDir;
   /** 健康检查 */
   app.get('/api/health', (_req, res) => {
@@ -534,5 +543,4 @@ export function registerSystemRoutes(app: Express, deps: SystemRoutesDeps): void
       res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
-
 }

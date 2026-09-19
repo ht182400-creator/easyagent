@@ -68,11 +68,7 @@ const STYLE_FILES = [
 ];
 
 /** 需要扫描的源码根目录 */
-const SOURCE_ROOTS = [
-  'packages/frontend/src',
-  'packages/web/src',
-  'packages/desktop/src',
-];
+const SOURCE_ROOTS = ['packages/frontend/src', 'packages/web/src', 'packages/desktop/src'];
 
 // ===================== 工具 =====================
 
@@ -126,7 +122,8 @@ function collectDefinedClasses() {
 function extractUsedComponentClasses(text) {
   const used = new Set();
   // 抓取 className="..." / class="..." / className={`...`} 里的内容
-  const attrRe = /(?:className|class)\s*=\s*(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\}|\{['"]([^'"]*)['"]\})/g;
+  const attrRe =
+    /(?:className|class)\s*=\s*(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\}|\{['"]([^'"]*)['"]\})/g;
   for (const m of text.matchAll(attrRe)) {
     const raw = m[1] ?? m[2] ?? m[3] ?? m[4] ?? '';
     // 从字面量里切出候选类名（模板串中的 ${...} 会被切碎，不影响家族匹配）
@@ -165,7 +162,9 @@ function main() {
     }
     for (const cls of extractUsedComponentClasses(text)) {
       if (!usage.has(cls)) usage.set(cls, []);
-      usage.get(cls).push(file.replace(`${PROJECT_ROOT}${process.platform === 'win32' ? '\\' : '/'}`, ''));
+      usage
+        .get(cls)
+        .push(file.replace(`${PROJECT_ROOT}${process.platform === 'win32' ? '\\' : '/'}`, ''));
     }
   }
 
@@ -196,7 +195,9 @@ function main() {
   }
   console.error('');
   console.error('   修复：改用 styles/index.css 中已存在的类名，或在该文件里补上定义。');
-  console.error('   （已定义的徽章类为 badge-success / badge-warning / badge-error / badge-info / badge-neutral）');
+  console.error(
+    '   （已定义的徽章类为 badge-success / badge-warning / badge-error / badge-info / badge-neutral）',
+  );
   console.log('__VERIFY_STATUS__=FAIL');
   return 1;
 }

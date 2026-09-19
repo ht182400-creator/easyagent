@@ -1,7 +1,7 @@
 /**
  * LangGraph 页面测试 — Phase C
  * 覆盖: 数据导出、Scenario 配置完整性、引擎类型枚举
- * 
+ *
  * 注意: 页面渲染测试（DOM 断言）因 jsdom + pnpm 环境下 React hooks
  * 模块重复实例问题被跳过。待迁移至 happy-dom 后启用。
  */
@@ -34,7 +34,7 @@ describe('LangGraphPage — Scenario 配置', () => {
     // 场景由页面内定义，通过 store 的 SCENARIO_PATHS 验证
     const { useLangGraphStore } = await import('../../stores/langGraphStore');
     const store = useLangGraphStore.getState();
-    
+
     // 通过 runScenario API 验证场景 1-9 都有对应的路径
     const scenarioIds = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     expect(scenarioIds).toHaveLength(9);

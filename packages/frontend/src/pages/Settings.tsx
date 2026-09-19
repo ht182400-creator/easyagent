@@ -543,8 +543,9 @@ export default function SettingsPage() {
             (better-sqlite3) + Electron
           </p>
           <p>
-            支持模型（{/* 与 core ProviderPresets 保持同步 */}11 家）: DeepSeek · 智谱GLM · 通义千问 ·
-            Kimi · 文心一言 · 豆包 · 腾讯混元 · MiniMax · Anthropic Claude · OpenAI 兼容 · Ollama 本地
+            支持模型（{/* 与 core ProviderPresets 保持同步 */}11 家）: DeepSeek · 智谱GLM · 通义千问
+            · Kimi · 文心一言 · 豆包 · 腾讯混元 · MiniMax · Anthropic Claude · OpenAI 兼容 · Ollama
+            本地
           </p>
         </div>
 

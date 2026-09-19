@@ -126,7 +126,11 @@ async function main() {
     );
     check(typeof status.stale === 'boolean', 'stale 字段已暴露', `stale=${status.stale}`);
     check(typeof status.ageDays === 'number', 'ageDays 字段已暴露', `ageDays=${status.ageDays}`);
-    check(out.includes('本地文件'), '日志包含来源信息', out.includes('本地文件') ? '已记录' : '未找到');
+    check(
+      out.includes('本地文件'),
+      '日志包含来源信息',
+      out.includes('本地文件') ? '已记录' : '未找到',
+    );
   } catch (err) {
     check(false, '请求失败', err.message);
   } finally {

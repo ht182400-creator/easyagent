@@ -126,9 +126,7 @@ export class DatabaseMigrator {
     const versions = opts.migrations.map((m) => m.version);
     for (let i = 0; i < versions.length; i++) {
       if (!Number.isInteger(versions[i]) || versions[i] < 1) {
-        throw new Error(
-          `[${opts.name}] 迁移版本号必须为 ≥1 的整数，发现非法值: ${versions[i]}`,
-        );
+        throw new Error(`[${opts.name}] 迁移版本号必须为 ≥1 的整数，发现非法值: ${versions[i]}`);
       }
       if (i > 0 && versions[i] <= versions[i - 1]) {
         throw new Error(
@@ -141,9 +139,7 @@ export class DatabaseMigrator {
 
   /** 当前清单的最高版本（无迁移时为 0） */
   get latestVersion(): number {
-    return this.migrations.length > 0
-      ? this.migrations[this.migrations.length - 1].version
-      : 0;
+    return this.migrations.length > 0 ? this.migrations[this.migrations.length - 1].version : 0;
   }
 
   /**

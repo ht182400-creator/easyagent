@@ -16,12 +16,18 @@ export default defineConfig({
     // 因此 worker 入口必须存在于 dist/PluginWorkerEntry.js 才能被找到。
     // 历史：曾输出到 dist/plugins/PluginWorkerEntry.js，但 tsup splitting=false
     // 会把整个 plugins 目录内联到 dist/index.js，__dirname 解析会失败。
-    'PluginWorkerEntry': WORKER_ENTRY,
+    PluginWorkerEntry: WORKER_ENTRY,
   },
   format: ['esm'],
   // dts 仅对主入口和子模块入口生成；worker 入口不需要 dts（其使用 dynamic property
   // access 模式，dts 推导会把所有属性类型推断为 {} 导致类型错误），且外部不引用它
-  dts: { entry: { index: 'src/index.ts', adapters: 'src/adapters/index.ts', tools: 'src/tools/index.ts' } },
+  dts: {
+    entry: {
+      index: 'src/index.ts',
+      adapters: 'src/adapters/index.ts',
+      tools: 'src/tools/index.ts',
+    },
+  },
   sourcemap: true,
   clean: true,
   splitting: false,

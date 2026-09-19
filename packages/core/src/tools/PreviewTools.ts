@@ -3,7 +3,8 @@
  * 提供本地服务器启动、URL预览、用户交互确认等功能
  */
 import { execSync, spawn, ChildProcess } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { resolve } from 'node:path';
 import { networkInterfaces } from 'node:os';
 import type { ITool } from './ToolRegistry.js';
@@ -29,23 +30,50 @@ function getLocalIP(): string {
 }
 
 /**
- * 检测端口是否被占用
+ * 预览服务器端口自动选择区间
+ *
+ * ⚠️ **不要再用 3000**：本机 3000 常被其他服务占用（如自建 Forgejo，
+ * 见 `docs/64`），而旧实现把默认端口写死 3000 又从不检测占用，
+ * 结果是启动预览服务器直接 EADDRINUSE（2026-09-19 修正）。
  */
-function isPortAvailable(port: number): boolean {
-  try {
-    const net = require('node:net');
-    return new Promise<boolean>((res) => {
-      const server = net.createServer();
-      server.once('error', () => res(false));
-      server.once('listening', () => {
-        server.close();
-        res(true);
-      });
-      server.listen(port, '127.0.0.1');
-    }) as unknown as boolean;
-  } catch (err) {
-    return true; // 乐观假设可用
+const PREVIEW_PORT_RANGE_START = 3500;
+const PREVIEW_PORT_RANGE_END = 3599;
+
+/**
+ * 检测端口是否可用（异步）
+ *
+ * ⚠️ 旧实现是**同步**签名 `boolean`，内部却返回 Promise 再 `as unknown as boolean`，
+ * 强转后恒为真（truthy），且全项目从未被调用 —— 导致工具说明里的「自动选择端口」
+ * 名不副实。此处改为真正的异步实现（绑定测试成功即可用）。
+ */
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    const server = createServer();
+    server.once('error', () => resolve(false));
+    server.once('listening', () => {
+      server.close(() => resolve(true));
+    });
+    server.listen(port, '127.0.0.1');
+  });
+}
+
+/**
+ * 在预设区间内挑选首个空闲端口
+ *
+ * @returns port — 可用端口；autoSelected — 是否由本函数自动挑选
+ *          （区间全满时回退到区间起点，交由启动命令自身报错，不假装成功）
+ */
+async function findAvailablePort(): Promise<{ port: number; autoSelected: boolean }> {
+  for (let p = PREVIEW_PORT_RANGE_START; p <= PREVIEW_PORT_RANGE_END; p++) {
+    if (await isPortAvailable(p)) {
+      return { port: p, autoSelected: true };
+    }
   }
+  logger.warn(
+    { range: `${PREVIEW_PORT_RANGE_START}-${PREVIEW_PORT_RANGE_END}` },
+    '预览端口区间已全部占用，回退到区间起点',
+  );
+  return { port: PREVIEW_PORT_RANGE_START, autoSelected: false };
 }
 
 /**
@@ -59,7 +87,10 @@ export const StartServerTool: ITool = {
   parameters: {
     type: 'object',
     properties: {
-      port: { type: 'number', description: '指定端口号, 默认自动选择(3000-3999)' },
+      port: {
+        type: 'number',
+        description: `指定端口号。留空则在 ${PREVIEW_PORT_RANGE_START}-${PREVIEW_PORT_RANGE_END} 内自动选择空闲端口（避开 3000 等常被其他服务占用的端口）`,
+      },
       command: { type: 'string', description: '自定义启动命令, 覆盖自动检测' },
       cwd: { type: 'string', description: '工作子目录(相对于工作区), 默认工作区根目录' },
     },
@@ -75,16 +106,21 @@ export const StartServerTool: ITool = {
 
       const ws = context.workspace;
       const cwd = params.cwd ? resolve(ws, params.cwd as string) : ws;
-      const port = (params.port as number) || 3000;
+
+      // 端口解析：显式指定则尊重用户选择（被占用时如实告警，不擅自改端口）；
+      // 未指定则在上方区间内挑空闲端口（不再默认抢占 3000）
+      const requestedPort = params.port as number | undefined;
+      const { port, autoSelected } = requestedPort
+        ? { port: requestedPort, autoSelected: false }
+        : await findAvailablePort();
+      const portConflict = !autoSelected && !(await isPortAvailable(port));
 
       let command = params.command as string | undefined;
 
       // 自动检测
       if (!command) {
         if (existsSync(resolve(cwd, 'package.json'))) {
-          const pkg = JSON.parse(
-            require('node:fs').readFileSync(resolve(cwd, 'package.json'), 'utf-8'),
-          );
+          const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf-8'));
           if (pkg.scripts?.dev) {
             command = `npm run dev -- --port ${port}`;
           } else if (pkg.scripts?.start) {
@@ -143,6 +179,17 @@ export const StartServerTool: ITool = {
 
       const localIP = getLocalIP();
 
+      /** 端口相关提示（自动选择来源 / 指定端口被占用） */
+      const portNotes: string[] = [];
+      if (autoSelected) {
+        portNotes.push(
+          `端口: ${port}（在 ${PREVIEW_PORT_RANGE_START}-${PREVIEW_PORT_RANGE_END} 内自动选择的空闲端口）`,
+        );
+      }
+      if (portConflict) {
+        portNotes.push(`⚠️ 端口 ${port} 当前已被占用，启动可能失败；请换端口或先释放它`);
+      }
+
       return {
         success: true,
         content: [
@@ -150,12 +197,15 @@ export const StartServerTool: ITool = {
           ``,
           `本地访问: http://localhost:${port}`,
           `网络访问: http://${localIP}:${port}`,
+          ...portNotes,
           ``,
           `启动日志:`,
           startupLog || '(等待输出...)',
         ].join('\n'),
         metadata: {
           port,
+          autoSelected,
+          portConflict,
           localURL: `http://localhost:${port}`,
           networkURL: `http://${localIP}:${port}`,
           command,

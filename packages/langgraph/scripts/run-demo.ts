@@ -12,11 +12,7 @@
 
 import { HumanMessage } from '@langchain/core/messages';
 import type { ToolResult, ToolExecutor } from '../src/index';
-import {
-  createAgentGraph,
-  LangGraphAgent,
-  loadLogConfig,
-} from '../src/index';
+import { createAgentGraph, LangGraphAgent, loadLogConfig } from '../src/index';
 
 // ==================== 颜色输出 ====================
 
@@ -66,7 +62,7 @@ function mockChat(responses: MockResponse[]) {
     const r = responses[i++] || { c: '', fr: 'stop' };
     return {
       content: r.c || '',
-      toolCalls: r.tc?.map(t => ({
+      toolCalls: r.tc?.map((t) => ({
         id: t.id,
         type: 'function' as const,
         function: { name: t.n, arguments: JSON.stringify(t.a) },
@@ -158,7 +154,11 @@ async function scenario2() {
   scene(2, '工具调用循环 (完整环形)', 'START → think → act → observe → think → END');
 
   const chat = mockChat([
-    { c: '让我查询北京天气', tc: [{ id: 'c1', n: 'get_weather', a: { city: '北京' } }], fr: 'tool_calls' },
+    {
+      c: '让我查询北京天气',
+      tc: [{ id: 'c1', n: 'get_weather', a: { city: '北京' } }],
+      fr: 'tool_calls',
+    },
     { c: '北京今天晴天，气温 25°C，适合出行。', fr: 'stop' },
   ]);
   const exec = mockExec({ get_weather: { success: true, content: '晴天 25°C' } });
@@ -243,7 +243,7 @@ async function scenario4() {
       c: '仍在计算...',
       tc: [{ id: 'cx', n: 'loop', a: {} }],
       fr: 'tool_calls',
-    })
+    }),
   );
   const exec = mockExec({ loop: { success: true, content: 'looping' } });
   const graph = createAgentGraph({
@@ -317,17 +317,34 @@ async function scenario7() {
   scene(7, '上下文摘要与压缩', '长对话 → MemoryManager → 摘要压缩 → think → END');
 
   const chat = mockChat([
-    { c: '检测到对话长度超过限制，正在调用摘要压缩...', tc: [{ id: 'c1', n: 'summarize', a: {} }], fr: 'tool_calls' },
-    { c: '已压缩历史对话，当前上下文包含关键摘要：用户之前讨论了天气、编程和项目管理。现在可以继续对话。', fr: 'stop' },
+    {
+      c: '检测到对话长度超过限制，正在调用摘要压缩...',
+      tc: [{ id: 'c1', n: 'summarize', a: {} }],
+      fr: 'tool_calls',
+    },
+    {
+      c: '已压缩历史对话，当前上下文包含关键摘要：用户之前讨论了天气、编程和项目管理。现在可以继续对话。',
+      fr: 'stop',
+    },
   ]);
   const exec = mockExec({
-    summarize: { success: true, content: '摘要: 用户讨论了3个主题——(1)天气查询 (2)Python编程 (3)项目管理。保留20条最近消息，压缩182条历史消息为摘要。' },
+    summarize: {
+      success: true,
+      content:
+        '摘要: 用户讨论了3个主题——(1)天气查询 (2)Python编程 (3)项目管理。保留20条最近消息，压缩182条历史消息为摘要。',
+    },
   });
   const agent = new LangGraphAgent({
     think: {
       chat,
       // 构造200条历史消息，模拟超长上下文
-      getToolDefinitions: () => [{ name: 'summarize', description: '压缩对话历史', parameters: { type: 'object', properties: {} } }],
+      getToolDefinitions: () => [
+        {
+          name: 'summarize',
+          description: '压缩对话历史',
+          parameters: { type: 'object', properties: {} },
+        },
+      ],
       systemPrompt: '你是有上下文的助手，当消息过多时需要压缩摘要',
     },
     act: { toolExecutor: exec },
@@ -356,22 +373,36 @@ async function scenario8() {
       if (callCount === 1 && name === 'get_weather') {
         return { success: false, content: '', error: '参数错误: city 字段不能为空' };
       }
-      return {
-        get_weather: { success: true, content: '上海多云 28°C' },
-      }[name] || { success: true, content: `${name} 完成` };
+      return (
+        {
+          get_weather: { success: true, content: '上海多云 28°C' },
+        }[name] || { success: true, content: `${name} 完成` }
+      );
     },
   };
 
   const chat = mockChat([
     { c: '查询天气', tc: [{ id: 'c1', n: 'get_weather', a: { city: '' } }], fr: 'tool_calls' },
-    { c: '修正参数重试', tc: [{ id: 'c2', n: 'get_weather', a: { city: '上海' } }], fr: 'tool_calls' },
+    {
+      c: '修正参数重试',
+      tc: [{ id: 'c2', n: 'get_weather', a: { city: '上海' } }],
+      fr: 'tool_calls',
+    },
     { c: '上海今天多云，气温 28°C，适合户外活动。', fr: 'stop' },
   ]);
   const graph = createAgentGraph({
     think: {
       chat,
       getToolDefinitions: () => [
-        { name: 'get_weather', description: '查询城市天气', parameters: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] } },
+        {
+          name: 'get_weather',
+          description: '查询城市天气',
+          parameters: {
+            type: 'object',
+            properties: { city: { type: 'string' } },
+            required: ['city'],
+          },
+        },
       ],
     },
     act: { toolExecutor: retryExec },
@@ -413,7 +444,11 @@ async function scenario9() {
   };
 
   const chat = mockChat([
-    { c: '先读取数据文件', tc: [{ id: 'c1', n: 'read_file', a: { path: '/data/users.json' } }], fr: 'tool_calls' },
+    {
+      c: '先读取数据文件',
+      tc: [{ id: 'c1', n: 'read_file', a: { path: '/data/users.json' } }],
+      fr: 'tool_calls',
+    },
     {
       c: '基于 read_file 返回的数据进行分析',
       tc: [{ id: 'c2', n: 'analyze_data', a: { rawJson: '{"users":1200,...}' } }],
@@ -425,8 +460,24 @@ async function scenario9() {
     think: {
       chat,
       getToolDefinitions: () => [
-        { name: 'read_file', description: '读取文件', parameters: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
-        { name: 'analyze_data', description: '分析数据', parameters: { type: 'object', properties: { rawJson: { type: 'string' } }, required: ['rawJson'] } },
+        {
+          name: 'read_file',
+          description: '读取文件',
+          parameters: {
+            type: 'object',
+            properties: { path: { type: 'string' } },
+            required: ['path'],
+          },
+        },
+        {
+          name: 'analyze_data',
+          description: '分析数据',
+          parameters: {
+            type: 'object',
+            properties: { rawJson: { type: 'string' } },
+            required: ['rawJson'],
+          },
+        },
       ],
     },
     act: { toolExecutor: chainExec },
@@ -456,7 +507,9 @@ async function main() {
   title('1. 加载日志配置');
   const configLoaded = loadLogConfig();
   if (!configLoaded) {
-    console.log(`${COLOR.yellow}  ⚠ 未找到 langgraph.config.json，使用默认配置（DEBUG 级别）${COLOR.reset}`);
+    console.log(
+      `${COLOR.yellow}  ⚠ 未找到 langgraph.config.json，使用默认配置（DEBUG 级别）${COLOR.reset}`,
+    );
   }
 
   // 2. 执行全部场景
@@ -483,7 +536,7 @@ async function main() {
   console.log('  日志: langgraph.config.json 控制输出等级和模块\n');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(`${COLOR.red}❌ 运行失败:${COLOR.reset}`, err);
   process.exit(1);
 });

@@ -15,7 +15,7 @@
  */
 
 import type { Express } from 'express';
-import { SandboxManager, checkDockerAvailability, logger } from '@easyagent/core';
+import { SandboxManager, checkDockerAvailability, resetDockerCache, logger } from '@easyagent/core';
 
 /** 沙箱路由依赖（当前无外部依赖 —— 管理器为自包含单例） */
 export type SandboxRoutesDeps = Record<string, never>;
@@ -46,6 +46,10 @@ export function registerSandboxRoutes(app: Express): void {
   /** 获取沙箱状态 */
   app.get('/api/sandbox/status', async (_req, res) => {
     try {
+      // 每次查询都**实探** Docker：checkDockerAvailability 的缓存是一次性闩锁（无 TTL），
+      // 不清缓存的话前端「重新检测」按钮永远只会读到启动那一刻的旧结论
+      // （界面会一直显示「Docker 不可用 / 本地进程模式」，即便 Docker 早已恢复，2026-09-19）
+      resetDockerCache();
       const dockerCheck = await checkDockerAvailability();
       const overview = sandboxManager.getOverview();
       res.json({

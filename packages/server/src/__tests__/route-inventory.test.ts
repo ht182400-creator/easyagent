@@ -77,7 +77,9 @@ describe('路由清单快照 — 防止重构静默丢路由', () => {
 
   it('每条路由都必须有合法的方法与路径', () => {
     for (const r of actual) {
-      expect(r.method, `路由 ${r.path} 的 method 非法`).toMatch(/^(GET|POST|PUT|PATCH|DELETE|ALL|HEAD|OPTIONS)$/);
+      expect(r.method, `路由 ${r.path} 的 method 非法`).toMatch(
+        /^(GET|POST|PUT|PATCH|DELETE|ALL|HEAD|OPTIONS)$/,
+      );
       expect(r.path, '路由 path 不得为空').toBeTruthy();
       // 允许以 / 开头的常规路径，以及通配路径（如 SPA fallback 的 `*`）
       const looksLikePath = r.path.startsWith('/') || r.path.includes('*');
@@ -141,7 +143,9 @@ describe('路由清单快照 — 防止重构静默丢路由', () => {
       missing,
       `以下路由在本次改动后**消失**（重构最危险的信号）:\n  ${missing.join('\n  ')}`,
     ).toEqual([]);
-    expect(added, `以下路由为**新增**（若非有意添加，请检查）:\n  ${added.join('\n  ')}`).toEqual([]);
+    expect(added, `以下路由为**新增**（若非有意添加，请检查）:\n  ${added.join('\n  ')}`).toEqual(
+      [],
+    );
     expect(actual).toEqual(baseline.routes);
   });
 });

@@ -14,14 +14,14 @@ export const FEATURES = [
     title: '定时执行',
     desc: '支持 RRULE 表达式，设置每日/每周/每小时的定时任务',
     color: 'text-yellow-400',
-    action: 'templates' as const,
+    action: 'create' as const,
   },
   {
     icon: RefreshCw,
     title: '立即触发',
-    desc: '随时手动触发任务执行，实时查看运行结果',
+    desc: '选择任一任务立刻执行，实时查看运行结果',
     color: 'text-green-400',
-    action: 'tasklist' as const,
+    action: 'runnow' as const,
   },
   {
     icon: History,
@@ -67,7 +67,9 @@ export const TASK_TEMPLATES = [
 /** 状态标签 */
 export function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string; bg: string }> = {
-    ACTIVE: { label: '运行中', color: '#10b981', bg: 'bg-emerald-500/10' },
+    // ⚠️ ACTIVE 是"已启用"（调度生效），不是"正在执行"——
+    // 旧文案「运行中」让用户误以为任务在跑，看到「立即执行」按钮还可用就以为是 bug（2026-09-19 实报）
+    ACTIVE: { label: '已启用', color: '#10b981', bg: 'bg-emerald-500/10' },
     PAUSED: { label: '已暂停', color: '#f59e0b', bg: 'bg-amber-500/10' },
     COMPLETED: { label: '已完成', color: '#6b7280', bg: 'bg-gray-500/10' },
     ERROR: { label: '异常', color: '#ef4444', bg: 'bg-red-500/10' },

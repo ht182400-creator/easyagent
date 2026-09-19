@@ -26,6 +26,7 @@ import type { IMMessage } from '@easyagent/core';
 import { getModelRegistry } from '@easyagent/core';
 import { createAgent } from './langgraph/index.js';
 import { fetchModelsFromProvider } from './routes/config.js';
+import type { AgentQuestion } from './hitl.js';
 
 /** 配置快照类型（configManager.load() 的返回值） */
 type AppConfig = ReturnType<ConfigManager['getConfig']>;
@@ -45,7 +46,9 @@ type AgentFactory = (
  *
  * @param modelRegistry - 模型注册表单例（与 index.ts / config 路由共用）
  */
-export function initModelRegistryBackground(modelRegistry: ReturnType<typeof getModelRegistry>): void {
+export function initModelRegistryBackground(
+  modelRegistry: ReturnType<typeof getModelRegistry>,
+): void {
   modelRegistry
     .initialize()
     .then(async () => {
@@ -140,6 +143,8 @@ export interface WsHub {
   }) => void;
   /** 广播 LangGraph 节点状态（Phase D 实时高亮） */
   broadcastLangGraphNode: (nodeId: string, status?: string) => void;
+  /** 广播 Agent 提问（HITL：自动化任务无人值守时推送到界面等待回答） */
+  broadcastAgentQuestion: (question: AgentQuestion) => void;
 }
 
 /**
@@ -213,6 +218,19 @@ export function createWsHub(): WsHub {
     }
   }
 
+  /**
+   * 向订阅自动化的客户端广播「Agent 提问」（HITL）
+   *
+   * ⚠️ 信封字段 `type` 必须放在展开**之后**：载荷里的同名字段会覆盖它
+   * （自动化进度就踩过这个坑，见 docs/修复汇总 2026-09-19 F24）。
+   */
+  function broadcastAgentQuestion(question: AgentQuestion): void {
+    const payload = { ...question, type: 'agent_question', timestamp: Date.now() };
+    for (const ws of automationSubscriptions) {
+      safeSend(ws, payload);
+    }
+  }
+
   return {
     wsSubscriptions,
     automationSubscriptions,
@@ -221,6 +239,7 @@ export function createWsHub(): WsHub {
     safeSend,
     broadcastAutomationProgress,
     broadcastLangGraphNode,
+    broadcastAgentQuestion,
   };
 }
 

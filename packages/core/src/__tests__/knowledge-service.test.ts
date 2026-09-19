@@ -3,10 +3,15 @@
  * 覆盖文档 CRUD、搜索、统计、标签等全部公开方法
  */
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
-import { mkdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { KnowledgeService as KS } from '../knowledge/KnowledgeService.js';
+
+// ⚠️ 必须早于任何 KnowledgeService.getGlobal() 调用：把**全局**知识库重定向到临时目录。
+// 否则测试直接写入用户真实数据 ~/.easyagent/.easyagent/knowledge，并与并行运行的其它包
+// 互相污染（2026-09-19 全量回归假失败根因：服务端测试也写同一目录）。
+process.env.EASYAGENT_GLOBAL_KB_DIR = mkdtempSync(join(tmpdir(), 'ea-global-kb-'));
 
 /** 创建临时工作区目录 */
 function createTestWorkspace(): string {
@@ -371,6 +376,21 @@ describe('KnowledgeService - 文档 CRUD', () => {
       const docs = service.listDocuments();
       expect(docs[0].category).toBe('general');
       expect(docs[0].tags).toEqual([]);
+    });
+
+    it('同名文档重复添加应复用 id，且返回的 docId 可查到内容（2026-09-19 修复）', () => {
+      const first = service.addDocument({ title: '同名重复', content: 'v1' });
+      expect(first.success).toBe(true);
+
+      const second = service.addDocument({ title: '同名重复', content: 'v2' });
+      expect(second.success).toBe(true);
+
+      // 旧实现：索引存旧 id、返回值给新 id → 这里取不到文档（并留下孤儿分块目录）
+      const doc = service.getDocument(second.docId!);
+      expect(doc.success).toBe(true);
+      expect(doc.content).toBe('v2');
+
+      service.removeDocument(second.docId!);
     });
   });
 

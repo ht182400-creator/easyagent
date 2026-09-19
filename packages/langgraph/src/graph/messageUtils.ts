@@ -93,9 +93,15 @@ export function hasToolCalls(msg: unknown): boolean {
  * @param msg - 消息对象
  * @returns tool_calls 数组，空数组表示无
  */
-export function getToolCalls(msg: unknown): Array<{ id?: string; name: string; args: Record<string, unknown> }> {
+export function getToolCalls(
+  msg: unknown,
+): Array<{ id?: string; name: string; args: Record<string, unknown> }> {
   if (!hasToolCalls(msg)) return [];
-  return (msg as Record<string, unknown>).tool_calls as Array<{ id?: string; name: string; args: Record<string, unknown> }>;
+  return (msg as Record<string, unknown>).tool_calls as Array<{
+    id?: string;
+    name: string;
+    args: Record<string, unknown>;
+  }>;
 }
 
 /**

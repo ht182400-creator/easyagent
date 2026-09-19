@@ -375,7 +375,9 @@ async function main() {
     // 回退 post-commit hook 本次触发可能产生的管线文件修改
     try {
       execSync('git checkout HEAD -- docs/pipeline/', { cwd: root, stdio: 'pipe' });
-    } catch { /* 没有管线文件修改则跳过 */ }
+    } catch {
+      /* 没有管线文件修改则跳过 */
+    }
     // 推送前先 rebase 远程（CI 管线同步可能在此期间推了新 commit）
     // 由于管线数据不再包含在 release commit 中，rebase 不会冲突
     execSync('git pull --rebase origin main', { cwd: root, stdio: 'inherit' });

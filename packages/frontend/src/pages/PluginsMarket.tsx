@@ -31,7 +31,11 @@ import {
   Globe,
   Terminal,
 } from 'lucide-react';
-import { usePluginsStore, type PluginMarketEntry, type InstallProgress } from '../stores/pluginsStore';
+import {
+  usePluginsStore,
+  type PluginMarketEntry,
+  type InstallProgress,
+} from '../stores/pluginsStore';
 
 // ===================== 类型定义 =====================
 
@@ -181,9 +185,7 @@ function PluginMarketPage() {
             onCheckUpdates={checkUpdates}
           />
         )}
-        {activeTab === 'security' && (
-          <SecurityTab safeMode={safeMode} onToggle={setSafeMode} />
-        )}
+        {activeTab === 'security' && <SecurityTab safeMode={safeMode} onToggle={setSafeMode} />}
       </div>
     </>
   );
@@ -254,13 +256,9 @@ function MarketTab({
       {!loading && plugins.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-500">
           <Package className="w-12 h-12 mb-3 opacity-50" />
-          <p className="text-sm">
-            {searchQuery ? '未找到匹配的插件' : '暂无可用的社区插件'}
-          </p>
+          <p className="text-sm">{searchQuery ? '未找到匹配的插件' : '暂无可用的社区插件'}</p>
           <p className="text-xs mt-1 text-gray-600">
-            {searchQuery
-              ? '尝试其他关键词'
-              : '确保仓库已添加 easyagent-plugin Topic 标签'}
+            {searchQuery ? '尝试其他关键词' : '确保仓库已添加 easyagent-plugin Topic 标签'}
           </p>
         </div>
       )}
@@ -295,9 +293,7 @@ interface PluginCardProps {
 function PluginCard({ plugin, installProgress, onInstall, onViewDetail }: PluginCardProps) {
   const [installing, setInstalling] = useState(false);
   // 查找这个插件的安装进度
-  const progress = Array.from(installProgress.values()).find(
-    (p) => p.pluginId === plugin.id,
-  );
+  const progress = Array.from(installProgress.values()).find((p) => p.pluginId === plugin.id);
 
   const handleInstall = async () => {
     setInstalling(true);
@@ -335,9 +331,7 @@ function PluginCard({ plugin, installProgress, onInstall, onViewDetail }: Plugin
             {plugin.permissions.filesystem?.read && PERMISSION_ICONS.filesystem_read}
             {plugin.permissions.filesystem?.write && PERMISSION_ICONS.filesystem_write}
             {plugin.permissions.network?.allowAll && PERMISSION_ICONS.network}
-            {plugin.permissions.shell && (
-              <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />
-            )}
+            {plugin.permissions.shell && <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />}
           </div>
         )}
       </div>
@@ -356,9 +350,7 @@ function PluginCard({ plugin, installProgress, onInstall, onViewDetail }: Plugin
           {formatNumber(plugin.stars)}
         </span>
         <span>v{plugin.version}</span>
-        {plugin.updatedAt && (
-          <span>{formatDate(plugin.updatedAt)}</span>
-        )}
+        {plugin.updatedAt && <span>{formatDate(plugin.updatedAt)}</span>}
       </div>
 
       {/* 标签 */}
@@ -426,7 +418,13 @@ interface PluginDetailViewProps {
   onClose: () => void;
 }
 
-function PluginDetailView({ detail, loading, installProgress, onInstall, onClose }: PluginDetailViewProps) {
+function PluginDetailView({
+  detail,
+  loading,
+  installProgress,
+  onInstall,
+  onClose,
+}: PluginDetailViewProps) {
   const { plugin, readmeMarkdown } = detail;
 
   if (loading) {
@@ -449,9 +447,7 @@ function PluginDetailView({ detail, loading, installProgress, onInstall, onClose
     );
   }
 
-  const progress = Array.from(installProgress.values()).find(
-    (p) => p.pluginId === plugin.id,
-  );
+  const progress = Array.from(installProgress.values()).find((p) => p.pluginId === plugin.id);
   const isProcessing = progress && !['done', 'error'].includes(progress.status);
 
   return (
@@ -470,7 +466,8 @@ function PluginDetailView({ detail, loading, installProgress, onInstall, onClose
           <div>
             <h2 className="text-lg font-bold">{plugin.name}</h2>
             <p className="text-sm text-gray-400 mt-1">
-              作者: {plugin.author} · v{plugin.version} · ⭐ {plugin.stars} · ⬇ {formatNumber(plugin.downloads)}
+              作者: {plugin.author} · v{plugin.version} · ⭐ {plugin.stars} · ⬇{' '}
+              {formatNumber(plugin.downloads)}
             </p>
             <a
               href={plugin.repoUrl}
@@ -585,7 +582,15 @@ interface InstalledTabProps {
   onCheckUpdates: () => Promise<Map<string, string | null>>;
 }
 
-function InstalledTab({ plugins, loading, installProgress, onToggle, onUninstall, onUpdate, onCheckUpdates }: InstalledTabProps) {
+function InstalledTab({
+  plugins,
+  loading,
+  installProgress,
+  onToggle,
+  onUninstall,
+  onUpdate,
+  onCheckUpdates,
+}: InstalledTabProps) {
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
@@ -670,8 +675,7 @@ function InstalledTab({ plugins, loading, installProgress, onToggle, onUninstall
                 作者: {plugin.author}
                 {plugin.updateAvailable && (
                   <span className="ml-2 text-yellow-400 flex items-center gap-0.5">
-                    <ArrowUpCircle className="w-3 h-3" />
-                    v{plugin.latestVersion} 可用
+                    <ArrowUpCircle className="w-3 h-3" />v{plugin.latestVersion} 可用
                   </span>
                 )}
               </p>
@@ -756,7 +760,8 @@ function SecurityTab({ safeMode, onToggle }: SecurityTabProps) {
           </button>
         </div>
         <p className="text-sm text-gray-400">
-          开启安全模式后，所有第三方插件将被禁用。当插件导致启动异常时，EasyAgent 会自动进入安全模式。
+          开启安全模式后，所有第三方插件将被禁用。当插件导致启动异常时，EasyAgent
+          会自动进入安全模式。
         </p>
       </div>
 

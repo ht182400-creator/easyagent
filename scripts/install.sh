@@ -250,7 +250,7 @@ setup_deepseek() {
     echo -e "  • ${BOLD}deepseek-r1-0528${NC} - 推理增强"
     echo ""
     echo -e "启动命令行: ${BOLD}easyagent-cli${NC}"
-    echo -e "启动 Web UI: ${BOLD}easyagent-server${NC} → http://localhost:3000"
+    echo -e "启动 Web UI: ${BOLD}easyagent-server${NC} → http://localhost:3456"
     echo ""
 }
 
@@ -347,7 +347,7 @@ main() {
     echo ""
     echo -e "快速开始:"
     echo -e "  ${BOLD}easyagent-cli${NC}             启动命令行"
-    echo -e "  ${BOLD}easyagent-server${NC}          启动 Web UI (http://localhost:3000)"
+    echo -e "  ${BOLD}easyagent-server${NC}          启动 Web UI (http://localhost:3456)"
     echo -e "  ${BOLD}easyagent-desktop${NC}        启动桌面应用"
     echo ""
     echo -e "配置模型:"

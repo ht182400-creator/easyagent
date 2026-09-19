@@ -10,7 +10,12 @@ import { AIMessage, SystemMessage } from '@langchain/core/messages';
 import type { BaseMessage } from '@langchain/core/messages';
 import { AgentState } from '../state/AgentState';
 import { Logger } from '../logger/Logger';
-import { getMessageType, getMessageContent, hasToolCalls, getToolCallId } from '../graph/messageUtils';
+import {
+  getMessageType,
+  getMessageContent,
+  hasToolCalls,
+  getToolCallId,
+} from '../graph/messageUtils';
 
 /** thinkNode 模块 Logger */
 const log = new Logger('thinkNode');
@@ -25,7 +30,7 @@ const MAX_IDENTICAL_TOOL_CALLS = 0;
 
 // 类型依赖最小化：只声明需要的接口
 export interface ThinkNodeConfig {
-  /** 
+  /**
    * 聊天接口 — 兼容 EasyAgent 的 BaseAdapter.chat() 签名
    * 接收 Message[] (包含 role/content/tool_calls)，返回 ChatResponse
    */
@@ -77,7 +82,7 @@ interface ChatResponse {
 
 /**
  * 将 BaseMessage 或 checkpoint 还原的普通对象转为 ChatMessage
- * 
+ *
  * 兼容两种消息格式：
  * - BaseMessage 实例（首次运行，有 getType() 原型方法）
  * - 普通 JS 对象（checkpoint JSON 还原后，无 getType() 原型方法）
@@ -92,7 +97,9 @@ function toChatMessages(messages: BaseMessage[]): ChatMessage[] {
 
     // 处理 tool_calls（兼容两种消息格式）
     if (msgType === 'ai' && hasToolCalls(msg)) {
-      const rawToolCalls = (msg as unknown as Record<string, unknown>).tool_calls as Array<Record<string, unknown>>;
+      const rawToolCalls = (msg as unknown as Record<string, unknown>).tool_calls as Array<
+        Record<string, unknown>
+      >;
       base.tool_calls = rawToolCalls.map((tc: Record<string, unknown>) => ({
         id: (tc.id as string) ?? (tc.name as string) ?? '',
         type: 'function' as const,
@@ -118,26 +125,35 @@ function toChatMessages(messages: BaseMessage[]): ChatMessage[] {
 /** 映射 LangChain 消息类型到 adapter 角色 */
 function mapRole(type: string): 'system' | 'user' | 'assistant' | 'tool' {
   switch (type) {
-    case 'system': return 'system';
-    case 'human': return 'user';
-    case 'ai': return 'assistant';
-    case 'tool': return 'tool';
-    default: return 'user';
+    case 'system':
+      return 'system';
+    case 'human':
+      return 'user';
+    case 'ai':
+      return 'assistant';
+    case 'tool':
+      return 'tool';
+    default:
+      return 'user';
   }
 }
 
 /**
  * 创建 think 节点函数
- * 
+ *
  * @param config - 包含模型调用接口和工具定义
  * @returns 节点函数，接收 AgentState 返回部分状态更新
  */
 export function createThinkNode(config: ThinkNodeConfig) {
   return async function thinkNode(
-    state: typeof AgentState.State
+    state: typeof AgentState.State,
   ): Promise<Partial<typeof AgentState.State>> {
     const { chat, getToolDefinitions, systemPrompt: configSystemPrompt } = config;
-    log.enter({ turnCount: state.turnCount, maxTurns: state.maxTurns, msgCount: state.messages.length });
+    log.enter({
+      turnCount: state.turnCount,
+      maxTurns: state.maxTurns,
+      msgCount: state.messages.length,
+    });
 
     // 超过最大轮次则强制终止
     if (state.turnCount >= state.maxTurns) {
@@ -166,11 +182,14 @@ export function createThinkNode(config: ThinkNodeConfig) {
 
       // 历史消息
       fullMessages.push(...state.messages);
-      log.debug('消息列表已构建', { totalMsgCount: fullMessages.length, hasSystemPrompt: !!systemPrompt });
+      log.debug('消息列表已构建', {
+        totalMsgCount: fullMessages.length,
+        hasSystemPrompt: !!systemPrompt,
+      });
 
       // 2. 获取工具定义
       const tools = getToolDefinitions();
-      log.debug('工具定义已获取', { toolCount: tools.length, toolNames: tools.map(t => t.name) });
+      log.debug('工具定义已获取', { toolCount: tools.length, toolNames: tools.map((t) => t.name) });
 
       // 3. 调用 LLM
       const chatMessages = toChatMessages(fullMessages);
@@ -190,16 +209,20 @@ export function createThinkNode(config: ThinkNodeConfig) {
       let consecutiveIdenticalCalls = 0;
       if (currentToolCount > 0) {
         // 向上查找最近一条 AI 消息
-        const lastAiMsg = [...state.messages].reverse().find(m => getMessageType(m) === 'ai');
+        const lastAiMsg = [...state.messages].reverse().find((m) => getMessageType(m) === 'ai');
         if (lastAiMsg && hasToolCalls(lastAiMsg)) {
-          const lastRawToolCalls = (lastAiMsg as unknown as Record<string, unknown>).tool_calls as Array<Record<string, unknown>>;
+          const lastRawToolCalls = (lastAiMsg as unknown as Record<string, unknown>)
+            .tool_calls as Array<Record<string, unknown>>;
           // 比较当前与上轮的工具调用（名称 + 参数）
-          const isIdentical = response.toolCalls!.length === lastRawToolCalls.length &&
+          const isIdentical =
+            response.toolCalls!.length === lastRawToolCalls.length &&
             response.toolCalls!.every((tc, i) => {
               const last = lastRawToolCalls[i];
-              const lastArgs = typeof last.args === 'string' ? last.args : JSON.stringify(last.args ?? {});
-              return tc.function.name === (last.name as string) &&
-                     tc.function.arguments === lastArgs;
+              const lastArgs =
+                typeof last.args === 'string' ? last.args : JSON.stringify(last.args ?? {});
+              return (
+                tc.function.name === (last.name as string) && tc.function.arguments === lastArgs
+              );
             });
           if (isIdentical) {
             consecutiveIdenticalCalls = (state.consecutiveIdenticalToolCalls ?? 0) + 1;
@@ -249,10 +272,16 @@ export function createThinkNode(config: ThinkNodeConfig) {
       const hasToolCallsInResponse = response.toolCalls && response.toolCalls.length > 0;
       if (hasToolCallsInResponse) {
         log.info('LLM 返回 tool_calls', {
-          tools: response.toolCalls!.map(tc => ({ name: tc.function.name, argsLen: tc.function.arguments.length })),
+          tools: response.toolCalls!.map((tc) => ({
+            name: tc.function.name,
+            argsLen: tc.function.arguments.length,
+          })),
         });
       } else {
-        log.debug('LLM 返回纯文本', { contentLen: response.content.length, finishReason: response.finishReason });
+        log.debug('LLM 返回纯文本', {
+          contentLen: response.content.length,
+          finishReason: response.finishReason,
+        });
       }
 
       const result = {

@@ -11,8 +11,13 @@
  */
 import { join, resolve } from 'node:path';
 import {
-  existsSync, mkdirSync, rmSync, readFileSync, writeFileSync,
-  readdirSync, copyFileSync,
+  existsSync,
+  mkdirSync,
+  rmSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  copyFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { getGitHubClient, type GitHubRepo } from '../utils/githubClient.js';
@@ -22,7 +27,7 @@ import { logger } from '@easyagent/core';
 
 /** 插件市场条目 (远程) */
 export interface MarketPlugin {
-  id: string;              // owner/repo
+  id: string; // owner/repo
   name: string;
   description: string;
   author: string;
@@ -71,7 +76,7 @@ export interface InstallJob {
   version: string;
   status: 'pending' | 'downloading' | 'extracting' | 'loading' | 'done' | 'error';
   error?: string;
-  progress: number;  // 0-100
+  progress: number; // 0-100
 }
 
 /** 已安装插件持久化文件结构 */
@@ -191,14 +196,13 @@ export class PluginMarketService {
           }
 
           const version = latestRelease?.tag_name || '0.0.0';
-          const downloads = latestRelease?.assets?.reduce(
-            (sum, a) => sum + a.download_count, 0
-          ) || 0;
+          const downloads =
+            latestRelease?.assets?.reduce((sum, a) => sum + a.download_count, 0) || 0;
 
           plugins.push({
             id: repo.full_name,
-            name: manifest?.name as string || repo.name,
-            description: manifest?.description as string || repo.description || '',
+            name: (manifest?.name as string) || repo.name,
+            description: (manifest?.description as string) || repo.description || '',
             author: repo.owner.login,
             version: version.replace(/^v/, ''),
             downloads,
@@ -395,7 +399,7 @@ export class PluginMarketService {
           if (this.isNewer(latestVersion, p.version)) {
             updates.set(p.id, latestVersion);
           } else {
-            updates.set(p.id, null);  // 已是最新
+            updates.set(p.id, null); // 已是最新
           }
         }
       } catch {
@@ -469,7 +473,9 @@ export class PluginMarketService {
       if (pluginAsset) {
         // 方案 D: 下载预构建的 plugin.zip，解压后目录结构完整
         this.updateJob(jobId, { status: 'downloading', progress: 30 });
-        logger.info(`[PluginMarket] 下载预构建产物 plugin.zip: ${pluginAsset.browser_download_url}`);
+        logger.info(
+          `[PluginMarket] 下载预构建产物 plugin.zip: ${pluginAsset.browser_download_url}`,
+        );
 
         const pluginBuffer = await this.downloadReleaseAsset(job.pluginId, pluginAsset.id);
 
@@ -535,14 +541,15 @@ export class PluginMarketService {
       // 5. 完成 (100%)
       this.updateJob(jobId, { status: 'done', progress: 100 });
       logger.info(`[PluginMarket] 安装完成: ${job.pluginId} v${ref}`);
-
     } catch (error) {
       // 清理失败的安装
       try {
         if (existsSync(pluginDir)) {
           rmSync(pluginDir, { recursive: true, force: true });
         }
-      } catch { /* 忽略清理错误 */ }
+      } catch {
+        /* 忽略清理错误 */
+      }
       throw error;
     }
   }
@@ -579,7 +586,7 @@ export class PluginMarketService {
     const url = `https://api.github.com/repos/${fullName}/releases/assets/${assetId}`;
     const headers: Record<string, string> = {
       'User-Agent': 'EasyAgent-Plugin-Market/1.0',
-      'Accept': 'application/octet-stream',
+      Accept: 'application/octet-stream',
     };
     // 如果配置了 Token，带上可走认证下载（避免匿名限流）
     try {
@@ -592,7 +599,9 @@ export class PluginMarketService {
     const res = await fetch(url, { headers });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      throw new Error(`下载 Release Asset 失败 (${res.status}): ${res.statusText}${text ? ' - ' + text.slice(0, 200) : ''}`);
+      throw new Error(
+        `下载 Release Asset 失败 (${res.status}): ${res.statusText}${text ? ' - ' + text.slice(0, 200) : ''}`,
+      );
     }
     const arrayBuffer = await res.arrayBuffer();
     return Buffer.from(arrayBuffer);
@@ -601,11 +610,7 @@ export class PluginMarketService {
   /**
    * 解压 zip 文件到目标目录
    */
-  private async extractZip(
-    buffer: Buffer,
-    tmpDir: string,
-    targetDir: string,
-  ): Promise<void> {
+  private async extractZip(buffer: Buffer, tmpDir: string, targetDir: string): Promise<void> {
     // 动态导入 adm-zip（避免顶层依赖）
     // 使用内置模块手动解压
     const { execSync } = await import('node:child_process');
@@ -637,13 +642,13 @@ export class PluginMarketService {
     const { readdirSync, renameSync } = await import('node:fs');
     const dirs = readdirSync(tmpDir, { withFileTypes: true });
     const isFlatLayout = dirs.some(
-      (d) => d.isFile() && (d.name === 'manifest.json' || d.name === 'plugin.js')
+      (d) => d.isFile() && (d.name === 'manifest.json' || d.name === 'plugin.js'),
     );
 
     if (!isFlatLayout) {
       // GitHub zipball 模式：找唯一子目录
       const extractDir = dirs.find(
-        (d) => d.isDirectory() && !d.name.startsWith('_') && d.name !== 'plugin.zip'
+        (d) => d.isDirectory() && !d.name.startsWith('_') && d.name !== 'plugin.zip',
       );
 
       if (extractDir) {
@@ -682,7 +687,9 @@ export class PluginMarketService {
     // 清理临时目录
     try {
       rmSync(tmpDir, { recursive: true, force: true });
-    } catch { /* 忽略 */ }
+    } catch {
+      /* 忽略 */
+    }
   }
 
   /**
@@ -727,7 +734,9 @@ export class PluginMarketService {
     for (const cb of this.progressCallbacks) {
       try {
         cb({ ...job });
-      } catch { /* 忽略回调错误 */ }
+      } catch {
+        /* 忽略回调错误 */
+      }
     }
   }
 
@@ -742,21 +751,23 @@ export class PluginMarketService {
   /**
    * 提取权限摘要
    */
-  private extractPermissions(
-    permissions: unknown,
-  ): PluginPermissionsSummary | null {
+  private extractPermissions(permissions: unknown): PluginPermissionsSummary | null {
     if (!permissions || typeof permissions !== 'object') return null;
 
     const p = permissions as Record<string, unknown>;
     return {
-      filesystem: p.filesystem ? {
-        read: !!(p.filesystem as Record<string, unknown>)?.read,
-        write: !!(p.filesystem as Record<string, unknown>)?.write,
-      } : undefined,
-      network: p.network ? {
-        allowAll: !!(p.network as Record<string, unknown>)?.allowAll,
-        domains: ((p.network as Record<string, unknown>)?.domains as string[]) || [],
-      } : undefined,
+      filesystem: p.filesystem
+        ? {
+            read: !!(p.filesystem as Record<string, unknown>)?.read,
+            write: !!(p.filesystem as Record<string, unknown>)?.write,
+          }
+        : undefined,
+      network: p.network
+        ? {
+            allowAll: !!(p.network as Record<string, unknown>)?.allowAll,
+            domains: ((p.network as Record<string, unknown>)?.domains as string[]) || [],
+          }
+        : undefined,
       shell: !!p.shell,
       notifications: !!p.notifications,
       clipboard: !!p.clipboard,
@@ -817,10 +828,7 @@ export class PluginMarketService {
    * 兼容多种匹配形式：pluginId（owner/repo）、name（manifest.name 或 repo 名）、
    * pluginNameFromPm（PluginManager 反馈的真实目录 basename）
    */
-  private removeFromInstalled(
-    pluginId: string,
-    pluginNameFromPm?: string | null,
-  ): void {
+  private removeFromInstalled(pluginId: string, pluginNameFromPm?: string | null): void {
     const manifest = this.loadInstalledManifest();
     const repoName = pluginId.includes('/') ? pluginId.split('/').pop() : null;
     const candidates = new Set<string>();
@@ -836,7 +844,9 @@ export class PluginMarketService {
     });
     const removed = before - manifest.plugins.length;
     if (removed > 0) {
-      logger.info(`[PluginMarket] 从 installed.json 移除 ${removed} 条记录 (pluginId=${pluginId}, pmName=${pluginNameFromPm})`);
+      logger.info(
+        `[PluginMarket] 从 installed.json 移除 ${removed} 条记录 (pluginId=${pluginId}, pmName=${pluginNameFromPm})`,
+      );
     }
     this.saveInstalledManifest(manifest);
   }
@@ -854,7 +864,9 @@ export class PluginMarketService {
           return cache.plugins;
         }
       }
-    } catch { /* 忽略 */ }
+    } catch {
+      /* 忽略 */
+    }
     return null;
   }
 
@@ -879,7 +891,8 @@ export class PluginMarketService {
    */
   private isNewer(versionA: string, versionB: string): boolean {
     const normalize = (v: string) =>
-      v.replace(/^v/, '')
+      v
+        .replace(/^v/, '')
         .split('.')
         .map((n) => parseInt(n, 10) || 0);
 

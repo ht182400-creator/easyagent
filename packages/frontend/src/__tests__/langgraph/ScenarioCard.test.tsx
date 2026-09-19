@@ -1,7 +1,7 @@
 /**
  * ScenarioCard 组件测试 — Phase C/D
  * 覆盖: 数据结构验证 + 执行状态逻辑 + React 组件渲染
- * 
+ *
  * happy-dom 环境下 React hooks 正常工作，支持完整 DOM 渲染测试。
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -76,12 +76,13 @@ describe('ScenarioCard — 数据结构', () => {
     expect(result.output).toContain('执行失败');
     expect(result.turnCount).toBe(0);
     expect(result.logs).toHaveLength(1);
-    expect(result.logs[0].type).toBe('error');
+    // ScenarioResult.logs 是可选字段（类型上可能 undefined），此处用例自带日志
+    expect(result.logs![0].type).toBe('error');
   });
 
   it('logs 数组应包含 enter/decision/exit 类型', () => {
     const result = makeResult();
-    const logTypes = result.logs.map((l) => l.type);
+    const logTypes = result.logs!.map((l) => l.type);
     expect(logTypes).toContain('enter');
     expect(logTypes).toContain('decision');
     expect(logTypes).toContain('exit');

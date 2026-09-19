@@ -16,7 +16,9 @@ function createTestWorkspace(): string {
 function cleanupWorkspace(dir: string) {
   try {
     rmSync(dir, { recursive: true, force: true });
-  } catch (_) { /* 测试清理失败不影响结果 */ }
+  } catch (_) {
+    /* 测试清理失败不影响结果 */
+  }
 }
 
 // ================================================================

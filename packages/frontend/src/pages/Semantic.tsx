@@ -23,6 +23,7 @@ import {
   ArrowRight,
   FileText,
   Layers,
+  AlertTriangle,
 } from 'lucide-react';
 import { useSemanticStore } from '../stores/semanticStore';
 
@@ -39,9 +40,43 @@ const KIND_COLORS: Record<string, string> = {
   export: 'text-emerald-400 bg-emerald-500/10',
 };
 
+/** 上次使用的工作目录 / 扫描参数（localStorage key） */
+const SEMANTIC_WORKSPACE_KEY = 'easyagent:semantic-workspace';
+const SEMANTIC_DEPTH_KEY = 'easyagent:semantic-depth';
+const SEMANTIC_MAX_FILES_KEY = 'easyagent:semantic-max-files';
+
+/** 扫描参数默认值（与服务端默认保持一致） */
+const DEFAULT_DEPTH = 6;
+const DEFAULT_MAX_FILES = 1000;
+
+/** 读取 localStorage 中的正整数值（不可用 / 异常时回退默认值） */
+function readStoredNumber(key: string, fallback: number): number {
+  try {
+    const raw = localStorage.getItem(key);
+    const n = raw ? Number.parseInt(raw, 10) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export default function SemanticPage() {
   const [activeTab, setActiveTab] = useState<'map' | 'search' | 'overview' | 'file'>('map');
-  const [workspacePath, setWorkspacePath] = useState('');
+  // 工作目录默认回填上次使用值：留空时服务端只能用默认目录扫描，
+  // 若默认目录不含源码会得到"全 0 统计"，很容易被误判为功能坏了。
+  const [workspacePath, setWorkspacePath] = useState(() => {
+    try {
+      return localStorage.getItem(SEMANTIC_WORKSPACE_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+  // 扫描深度与文件上限：此前只有 API 能调，界面固定用服务端默认值，
+  // 导致「超过上限的文件被静默丢弃」用户既看不到也改不了（2026-09-19 补齐）
+  const [depth, setDepth] = useState(() => readStoredNumber(SEMANTIC_DEPTH_KEY, DEFAULT_DEPTH));
+  const [maxFiles, setMaxFiles] = useState(() =>
+    readStoredNumber(SEMANTIC_MAX_FILES_KEY, DEFAULT_MAX_FILES),
+  );
 
   const {
     mapLoading,
@@ -73,9 +108,24 @@ export default function SemanticPage() {
     fetchOverview(workspacePath || undefined);
   }, []);
 
-  const handleBuildMap = useCallback(() => {
-    fetchSemanticMap(workspacePath || undefined);
-  }, [workspacePath, fetchSemanticMap]);
+  /** 构建地图（force=true 时跳过服务端 SWR 缓存与 mtime 增量缓存） */
+  const buildMap = useCallback(
+    (force: boolean) => {
+      const path = workspacePath.trim();
+      try {
+        if (path) localStorage.setItem(SEMANTIC_WORKSPACE_KEY, path);
+        localStorage.setItem(SEMANTIC_DEPTH_KEY, String(depth));
+        localStorage.setItem(SEMANTIC_MAX_FILES_KEY, String(maxFiles));
+      } catch {
+        /* 隐私模式等不可写场景忽略 */
+      }
+      fetchSemanticMap(path || undefined, depth, maxFiles, force);
+    },
+    [workspacePath, depth, maxFiles, fetchSemanticMap],
+  );
+
+  const handleBuildMap = useCallback(() => buildMap(false), [buildMap]);
+  const handleForceRebuild = useCallback(() => buildMap(true), [buildMap]);
 
   return (
     <div className="space-y-6">
@@ -92,10 +142,12 @@ export default function SemanticPage() {
         </div>
       </div>
 
-      {/* 工作目录输入 */}
-      <div className="flex gap-3 items-end">
-        <div className="flex-1">
-          <label className="block text-xs text-gray-500 mb-1.5">工作目录（留空使用当前目录）</label>
+      {/* 扫描参数：工作目录 + 深度 + 文件上限 */}
+      <div className="flex flex-wrap gap-3 items-end">
+        <div className="flex-1 min-w-[240px]">
+          <label className="block text-xs text-gray-500 mb-1.5">
+            工作目录（留空使用服务端默认目录）
+          </label>
           <input
             type="text"
             value={workspacePath}
@@ -103,6 +155,37 @@ export default function SemanticPage() {
             placeholder="输入代码库路径..."
             className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-4 py-2.5 text-sm text-gray-200 
               placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50"
+          />
+        </div>
+        <div className="w-24">
+          <label className="block text-xs text-gray-500 mb-1.5" title="目录递归深度">
+            深度
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={depth}
+            onChange={(e) => setDepth(Number.parseInt(e.target.value, 10) || DEFAULT_DEPTH)}
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-sm text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+          />
+        </div>
+        <div className="w-32">
+          <label
+            className="block text-xs text-gray-500 mb-1.5"
+            title="最多分析多少个文件，超出部分不纳入"
+          >
+            文件上限
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={50000}
+            value={maxFiles}
+            onChange={(e) => setMaxFiles(Number.parseInt(e.target.value, 10) || DEFAULT_MAX_FILES)}
+            className="w-full bg-gray-900/50 border border-gray-700/50 rounded-lg px-3 py-2.5 text-sm text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-purple-500/30"
           />
         </div>
         <button
@@ -117,6 +200,15 @@ export default function SemanticPage() {
             <RefreshCw className="w-4 h-4" />
           )}
           构建地图
+        </button>
+        <button
+          onClick={handleForceRebuild}
+          disabled={mapLoading}
+          title="跳过服务端缓存与增量缓存，重新读取所有文件"
+          className="px-4 py-2.5 rounded-lg bg-gray-800/40 border border-gray-700/40 text-gray-400 
+            hover:text-gray-200 hover:bg-gray-800/70 transition-colors text-sm disabled:opacity-50"
+        >
+          强制重扫
         </button>
       </div>
 
@@ -164,8 +256,10 @@ export default function SemanticPage() {
             query={searchQuery}
             results={searchResults}
             total={searchTotal}
-            onSearch={(q, cs, k) => searchSymbols(q, workspacePath || undefined, cs, k)}
-            onFindRefs={(sym) => findReferences(sym, workspacePath || undefined)}
+            onSearch={(q, cs, k) =>
+              searchSymbols(q, workspacePath || undefined, cs, k, depth, maxFiles)
+            }
+            onFindRefs={(sym) => findReferences(sym, workspacePath || undefined, depth, maxFiles)}
             refResults={refResults}
             refTotal={refTotal}
             refLoading={refLoading}
@@ -206,6 +300,8 @@ function SemanticMapTab({
     totalLines: number;
     totalSymbols: number;
     languages: Record<string, number>;
+    totalCandidates?: number;
+    truncated?: boolean;
   } | null;
   root: string;
   topSymbols: Array<{ name: string; count: number; locations: string[] }>;
@@ -249,6 +345,42 @@ function SemanticMapTab({
 
   return (
     <div className="space-y-6">
+      {/* 扫描到 0 文件：明确告知扫描根，避免"四张全 0 统计卡"式静默失败 */}
+      {stats.totalFiles === 0 && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="text-amber-300 font-medium">该目录下未找到可识别的源码文件</p>
+            <p className="text-gray-400 mt-1">
+              本次扫描根：
+              <span className="font-mono text-gray-300 break-all">{root || '(未知)'}</span>
+            </p>
+            <p className="text-gray-500 mt-1">
+              请在上方「工作目录」填写代码库路径（留空时使用服务端默认目录），再点「构建地图」。
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 达到文件上限：明确告知"还有多少没扫"，否则用户会以为地图是完整的 */}
+      {stats.truncated && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="text-amber-300 font-medium">已达到文件上限，本次地图不完整</p>
+            <p className="text-gray-400 mt-1">
+              本次扫描 <span className="text-gray-200">{stats.totalFiles}</span> / 候选{' '}
+              <span className="text-gray-200">{stats.totalCandidates ?? '?'}</span>，其余{' '}
+              <span className="text-amber-300">
+                {Math.max((stats.totalCandidates ?? 0) - stats.totalFiles, 0)}
+              </span>{' '}
+              个文件未纳入分析。
+            </p>
+            <p className="text-gray-500 mt-1">在上方调大「文件上限」后重新构建，即可全部纳入。</p>
+          </div>
+        </div>
+      )}
+
       {/* 统计卡片 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
@@ -497,6 +629,8 @@ function OverviewTab({
       totalLines: number;
       totalSize: number;
       languages: Record<string, number>;
+      totalCandidates?: number;
+      truncated?: boolean;
     };
   } | null;
   onRefresh: () => void;
@@ -538,6 +672,17 @@ function OverviewTab({
         />
         <StatCard icon={Hash} label="总大小" value={`${sizeMB}MB`} color="purple" />
       </div>
+
+      {/* 截断提示：概览与地图口径一致，避免"看起来全仓都扫了"的误解 */}
+      {overview.stats.truncated && (
+        <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <p className="text-xs text-gray-400">
+            已达文件上限：本次纳入 {overview.stats.totalFiles} / 候选{' '}
+            {overview.stats.totalCandidates ?? '?'} 个文件，部分文件未统计。
+          </p>
+        </div>
+      )}
 
       <div className="bg-gray-900/30 rounded-xl border border-gray-800/30 p-5">
         <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">

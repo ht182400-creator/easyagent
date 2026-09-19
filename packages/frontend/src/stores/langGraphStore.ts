@@ -123,11 +123,50 @@ const SCENARIO_PATHS: Record<number, string[]> = {
   1: ['START', 'think', 'route', 'END'],
   2: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
   3: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
-  4: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+  4: [
+    'START',
+    'think',
+    'route',
+    'act',
+    'observe',
+    'think',
+    'route',
+    'act',
+    'observe',
+    'think',
+    'route',
+    'END',
+  ],
   5: ['START', 'think', 'route', 'END', 'START', 'think', 'route', 'END'],
   7: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
-  8: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
-  9: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+  8: [
+    'START',
+    'think',
+    'route',
+    'act',
+    'observe',
+    'think',
+    'route',
+    'act',
+    'observe',
+    'think',
+    'route',
+    'END',
+  ],
+  9: [
+    'START',
+    'think',
+    'route',
+    'act',
+    'observe',
+    'think',
+    'route',
+    'act',
+    'observe',
+    'think',
+    'route',
+    'END',
+  ],
 };
 
 /** 获取场景的遍历路径（供实时高亮动画使用） */
@@ -136,9 +175,7 @@ function getScenarioTraversalPath(id: number): string[] {
 }
 
 /** 3秒后自动取消高亮 */
-function autoClearHighlight(
-  set: (fn: (state: LangGraphState) => Partial<LangGraphState>) => void,
-) {
+function autoClearHighlight(set: (fn: (state: LangGraphState) => Partial<LangGraphState>) => void) {
   setTimeout(() => {
     set(() => ({
       highlightedNode: null,
@@ -178,8 +215,12 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
       if (nodeId) {
         // 高亮所有出入边
         const allEdges = [
-          ['START', 'think'], ['think', 'route'], ['route', 'act'],
-          ['route', 'END'], ['act', 'observe'], ['observe', 'think'],
+          ['START', 'think'],
+          ['think', 'route'],
+          ['route', 'act'],
+          ['route', 'END'],
+          ['act', 'observe'],
+          ['observe', 'think'],
         ];
         allEdges.forEach(([f, t]) => {
           if (f === nodeId || t === nodeId) edges.add(`${f}→${t}`);
@@ -213,8 +254,12 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
         set((s) => {
           const edges = new Set<string>();
           const allEdges = [
-            ['START', 'think'], ['think', 'route'], ['route', 'act'],
-            ['route', 'END'], ['act', 'observe'], ['observe', 'think'],
+            ['START', 'think'],
+            ['think', 'route'],
+            ['route', 'act'],
+            ['route', 'END'],
+            ['act', 'observe'],
+            ['observe', 'think'],
           ];
           allEdges.forEach(([f, t]) => {
             if (f === nodeId || t === nodeId) edges.add(`${f}→${t}`);
@@ -348,7 +393,11 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
   disconnectWebSocket: () => {
     const { ws } = get();
     if (ws) {
-      try { ws.send(JSON.stringify({ type: 'unsubscribe_langgraph' })); } catch { /* ignore */ }
+      try {
+        ws.send(JSON.stringify({ type: 'unsubscribe_langgraph' }));
+      } catch {
+        /* ignore */
+      }
       ws.close();
     }
     set({ ws: null, wsConnected: false });
@@ -432,7 +481,11 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
     try {
       const baseUrl = getApiBase();
       await fetch(`${baseUrl}/api/demo/stop`, { method: 'POST' });
-      set({ demoOutput: [...get().demoOutput, '\n⏹️ Demo 服务已停止'], demoRunning: false, demoReady: false });
+      set({
+        demoOutput: [...get().demoOutput, '\n⏹️ Demo 服务已停止'],
+        demoRunning: false,
+        demoReady: false,
+      });
     } catch (err) {
       set({ demoOutput: [...get().demoOutput, `❌ 停止失败: ${(err as Error).message}`] });
     }

@@ -46,10 +46,16 @@ describe('pluginsStore — 插件安装进度订阅', () => {
     const unsubscribe = initPluginProgressListener();
 
     emit('plugin:install:progress', {
-      jobId: 'job_002', pluginId: 'owner/plugin-b', progress: 20, status: 'downloading',
+      jobId: 'job_002',
+      pluginId: 'owner/plugin-b',
+      progress: 20,
+      status: 'downloading',
     });
     emit('plugin:install:progress', {
-      jobId: 'job_002', pluginId: 'owner/plugin-b', progress: 60, status: 'extracting',
+      jobId: 'job_002',
+      pluginId: 'owner/plugin-b',
+      progress: 60,
+      status: 'extracting',
     });
 
     const progress = usePluginsStore.getState().installProgress.get('job_002');
@@ -63,14 +69,20 @@ describe('pluginsStore — 插件安装进度订阅', () => {
     const unsubscribe = initPluginProgressListener();
 
     emit('plugin:install:progress', {
-      jobId: 'job_003', pluginId: 'owner/plugin-c', progress: 10, status: 'downloading',
+      jobId: 'job_003',
+      pluginId: 'owner/plugin-c',
+      progress: 10,
+      status: 'downloading',
     });
     expect(usePluginsStore.getState().installProgress.size).toBe(1);
 
     unsubscribe();
 
     emit('plugin:install:progress', {
-      jobId: 'job_004', pluginId: 'owner/plugin-d', progress: 20, status: 'downloading',
+      jobId: 'job_004',
+      pluginId: 'owner/plugin-d',
+      progress: 20,
+      status: 'downloading',
     });
     // 仍只有 job_003
     expect(usePluginsStore.getState().installProgress.size).toBe(1);
@@ -80,9 +92,20 @@ describe('pluginsStore — 插件安装进度订阅', () => {
   it('done 状态应自动将 marketplace 中对应插件标记为已安装', () => {
     usePluginsStore.setState({
       marketplace: [
-        { id: 'owner/plugin-e', name: 'E', description: '', author: 'owner',
-          version: '1.0.0', downloads: 0, stars: 0, updatedAt: '', repoUrl: '',
-          tags: [], permissions: null, installed: false },
+        {
+          id: 'owner/plugin-e',
+          name: 'E',
+          description: '',
+          author: 'owner',
+          version: '1.0.0',
+          downloads: 0,
+          stars: 0,
+          updatedAt: '',
+          repoUrl: '',
+          tags: [],
+          permissions: null,
+          installed: false,
+        },
       ],
       installed: [],
       installProgress: new Map(),
@@ -91,10 +114,13 @@ describe('pluginsStore — 插件安装进度订阅', () => {
     const unsubscribe = initPluginProgressListener();
 
     emit('plugin:install:progress', {
-      jobId: 'job_005', pluginId: 'owner/plugin-e', progress: 100, status: 'done',
+      jobId: 'job_005',
+      pluginId: 'owner/plugin-e',
+      progress: 100,
+      status: 'done',
     });
 
-    const plugin = usePluginsStore.getState().marketplace.find(p => p.id === 'owner/plugin-e');
+    const plugin = usePluginsStore.getState().marketplace.find((p) => p.id === 'owner/plugin-e');
     expect(plugin?.installed).toBe(true);
 
     unsubscribe();
@@ -104,16 +130,27 @@ describe('pluginsStore — 插件安装进度订阅', () => {
     usePluginsStore.setState({
       marketplace: [],
       installed: [],
-      installProgress: new Map([['job_006', {
-        jobId: 'job_006', pluginId: 'owner/plugin-f', progress: 100, status: 'done',
-      }]]),
+      installProgress: new Map([
+        [
+          'job_006',
+          {
+            jobId: 'job_006',
+            pluginId: 'owner/plugin-f',
+            progress: 100,
+            status: 'done',
+          },
+        ],
+      ]),
     });
 
     const unsubscribe = initPluginProgressListener();
 
     // 再次触发 done 状态（模拟重复推送或轮询兜底）
     emit('plugin:install:progress', {
-      jobId: 'job_006', pluginId: 'owner/plugin-f', progress: 100, status: 'done',
+      jobId: 'job_006',
+      pluginId: 'owner/plugin-f',
+      progress: 100,
+      status: 'done',
     });
 
     // installProgress 中对应条目应被清理（UI 不再显示进度条）
@@ -132,7 +169,10 @@ describe('pluginsStore — 插件安装进度订阅', () => {
     const unsubscribe = initPluginProgressListener();
 
     emit('plugin:install:progress', {
-      jobId: 'job_007', pluginId: 'owner/plugin-g', progress: 100, status: 'done',
+      jobId: 'job_007',
+      pluginId: 'owner/plugin-g',
+      progress: 100,
+      status: 'done',
     });
 
     const installed = usePluginsStore.getState().installed;
@@ -148,9 +188,21 @@ describe('pluginsStore — 插件安装进度订阅', () => {
     usePluginsStore.setState({
       installed: [
         // 模拟 fetchInstalled 合并后的实际数据结构：id 为 local:<name>，name 为插件名
-        { id: 'local:obsidian-doc-viewer', name: 'obsidian-doc-viewer', version: '1.0.0',
-          author: '', description: '', enabled: true, installedAt: '', source: 'local',
-          localPath: '', updateAvailable: false, tools: [], skills: [], hooks: [] },
+        {
+          id: 'local:obsidian-doc-viewer',
+          name: 'obsidian-doc-viewer',
+          version: '1.0.0',
+          author: '',
+          description: '',
+          enabled: true,
+          installedAt: '',
+          source: 'local',
+          localPath: '',
+          updateAvailable: false,
+          tools: [],
+          skills: [],
+          hooks: [],
+        },
       ],
       marketplace: [],
       loading: false,
@@ -159,14 +211,27 @@ describe('pluginsStore — 插件安装进度订阅', () => {
     // mock apiRequest 拦截 /api/plugins/market
     const { apiRequest } = await import('../request');
     vi.spyOn(await import('../request'), 'apiRequest').mockResolvedValueOnce([
-      { id: 'obsidian-doc-viewer', name: 'obsidian-doc-viewer', description: 'doc viewer',
-        author: 'test', version: '1.0.0', downloads: 0, stars: 0, updatedAt: '',
-        repoUrl: '', tags: [], permissions: null, installed: false },
+      {
+        id: 'obsidian-doc-viewer',
+        name: 'obsidian-doc-viewer',
+        description: 'doc viewer',
+        author: 'test',
+        version: '1.0.0',
+        downloads: 0,
+        stars: 0,
+        updatedAt: '',
+        repoUrl: '',
+        tags: [],
+        permissions: null,
+        installed: false,
+      },
     ] as any);
 
     await usePluginsStore.getState().fetchMarketplace();
 
-    const plugin = usePluginsStore.getState().marketplace.find(p => p.id === 'obsidian-doc-viewer');
+    const plugin = usePluginsStore
+      .getState()
+      .marketplace.find((p) => p.id === 'obsidian-doc-viewer');
     expect(plugin?.installed).toBe(true); // 关键断言：已安装插件应被正确标记
 
     vi.restoreAllMocks();

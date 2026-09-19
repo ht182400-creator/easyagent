@@ -32,7 +32,9 @@ function createMcpScript(scriptCode: string): [string, string] {
 function cleanMcpDir(dir: string): void {
   try {
     rmSync(dir, { recursive: true, force: true });
-  } catch (_) { /* 测试清理失败不影响结果 */ }
+  } catch (_) {
+    /* 测试清理失败不影响结果 */
+  }
 }
 
 // ==================== MCPClient 测试 ====================

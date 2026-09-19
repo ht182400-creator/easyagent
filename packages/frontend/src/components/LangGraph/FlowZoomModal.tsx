@@ -115,7 +115,9 @@ export default function FlowZoomModal({ scenario, onClose }: FlowZoomModalProps)
         {/* 头部 */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1a2530] flex-shrink-0">
           <div className="flex items-center gap-2.5 text-sm font-semibold text-[#dde4ec]">
-            <span>#{scenario.id} {scenario.name}</span>
+            <span>
+              #{scenario.id} {scenario.name}
+            </span>
             <span className="text-[10px] px-2.5 py-0.5 rounded bg-[rgba(0,229,255,0.1)] text-[#00e5ff] border border-[rgba(0,229,255,0.2)]">
               {scenario.flowDesc}
             </span>
@@ -159,10 +161,29 @@ export default function FlowZoomModal({ scenario, onClose }: FlowZoomModalProps)
 
         {/* 底部操作提示 */}
         <div className="flex items-center gap-4 px-5 py-2 border-t border-[#1a2530] text-[10px] text-[#4a5568] flex-shrink-0">
-          <span>🖱️ <kbd className="px-1.5 py-0.5 border border-[#1a2530] rounded bg-white/[0.03] text-[9px]">滚轮</kbd> 缩放</span>
-          <span>🖱️ <kbd className="px-1.5 py-0.5 border border-[#1a2530] rounded bg-white/[0.03] text-[9px]">拖拽</kbd> 平移</span>
-          <span><kbd className="px-1.5 py-0.5 border border-[#1a2530] rounded bg-white/[0.03] text-[9px]">ESC</kbd> 关闭</span>
-          <span className="ml-auto text-[#00e5ff] font-mono text-[10px]">{Math.round(zoomLevel * 100)}%</span>
+          <span>
+            🖱️{' '}
+            <kbd className="px-1.5 py-0.5 border border-[#1a2530] rounded bg-white/[0.03] text-[9px]">
+              滚轮
+            </kbd>{' '}
+            缩放
+          </span>
+          <span>
+            🖱️{' '}
+            <kbd className="px-1.5 py-0.5 border border-[#1a2530] rounded bg-white/[0.03] text-[9px]">
+              拖拽
+            </kbd>{' '}
+            平移
+          </span>
+          <span>
+            <kbd className="px-1.5 py-0.5 border border-[#1a2530] rounded bg-white/[0.03] text-[9px]">
+              ESC
+            </kbd>{' '}
+            关闭
+          </span>
+          <span className="ml-auto text-[#00e5ff] font-mono text-[10px]">
+            {Math.round(zoomLevel * 100)}%
+          </span>
         </div>
       </div>
     </div>

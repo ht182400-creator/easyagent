@@ -460,6 +460,27 @@ export default function SandboxPage() {
                       </pre>
                     </div>
                   )}
+                  {/* 无输出提示：退出码 0 但 stdout/stderr 皆空时，明确告知"命令确实没输出"，
+                      避免被误判为"沙箱吞了结果"（如 node -e console.log 只是求值函数对象） */}
+                  {!execResult.stdout && !execResult.stderr && (
+                    <p className="text-xs text-gray-500">
+                      命令执行完成，但没有任何输出。注意
+                      <code className="mx-1 text-gray-400">node -e console.log</code>
+                      只是求值函数对象、不会打印，需写成
+                      <code className="mx-1 text-gray-400">console.log(1+1)</code>
+                      这样的调用形式。
+                    </p>
+                  )}
+                  {/* 命令不存在（exit 127 / not found）：绝大多数是**镜像里没装该运行时**，
+                      例如 ubuntu:22.04 不含 node → 给出可操作的修复路径，避免误判成沙箱故障 */}
+                  {(execResult.exitCode === 127 || /not found/i.test(execResult.stderr || '')) && (
+                    <p className="text-xs text-amber-400 mt-2">
+                      提示：当前镜像 <span className="font-mono">{selectedSandbox.image}</span>{' '}
+                      里可能没有这个命令（如 <code>ubuntu:22.04</code> 不含 node）。建议重建一个
+                      <code className="mx-1 text-amber-300">node:20-alpine</code>
+                      沙箱后重试，或先在该容器内安装对应运行时。
+                    </p>
+                  )}
                 </div>
               )}
 

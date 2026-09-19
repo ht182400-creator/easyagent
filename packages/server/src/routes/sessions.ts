@@ -113,5 +113,4 @@ export function registerSessionRoutes(app: Express, deps: SessionRoutesDeps): vo
       res.status(500).json({ error: (error as Error).message });
     }
   });
-
 }

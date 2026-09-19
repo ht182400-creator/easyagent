@@ -3,11 +3,15 @@
  */
 export {
   buildSemanticMap,
+  buildSemanticMapAsync,
   searchSymbol,
   findReferences,
   formatSemanticMap,
   getCodebaseOverview,
+  getCodebaseOverviewAsync,
   analyzeFile,
+  analyzeFileCached,
+  clearAnalysisCache,
   extractSymbols,
   collectSourceFiles,
   findRepoRoot,
@@ -18,5 +22,6 @@ export type {
   ReferenceInfo,
   FileSemanticInfo,
   SemanticMap,
+  CodebaseOverview,
   SupportedLanguage,
 } from './SemanticAnalyzer.js';

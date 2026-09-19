@@ -88,95 +88,99 @@ function sendError(requestId: string, type: string, error: unknown): void {
 /**
  * 初始化：加载插件代码
  */
-    async function handleInit(requestId: string, pluginPath: string, manifest?: PluginMeta): Promise<void> {
-      try {
-        pluginDir = pluginPath;
-        // 在 Worker 中动态导入插件模块
-        // Windows 需要 file:// URL 格式
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const module: Record<string, unknown> = await import(pathToFileURL(pluginPath).href);
+async function handleInit(
+  requestId: string,
+  pluginPath: string,
+  manifest?: PluginMeta,
+): Promise<void> {
+  try {
+    pluginDir = pluginPath;
+    // 在 Worker 中动态导入插件模块
+    // Windows 需要 file:// URL 格式
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const module: Record<string, unknown> = await import(pathToFileURL(pluginPath).href);
 
-        // 支持两种插件形式：
-        //  1. 官方协议：export default { name, version, register?(context), getTools?(), ... }
-        //  2. 函数式（兼容旧插件 / 简单工具注册）：export default function (context) { context.registerTool(...) }
-        const exported = module.default || module.plugin || module;
+    // 支持两种插件形式：
+    //  1. 官方协议：export default { name, version, register?(context), getTools?(), ... }
+    //  2. 函数式（兼容旧插件 / 简单工具注册）：export default function (context) { context.registerTool(...) }
+    const exported = module.default || module.plugin || module;
 
-        let p: Record<string, unknown>;
-        if (typeof exported === 'function') {
-          // 函数式插件：先调用一次以收集工具/技能/钩子，再包装成 plugin 对象
-          const sandboxContext = {
-            registerTool: (tool: Record<string, unknown>) => {
-              registeredTools.push(tool);
-            },
-            registerTools: (tools: Array<Record<string, unknown>>) => {
-              registeredTools.push(...tools);
-            },
-            registerSkill: (skill: Record<string, unknown>) => {
-              registeredSkills.push(skill);
-            },
-            registerHook: (hook: Record<string, unknown>) => {
-              registeredHooks.push(hook);
-            },
-            getConfig: () => ({}),
-          };
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          await (exported as (ctx: unknown) => Promise<void> | void)(sandboxContext);
+    let p: Record<string, unknown>;
+    if (typeof exported === 'function') {
+      // 函数式插件：先调用一次以收集工具/技能/钩子，再包装成 plugin 对象
+      const sandboxContext = {
+        registerTool: (tool: Record<string, unknown>) => {
+          registeredTools.push(tool);
+        },
+        registerTools: (tools: Array<Record<string, unknown>>) => {
+          registeredTools.push(...tools);
+        },
+        registerSkill: (skill: Record<string, unknown>) => {
+          registeredSkills.push(skill);
+        },
+        registerHook: (hook: Record<string, unknown>) => {
+          registeredHooks.push(hook);
+        },
+        getConfig: () => ({}),
+      };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      await (exported as (ctx: unknown) => Promise<void> | void)(sandboxContext);
 
-          // 用 manifest 回填 name/version/description（函数式插件通常自身不带元信息）
-          p = {
-            name: manifest?.name,
-            version: manifest?.version,
-            description: manifest?.description,
-            author: manifest?.author,
-          };
-        } else if (exported && typeof exported === 'object') {
-          p = exported as Record<string, unknown>;
-        } else {
-          throw new Error('插件模块必须导出插件对象或插件函数');
-        }
+      // 用 manifest 回填 name/version/description（函数式插件通常自身不带元信息）
+      p = {
+        name: manifest?.name,
+        version: manifest?.version,
+        description: manifest?.description,
+        author: manifest?.author,
+      };
+    } else if (exported && typeof exported === 'object') {
+      p = exported as Record<string, unknown>;
+    } else {
+      throw new Error('插件模块必须导出插件对象或插件函数');
+    }
 
-        if (!p.name) {
-          throw new Error('插件必须包含 name 属性（可通过 manifest.json 提供）');
-        }
+    if (!p.name) {
+      throw new Error('插件必须包含 name 属性（可通过 manifest.json 提供）');
+    }
 
-        pluginInstance = p;
+    pluginInstance = p;
 
-        // 调用 register 钩子（仅对对象式插件有意义，函数式已在上方调用过）
-        if (typeof p.register === 'function') {
-          // 创建受限的 context（Worker 中无法直接访问 ToolRegistry）
-          const sandboxContext = {
-            registerTool: (tool: Record<string, unknown>) => {
-              registeredTools.push(tool);
-            },
-            registerTools: (tools: Array<Record<string, unknown>>) => {
-              registeredTools.push(...tools);
-            },
-            registerSkill: (skill: Record<string, unknown>) => {
-              registeredSkills.push(skill);
-            },
-            registerHook: (hook: Record<string, unknown>) => {
-              registeredHooks.push(hook);
-            },
-            getConfig: () => ({}),
-          };
-          await p.register(sandboxContext);
-        }
+    // 调用 register 钩子（仅对对象式插件有意义，函数式已在上方调用过）
+    if (typeof p.register === 'function') {
+      // 创建受限的 context（Worker 中无法直接访问 ToolRegistry）
+      const sandboxContext = {
+        registerTool: (tool: Record<string, unknown>) => {
+          registeredTools.push(tool);
+        },
+        registerTools: (tools: Array<Record<string, unknown>>) => {
+          registeredTools.push(...tools);
+        },
+        registerSkill: (skill: Record<string, unknown>) => {
+          registeredSkills.push(skill);
+        },
+        registerHook: (hook: Record<string, unknown>) => {
+          registeredHooks.push(hook);
+        },
+        getConfig: () => ({}),
+      };
+      await p.register(sandboxContext);
+    }
 
-        // 收集工具
-        if (typeof p.getTools === 'function') {
-          const tools = p.getTools() as Array<Record<string, unknown>>;
-          registeredTools = [...registeredTools, ...tools];
-        }
+    // 收集工具
+    if (typeof p.getTools === 'function') {
+      const tools = p.getTools() as Array<Record<string, unknown>>;
+      registeredTools = [...registeredTools, ...tools];
+    }
 
-        // 收集技能
-        if (typeof p.getSkills === 'function') {
-          registeredSkills = p.getSkills() as Array<Record<string, unknown>>;
-        }
+    // 收集技能
+    if (typeof p.getSkills === 'function') {
+      registeredSkills = p.getSkills() as Array<Record<string, unknown>>;
+    }
 
-        // 收集钩子
-        if (typeof p.getHooks === 'function') {
-          registeredHooks = p.getHooks() as Array<Record<string, unknown>>;
-        }
+    // 收集钩子
+    if (typeof p.getHooks === 'function') {
+      registeredHooks = p.getHooks() as Array<Record<string, unknown>>;
+    }
 
     sendResponse({
       requestId,

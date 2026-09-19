@@ -87,10 +87,4 @@ export class AdapterFactory {
   }
 }
 
-export {
-  BaseAdapter,
-  OpenAICompatibleAdapter,
-  AnthropicAdapter,
-  ErnieAdapter,
-  HunyuanAdapter,
-};
+export { BaseAdapter, OpenAICompatibleAdapter, AnthropicAdapter, ErnieAdapter, HunyuanAdapter };

@@ -61,6 +61,12 @@ const VERIFIERS = [
     note: 'Tailwind 类名引用的 CSS 变量必须真实存在（防静默失效）',
   },
   {
+    key: 'types',
+    name: '前端类型检查',
+    file: 'verify-frontend-types.mjs',
+    note: '缺 import / 类型不一致只有 tsc 能发现（防运行时白屏，2026-09-19 实报）',
+  },
+  {
     key: 'routes',
     name: '服务端路由与静态托管',
     file: 'verify-server-routes.mjs',
@@ -121,8 +127,16 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--list') out.list = true;
-    else if (a === '--only') out.only = (argv[++i] || '').split(',').map((s) => s.trim()).filter(Boolean);
-    else if (a === '--skip') out.skip = (argv[++i] || '').split(',').map((s) => s.trim()).filter(Boolean);
+    else if (a === '--only')
+      out.only = (argv[++i] || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    else if (a === '--skip')
+      out.skip = (argv[++i] || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
   }
   return out;
 }
@@ -133,10 +147,14 @@ function runOne(verifier) {
     const started = Date.now();
     // 注意：必须带上 `scripts/` 前缀。
     // Node 按 cwd 解析脚本参数，只传文件名会到项目根去找（MODULE_NOT_FOUND）。
-    const child = spawn(process.execPath, [join('scripts', verifier.file), ...(verifier.args || [])], {
-      cwd: PROJECT_ROOT,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    const child = spawn(
+      process.execPath,
+      [join('scripts', verifier.file), ...(verifier.args || [])],
+      {
+        cwd: PROJECT_ROOT,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    );
 
     let output = '';
     child.stdout.on('data', (d) => (output += d.toString()));
@@ -251,7 +269,9 @@ async function main() {
     return 1;
   }
 
-  console.log(skipped.length > 0 ? '\n⚠️  结论: 无失败，但有跳过项（未校验）' : '\n✅ 结论: 全部通过');
+  console.log(
+    skipped.length > 0 ? '\n⚠️  结论: 无失败，但有跳过项（未校验）' : '\n✅ 结论: 全部通过',
+  );
   return 0;
 }
 

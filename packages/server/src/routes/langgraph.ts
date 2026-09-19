@@ -41,7 +41,14 @@ export interface LangGraphRoutesDeps {
 
 /** 注册 LangGraph 路由 */
 export function registerLangGraphRoutes(app: Express, deps: LangGraphRoutesDeps): void {
-  const { currentEngine, configManager, newAgent, serverDir, broadcastLangGraphNode, broadcastDemoOutput } = deps;
+  const {
+    currentEngine,
+    configManager,
+    newAgent,
+    serverDir,
+    broadcastLangGraphNode,
+    broadcastDemoOutput,
+  } = deps;
 
   // ========== LangGraph Checkpoint 管理 API (Phase B) ==========
 
@@ -155,34 +162,53 @@ export function registerLangGraphRoutes(app: Express, deps: LangGraphRoutesDeps)
    * LangGraph 场景预设数据（与前端 LangGraphPage.tsx SCENARIOS 同步）
    * 每个场景的静态执行结果，供前端可视化调用
    */
-  const SCENARIO_RESULTS: Record<number, {
-    turnCount: number;
-    messageCount: number;
-    duration: string;
-    output: string;
-    logs: Array<{ node: string; type: string; message: string }>;
-    actualPath: string[];
-  }> = {
+  const SCENARIO_RESULTS: Record<
+    number,
+    {
+      turnCount: number;
+      messageCount: number;
+      duration: string;
+      output: string;
+      logs: Array<{ node: string; type: string; message: string }>;
+      actualPath: string[];
+    }
+  > = {
     1: {
-      turnCount: 1, messageCount: 2, duration: '120ms',
+      turnCount: 1,
+      messageCount: 2,
+      duration: '120ms',
       output: '你好！我是 EasyAgent AI 助手，有什么可以帮助你的吗？',
       actualPath: ['START', 'think', 'route', 'END'],
       logs: [
         { node: 'START', type: 'enter', message: '会话已初始化' },
-        { node: 'think', type: 'info', message: 'LLM 分析输入: "你好" → 判定为纯文本对话，无需工具调用' },
+        {
+          node: 'think',
+          type: 'info',
+          message: 'LLM 分析输入: "你好" → 判定为纯文本对话，无需工具调用',
+        },
         { node: 'route', type: 'decision', message: '路由决策: → END（无工具调用）' },
         { node: 'END', type: 'exit', message: '执行完成，输出自然语言回复' },
       ],
     },
     2: {
-      turnCount: 1, messageCount: 4, duration: '340ms',
+      turnCount: 1,
+      messageCount: 4,
+      duration: '340ms',
       output: '北京今天晴，气温 18°C-28°C，北风 3-4 级，空气质量良好。',
       actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
       logs: [
         { node: 'START', type: 'enter', message: '会话已初始化' },
-        { node: 'think', type: 'info', message: 'LLM 分析: 识别到天气查询需求 → 准备调用 weather_query 工具 (location="北京")' },
+        {
+          node: 'think',
+          type: 'info',
+          message: 'LLM 分析: 识别到天气查询需求 → 准备调用 weather_query 工具 (location="北京")',
+        },
         { node: 'route', type: 'decision', message: '路由决策: → act（有工具调用）' },
-        { node: 'act', type: 'info', message: '执行工具: weather_query({ location: "北京" }) → 成功 (18°C, 晴)' },
+        {
+          node: 'act',
+          type: 'info',
+          message: '执行工具: weather_query({ location: "北京" }) → 成功 (18°C, 晴)',
+        },
         { node: 'observe', type: 'info', message: '观察结果: 温度18-28°C, 北风3-4级, AQI 56 良' },
         { node: 'think', type: 'info', message: 'LLM 二次分析: 工具结果已获取，生成自然语言回复' },
         { node: 'route', type: 'decision', message: '路由决策: → END（满足退出条件）' },
@@ -190,24 +216,53 @@ export function registerLangGraphRoutes(app: Express, deps: LangGraphRoutesDeps)
       ],
     },
     3: {
-      turnCount: 1, messageCount: 6, duration: '280ms',
+      turnCount: 1,
+      messageCount: 6,
+      duration: '280ms',
       output: '深圳当前气温 32°C，多云，东南风 2 级。当前时间：2026-06-29 21:25 CST。',
       actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
       logs: [
         { node: 'START', type: 'enter', message: '会话已初始化' },
-        { node: 'think', type: 'info', message: 'LLM 分析: 识别到 2 个需求 → weather_query + time_query → 并行执行' },
+        {
+          node: 'think',
+          type: 'info',
+          message: 'LLM 分析: 识别到 2 个需求 → weather_query + time_query → 并行执行',
+        },
         { node: 'route', type: 'decision', message: '路由决策: → act（并行 2 工具）' },
-        { node: 'act', type: 'info', message: '执行工具(并行): weather_query({ location: "深圳" }) + time_query() → 均成功' },
-        { node: 'observe', type: 'info', message: '观察结果: 深圳 32°C 多云 | 时间 2026-06-29 21:25' },
+        {
+          node: 'act',
+          type: 'info',
+          message: '执行工具(并行): weather_query({ location: "深圳" }) + time_query() → 均成功',
+        },
+        {
+          node: 'observe',
+          type: 'info',
+          message: '观察结果: 深圳 32°C 多云 | 时间 2026-06-29 21:25',
+        },
         { node: 'think', type: 'info', message: 'LLM 二次分析: 合并两个工具输出，生成回复' },
         { node: 'route', type: 'decision', message: '路由决策: → END' },
         { node: 'END', type: 'exit', message: '执行完成，输出合并回复' },
       ],
     },
     4: {
-      turnCount: 3, messageCount: 8, duration: '520ms',
+      turnCount: 3,
+      messageCount: 8,
+      duration: '520ms',
       output: '已达到最大轮次限制 (maxTurns=3)，系统自动终止以防止死循环。',
-      actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+      actualPath: [
+        'START',
+        'think',
+        'route',
+        'act',
+        'observe',
+        'think',
+        'route',
+        'act',
+        'observe',
+        'think',
+        'route',
+        'END',
+      ],
       logs: [
         { node: 'START', type: 'enter', message: '会话已初始化，maxTurns=3' },
         { node: 'think', type: 'info', message: '第1轮: LLM 请求 file_search 工具' },
@@ -224,14 +279,20 @@ export function registerLangGraphRoutes(app: Express, deps: LangGraphRoutesDeps)
       ],
     },
     5: {
-      turnCount: 2, messageCount: 6, duration: '280ms',
+      turnCount: 2,
+      messageCount: 6,
+      duration: '280ms',
       output: '已记住你的偏好：喜欢蓝色。下次对话我将记住这个信息。',
       actualPath: ['START', 'think', 'route', 'END', 'START', 'think', 'route', 'END'],
       logs: [
         { node: 'START', type: 'enter', message: '段1: 会话初始化 (thread_id=abc123)' },
         { node: 'think', type: 'info', message: '段1: LLM 分析 "记住我喜欢蓝色" → 存储偏好' },
         { node: 'route', type: 'decision', message: '段1: → END，checkpoint 已保存' },
-        { node: 'END', type: 'exit', message: '段1 完成，checkpoint 保存至 .langgraph/checkpoints/' },
+        {
+          node: 'END',
+          type: 'exit',
+          message: '段1 完成，checkpoint 保存至 .langgraph/checkpoints/',
+        },
         { node: 'START', type: 'enter', message: '段2: 从 checkpoint abc123 恢复' },
         { node: 'think', type: 'info', message: '段2: LLM 从上下文中读取到偏好 "喜欢蓝色"' },
         { node: 'route', type: 'decision', message: '段2: → END' },
@@ -239,24 +300,46 @@ export function registerLangGraphRoutes(app: Express, deps: LangGraphRoutesDeps)
       ],
     },
     7: {
-      turnCount: 1, messageCount: 5, duration: '310ms',
-      output: '根据历史讨论 (200+ 条消息已压缩为摘要)，当前进度：已完成模块 A、B 的代码编写，待完成模块 C 的测试。',
+      turnCount: 1,
+      messageCount: 5,
+      duration: '310ms',
+      output:
+        '根据历史讨论 (200+ 条消息已压缩为摘要)，当前进度：已完成模块 A、B 的代码编写，待完成模块 C 的测试。',
       actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
       logs: [
         { node: 'START', type: 'enter', message: '会话含 200+ 条历史消息' },
         { node: 'think', type: 'info', message: 'MemoryManager 触发压缩: 200 条 → 摘要 (约 1KB)' },
         { node: 'route', type: 'decision', message: '→ act（调用摘要工具）' },
         { node: 'act', type: 'info', message: '执行摘要压缩: context_compress → 成功' },
-        { node: 'observe', type: 'info', message: '摘要: "用户正在开发 EasyAgent，已完成模块 A/B，下一步模块 C 测试"' },
+        {
+          node: 'observe',
+          type: 'info',
+          message: '摘要: "用户正在开发 EasyAgent，已完成模块 A/B，下一步模块 C 测试"',
+        },
         { node: 'think', type: 'info', message: 'LLM 基于摘要生成回复' },
         { node: 'route', type: 'decision', message: '→ END' },
         { node: 'END', type: 'exit', message: '执行完成，摘要压缩节省 95% token' },
       ],
     },
     8: {
-      turnCount: 2, messageCount: 8, duration: '450ms',
+      turnCount: 2,
+      messageCount: 8,
+      duration: '450ms',
       output: '北京今天晴转多云，气温 18°C-28°C。第一次调用失败（参数格式错误），自动修正后成功。',
-      actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+      actualPath: [
+        'START',
+        'think',
+        'route',
+        'act',
+        'observe',
+        'think',
+        'route',
+        'act',
+        'observe',
+        'think',
+        'route',
+        'END',
+      ],
       logs: [
         { node: 'START', type: 'enter', message: '会话已初始化' },
         { node: 'think', type: 'info', message: '第1轮: LLM 调用 weather_query (参数格式不标准)' },
@@ -273,18 +356,41 @@ export function registerLangGraphRoutes(app: Express, deps: LangGraphRoutesDeps)
       ],
     },
     9: {
-      turnCount: 2, messageCount: 8, duration: '390ms',
+      turnCount: 2,
+      messageCount: 8,
+      duration: '390ms',
       output: '用户数据分析完成：共 12 个字段，3 个异常值（已标记），建议执行数据清洗后再使用。',
-      actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+      actualPath: [
+        'START',
+        'think',
+        'route',
+        'act',
+        'observe',
+        'think',
+        'route',
+        'act',
+        'observe',
+        'think',
+        'route',
+        'END',
+      ],
       logs: [
         { node: 'START', type: 'enter', message: '会话已初始化' },
         { node: 'think', type: 'info', message: '第1轮: LLM 识别 → 需先读取文件 → read_file' },
         { node: 'route', type: 'decision', message: '第1轮: → act' },
-        { node: 'act', type: 'info', message: '第1轮: read_file("user_data.csv") → 12列 × 1000行, 200KB' },
+        {
+          node: 'act',
+          type: 'info',
+          message: '第1轮: read_file("user_data.csv") → 12列 × 1000行, 200KB',
+        },
         { node: 'observe', type: 'info', message: '第1轮: 文件读取完成，含 12 字段描述' },
         { node: 'think', type: 'info', message: '第2轮: LLM 分析 → 需分析数据 → analyze_data' },
         { node: 'route', type: 'decision', message: '第2轮: → act' },
-        { node: 'act', type: 'info', message: '第2轮: analyze_data → 发现 3 个异常值 (索引: 42, 128, 567)' },
+        {
+          node: 'act',
+          type: 'info',
+          message: '第2轮: analyze_data → 发现 3 个异常值 (索引: 42, 128, 567)',
+        },
         { node: 'observe', type: 'info', message: '第2轮: 分析结果 — 3个异常值, 均值/方差正常' },
         { node: 'think', type: 'info', message: '第2轮: LLM 综合 A 输出 + B 结果 → 生成最终回复' },
         { node: 'route', type: 'decision', message: '第2轮: → END' },

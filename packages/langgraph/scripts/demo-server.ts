@@ -103,20 +103,73 @@ interface ScenarioResult {
 
 const GRAPH_DATA: GraphData = {
   nodes: [
-    { id: 'START', label: 'START', type: 'start', x: 400, y: 30, description: '入口节点，接收用户输入' },
-    { id: 'think', label: 'think', type: 'process', x: 400, y: 140, description: 'LLM 思考节点\n调用大模型分析输入\n决定是否需要工具' },
-    { id: 'route', label: 'route', type: 'decision', x: 400, y: 260, description: '条件路由\n根据 tool_calls 决策\n下一步走向' },
-    { id: 'act', label: 'act', type: 'process', x: 150, y: 260, description: '工具执行节点\n并行/串行调用工具\n收集执行结果' },
-    { id: 'observe', label: 'observe', type: 'process', x: 150, y: 370, description: '观察节点\n检查执行结果\n决定是否继续循环' },
+    {
+      id: 'START',
+      label: 'START',
+      type: 'start',
+      x: 400,
+      y: 30,
+      description: '入口节点，接收用户输入',
+    },
+    {
+      id: 'think',
+      label: 'think',
+      type: 'process',
+      x: 400,
+      y: 140,
+      description: 'LLM 思考节点\n调用大模型分析输入\n决定是否需要工具',
+    },
+    {
+      id: 'route',
+      label: 'route',
+      type: 'decision',
+      x: 400,
+      y: 260,
+      description: '条件路由\n根据 tool_calls 决策\n下一步走向',
+    },
+    {
+      id: 'act',
+      label: 'act',
+      type: 'process',
+      x: 150,
+      y: 260,
+      description: '工具执行节点\n并行/串行调用工具\n收集执行结果',
+    },
+    {
+      id: 'observe',
+      label: 'observe',
+      type: 'process',
+      x: 150,
+      y: 370,
+      description: '观察节点\n检查执行结果\n决定是否继续循环',
+    },
     { id: 'END', label: 'END', type: 'end', x: 660, y: 260, description: '结束节点\n返回最终结果' },
   ],
   edges: [
     { from: 'START', to: 'think', label: 'addEdge', type: 'solid' },
     { from: 'think', to: 'route', label: 'addEdge', type: 'solid' },
-    { from: 'route', to: 'act', label: '有 tool_calls', type: 'conditional', condition: 'tool_calls > 0' },
-    { from: 'route', to: 'END', label: '无 tool_calls', type: 'conditional', condition: 'tool_calls = 0' },
+    {
+      from: 'route',
+      to: 'act',
+      label: '有 tool_calls',
+      type: 'conditional',
+      condition: 'tool_calls > 0',
+    },
+    {
+      from: 'route',
+      to: 'END',
+      label: '无 tool_calls',
+      type: 'conditional',
+      condition: 'tool_calls = 0',
+    },
     { from: 'act', to: 'observe', label: 'addEdge', type: 'solid' },
-    { from: 'observe', to: 'think', label: '循环', type: 'dashed', condition: 'turnCount < maxTurns' },
+    {
+      from: 'observe',
+      to: 'think',
+      label: '循环',
+      type: 'dashed',
+      condition: 'turnCount < maxTurns',
+    },
   ],
   metadata: {
     name: 'LangGraph Agent',
@@ -204,8 +257,15 @@ const SCENARIOS: ScenarioMeta[] = [
 
 function getScenarioIcon(id: number): string {
   const icons: Record<number, string> = {
-    1: '💬', 2: '🔧', 3: '⚡', 4: '🛡️', 5: '💾', 6: '🗺️',
-    7: '🧠', 8: '🔄', 9: '⛓️',
+    1: '💬',
+    2: '🔧',
+    3: '⚡',
+    4: '🛡️',
+    5: '💾',
+    6: '🗺️',
+    7: '🧠',
+    8: '🔄',
+    9: '⛓️',
   };
   return icons[id] || '📌';
 }
@@ -224,7 +284,7 @@ function mockChat(responses: MockResponse[]) {
     const r = responses[i++] || { c: '', fr: 'stop' };
     return {
       content: r.c || '',
-      toolCalls: r.tc?.map(t => ({
+      toolCalls: r.tc?.map((t) => ({
         id: t.id,
         type: 'function' as const,
         function: { name: t.n, arguments: JSON.stringify(t.a) },
@@ -293,7 +353,11 @@ async function runScenario2(): Promise<ScenarioResult> {
   const t0 = Date.now();
 
   const chat = mockChat([
-    { c: '让我查询北京天气', tc: [{ id: 'c1', n: 'get_weather', a: { city: '北京' } }], fr: 'tool_calls' },
+    {
+      c: '让我查询北京天气',
+      tc: [{ id: 'c1', n: 'get_weather', a: { city: '北京' } }],
+      fr: 'tool_calls',
+    },
     { c: '北京今天晴天，气温 25°C，适合出行。', fr: 'stop' },
   ]);
   const exec = mockExec({ get_weather: { success: true, content: '晴天 25°C' } });
@@ -301,7 +365,15 @@ async function runScenario2(): Promise<ScenarioResult> {
     think: {
       chat,
       getToolDefinitions: () => [
-        { name: 'get_weather', description: '查询天气', parameters: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] } },
+        {
+          name: 'get_weather',
+          description: '查询天气',
+          parameters: {
+            type: 'object',
+            properties: { city: { type: 'string' } },
+            required: ['city'],
+          },
+        },
       ],
     },
     act: { toolExecutor: exec },
@@ -381,7 +453,11 @@ async function runScenario3(): Promise<ScenarioResult> {
   });
   logs.push({ node: 'route', type: 'decision', message: '决策: 有 tool_calls → act' });
   logs.push({ node: 'act', type: 'enter', message: '并行执行 2 个工具 (Promise.all)' });
-  logs.push({ node: 'act', type: 'info', message: 'get_weather → 多云 30°C | get_time → 2026-06-28 14:30' });
+  logs.push({
+    node: 'act',
+    type: 'info',
+    message: 'get_weather → 多云 30°C | get_time → 2026-06-28 14:30',
+  });
   logs.push({ node: 'observe', type: 'enter', message: '观察并行执行结果' });
   logs.push({ node: 'observe', type: 'decision', message: '决策: 继续 → think' });
   logs.push({ node: 'think', type: 'enter', message: 'LLM 综合两个工具结果生成回答' });
@@ -415,13 +491,15 @@ async function runScenario4(): Promise<ScenarioResult> {
       c: '仍在计算...',
       tc: [{ id: 'cx', n: 'loop', a: {} }],
       fr: 'tool_calls',
-    })
+    }),
   );
   const exec = mockExec({ loop: { success: true, content: 'looping' } });
   const graph = createAgentGraph({
     think: {
       chat,
-      getToolDefinitions: () => [{ name: 'loop', description: '', parameters: { type: 'object', properties: {} } }],
+      getToolDefinitions: () => [
+        { name: 'loop', description: '', parameters: { type: 'object', properties: {} } },
+      ],
     },
     act: { toolExecutor: exec },
   });
@@ -431,7 +509,11 @@ async function runScenario4(): Promise<ScenarioResult> {
   for (let i = 0; i < 3; i++) {
     logs.push({ node: 'think', type: 'enter', message: `第 ${i + 1} 轮 LLM 思考` });
     logs.push({ node: 'think', type: 'info', message: 'LLM 返回 tool_calls: loop()' });
-    logs.push({ node: 'route', type: 'decision', message: i < 2 ? '决策: 有 tool_calls → act' : '决策: 轮次超限 (3/3) → END' });
+    logs.push({
+      node: 'route',
+      type: 'decision',
+      message: i < 2 ? '决策: 有 tool_calls → act' : '决策: 轮次超限 (3/3) → END',
+    });
     if (i < 2) {
       logs.push({ node: 'act', type: 'enter', message: '执行工具 loop' });
       logs.push({ node: 'observe', type: 'enter', message: '观察执行结果 → 继续循环' });
@@ -451,7 +533,20 @@ async function runScenario4(): Promise<ScenarioResult> {
     messageCount: (r.messages as any[]).length,
     output: 'maxTurns=3 安全终止，未进入死循环',
     logs,
-    actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    actualPath: [
+      'START',
+      'think',
+      'route',
+      'act',
+      'observe',
+      'think',
+      'route',
+      'act',
+      'observe',
+      'think',
+      'route',
+      'END',
+    ],
     duration: `${Date.now() - t0}ms`,
   };
 }
@@ -473,24 +568,53 @@ async function runScenario5(): Promise<ScenarioResult> {
   });
 
   // 第 1 轮
-  logs.push({ node: 'START', type: 'enter', message: 'agent.run("记住我喜欢蓝色", { sessionId: "s1" })' });
+  logs.push({
+    node: 'START',
+    type: 'enter',
+    message: 'agent.run("记住我喜欢蓝色", { sessionId: "s1" })',
+  });
   const r1 = await agent.run('记住我喜欢蓝色', { sessionId: 's1' });
-  logs.push({ node: 'think', type: 'info', message: `LLM 回复: ${r1.response.substring(0, 40)}...` });
-  logs.push({ node: 'checkpoint', type: 'info', message: '自动保存 checkpoint → s1', detail: { checkpointId: 's1', turnCount: r1.turnCount } });
+  logs.push({
+    node: 'think',
+    type: 'info',
+    message: `LLM 回复: ${r1.response.substring(0, 40)}...`,
+  });
+  logs.push({
+    node: 'checkpoint',
+    type: 'info',
+    message: '自动保存 checkpoint → s1',
+    detail: { checkpointId: 's1', turnCount: r1.turnCount },
+  });
 
   // Resume
   logs.push({ node: 'resume', type: 'enter', message: 'agent.resume("s1", "我之前说了什么？")' });
-  logs.push({ node: 'checkpoint', type: 'info', message: '从 checkpoint 恢复上下文 (turnCount=' + String(r1.turnCount) + ')' });
+  logs.push({
+    node: 'checkpoint',
+    type: 'info',
+    message: '从 checkpoint 恢复上下文 (turnCount=' + String(r1.turnCount) + ')',
+  });
   const r2 = await agent.resume('s1', '我之前说了什么？');
-  logs.push({ node: 'think', type: 'info', message: `LLM 基于上下文回复: ${r2.response.substring(0, 40)}...` });
+  logs.push({
+    node: 'think',
+    type: 'info',
+    message: `LLM 基于上下文回复: ${r2.response.substring(0, 40)}...`,
+  });
 
   // 验证
   const state = await agent.getState('s1');
-  logs.push({ node: 'verify', type: 'info', message: `getState("s1") 非空: ${state !== null ? '是 ✅' : '否 ❌'}` });
+  logs.push({
+    node: 'verify',
+    type: 'info',
+    message: `getState("s1") 非空: ${state !== null ? '是 ✅' : '否 ❌'}`,
+  });
 
   agent.clearHistory('s1');
   const afterClear = await agent.getState('s1');
-  logs.push({ node: 'verify', type: 'info', message: `clearHistory 后为 null: ${afterClear === null ? '是 ✅' : '否 ❌'}` });
+  logs.push({
+    node: 'verify',
+    type: 'info',
+    message: `clearHistory 后为 null: ${afterClear === null ? '是 ✅' : '否 ❌'}`,
+  });
 
   agent.close();
 
@@ -511,16 +635,33 @@ async function runScenario7(): Promise<ScenarioResult> {
   const t0 = Date.now();
 
   const chat = mockChat([
-    { c: '检测到对话长度超过限制，正在调用摘要压缩...', tc: [{ id: 'c1', n: 'summarize', a: {} }], fr: 'tool_calls' },
-    { c: '已压缩历史对话，当前上下文包含关键摘要：用户之前讨论了天气、编程和项目管理。现在可以继续对话。', fr: 'stop' },
+    {
+      c: '检测到对话长度超过限制，正在调用摘要压缩...',
+      tc: [{ id: 'c1', n: 'summarize', a: {} }],
+      fr: 'tool_calls',
+    },
+    {
+      c: '已压缩历史对话，当前上下文包含关键摘要：用户之前讨论了天气、编程和项目管理。现在可以继续对话。',
+      fr: 'stop',
+    },
   ]);
   const exec = mockExec({
-    summarize: { success: true, content: '摘要: 用户讨论了3个主题——(1)天气查询 (2)Python编程 (3)项目管理。保留20条最近消息，压缩182条历史消息为摘要。' },
+    summarize: {
+      success: true,
+      content:
+        '摘要: 用户讨论了3个主题——(1)天气查询 (2)Python编程 (3)项目管理。保留20条最近消息，压缩182条历史消息为摘要。',
+    },
   });
   const agent = new LangGraphAgent({
     think: {
       chat,
-      getToolDefinitions: () => [{ name: 'summarize', description: '压缩对话历史', parameters: { type: 'object', properties: {} } }],
+      getToolDefinitions: () => [
+        {
+          name: 'summarize',
+          description: '压缩对话历史',
+          parameters: { type: 'object', properties: {} },
+        },
+      ],
       systemPrompt: '你是有上下文的助手，当消息过多时需要压缩摘要',
     },
     act: { toolExecutor: exec },
@@ -529,7 +670,11 @@ async function runScenario7(): Promise<ScenarioResult> {
   });
 
   logs.push({ node: 'START', type: 'enter', message: '检测到上下文：200+ 条历史消息' });
-  logs.push({ node: 'think', type: 'warn', message: '消息数超过阈值 → 触发 MemoryManager 摘要压缩' });
+  logs.push({
+    node: 'think',
+    type: 'warn',
+    message: '消息数超过阈值 → 触发 MemoryManager 摘要压缩',
+  });
   logs.push({ node: 'act', type: 'enter', message: '执行 summarize → 压缩 182 条历史消息为摘要' });
   logs.push({ node: 'observe', type: 'info', message: '压缩完成：保留 20 条最近消息 + 1 条摘要' });
   logs.push({ node: 'think', type: 'info', message: 'LLM 基于压缩后的上下文生成回答' });
@@ -563,22 +708,36 @@ async function runScenario8(): Promise<ScenarioResult> {
       if (callCount === 1 && name === 'get_weather') {
         return { success: false, content: '', error: '参数错误: city 字段不能为空' };
       }
-      return {
-        get_weather: { success: true, content: '上海多云 28°C' },
-      }[name] || { success: true, content: `${name} 完成` };
+      return (
+        {
+          get_weather: { success: true, content: '上海多云 28°C' },
+        }[name] || { success: true, content: `${name} 完成` }
+      );
     },
   };
 
   const chat = mockChat([
     { c: '查询天气', tc: [{ id: 'c1', n: 'get_weather', a: { city: '' } }], fr: 'tool_calls' },
-    { c: '修正参数重试', tc: [{ id: 'c2', n: 'get_weather', a: { city: '上海' } }], fr: 'tool_calls' },
+    {
+      c: '修正参数重试',
+      tc: [{ id: 'c2', n: 'get_weather', a: { city: '上海' } }],
+      fr: 'tool_calls',
+    },
     { c: '上海今天多云，气温 28°C，适合户外活动。', fr: 'stop' },
   ]);
   const graph = createAgentGraph({
     think: {
       chat,
       getToolDefinitions: () => [
-        { name: 'get_weather', description: '查询城市天气', parameters: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] } },
+        {
+          name: 'get_weather',
+          description: '查询城市天气',
+          parameters: {
+            type: 'object',
+            properties: { city: { type: 'string' } },
+            required: ['city'],
+          },
+        },
       ],
     },
     act: { toolExecutor: retryExec },
@@ -590,7 +749,11 @@ async function runScenario8(): Promise<ScenarioResult> {
   logs.push({ node: 'act', type: 'warn', message: '工具执行失败: "参数错误: city 字段不能为空"' });
   logs.push({ node: 'observe', type: 'warn', message: '检测到工具失败 → shouldContinue = true' });
   logs.push({ node: 'think', type: 'enter', message: 'LLM 检测到失败，修正参数重试' });
-  logs.push({ node: 'think', type: 'info', message: 'LLM 返回 tool_calls: get_weather(city="上海")' });
+  logs.push({
+    node: 'think',
+    type: 'info',
+    message: 'LLM 返回 tool_calls: get_weather(city="上海")',
+  });
   logs.push({ node: 'route', type: 'decision', message: '决策: 有 tool_calls → act (重试)' });
   logs.push({ node: 'act', type: 'info', message: '工具重试成功: "上海多云 28°C"' });
   logs.push({ node: 'observe', type: 'enter', message: '观察执行结果 — 成功' });
@@ -611,7 +774,20 @@ async function runScenario8(): Promise<ScenarioResult> {
     messageCount: msgs.length,
     output: msgs[msgs.length - 1].content,
     logs,
-    actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    actualPath: [
+      'START',
+      'think',
+      'route',
+      'act',
+      'observe',
+      'think',
+      'route',
+      'act',
+      'observe',
+      'think',
+      'route',
+      'END',
+    ],
     duration: `${Date.now() - t0}ms`,
   };
 }
@@ -636,7 +812,11 @@ async function runScenario9(): Promise<ScenarioResult> {
   };
 
   const chat = mockChat([
-    { c: '先读取数据文件', tc: [{ id: 'c1', n: 'read_file', a: { path: '/data/users.json' } }], fr: 'tool_calls' },
+    {
+      c: '先读取数据文件',
+      tc: [{ id: 'c1', n: 'read_file', a: { path: '/data/users.json' } }],
+      fr: 'tool_calls',
+    },
     {
       c: '基于 read_file 返回的数据进行分析',
       tc: [{ id: 'c2', n: 'analyze_data', a: { rawJson: '{"users":1200,...}' } }],
@@ -648,21 +828,53 @@ async function runScenario9(): Promise<ScenarioResult> {
     think: {
       chat,
       getToolDefinitions: () => [
-        { name: 'read_file', description: '读取文件', parameters: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
-        { name: 'analyze_data', description: '分析数据', parameters: { type: 'object', properties: { rawJson: { type: 'string' } }, required: ['rawJson'] } },
+        {
+          name: 'read_file',
+          description: '读取文件',
+          parameters: {
+            type: 'object',
+            properties: { path: { type: 'string' } },
+            required: ['path'],
+          },
+        },
+        {
+          name: 'analyze_data',
+          description: '分析数据',
+          parameters: {
+            type: 'object',
+            properties: { rawJson: { type: 'string' } },
+            required: ['rawJson'],
+          },
+        },
       ],
     },
     act: { toolExecutor: chainExec },
   });
 
   logs.push({ node: 'START', type: 'enter', message: '接收用户输入 "读取用户数据并分析"' });
-  logs.push({ node: 'think', type: 'info', message: 'LLM 返回 tool_calls: read_file(path="/data/users.json")' });
+  logs.push({
+    node: 'think',
+    type: 'info',
+    message: 'LLM 返回 tool_calls: read_file(path="/data/users.json")',
+  });
   logs.push({ node: 'route', type: 'decision', message: '决策: 有 tool_calls → act' });
   logs.push({ node: 'act', type: 'enter', message: '执行 read_file → 返回 JSON 数据' });
-  logs.push({ node: 'observe', type: 'info', message: '观察结果: read_file → {"users":1200, "active":890, ...}' });
-  logs.push({ node: 'think', type: 'info', message: 'LLM 基于 read_file 输出 → 调用 analyze_data(rawJson)' });
+  logs.push({
+    node: 'observe',
+    type: 'info',
+    message: '观察结果: read_file → {"users":1200, "active":890, ...}',
+  });
+  logs.push({
+    node: 'think',
+    type: 'info',
+    message: 'LLM 基于 read_file 输出 → 调用 analyze_data(rawJson)',
+  });
   logs.push({ node: 'route', type: 'decision', message: '决策: 有 tool_calls → act (链式第二步)' });
-  logs.push({ node: 'act', type: 'info', message: '执行 analyze_data → 分析结果: 活跃率74.2%, 流失率3.75%' });
+  logs.push({
+    node: 'act',
+    type: 'info',
+    message: '执行 analyze_data → 分析结果: 活跃率74.2%, 流失率3.75%',
+  });
   logs.push({ node: 'observe', type: 'info', message: '观察结果: 链式调用完成' });
   logs.push({ node: 'think', type: 'info', message: 'LLM 汇总分析结果生成最终回答' });
   logs.push({ node: 'route', type: 'decision', message: '决策: 无 tool_calls → END' });
@@ -681,7 +893,20 @@ async function runScenario9(): Promise<ScenarioResult> {
     messageCount: msgs.length,
     output: msgs[msgs.length - 1].content,
     logs,
-    actualPath: ['START', 'think', 'route', 'act', 'observe', 'think', 'route', 'act', 'observe', 'think', 'route', 'END'],
+    actualPath: [
+      'START',
+      'think',
+      'route',
+      'act',
+      'observe',
+      'think',
+      'route',
+      'act',
+      'observe',
+      'think',
+      'route',
+      'END',
+    ],
     duration: `${Date.now() - t0}ms`,
   };
 }
@@ -750,9 +975,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   if (url === '/api/run-all' && method === 'POST') {
     const results: ScenarioResult[] = [];
     const graphResult: ScenarioResult = {
-      id: 6, success: true, turnCount: 0, messageCount: 0,
+      id: 6,
+      success: true,
+      turnCount: 0,
+      messageCount: 0,
       output: '图结构数据已加载',
-      logs: GRAPH_DATA.nodes.map(n => ({
+      logs: GRAPH_DATA.nodes.map((n) => ({
         node: n.id,
         type: 'info' as const,
         message: `${n.label}: ${n.description.split('\n')[0]}`,
@@ -767,8 +995,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         results.push(r);
       } catch (err) {
         results.push({
-          id, success: false, turnCount: 0, messageCount: 0,
-          output: '', logs: [],
+          id,
+          success: false,
+          turnCount: 0,
+          messageCount: 0,
+          output: '',
+          logs: [],
           duration: '0ms',
           error: err instanceof Error ? err.message : String(err),
         });
@@ -783,9 +1015,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
     const id = parseInt(runMatch[1], 10);
     if (id === 6) {
       return sendJSON(res, {
-        id: 6, success: true, turnCount: 0, messageCount: 0,
+        id: 6,
+        success: true,
+        turnCount: 0,
+        messageCount: 0,
         output: '图结构数据已加载',
-        logs: GRAPH_DATA.nodes.map(n => ({
+        logs: GRAPH_DATA.nodes.map((n) => ({
           node: n.id,
           type: 'info' as const,
           message: `${n.label}: ${n.description.split('\n')[0]}`,
@@ -803,8 +1038,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
       return sendJSON(res, result);
     } catch (err) {
       return sendJSON(res, {
-        id, success: false, turnCount: 0, messageCount: 0,
-        output: '', logs: [],
+        id,
+        success: false,
+        turnCount: 0,
+        messageCount: 0,
+        output: '',
+        logs: [],
         duration: '0ms',
         error: err instanceof Error ? err.message : String(err),
       } as ScenarioResult);
@@ -839,7 +1078,9 @@ server.listen(PORT, () => {
   console.log('');
 
   // 自动打开浏览器（Windows）
-  import('child_process').then(({ exec }) => {
-    exec(`start http://localhost:${PORT}`);
-  }).catch(() => {});
+  import('child_process')
+    .then(({ exec }) => {
+      exec(`start http://localhost:${PORT}`);
+    })
+    .catch(() => {});
 });

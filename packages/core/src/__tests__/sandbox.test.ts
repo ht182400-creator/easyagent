@@ -185,6 +185,52 @@ describe('SandboxManager - 沙箱管理器', () => {
     });
   });
 
+  // ==================== Docker 自愈重检（2026-09-19）====================
+  // 背景：模式是 init() 时的一次性判定，Docker 若在后端启动之后才可用，会永久停留在
+  // 本地模式（用户便被"先开 Docker 再启后端"的顺序困住）。现在创建沙箱前会重探一次。
+  describe('Docker 自愈重检', () => {
+    it('本地模式下 Docker 恢复可用：创建沙箱时自动切回容器模式', async () => {
+      // 1) 启动时 Docker 不可用 → 降级本地模式
+      mockExecSync.mockImplementationOnce(() => {
+        throw new Error('docker: command not found');
+      });
+      const mgr = SandboxManager.getInstance();
+      const inited = await mgr.init();
+      expect(inited.mode).toBe('local');
+      expect(mgr.getOverview().localMode).toBe(true);
+
+      // 2) 之后 Docker 恢复可用（⚠️ checkDockerAvailability 是一次性闩锁缓存，
+      //    自愈实现内部必须 resetDockerCache 才能重探到）
+      mockExecSync.mockReturnValue('24.0.7');
+
+      // 3) 创建沙箱前应自愈切回容器模式。
+      //    本用例只验证「模式切换」；真实容器创建依赖 Docker/mock 的 spawn，失败可容忍。
+      await mgr.createSandbox({ image: 'node:18-alpine' }).catch(() => {});
+
+      const overview = mgr.getOverview();
+      expect(overview.localMode).toBe(false);
+      expect(overview.dockerAvailable).toBe(true);
+    });
+
+    it('重探仍失败时保持本地模式（不误切换）', async () => {
+      // 所有 docker 探测都失败（init 与自愈重探都不通过）
+      mockExecSync.mockImplementation(() => {
+        throw new Error('docker: command not found');
+      });
+      const mgr = SandboxManager.getInstance();
+      expect((await mgr.init()).mode).toBe('local');
+
+      const sandbox = await mgr.createSandbox({});
+
+      expect(sandbox.id).toContain('easyagent-local-'); // 仍走本地进程沙箱
+      expect(mgr.getOverview().localMode).toBe(true);
+      expect(mgr.getOverview().dockerAvailable).toBe(false);
+
+      // 恢复默认 mock（下一个用例的 beforeEach 也会重设）
+      mockExecSync.mockReturnValue('24.0.7');
+    });
+  });
+
   describe('getOverview - 系统概览', () => {
     it('应返回默认概览信息', () => {
       const mgr = SandboxManager.getInstance();

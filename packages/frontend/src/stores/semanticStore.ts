@@ -13,6 +13,10 @@ interface SemanticStats {
   totalSize: number;
   totalSymbols: number;
   languages: Record<string, number>;
+  /** 候选文件总数（截断前）；大于 totalFiles 即说明被 maxFiles 截断 */
+  totalCandidates?: number;
+  /** 是否因上限被截断（超出部分未纳入分析） */
+  truncated?: boolean;
 }
 
 /** 符号搜索结果 */
@@ -81,8 +85,15 @@ interface SemanticState {
     path?: string,
     caseSensitive?: boolean,
     kind?: string,
+    depth?: number,
+    maxFiles?: number,
   ) => Promise<void>;
-  findReferences: (symbol: string, path?: string) => Promise<void>;
+  findReferences: (
+    symbol: string,
+    path?: string,
+    depth?: number,
+    maxFiles?: number,
+  ) => Promise<void>;
   fetchOverview: (path?: string) => Promise<void>;
   analyzeSingleFile: (filePath: string) => Promise<void>;
   clearResults: () => void;
@@ -132,13 +143,15 @@ export const useSemanticStore = create<SemanticState>((set) => ({
     }
   },
 
-  searchSymbols: async (query, path, caseSensitive, kind) => {
+  searchSymbols: async (query, path, caseSensitive, kind, depth, maxFiles) => {
     set({ searching: true, searchQuery: query, searchResults: [] });
     try {
       const params = new URLSearchParams({ q: query });
       if (path) params.set('path', path);
       if (caseSensitive) params.set('case', 'true');
       if (kind) params.set('kind', kind);
+      if (depth) params.set('depth', String(depth));
+      if (maxFiles) params.set('maxFiles', String(maxFiles));
 
       const data = await apiRequest<any>(`/api/semantic/search?${params}`);
 
@@ -158,11 +171,13 @@ export const useSemanticStore = create<SemanticState>((set) => ({
     }
   },
 
-  findReferences: async (symbol, path) => {
+  findReferences: async (symbol, path, depth, maxFiles) => {
     set({ refLoading: true, refResults: [] });
     try {
       const params = new URLSearchParams({ symbol });
       if (path) params.set('path', path);
+      if (depth) params.set('depth', String(depth));
+      if (maxFiles) params.set('maxFiles', String(maxFiles));
 
       const data = await apiRequest<any>(`/api/semantic/references?${params}`);
 

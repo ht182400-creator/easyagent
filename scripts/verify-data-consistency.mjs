@@ -188,7 +188,9 @@ function main() {
       `失败 ${totals.failed} / 跳过 ${totals.skipped}`,
   );
   if (reportsFound === 0) {
-    problem('未找到任何 _vitest-*.json 报告\n    修复: pnpm test:log（或 node scripts/run-tests-log.mjs）');
+    problem(
+      '未找到任何 _vitest-*.json 报告\n    修复: pnpm test:log（或 node scripts/run-tests-log.mjs）',
+    );
   }
 
   // ── 校验项 ②：pipeline-data.json 的 KPI 必须与真源自洽 ──
@@ -198,7 +200,10 @@ function main() {
     if (!kpi) {
       problem('pipeline-data.json 缺少 kpi 字段');
     } else {
-      if (typeof kpi.testCases === 'number' && Math.abs(kpi.testCases - mappingTotal) > ALLOWED_DRIFT) {
+      if (
+        typeof kpi.testCases === 'number' &&
+        Math.abs(kpi.testCases - mappingTotal) > ALLOWED_DRIFT
+      ) {
         problem(
           `[KPI 与真源不一致] pipeline-data.json kpi.testCases=${kpi.testCases}，` +
             `真源 mapping.totalTestCases=${mappingTotal}\n` +
@@ -265,7 +270,9 @@ function main() {
           `\n    请更新文档中的对应声明（历史值请显式标注，如"历史：1195"）`,
       );
     } else {
-      info(`${INFO_PREFIX}✓ ${label} 已声明当前权威数字（${requiredNumbers.map((r) => r.value).join(' / ')}）`);
+      info(
+        `${INFO_PREFIX}✓ ${label} 已声明当前权威数字（${requiredNumbers.map((r) => r.value).join(' / ')}）`,
+      );
     }
   }
 

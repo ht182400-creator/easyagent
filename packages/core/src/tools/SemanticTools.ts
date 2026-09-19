@@ -21,7 +21,7 @@ let _cachedRoot = '';
 let _cacheTime = 0;
 const CACHE_TTL = 60000; // 60秒缓存
 
-function getOrBuildMap(workspace: string, maxDepth = 6, maxFiles = 300) {
+function getOrBuildMap(workspace: string, maxDepth = 6, maxFiles = 1000) {
   const now = Date.now();
   if (_cachedMap && _cachedRoot === workspace && now - _cacheTime < CACHE_TTL) {
     return _cachedMap;
@@ -60,7 +60,7 @@ export const SemanticMapTool: ITool = {
       },
       maxFiles: {
         type: 'number',
-        description: '最大文件数，默认300',
+        description: '最大文件数，默认1000',
       },
     },
     required: [],
@@ -69,7 +69,7 @@ export const SemanticMapTool: ITool = {
     try {
       const workspace = (params.path as string) || context?.workspace || process.cwd();
       const maxDepth = (params.maxDepth as number) || 6;
-      const maxFiles = (params.maxFiles as number) || 300;
+      const maxFiles = (params.maxFiles as number) || 1000;
 
       const map = getOrBuildMap(workspace, maxDepth, maxFiles);
       const formatted = formatSemanticMap(map);

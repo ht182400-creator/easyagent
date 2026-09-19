@@ -12,18 +12,21 @@ import type { AgentEvent } from '../src/Agent';
 
 // ============ Mock 工厂 ============
 
-function createMockChat(responses: Array<{
-  content?: string;
-  toolCalls?: Array<{ id: string; name: string; args: Record<string, unknown> }>;
-  finishReason?: string;
-}>) {
+function createMockChat(
+  responses: Array<{
+    content?: string;
+    toolCalls?: Array<{ id: string; name: string; args: Record<string, unknown> }>;
+    finishReason?: string;
+  }>,
+) {
   let idx = 0;
   return vi.fn((_msgs: unknown[], _opts?: unknown) => {
     const r = responses[idx++] || { content: '', finishReason: 'stop' };
     return Promise.resolve({
       content: r.content || '',
       toolCalls: r.toolCalls?.map((tc) => ({
-        id: tc.id, type: 'function' as const,
+        id: tc.id,
+        type: 'function' as const,
         function: { name: tc.name, arguments: JSON.stringify(tc.args) },
       })),
       finishReason: r.finishReason || 'stop',
@@ -35,12 +38,14 @@ function createMockChat(responses: Array<{
 function createToolExecutor(results: Record<string, { success: boolean; content: string }> = {}) {
   return {
     execute: vi.fn((name: string, _params: Record<string, unknown>) =>
-      Promise.resolve(results[name] || { success: true, content: `${name} done` })
+      Promise.resolve(results[name] || { success: true, content: `${name} done` }),
     ),
   };
 }
 
-function buildAgent(responses: Parameters<typeof createMockChat>[0] = [{ content: '你好', finishReason: 'stop' }]) {
+function buildAgent(
+  responses: Parameters<typeof createMockChat>[0] = [{ content: '你好', finishReason: 'stop' }],
+) {
   const chat = createMockChat(responses);
   const executor = createToolExecutor();
   return {
@@ -67,9 +72,7 @@ describe('LangGraphAgent.run()', () => {
   });
 
   it('应该返回 response、messages 和 sessionId', async () => {
-    agent = buildAgent([
-      { content: '你好！我是测试助手。', finishReason: 'stop' },
-    ]).agent;
+    agent = buildAgent([{ content: '你好！我是测试助手。', finishReason: 'stop' }]).agent;
 
     const result = await agent.run('你好');
 
@@ -80,9 +83,7 @@ describe('LangGraphAgent.run()', () => {
   });
 
   it('应该支持自定义 sessionId', async () => {
-    agent = buildAgent([
-      { content: 'OK', finishReason: 'stop' },
-    ]).agent;
+    agent = buildAgent([{ content: 'OK', finishReason: 'stop' }]).agent;
 
     const result = await agent.run('hi', { sessionId: 'my-session' });
 
@@ -91,9 +92,7 @@ describe('LangGraphAgent.run()', () => {
 
   it('每次 stop 类型的响应仅产生 1 轮', async () => {
     // 当 LLM 返回 finishReason='stop' 时，观察节点直接终止，turnCount=1
-    agent = buildAgent([
-      { content: '单轮答复', finishReason: 'stop' },
-    ]).agent;
+    agent = buildAgent([{ content: '单轮答复', finishReason: 'stop' }]).agent;
 
     const result = await agent.run('问一个问题');
 
@@ -113,9 +112,7 @@ describe('LangGraphAgent.stream()', () => {
   });
 
   it('应该产出一系列事件并以 done 结束', async () => {
-    agent = buildAgent([
-      { content: '你好！', finishReason: 'stop' },
-    ]).agent;
+    agent = buildAgent([{ content: '你好！', finishReason: 'stop' }]).agent;
 
     const events: AgentEvent[] = [];
     try {
@@ -221,9 +218,7 @@ describe('LangGraphAgent 状态查询', () => {
   });
 
   it('run 后可以通过 getState 获取非空状态', async () => {
-    agent = buildAgent([
-      { content: 'OK', finishReason: 'stop' },
-    ]).agent;
+    agent = buildAgent([{ content: 'OK', finishReason: 'stop' }]).agent;
 
     await agent.run('hi', { sessionId: 'state-test' });
 
@@ -233,9 +228,7 @@ describe('LangGraphAgent 状态查询', () => {
   });
 
   it('listSessions 应该返回已保存的会话', async () => {
-    agent = buildAgent([
-      { content: 'OK', finishReason: 'stop' },
-    ]).agent;
+    agent = buildAgent([{ content: 'OK', finishReason: 'stop' }]).agent;
 
     await agent.run('hi', { sessionId: 's1' });
     await agent.run('hello', { sessionId: 's2' });
@@ -246,9 +239,7 @@ describe('LangGraphAgent 状态查询', () => {
   });
 
   it('clearHistory 应该清除会话数据', async () => {
-    agent = buildAgent([
-      { content: 'OK', finishReason: 'stop' },
-    ]).agent;
+    agent = buildAgent([{ content: 'OK', finishReason: 'stop' }]).agent;
 
     await agent.run('hi', { sessionId: 'clear-test' });
     agent.clearHistory('clear-test');

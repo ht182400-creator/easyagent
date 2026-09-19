@@ -82,16 +82,20 @@ beforeAll(async () => {
     if (method === 'initialize') {
       const sid = `sess_${sessions.size + 1}_${Date.now()}`;
       sessions.add(sid);
-      json(res, {
-        jsonrpc: '2.0',
-        id: body.id,
-        result: {
-          protocolVersion: '2025-06-18',
-          serverInfo: { name: 'fake-mcp-server', version: '1.0.0' },
-          capabilities: { tools: {} },
-        },
-        'x-test': undefined,
-      } as unknown, { 'MCP-Session-Id': sid });
+      json(
+        res,
+        {
+          jsonrpc: '2.0',
+          id: body.id,
+          result: {
+            protocolVersion: '2025-06-18',
+            serverInfo: { name: 'fake-mcp-server', version: '1.0.0' },
+            capabilities: { tools: {} },
+          },
+          'x-test': undefined,
+        } as unknown,
+        { 'MCP-Session-Id': sid },
+      );
       return;
     }
 
@@ -200,7 +204,11 @@ describe('Streamable HTTP — 全流程（新规范服务器）', () => {
 
 describe('Streamable HTTP — 版本协商', () => {
   it('服务器返回不支持的协议版本 → 连接失败并给出明确错误', async () => {
-    const client = new MCPClient({ name: 'bad-version', url: `${baseUrl}/unsupported-version`, enabled: true });
+    const client = new MCPClient({
+      name: 'bad-version',
+      url: `${baseUrl}/unsupported-version`,
+      enabled: true,
+    });
     await expect(client.connect()).rejects.toThrow(/协议版本不支持/);
     expect(client.isConnected).toBe(false);
   });
@@ -229,6 +237,8 @@ describe('Streamable HTTP — SSE 响应形态', () => {
 describe('MCPClient 配置校验', () => {
   it('command 与 url 都缺失 → connect 报配置错误', async () => {
     const client = new MCPClient({ name: 'no-transport', enabled: true } as never);
-    await expect(client.connect()).rejects.toThrow(/需要 command（stdio）或 url（Streamable HTTP）之一/);
+    await expect(client.connect()).rejects.toThrow(
+      /需要 command（stdio）或 url（Streamable HTTP）之一/,
+    );
   });
 });

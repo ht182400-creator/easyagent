@@ -87,7 +87,10 @@ export function CreateTaskModal({ template, onClose }: CreateTaskModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
       <div
         className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4 p-6"
         onClick={(e) => e.stopPropagation()}
@@ -175,8 +178,7 @@ export function CreateTaskModal({ template, onClose }: CreateTaskModalProps) {
                 {formProvider && !configuredProviderIds.has(formProvider) && (
                   <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 rounded-lg p-2 mt-2">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                    该提供商尚未配置 API 密钥，需先在「设置 →
-                    模型提供商」中配置后才能正常执行任务。
+                    该提供商尚未配置 API 密钥，需先在「设置 → 模型提供商」中配置后才能正常执行任务。
                   </div>
                 )}
               </>

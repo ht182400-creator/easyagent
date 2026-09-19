@@ -427,7 +427,15 @@ export function createLogger(name: string, level?: LogLevel) {
 
 /** 取两个级别中更详细（更啰嗦）的那个 */
 function minLevel(a: LogLevel, b: LogLevel): LogLevel {
-  const order = [LogLevel.TRACE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL, LogLevel.SILENT];
+  const order = [
+    LogLevel.TRACE,
+    LogLevel.DEBUG,
+    LogLevel.INFO,
+    LogLevel.WARN,
+    LogLevel.ERROR,
+    LogLevel.FATAL,
+    LogLevel.SILENT,
+  ];
   return order.indexOf(a) <= order.indexOf(b) ? a : b;
 }
 

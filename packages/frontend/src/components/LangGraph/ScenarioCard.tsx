@@ -40,12 +40,12 @@ export interface LogEntry {
 // ==================== 状态徽标映射 ====================
 
 const LOG_CLASS_MAP: Record<string, string> = {
-  enter:    '',
-  info:     'text-[#00ff88]',
-  warn:     'text-[#ffb74d]',
-  exit:     '',
+  enter: '',
+  info: 'text-[#00ff88]',
+  warn: 'text-[#ffb74d]',
+  exit: '',
   decision: 'text-[#448aff]',
-  error:    'text-[#ff5252]',
+  error: 'text-[#ff5252]',
 };
 
 // ==================== HTML 转义 ====================
@@ -62,9 +62,7 @@ function LogLine({ log }: { log: LogEntry }) {
   const colorClass = LOG_CLASS_MAP[log.type] || '';
   return (
     <div className="flex gap-2.5 py-0.5 items-baseline">
-      <span className="text-[#4a5568] text-[10px] flex-shrink-0 min-w-[75px]">
-        [{log.node}]
-      </span>
+      <span className="text-[#4a5568] text-[10px] flex-shrink-0 min-w-[75px]">[{log.node}]</span>
       <span className={`text-[#7a8b9e] text-[11px] flex-1 break-all ${colorClass}`}>
         {escapeHtml(log.message)}
       </span>
@@ -78,7 +76,14 @@ function LogLine({ log }: { log: LogEntry }) {
  * 场景卡片
  * 展示单个执行场景的完整信息
  */
-export default function ScenarioCard({ scenario, onRun, result, isRunning, onToggle, onFlowClick }: ScenarioCardProps) {
+export default function ScenarioCard({
+  scenario,
+  onRun,
+  result,
+  isRunning,
+  onToggle,
+  onFlowClick,
+}: ScenarioCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const handleToggle = useCallback(() => {
@@ -143,8 +148,12 @@ export default function ScenarioCard({ scenario, onRun, result, isRunning, onTog
         </div>
 
         {/* 状态徽标 */}
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap mt-0.5 flex-shrink-0 ${badgeClass}`}>
-          {isRunning && <span className="w-2.5 h-2.5 border-1.5 border-[#00e5ff] border-t-transparent rounded-full animate-spin" />}
+        <span
+          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap mt-0.5 flex-shrink-0 ${badgeClass}`}
+        >
+          {isRunning && (
+            <span className="w-2.5 h-2.5 border-1.5 border-[#00e5ff] border-t-transparent rounded-full animate-spin" />
+          )}
           {badgeText}
         </span>
       </div>
@@ -152,7 +161,10 @@ export default function ScenarioCard({ scenario, onRun, result, isRunning, onTog
       {/* 迷你流转图 — 点击打开放大弹窗，阻止冒泡到卡片展开 */}
       <div
         className="relative w-full h-[135px] overflow-hidden border-t border-b border-[#1a2530] bg-[radial-gradient(circle_at_50%_50%,rgba(0,229,255,0.02),transparent_70%)] cursor-zoom-in"
-        style={{ background: 'radial-gradient(circle at 50% 50%, rgba(0,229,255,0.02) 0%, transparent 70%)' }}
+        style={{
+          background:
+            'radial-gradient(circle at 50% 50%, rgba(0,229,255,0.02) 0%, transparent 70%)',
+        }}
         onClick={(e) => {
           e.stopPropagation(); // 阻止冒泡到卡片 onClick → 不展开详情
           onFlowClick?.(scenario);

@@ -15,8 +15,11 @@
  * - 适用于可信代码或开发测试场景
  */
 import { spawn, execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { logger } from '../utils/logger.js';
+import { checkCommand } from './commandSafety.js';
 import type {
   SandboxOptions,
   SandboxResult,
@@ -24,6 +27,96 @@ import type {
   SandboxInfo,
   SandboxLimits,
 } from './DockerSandbox.js';
+
+/**
+ * Windows cmd.exe 内建命令（没有独立可执行文件，必须由 cmd 解释）
+ *
+ * ⚠️ 本地沙箱改为「不经 shell」执行后，`echo` / `dir` / `type` 这类内建命令会直接
+ * ENOENT —— 这不是安全取舍而是可用性回归，故对它们保留经 cmd.exe 的兼容路径
+ * （参数仍由我们逐个加引号，不会被 cmd 当语法解析）。
+ */
+const WINDOWS_CMD_BUILTINS = new Set([
+  'echo',
+  'dir',
+  'type',
+  'cd',
+  'chdir',
+  'set',
+  'cls',
+  'copy',
+  'move',
+  'del',
+  'erase',
+  'rd',
+  'rmdir',
+  'md',
+  'mkdir',
+  'ren',
+  'rename',
+  'ver',
+  'vol',
+  'date',
+  'time',
+  'title',
+  'where',
+  'find',
+  'findstr',
+  'more',
+  'start',
+  'tasklist',
+  'taskkill',
+  'path',
+  'attrib',
+]);
+
+/**
+ * Windows：解析需要经 cmd.exe 执行的批处理入口（.cmd / .bat）
+ *
+ * Node ≥ 18.20.2 / 20.12.2 起（CVE-2024-27980 缓解）**不允许**直接 spawn .cmd/.bat，
+ * 而 `npm` / `npx` / `yarn` 在 Windows 上正是 .cmd → 必须走 cmd.exe。
+ *
+ * @returns 可交给 cmd.exe 的批处理路径；不需要或找不到时返回 null
+ */
+function resolveWindowsCmdShim(file: string): string | null {
+  if (process.platform !== 'win32') return null;
+  if (/\.(cmd|bat)$/i.test(file)) return file;
+  // 已带原生扩展名或自带路径分隔符的，不做 PATH 探测
+  if (/\.(exe|com)$/i.test(file) || file.includes('\\') || file.includes('/')) return null;
+
+  const pathValue = process.env.PATH || process.env.Path || '';
+  for (const dir of pathValue.split(';').filter(Boolean)) {
+    for (const ext of ['.cmd', '.bat']) {
+      const candidate = join(dir, `${file}${ext}`);
+      if (existsSync(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+/** 为 cmd.exe 的参数加引号（内部双引号按 cmd 规则双写） */
+function quoteForCmd(value: string): string {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+/** 仅在必要时加引号（给 cmd 内建命令名加引号会撞上 /s 的脱引号规则） */
+function quoteIfNeeded(value: string): string {
+  return value === '' || /[\s"&|<>^()]/.test(value) ? quoteForCmd(value) : value;
+}
+
+/**
+ * 拼 cmd.exe 命令行（配合 `windowsVerbatimArguments: true` 原样传递，不让 Node 再加工）
+ *
+ * ⚠️ **外层必须再包一层引号**：`cmd /d /s /c` 会把「首尾引号」剥掉，
+ * 这样 `"C:\Program Files\nodejs\npm.cmd" run dev` 这类含空格的路径才能正确执行；
+ * 内建命令（echo/dir…）不加引号，避免 `"echo"` 被 /s 规则拆坏（实测 exit 1）。
+ *
+ * ⚠️ 残余风险：cmd.exe 对参数里的 `%VAR%` 仍会展开（引号内也展开）。该分支只在
+ * Windows 的 .cmd/.bat 与内建命令场景走，参数仅影响子进程自身 argv，可接受。
+ */
+function buildCmdExeLine(file: string, args: string[]): string {
+  const line = [file, ...args].map(quoteIfNeeded).join(' ');
+  return `"${line}"`;
+}
 
 /** 本地进程沙箱实例 */
 export class LocalSandbox {
@@ -51,52 +144,23 @@ export class LocalSandbox {
   }
 
   /**
-   * 验证命令是否安全，检测shell元字符以防止命令注入
-   * @param command - 待执行的命令字符串
-   * @throws 如果命令包含不安全的shell元字符
+   * 校验命令并切分为 argv
+   *
+   * ── 安全模型（2026-09-19 根治）──
+   * 执行时**不再经过 shell**（`spawn(file, args, { shell: false })`），
+   * 因此"危险字符黑名单"已无必要：`()` `$` 反引号等只是普通字符，注入在结构上不可能。
+   * 这里只拦「引号外的管道/重定向/链式」—— 不是因为它们危险，而是因为在无 shell 模式下
+   * 它们不会按用户预期生效，提前给出明确报错比静默当成普通参数更好。
+   *
+   * @returns 可直接交给 spawn 的 argv
+   * @throws 命令非法（引号外操作符 / 引号未闭合 / 空命令）
    */
-  private validateCommand(command: string): void {
-    if (this.containsShellMetacharacters(command)) {
-      throw new Error(
-        `命令包含不安全的 shell 元字符，已被拒绝执行。` +
-          `允许的字符: 字母数字、空格、路径字符(/ \\ . : - _)、引号(用于路径)和常见参数标识符。` +
-          `命令: ${command.slice(0, 200)}`,
-      );
+  private validateCommand(command: string): string[] {
+    const result = checkCommand(command, false);
+    if (result.error || !result.argv) {
+      throw new Error(result.error || '命令解析失败：无法切分命令');
     }
-  }
-
-  /**
-   * 检测字符串是否包含危险的shell元字符
-   * @param input - 待检测的字符串
-   * @returns 如果包含危险字符返回true
-   */
-  private containsShellMetacharacters(input: string): boolean {
-    // 检测以下危险字符和模式:
-    // ;  - 命令分隔符
-    // |  - 管道符
-    // &  - 后台执行 / 命令链接
-    // $  - 变量替换
-    // `  - 命令替换（反引号）
-    // ( ) - 子shell
-    // && || - 逻辑链接符
-    // > < - 重定向
-    // \n \r - 换行注入
-    // # - 注释（可用于截断命令）
-    const dangerousPatterns = [
-      /[;&|`$()><#\x00-\x08\x0B\x0C\x0E-\x1F]/, // 单个危险字符 + 控制字符
-      /&&/, // 逻辑与
-      /\|\|/, // 逻辑或
-      /\n/, // 换行符
-      /\r/, // 回车符
-    ];
-
-    for (const pattern of dangerousPatterns) {
-      if (pattern.test(input)) {
-        return true;
-      }
-    }
-
-    return false;
+    return result.argv;
   }
 
   /**
@@ -108,8 +172,8 @@ export class LocalSandbox {
       throw new Error('沙箱未启动，请先调用 start()');
     }
 
-    // 验证命令安全性，防止shell元字符注入
-    this.validateCommand(command);
+    // 校验并切分为 argv（不经 shell 执行，详见 validateCommand 注释）
+    const argv = this.validateCommand(command);
 
     const execTimeout = timeout || this.options.timeout || 30000;
     const safeTimeout = Math.min(execTimeout, 300000); // 最大5分钟
@@ -119,10 +183,8 @@ export class LocalSandbox {
     try {
       const result = await new Promise<{ stdout: string; stderr: string; exitCode: number }>(
         (resolve, reject) => {
-          // 根据平台选择 shell: Windows 用 cmd.exe, Linux/Mac 用 sh
           const isWindows = process.platform === 'win32';
-          const shell = isWindows ? 'cmd.exe' : '/bin/sh';
-          const shellArgs = isWindows ? ['/d', '/s', '/c', command] : ['-c', command];
+          const [file, ...args] = argv;
 
           // 设置工作目录
           const cwd = this.options.workspace || process.cwd();
@@ -142,13 +204,38 @@ export class LocalSandbox {
             delete env.NODE_OPTIONS;
           }
 
-          const proc = spawn(shell, shellArgs, {
-            cwd,
-            env,
-            stdio: ['ignore', 'pipe', 'pipe'],
-            windowsHide: true,
-            shell: false, // 已经指定了 shell，不需要 shell:true
-          });
+          // ── 不经 shell 执行（根治要点）──
+          // argv 已由 parseCommandLine 切分好，直接 spawn(file, args)：
+          // 没有 shell 就没有元字符语义，代码里的 () $ 反引号都是普通字符。
+          // 例外：Windows 的 .cmd/.bat（npm/npx/yarn 等）Node 不允许直接 spawn，
+          // 必须经 cmd.exe —— 参数由我们统一加引号后原样传入。
+          const shim = isWindows ? resolveWindowsCmdShim(file) : null;
+          // 需要经 cmd.exe 的两种情形：① .cmd/.bat（npm/npx 等，Node 不允许直接 spawn）
+          // ② Windows 内建命令（echo/dir/type…，没有独立可执行文件）
+          const viaCmd =
+            shim || (isWindows && WINDOWS_CMD_BUILTINS.has(file.toLowerCase()))
+              ? shim || file
+              : null;
+          const proc = viaCmd
+            ? spawn(
+                process.env.ComSpec || 'cmd.exe',
+                ['/d', '/s', '/c', buildCmdExeLine(viaCmd, args)],
+                {
+                  cwd,
+                  env,
+                  stdio: ['ignore', 'pipe', 'pipe'],
+                  windowsHide: true,
+                  windowsVerbatimArguments: true,
+                  shell: false,
+                },
+              )
+            : spawn(file, args, {
+                cwd,
+                env,
+                stdio: ['ignore', 'pipe', 'pipe'],
+                windowsHide: true,
+                shell: false,
+              });
 
           let stdout = '';
           let stderr = '';
@@ -212,7 +299,12 @@ export class LocalSandbox {
 
           proc.on('close', (code, signal) => {
             clearTimeout(timer);
-            if (killed) return;
+            if (killed) {
+              // ⚠️ 必须让 Promise 落地：旧实现在此直接 return，导致超时（或输出超限）被 kill 后
+              // Promise 永不 settle、请求一直挂着 —— 界面上的"超时 30s"形同虚设（2026-09-19 修复）
+              reject(new Error(timedOut ? `命令执行超时（${safeTimeout}ms）` : '命令被终止'));
+              return;
+            }
             resolve({
               stdout: stdout.trim(),
               stderr: stderr.trim(),
@@ -236,7 +328,18 @@ export class LocalSandbox {
         timedOut,
       };
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const err = error as NodeJS.ErrnoException;
+      /**
+       * ENOENT 翻译成人话：最常见的原因是**把代码片段当成命令输入**了
+       * （用户实报：输入 `console.log("a|b;c")` → `spawn console.log(...) ENOENT`）
+       */
+      const msg =
+        err?.code === 'ENOENT'
+          ? `找不到可执行文件 "${argv[0]}"。沙箱里执行的是**系统命令**（如 node / npm / python / ls），` +
+            `不是代码片段；要执行 JavaScript 请写成 node -e "console.log(1+1)"。命令: ${command.slice(0, 120)}`
+          : error instanceof Error
+            ? error.message
+            : String(error);
       return {
         success: false,
         stdout: '',

@@ -11,6 +11,7 @@ import {
   type SandboxOptions,
   type SandboxInfo,
   checkDockerAvailability,
+  resetDockerCache,
 } from './DockerSandbox.js';
 import { LocalSandbox } from './LocalSandbox.js';
 import { logger } from '../utils/logger.js';
@@ -54,6 +55,10 @@ export class SandboxManager {
   private dockerAvailable = false;
   /** 是否使用本地进程模式（Docker不可用时的降级） */
   private localMode = false;
+  /** 上次自愈重检 Docker 的时间（节流用：Docker 长期不可用时避免每次创建都付探测开销） */
+  private lastDockerRecheckAt = 0;
+  /** 自愈重检最小间隔（毫秒） */
+  private static readonly DOCKER_RECHECK_INTERVAL_MS = 30_000;
 
   private static instance: SandboxManager | null = null;
 
@@ -113,6 +118,30 @@ export class SandboxManager {
   }
 
   /**
+   * 自愈重检 Docker：本地模式下、创建沙箱前重探一次
+   *
+   * ⚠️ 必须 `resetDockerCache()`：`checkDockerAvailability` 的缓存是**一次性闩锁**
+   * （`dockerChecked = true` 后永久返回旧结论，无 TTL）—— 不清缓存重探只会读到"不可用"。
+   *
+   * @returns 是否成功切回 Docker 模式
+   */
+  private async tryRecoverDocker(): Promise<boolean> {
+    if (Date.now() - this.lastDockerRecheckAt < SandboxManager.DOCKER_RECHECK_INTERVAL_MS) {
+      return false;
+    }
+    this.lastDockerRecheckAt = Date.now();
+
+    resetDockerCache();
+    const result = await checkDockerAvailability();
+    if (!result.available) return false;
+
+    this.dockerAvailable = true;
+    this.localMode = false;
+    logger.info({ version: result.version }, 'Docker 已恢复可用，沙箱自动切回容器模式');
+    return true;
+  }
+
+  /**
    * 创建新的沙箱实例
    * Docker 可用时创建 Docker 容器，不可用时降级为本地进程
    */
@@ -122,6 +151,14 @@ export class SandboxManager {
     }
     if (!this.config.enabled) {
       throw new Error('沙箱功能已被禁用');
+    }
+
+    // ── 自愈重检 Docker（2026-09-19）──
+    // 模式是 init() 时的**一次性判定**：启动那刻 Docker 没跑 → 永久降级为本地模式，
+    // 之后即使 Docker 起来了也不会切回，用户被迫"先开 Docker 再启后端"。
+    // 这里在创建沙箱前重探一次，可用就自动切回容器模式。
+    if (this.localMode) {
+      await this.tryRecoverDocker();
     }
 
     // 检查并发限制

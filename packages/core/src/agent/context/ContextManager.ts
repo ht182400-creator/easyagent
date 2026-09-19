@@ -24,7 +24,11 @@ import type { Message, ToolDefinition } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
 import { compactHistory } from './historyCompactor.js';
 import { resolveContextOptions } from './options.js';
-import { estimateMessagesTokens, estimateTokens, estimateToolDefinitionsTokens } from './tokenEstimator.js';
+import {
+  estimateMessagesTokens,
+  estimateTokens,
+  estimateToolDefinitionsTokens,
+} from './tokenEstimator.js';
 import { buildToolIndexText, resolveModelScale, selectToolDefinitions } from './toolSelection.js';
 import { truncateToolResult } from './toolResultTruncator.js';
 import type {
@@ -109,7 +113,11 @@ export class ContextManager {
 
     // ── 未启用：原样返回（仅做 benchmark 工具排除，该排除有独立证据支持）──
     if (!this.options.enabled) {
-      const { selected, excludedNames } = selectToolDefinitions(input.toolDefinitions, 'large', false);
+      const { selected, excludedNames } = selectToolDefinitions(
+        input.toolDefinitions,
+        'large',
+        false,
+      );
       return {
         systemPrompt: input.systemPrompt,
         messages: [{ role: 'system', content: input.systemPrompt }, ...input.messages],
@@ -124,7 +132,13 @@ export class ContextManager {
           after: selected.length,
           adjustments:
             excludedNames.length > 0
-              ? [{ kind: 'tool-tiering', detail: `排除 ${excludedNames.join(', ')}`, tokensDelta: 0 }]
+              ? [
+                  {
+                    kind: 'tool-tiering',
+                    detail: `排除 ${excludedNames.join(', ')}`,
+                    tokensDelta: 0,
+                  },
+                ]
               : [],
         }),
       };
@@ -212,7 +226,8 @@ export class ContextManager {
       );
     }
 
-    const finalSystemTokens = compacted.droppedCount > 0 ? estimateTokens(systemPrompt) : systemTokens;
+    const finalSystemTokens =
+      compacted.droppedCount > 0 ? estimateTokens(systemPrompt) : systemTokens;
     const messages: Message[] = [{ role: 'system', content: systemPrompt }, ...compacted.messages];
 
     const result: ContextBuildResult = {

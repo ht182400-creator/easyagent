@@ -1,14 +1,14 @@
 /**
  * agentGraph — LangGraph StateGraph 编译
- * 
+ *
  * 构建 "思考 → 路由 → (行动 → 观察 →) 思考" 环形工作流。
  * 这是整个 LangGraph 引擎的核心编排层。
- * 
+ *
  * 节点:
  *   think   — LLM 调用，生成 AIMessage（可能含 tool_calls）
  *   act     — 工具执行，生成 ToolMessage
  *   observe — 结果处理，决定是否继续
- * 
+ *
  * 边:
  *   START → think
  *   think → routeAfterThink → act (有 tool_calls) 或 END (无)
@@ -49,11 +49,11 @@ export interface AgentGraphConfig {
 
 /**
  * 构建并编译 LangGraph Agent 工作流
- * 
+ *
  * 流程:
  *   START → think → routeAfterThink ─(tool_calls)─→ act → observe → think
  *                                    ─(no_tools)──→ END
- * 
+ *
  * @param config - 节点配置
  * @returns 编译后的 CompiledStateGraph，可直接 invoke/stream
  */
@@ -75,13 +75,14 @@ export function createAgentGraph(config: AgentGraphConfig) {
     .addNode('act', actNode)
     .addNode('observe', observeNode)
     // 注册边
-    .addEdge(START, 'think')                           // 入口
-    .addConditionalEdges('think', routeAfterThink, {   // 条件路由
+    .addEdge(START, 'think') // 入口
+    .addConditionalEdges('think', routeAfterThink, {
+      // 条件路由
       act: 'act',
       __end__: END,
     })
-    .addEdge('act', 'observe')                         // act → observe
-    .addEdge('observe', 'think');                       // observe → think (循环)
+    .addEdge('act', 'observe') // act → observe
+    .addEdge('observe', 'think'); // observe → think (循环)
 
   // 编译并应用 checkpoint
   // 注意：LangGraph 的 recursionLimit 需在运行时（invoke/streamEvents）传入，

@@ -75,7 +75,6 @@ function normalizeLinkTarget(target: string): string {
   return `${trimmed}.md`;
 }
 
-
 /**
  * 重建所有文档的 links 和 backlinks
  * @deprecated 请使用 fileLoader.ts 中的 rebuildDocumentLinks，支持相对路径解析

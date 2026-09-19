@@ -386,7 +386,8 @@ function normalizePluginResult(toolName: string, raw: unknown): ToolResult {
     const r = raw as ToolResult;
     return {
       success: r.success,
-      content: typeof r.content === 'string' ? r.content : (r.content == null ? '' : String(r.content)),
+      content:
+        typeof r.content === 'string' ? r.content : r.content == null ? '' : String(r.content),
       error: r.error,
       metadata: r.metadata,
     };

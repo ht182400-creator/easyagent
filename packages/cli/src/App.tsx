@@ -46,7 +46,11 @@ import {
 /**
  * 加载 LangGraph 引擎（按需动态导入，避免 CLI 启动时强制加载）
  */
-async function getLangGraphAgent(provider: any, toolRegistry: ToolRegistry, options: Record<string, unknown>) {
+async function getLangGraphAgent(
+  provider: any,
+  toolRegistry: ToolRegistry,
+  options: Record<string, unknown>,
+) {
   const { createLangGraphAgent } = await import('@easyagent/langgraph');
   return createLangGraphAgent(provider, toolRegistry, {
     model: options.model as string,

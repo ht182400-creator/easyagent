@@ -46,8 +46,7 @@ function makeConfig() {
 
 /** 构造 SSE 流式响应 */
 function sseResponse(chunks: unknown[]): Response {
-  const payload =
-    chunks.map((c) => `data: ${JSON.stringify(c)}\n\n`).join('') + 'data: [DONE]\n\n';
+  const payload = chunks.map((c) => `data: ${JSON.stringify(c)}\n\n`).join('') + 'data: [DONE]\n\n';
   const stream = new ReadableStream({
     start(controller) {
       controller.enqueue(new TextEncoder().encode(payload));
@@ -136,9 +135,7 @@ describe('chatStream — 思考过程解析', () => {
 
   it('无推理字段时不应产生 reasoningDelta（普通模型保持原行为）', async () => {
     globalThis.fetch = (async () =>
-      sseResponse([
-        { choices: [{ delta: { content: '普通回答' } }] },
-      ])) as unknown as typeof fetch;
+      sseResponse([{ choices: [{ delta: { content: '普通回答' } }] }])) as unknown as typeof fetch;
 
     const adapter = new OpenAICompatibleAdapter(makeConfig() as never, MODEL_ID);
     const chunks = [];

@@ -1,7 +1,7 @@
 /**
  * MiniFlowGraph 组件测试 — Phase C/D
  * 覆盖: 计算逻辑 + 数据结构验证 + React 组件渲染
- * 
+ *
  * happy-dom 环境下 React hooks 正常工作，支持完整 DOM/SVG 渲染测试。
  */
 import { describe, it, expect } from 'vitest';
@@ -40,7 +40,7 @@ function computeOffsets(traversalPath: string[]): Map<string, number> {
 }
 
 /** 模拟 getMiniEdgePath 逻辑 */
-function getMiniEdgePath(from: {x:number, y:number}, to: {x:number, y:number}): string {
+function getMiniEdgePath(from: { x: number; y: number }, to: { x: number; y: number }): string {
   return `M${from.x},${from.y} L${to.x},${to.y}`;
 }
 
@@ -134,9 +134,7 @@ describe('MiniFlowGraph — 组件渲染', () => {
 
   it('支持自定义宽高（用例补充）', () => {
     const scenario = makeScenario();
-    const { container } = render(
-      <MiniFlowGraph scenario={scenario} width={200} height={150} />
-    );
+    const { container } = render(<MiniFlowGraph scenario={scenario} width={200} height={150} />);
     const svg = container.querySelector('svg');
     expect(svg).toBeTruthy();
   });

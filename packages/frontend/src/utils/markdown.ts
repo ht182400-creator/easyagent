@@ -194,7 +194,11 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
 
 /** HTML 属性值转义（用于 data-lang 这类我们自行拼接的属性） */
 function escapeAttr(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 // ===================== 对外 API =====================

@@ -31,7 +31,9 @@ describe('SessionManager - 会话创建与获取', () => {
   afterEach(() => {
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('应该能够创建新会话', () => {
@@ -111,7 +113,9 @@ describe('SessionManager - 会话列表与过滤', () => {
   afterEach(() => {
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('list应返回所有活跃会话', () => {
@@ -166,7 +170,9 @@ describe('SessionManager - 会话保存与持久化', () => {
   afterEach(() => {
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('save应保存会话到内存和数据库', () => {
@@ -254,7 +260,9 @@ describe('SessionManager - 会话删除与归档', () => {
   afterEach(() => {
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('delete应删除会话', () => {
@@ -312,7 +320,9 @@ describe('SessionManager - 搜索', () => {
   afterEach(() => {
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('search应能按标题搜索', () => {
@@ -380,7 +390,9 @@ describe('SessionManager - Token统计', () => {
   afterEach(() => {
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (_) { /* 测试清理失败不影响结果 */ }
+    } catch (_) {
+      /* 测试清理失败不影响结果 */
+    }
   });
 
   it('getTotalTokenUsage应汇总所有会话的Token用量', () => {

@@ -120,8 +120,7 @@ async function main() {
     });
 
     // 「改造后的固定开销」= 系统提示词 + 工具定义（不含用户消息）
-    const afterFixed =
-      built.stats.systemTokens + built.stats.toolTokens;
+    const afterFixed = built.stats.systemTokens + built.stats.toolTokens;
     const saved = baseline.totalTokens - afterFixed;
 
     results.push({

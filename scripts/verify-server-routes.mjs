@@ -122,7 +122,8 @@ async function main() {
 
   // ⑥ 静态文件处理逻辑确实执行过（托管成功或明确告警，二者必有其一）
   const staticHandled =
-    serverOutput.includes('文档浏览器静态文件已托管') || serverOutput.includes('文档浏览器 dist/ 未找到');
+    serverOutput.includes('文档浏览器静态文件已托管') ||
+    serverOutput.includes('文档浏览器 dist/ 未找到');
   console.log(`${staticHandled ? '✅' : '❌'} 启动日志含静态文件处理结果`);
   results.push(staticHandled);
 

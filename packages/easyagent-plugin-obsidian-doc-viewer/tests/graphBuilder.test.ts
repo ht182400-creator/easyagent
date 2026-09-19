@@ -5,8 +5,24 @@ import type { DocNode } from '../src/types';
 describe('graphBuilder', () => {
   it('应根据文档链接构建图谱', () => {
     const docs: DocNode[] = [
-      { id: 'A.md', name: 'A', type: 'file', path: 'A.md', content: '[[B]]', links: ['B.md'], backlinks: [] },
-      { id: 'B.md', name: 'B', type: 'file', path: 'B.md', content: '', links: [], backlinks: ['A.md'] },
+      {
+        id: 'A.md',
+        name: 'A',
+        type: 'file',
+        path: 'A.md',
+        content: '[[B]]',
+        links: ['B.md'],
+        backlinks: [],
+      },
+      {
+        id: 'B.md',
+        name: 'B',
+        type: 'file',
+        path: 'B.md',
+        content: '',
+        links: [],
+        backlinks: ['A.md'],
+      },
     ];
 
     const graph = buildGraphData(docs);

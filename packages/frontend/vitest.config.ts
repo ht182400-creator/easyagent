@@ -1,7 +1,7 @@
 /**
  * Vitest 配置 - Frontend 共享包测试
  * 覆盖 request/config/api/events/mountApp/langGraphStore 等核心模块
- * 
+ *
  * v0.6.22+ 使用 happy-dom 替代 jsdom，解决 pnpm workspace 中 React hooks
  * 模块重复实例问题（jsdom 下 render() 和组件使用不同 React 实例）。
  */

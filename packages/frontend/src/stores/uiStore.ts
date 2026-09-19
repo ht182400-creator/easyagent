@@ -109,7 +109,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   rightPanelVisible: false,
   rightPanelUrl: '',
   rightPanelTitle: '',
-  openRightPanel: (url, title = '') => set({ rightPanelVisible: true, rightPanelUrl: url, rightPanelTitle: title }),
+  openRightPanel: (url, title = '') =>
+    set({ rightPanelVisible: true, rightPanelUrl: url, rightPanelTitle: title }),
   closeRightPanel: () => set({ rightPanelVisible: false }),
   toggleRightPanel: () => set((s) => ({ rightPanelVisible: !s.rightPanelVisible })),
 

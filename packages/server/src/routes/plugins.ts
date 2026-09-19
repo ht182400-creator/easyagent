@@ -497,8 +497,3 @@ export function registerPluginRoutes(app: Express, deps: PluginRoutesDeps): void
     res.json({ success: true, name, enabled });
   });
 }
-
-
-
-
-

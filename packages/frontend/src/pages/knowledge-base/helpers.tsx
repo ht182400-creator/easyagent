@@ -4,7 +4,17 @@
  * @module pages/knowledge-base/helpers
  */
 
-import { Upload, Search, FolderTree, BookOpen, FileText, FileCode, Link, File, Folder } from 'lucide-react';
+import {
+  Upload,
+  Search,
+  FolderTree,
+  BookOpen,
+  FileText,
+  FileCode,
+  Link,
+  File,
+  Folder,
+} from 'lucide-react';
 
 /** 功能卡片 */
 export const FEATURES = [

@@ -5,5 +5,11 @@
  */
 export { LangGraphAgentAdapter } from './agentAdapter';
 export type { TokenUsage, RunOptions, UnifiedAgentEvent, EventListener } from './agentAdapter';
-export { createAgent, getEngineType, isLangGraphAdapter, parseCliEngineArg, resolveEngineSource } from './engineFactory';
+export {
+  createAgent,
+  getEngineType,
+  isLangGraphAdapter,
+  parseCliEngineArg,
+  resolveEngineSource,
+} from './engineFactory';
 export type { EngineType, AgentInstance, CreateAgentOptions, EngineSource } from './engineFactory';

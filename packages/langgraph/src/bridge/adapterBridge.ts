@@ -8,7 +8,12 @@
  *
  * @module bridge/adapterBridge
  */
-import type { BaseAdapter, Message, ChatResponse as CoreChatResponse, ChatOptions as CoreChatOptions } from '@easyagent/core';
+import type {
+  BaseAdapter,
+  Message,
+  ChatResponse as CoreChatResponse,
+  ChatOptions as CoreChatOptions,
+} from '@easyagent/core';
 import type { ThinkNodeConfig } from '../nodes/thinkNode';
 
 /**
@@ -29,7 +34,7 @@ export function createAdapterBridge(adapter: BaseAdapter): ThinkNodeConfig['chat
     // 1. ChatMessage[] → core Message[]
     const coreMessages: Message[] = chatMessages.map((msg) => ({
       role: msg.role,
-      content: msg.content,               // thinkNode 保证始终为 string
+      content: msg.content, // thinkNode 保证始终为 string
       tool_calls: msg.tool_calls?.map((tc) => ({
         id: tc.id,
         type: 'function' as const,
@@ -73,7 +78,10 @@ export function createAdapterBridge(adapter: BaseAdapter): ThinkNodeConfig['chat
       })),
       finishReason: coreResponse.finishReason,
       usage: coreResponse.usage
-        ? { inputTokens: coreResponse.usage.inputTokens, outputTokens: coreResponse.usage.outputTokens }
+        ? {
+            inputTokens: coreResponse.usage.inputTokens,
+            outputTokens: coreResponse.usage.outputTokens,
+          }
         : undefined,
     };
   };

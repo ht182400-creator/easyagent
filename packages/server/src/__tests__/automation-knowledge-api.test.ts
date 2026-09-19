@@ -8,6 +8,21 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import type { Server } from 'node:http';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+// ⚠️ 必须早于 createApp()：把全局知识库重定向到临时目录，否则测试写入用户真实数据
+// ~/.easyagent，并与并行运行的 core 包测试互相污染（2026-09-19 假失败根因）。
+process.env.EASYAGENT_GLOBAL_KB_DIR = mkdtempSync(join(tmpdir(), 'ea-global-kb-'));
+
+// ⚠️ 同理：自动化任务默认落盘到用户真实文件 ~/.easyagent/data/automations.json。
+// 本文件的用例会通过真实 API 建 2 条任务（集成/一次性测试自动化），此前每跑一次回归
+// 就往用户数据里留 2 条、永不清理 —— 累积成「任务列表 100 条」（2026-09-19 实报）。
+process.env.EASYAGENT_AUTOMATIONS_FILE = join(
+  mkdtempSync(join(tmpdir(), 'ea-automations-')),
+  'automations.json',
+);
 
 let app: ReturnType<typeof import('express').default>;
 let server: Server;
@@ -292,20 +307,42 @@ describe('Semantic Analysis', () => {
     expect(typeof res.body).toBe('object');
   });
 
-  // ⚠️ 以下两个用例触发 buildSemanticMap（同步全仓扫描，常态 1~3s）。
-  // 机器繁忙时（vitest 并行 worker / Defender 扫描新构建产物）可能慢 5~10 倍，
-  // 默认 15s 会假失败（2026-09-18 收官复验 b/c 实测），故放宽到 30s。
-  it('GET /api/semantic/map 返回语义地图（需要 path 参数）', async () => {
-    // 不带 path 可能返回错误或空结果
+  // ⚠️ 以下用例触发 buildSemanticMap（全仓同步扫描）——性能已优化：
+  // 实测 300 文件 144ms / 全仓 717 文件 ~0.9s（修复前同一仓库需 11s，见 docs/修复汇总 2026-09-19）。
+  // 仍按**最坏负载**留足余量到 30s（CI 机器更慢、并行 worker 抢占时不会假失败）。
+  it('GET /api/semantic/map 不带 path 时使用服务端默认目录', async () => {
+    // 默认目录由 createApp 的 projectRoot 决定（不再是 process.cwd()）
     const res = await request(app).get('/api/semantic/map');
     expect([200, 400, 500]).toContain(res.status);
+    if (res.status === 200) {
+      expect(typeof res.body.root).toBe('string');
+    }
   }, 30_000);
 
-  it('GET /api/semantic/map 带 path 参数返回地图数据', async () => {
-    const res = await request(app).get('/api/semantic/map').query({ path: 'packages' });
-    expect(res.status).toBe(200);
-    if (res.body.nodes) {
-      expect(Array.isArray(res.body.nodes)).toBe(true);
+  it('GET /api/semantic/map 带 path 参数返回该目录的地图数据', async () => {
+    // 用临时目录构造确定性样本（不依赖仓库布局）：显式 path 不向上扩展到仓库根
+    const dir = mkdtempSync(join(tmpdir(), 'ea-semantic-'));
+    writeFileSync(
+      join(dir, 'sample.ts'),
+      'export function alpha() { return 1; }\nclass Beta {}\n',
+      'utf-8',
+    );
+    try {
+      const res = await request(app).get('/api/semantic/map').query({ path: dir });
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.stats.totalFiles).toBeGreaterThan(0);
+      expect(res.body.stats.totalLines).toBeGreaterThan(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
     }
+  }, 30_000);
+
+  it('GET /api/semantic/map path 不存在时返回 400（而非静默返回 0 文件）', async () => {
+    const res = await request(app)
+      .get('/api/semantic/map')
+      .query({ path: join(tmpdir(), '__easyagent_not_exist_dir__') });
+    expect(res.status).toBe(400);
+    expect(String(res.body.error)).toContain('不存在');
   }, 30_000);
 });

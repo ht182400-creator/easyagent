@@ -202,7 +202,9 @@ export function setupWebSocket(deps: WebSocketSetupDeps): {
                 }
 
                 case 'tool_result': {
-                  const toolResultData = event.data as { toolCallId?: string; name?: string; output?: string } | undefined;
+                  const toolResultData = event.data as
+                    | { toolCallId?: string; name?: string; output?: string }
+                    | undefined;
                   safeSend(ws, {
                     type: 'tool_result',
                     toolCallId: toolResultData?.toolCallId,
@@ -410,7 +412,6 @@ export function setupWebSocket(deps: WebSocketSetupDeps): {
       wsAbortControllers.delete(ws);
     });
   });
-
 
   return { server, wss };
 }

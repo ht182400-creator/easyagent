@@ -20,7 +20,7 @@ import { logger } from '@easyagent/core';
 /** GitHub 仓库搜索结果 */
 export interface GitHubRepo {
   id: number;
-  full_name: string;          // owner/repo
+  full_name: string; // owner/repo
   name: string;
   description: string | null;
   html_url: string;
@@ -55,7 +55,7 @@ export interface GitHubReleaseAsset {
 
 /** GitHub README 响应 */
 export interface GitHubReadme {
-  content: string;   // Base64 编码
+  content: string; // Base64 编码
   encoding: string;
   html_url: string;
 }
@@ -130,7 +130,10 @@ export class GitHubClient {
    * @param skipCache - 是否跳过内存缓存
    * @returns Release 信息，无 Release 时返回 null
    */
-  async getLatestRelease(fullName: string, skipCache: boolean = false): Promise<GitHubRelease | null> {
+  async getLatestRelease(
+    fullName: string,
+    skipCache: boolean = false,
+  ): Promise<GitHubRelease | null> {
     const cacheKey = `release:${fullName}`;
 
     if (!skipCache) {
@@ -248,7 +251,10 @@ export class GitHubClient {
    * @param skipCache - 是否跳过内存缓存
    * @returns manifest 对象，失败返回 null
    */
-  async getManifest(fullName: string, skipCache: boolean = false): Promise<Record<string, unknown> | null> {
+  async getManifest(
+    fullName: string,
+    skipCache: boolean = false,
+  ): Promise<Record<string, unknown> | null> {
     const cacheKey = `manifest:${fullName}`;
 
     if (!skipCache) {

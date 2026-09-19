@@ -1,7 +1,7 @@
 /**
  * FlowZoomModal 组件测试 — Phase C/D
  * 覆盖: 缩放计算逻辑 + ESC 事件处理 + React 组件渲染
- * 
+ *
  * happy-dom 环境下 React hooks 正常工作，支持完整 DOM 渲染测试。
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -26,7 +26,7 @@ function makeScenario(overrides: Partial<Scenario> = {}): Scenario {
   };
 }
 
-/** 
+/**
  * 模拟缩放计算逻辑
  * 浏览器滚轮: deltaY<0 表示向上滚动→放大, deltaY>0 向下滚动→缩小
  */
@@ -123,9 +123,7 @@ describe('FlowZoomModal — 组件渲染', () => {
   it('scenario 非空时渲染弹窗（用例1）', () => {
     const scenario = makeScenario();
     const onClose = vi.fn();
-    const { container } = render(
-      <FlowZoomModal scenario={scenario} onClose={onClose} />
-    );
+    const { container } = render(<FlowZoomModal scenario={scenario} onClose={onClose} />);
     // 弹窗标题显示 "#1 测试场景"（含编号前缀）
     expect(screen.getByText(/#1 测试场景/)).toBeTruthy();
     expect(screen.getByText(scenario.flowDesc)).toBeTruthy();
@@ -136,9 +134,7 @@ describe('FlowZoomModal — 组件渲染', () => {
 
   it('显示操作提示信息（用例补充）', () => {
     const scenario = makeScenario();
-    const { container } = render(
-      <FlowZoomModal scenario={scenario} onClose={vi.fn()} />
-    );
+    const { container } = render(<FlowZoomModal scenario={scenario} onClose={vi.fn()} />);
     // 显示缩放百分比
     expect(screen.getByText(/100%/)).toBeTruthy();
     // 提示滚动缩放
@@ -146,9 +142,7 @@ describe('FlowZoomModal — 组件渲染', () => {
   });
 
   it('scenario 为 null 时不渲染弹窗（用例2）', () => {
-    const { container } = render(
-      <FlowZoomModal scenario={null} onClose={vi.fn()} />
-    );
+    const { container } = render(<FlowZoomModal scenario={null} onClose={vi.fn()} />);
     // null 场景时没有弹窗主体内容
     const svg = container.querySelector('svg');
     expect(svg).toBeNull();

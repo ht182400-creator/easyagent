@@ -93,8 +93,13 @@ export class AutomationManager extends EventEmitter {
 
   constructor(options: AutomationManagerOptions = {}) {
     super();
+    // ⚠️ 允许用 EASYAGENT_AUTOMATIONS_FILE 覆盖存储路径（**测试隔离用**）
+    // 默认路径是用户的真实数据文件，测试若不覆盖会直接往里写任务，且每跑一次回归就多一条、
+    // 永不清理（2026-09-19 用户实报「任务列表 100 条」，即 50 次回累积的 2 条测试任务）
     this.storagePath =
-      options.storagePath || join(homedir(), '.easyagent', 'data', 'automations.json');
+      options.storagePath ||
+      process.env.EASYAGENT_AUTOMATIONS_FILE ||
+      join(homedir(), '.easyagent', 'data', 'automations.json');
     this.checkIntervalMs = options.checkIntervalMs || 30000;
 
     // 默认执行器: 仅记录日志

@@ -13,11 +13,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { PROVIDER_PRESETS } from '../config/ProviderPresets.js';
-import {
-  AdapterFactory,
-  OpenAICompatibleAdapter,
-  AnthropicAdapter,
-} from '../adapters/index.js';
+import { AdapterFactory, OpenAICompatibleAdapter, AnthropicAdapter } from '../adapters/index.js';
 import type { ProviderConfig } from '../types/index.js';
 
 // ===================== 预设完整性 =====================

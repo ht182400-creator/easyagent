@@ -9,7 +9,15 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { BaseAdapter, ToolRegistry, AdapterFactory } from '@easyagent/core';
-import type { Message, ChatResponse, ChatOptions, ProviderConfig, ToolResult, ToolContext, ITool } from '@easyagent/core';
+import type {
+  Message,
+  ChatResponse,
+  ChatOptions,
+  ProviderConfig,
+  ToolResult,
+  ToolContext,
+  ITool,
+} from '@easyagent/core';
 import { createAdapterBridge } from '../src/bridge/adapterBridge';
 import { createToolBridge } from '../src/bridge/toolBridge';
 import { createLangGraphAgent } from '../src/bridge/AgentFactory';
@@ -25,7 +33,7 @@ class MockAdapter extends BaseAdapter {
 
   constructor(
     mockChatFn: (messages: Message[], options?: ChatOptions) => Promise<ChatResponse>,
-    config?: ProviderConfig
+    config?: ProviderConfig,
   ) {
     const defaultConfig: ProviderConfig = {
       id: 'deepseek',
@@ -33,7 +41,16 @@ class MockAdapter extends BaseAdapter {
       baseURL: 'http://localhost:9999',
       apiKey: 'test-key',
       apiFormat: 'openai',
-      models: [{ id: 'mock-model', name: 'Mock Model', maxContextTokens: 8192, maxOutputTokens: 4096, supportsTools: true, supportsVision: false }],
+      models: [
+        {
+          id: 'mock-model',
+          name: 'Mock Model',
+          maxContextTokens: 8192,
+          maxOutputTokens: 4096,
+          supportsTools: true,
+          supportsVision: false,
+        },
+      ],
       defaultModel: 'mock-model',
     };
     super(config || defaultConfig, 'mock-model');
@@ -44,7 +61,10 @@ class MockAdapter extends BaseAdapter {
     return this.mockChat(messages, options);
   }
 
-  async *chatStream(_messages: Message[], _options?: ChatOptions): AsyncGenerator<{ delta?: string; finishReason?: string }> {
+  async *chatStream(
+    _messages: Message[],
+    _options?: ChatOptions,
+  ): AsyncGenerator<{ delta?: string; finishReason?: string }> {
     yield { delta: 'mock stream', finishReason: 'stop' };
   }
 
@@ -89,23 +109,25 @@ function createMockRegistry(): ToolRegistry {
 
 describe('createAdapterBridge', () => {
   it('应该将 BaseAdapter.chat 包装为 thinkNode chat 回调', async () => {
-    const mockFn = vi.fn(async (msgs: Message[]): Promise<ChatResponse> => ({
-      id: 'resp-1',
-      model: 'mock-model',
-      content: '你好，世界',
-      toolCalls: undefined,
-      finishReason: 'stop',
-      usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
-    }));
+    const mockFn = vi.fn(
+      async (msgs: Message[]): Promise<ChatResponse> => ({
+        id: 'resp-1',
+        model: 'mock-model',
+        content: '你好，世界',
+        toolCalls: undefined,
+        finishReason: 'stop',
+        usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
+      }),
+    );
 
     const adapter = new MockAdapter(mockFn);
     const bridge = createAdapterBridge(adapter);
 
     // 调用 bridge（模拟 thinkNode 传入的 ChatMessage 格式）
-    const result = await bridge(
-      [{ role: 'user', content: '你好' }],
-      { tools: [], signal: undefined }
-    );
+    const result = await bridge([{ role: 'user', content: '你好' }], {
+      tools: [],
+      signal: undefined,
+    });
 
     // 验证类型转换正确
     expect(result.content).toBe('你好，世界');
@@ -120,24 +142,29 @@ describe('createAdapterBridge', () => {
   });
 
   it('应该正确传递 toolCalls', async () => {
-    const mockFn = vi.fn(async (): Promise<ChatResponse> => ({
-      id: 'resp-2',
-      model: 'mock-model',
-      content: '',
-      toolCalls: [{
-        id: 'call_1',
-        type: 'function',
-        function: { name: 'echo', arguments: JSON.stringify({ message: 'test' }) },
-      }],
-      finishReason: 'tool_calls',
-    }));
+    const mockFn = vi.fn(
+      async (): Promise<ChatResponse> => ({
+        id: 'resp-2',
+        model: 'mock-model',
+        content: '',
+        toolCalls: [
+          {
+            id: 'call_1',
+            type: 'function',
+            function: { name: 'echo', arguments: JSON.stringify({ message: 'test' }) },
+          },
+        ],
+        finishReason: 'tool_calls',
+      }),
+    );
 
     const adapter = new MockAdapter(mockFn);
     const bridge = createAdapterBridge(adapter);
-    const result = await bridge(
-      [{ role: 'user', content: '回显 test' }],
-      { tools: [{ name: 'echo', description: '回显', parameters: { type: 'object', properties: {} } }] }
-    );
+    const result = await bridge([{ role: 'user', content: '回显 test' }], {
+      tools: [
+        { name: 'echo', description: '回显', parameters: { type: 'object', properties: {} } },
+      ],
+    });
 
     expect(result.toolCalls).toBeDefined();
     expect(result.toolCalls![0].function.name).toBe('echo');
@@ -217,11 +244,13 @@ describe('createLangGraphAgent', () => {
           id: 'resp-tool-1',
           model: 'mock-model',
           content: '',
-          toolCalls: [{
-            id: 'call_echo',
-            type: 'function',
-            function: { name: 'echo', arguments: JSON.stringify({ message: '桥梁测试' }) },
-          }],
+          toolCalls: [
+            {
+              id: 'call_echo',
+              type: 'function',
+              function: { name: 'echo', arguments: JSON.stringify({ message: '桥梁测试' }) },
+            },
+          ],
           finishReason: 'tool_calls',
         };
       }
@@ -275,10 +304,19 @@ describe('createLangGraphAgent', () => {
         baseURL: 'http://localhost:99999/nonexistent',
         apiKey: 'test-key',
         apiFormat: 'openai',
-        models: [{ id: 'test', name: 'Test', maxContextTokens: 4096, maxOutputTokens: 1024, supportsTools: false, supportsVision: false }],
+        models: [
+          {
+            id: 'test',
+            name: 'Test',
+            maxContextTokens: 4096,
+            maxOutputTokens: 1024,
+            supportsTools: false,
+            supportsVision: false,
+          },
+        ],
       },
       registry,
-      { model: 'test', maxTurns: 1 }
+      { model: 'test', maxTurns: 1 },
     );
 
     expect(agent).toBeInstanceOf(LangGraphAgent);
@@ -321,18 +359,33 @@ describe('端到端集成', () => {
 
     const responses = [
       {
-        id: 'e2e-tool-1', model: 'mock', content: '',
-        toolCalls: [{ id: 'c1', type: 'function' as const, function: { name: 'echo', arguments: JSON.stringify({ message: 'E2E测试' }) } }],
+        id: 'e2e-tool-1',
+        model: 'mock',
+        content: '',
+        toolCalls: [
+          {
+            id: 'c1',
+            type: 'function' as const,
+            function: { name: 'echo', arguments: JSON.stringify({ message: 'E2E测试' }) },
+          },
+        ],
         finishReason: 'tool_calls' as const,
       },
       {
-        id: 'e2e-tool-2', model: 'mock', content: 'Echo 返回: Echo: E2E测试',
+        id: 'e2e-tool-2',
+        model: 'mock',
+        content: 'Echo 返回: Echo: E2E测试',
         finishReason: 'stop' as const,
       },
     ];
     let idx = 0;
     const mockChatFn = async (): Promise<ChatResponse> => {
-      const r = responses[idx++] || { id: 'default', model: 'mock', content: '', finishReason: 'stop' as const };
+      const r = responses[idx++] || {
+        id: 'default',
+        model: 'mock',
+        content: '',
+        finishReason: 'stop' as const,
+      };
       return r;
     };
 

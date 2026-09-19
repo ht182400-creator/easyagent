@@ -100,7 +100,9 @@ export default function ChatPage() {
           setEngineType(data.engineType);
         }
       })
-      .catch(() => { /* 静默失败，保持 null */ });
+      .catch(() => {
+        /* 静默失败，保持 null */
+      });
   }, []);
 
   // 初始化：连接WebSocket + 加载提供商（历史会话不连WebSocket）
@@ -193,7 +195,11 @@ export default function ChatPage() {
                     ? 'text-[#00e5ff] border-[#00e5ff]/30 bg-[rgba(0,229,255,0.05)]'
                     : 'text-[#4a5568] border-[#1a2530] bg-[#111922]'
                 }`}
-                title={engineType === 'langgraph' ? '当前使用 LangGraph 引擎' : '当前使用 Legacy AgentEngine'}
+                title={
+                  engineType === 'langgraph'
+                    ? '当前使用 LangGraph 引擎'
+                    : '当前使用 Legacy AgentEngine'
+                }
               >
                 <Cpu className="w-3 h-3" />
                 {engineType === 'langgraph' ? 'LangGraph' : 'Legacy'}

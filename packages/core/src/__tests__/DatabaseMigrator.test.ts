@@ -45,7 +45,9 @@ afterAll(() => {
 });
 
 /** 在临时目录下新建一个独立的真实 SQLite 库 */
-function openTestDb(fileName = `db_${Math.random().toString(36).slice(2)}.db`): DatabaseType.Database {
+function openTestDb(
+  fileName = `db_${Math.random().toString(36).slice(2)}.db`,
+): DatabaseType.Database {
   return new Database(join(testDir, fileName));
 }
 
@@ -190,12 +192,17 @@ describe('DatabaseMigrator.migrate — 存量旧库升级（数据保留）', ()
     const db = createLegacyDb();
     expect(getUserVersion(db)).toBe(0);
 
-    const result = new DatabaseMigrator(db, { name: 'sessions', migrations: SESSION_MIGRATIONS }).migrate();
+    const result = new DatabaseMigrator(db, {
+      name: 'sessions',
+      migrations: SESSION_MIGRATIONS,
+    }).migrate();
     expect(result.from).toBe(0);
     expect(result.to).toBe(2);
 
     // v1 基线幂等：表没有被重建（数据还在）
-    const row = db.prepare('SELECT id, title FROM sessions WHERE id = ?').get('legacy_session_1') as {
+    const row = db
+      .prepare('SELECT id, title FROM sessions WHERE id = ?')
+      .get('legacy_session_1') as {
       id: string;
       title: string;
     };
@@ -269,7 +276,13 @@ describe('DatabaseMigrator.migrate — 异常场景', () => {
     const db = openTestDb();
     const bad: Migration[] = [
       { version: 1, description: 'v1', up: (d) => d.exec('CREATE TABLE t (a TEXT)') },
-      { version: 2, description: 'v2 炸', up: () => { throw new Error('x'); } },
+      {
+        version: 2,
+        description: 'v2 炸',
+        up: () => {
+          throw new Error('x');
+        },
+      },
     ];
     try {
       new DatabaseMigrator(db, { name: 'resume', migrations: bad }).migrate();
@@ -279,7 +292,7 @@ describe('DatabaseMigrator.migrate — 异常场景', () => {
 
     // 修复后的清单：v1 保持不变（不能重跑），v2 正常
     const fixed: Migration[] = [
-      { version: 1, description: 'v1', up: (d) => d.exec("CREATE TABLE IF NOT EXISTS t (a TEXT)") },
+      { version: 1, description: 'v1', up: (d) => d.exec('CREATE TABLE IF NOT EXISTS t (a TEXT)') },
       { version: 2, description: 'v2', up: (d) => d.exec('ALTER TABLE t ADD COLUMN b TEXT') },
     ];
     const result = new DatabaseMigrator(db, { name: 'resume', migrations: fixed }).migrate();
@@ -317,7 +330,8 @@ describe('DatabaseMigrator.migrate — 异常场景', () => {
 });
 
 describe('DatabaseMigrator 构造校验（非法清单）', () => {
-  const make = (versions: number[]) => versions.map((v) => ({ version: v, description: `v${v}`, up: () => {} }));
+  const make = (versions: number[]) =>
+    versions.map((v) => ({ version: v, description: `v${v}`, up: () => {} }));
 
   it('版本号含 0 / 负数 / 非整数应拒绝', () => {
     const db = openTestDb();
@@ -328,20 +342,26 @@ describe('DatabaseMigrator 构造校验（非法清单）', () => {
 
   it('版本号重复应拒绝', () => {
     const db = openTestDb();
-    expect(() => new DatabaseMigrator(db, { name: 'x', migrations: make([1, 1]) })).toThrow('严格递增');
+    expect(() => new DatabaseMigrator(db, { name: 'x', migrations: make([1, 1]) })).toThrow(
+      '严格递增',
+    );
     db.close();
   });
 
   it('版本号降序应拒绝', () => {
     const db = openTestDb();
-    expect(() => new DatabaseMigrator(db, { name: 'x', migrations: make([2, 1]) })).toThrow('严格递增');
+    expect(() => new DatabaseMigrator(db, { name: 'x', migrations: make([2, 1]) })).toThrow(
+      '严格递增',
+    );
     db.close();
   });
 
   it('latestVersion：空清单为 0，正常为最后一项', () => {
     const db = openTestDb();
     expect(new DatabaseMigrator(db, { name: 'x', migrations: [] }).latestVersion).toBe(0);
-    expect(new DatabaseMigrator(db, { name: 'x', migrations: make([1, 3, 5]) }).latestVersion).toBe(5);
+    expect(new DatabaseMigrator(db, { name: 'x', migrations: make([1, 3, 5]) }).latestVersion).toBe(
+      5,
+    );
     db.close();
   });
 });

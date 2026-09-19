@@ -158,7 +158,9 @@ describe('renderMarkdown — 安全（🛡️ 回归）', () => {
   });
 
   it('🛡️ data: URI 链接必须被拒绝', () => {
-    const html = renderMarkdown('[点我](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)');
+    const html = renderMarkdown(
+      '[点我](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)',
+    );
     expect(html.toLowerCase()).not.toContain('href="data:');
   });
 

@@ -74,6 +74,51 @@ export interface AutomationProgressEvent extends AutomationProgressLog {
   taskName: string;
 }
 
+/** 自动化执行步骤的事件类型（后端广播时**直接放在 msg.type 上**） */
+const AUTOMATION_STEP_TYPES = [
+  'agent_start',
+  'agent_turn',
+  'tool_call',
+  'tool_result',
+  'agent_done',
+  'agent_error',
+] as const;
+
+/**
+ * 归一化后端进度消息 → 步骤类型（不是步骤消息则返回 null）
+ *
+ * ⚠️ 后端 `broadcastAutomationProgress` 的载荷写法是 `{ type: 'automation_progress', ...event }`，
+ * 而 event 自带 `type: 'agent_start' / 'tool_call' / …` —— 展开顺序导致**信封类型被步骤类型覆盖**，
+ * 真正到达前端的是 `{ type: 'agent_start', … }`。
+ * 前端此前只匹配 `'automation_progress'`，于是实时日志**永远为空**，
+ * 用户只看到「执行中」却不知在干什么（2026-09-19 实报）。
+ *
+ * 这里两种形态都兼容：带 `step` 字段的信封（推荐形态）与现状（步骤类型直接作 `type`）。
+ */
+export function normalizeAutomationStep(msg: {
+  type?: string;
+  step?: string;
+}): AutomationProgressLog['type'] | null {
+  const candidate = (msg.step || msg.type) as AutomationProgressLog['type'];
+  return (AUTOMATION_STEP_TYPES as readonly string[]).includes(candidate) ? candidate : null;
+}
+
+/**
+ * Agent 提问（人在环路）
+ *
+ * 自动化任务无人值守时，Agent 调用 ask_user 会**停下来等用户回答**；
+ * 服务端把问题推送到这里，用户回答后 Agent 继续执行（超时则由 Agent 自行判断）。
+ */
+export interface AgentQuestion {
+  id: string;
+  question: string;
+  options?: string[];
+  title?: string;
+  multiSelect?: boolean;
+  createdAt: number;
+  expiresAt: number;
+}
+
 interface AutomationState {
   /** 任务列表 */
   tasks: AutomationTask[];
@@ -87,6 +132,8 @@ interface AutomationState {
   lastRun: AutomationRun | null;
   /** 任务实时进度日志: taskId → 日志列表 */
   progressLogs: Map<string, AutomationProgressLog[]>;
+  /** 待回答的 Agent 提问（人在环路） */
+  questions: AgentQuestion[];
 
   // Actions
   fetchTasks: () => Promise<void>;
@@ -101,6 +148,12 @@ interface AutomationState {
   addProgressLog: (taskId: string, log: AutomationProgressLog) => void;
   /** 清除任务进度日志 */
   clearProgressLogs: (taskId: string) => void;
+  /** 记录一条 Agent 提问（去重） */
+  addQuestion: (question: AgentQuestion) => void;
+  /** 拉取当前待回答的提问（页面刷新后恢复） */
+  fetchQuestions: () => Promise<void>;
+  /** 回答 Agent 提问（Agent 会带着回答继续执行） */
+  answerQuestion: (questionId: string, answer: string) => Promise<void>;
 }
 
 /**
@@ -114,6 +167,7 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
   running: new Set(),
   lastRun: null,
   progressLogs: new Map(),
+  questions: [],
 
   fetchTasks: async () => {
     set({ loading: true });
@@ -302,6 +356,43 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
     });
   },
 
+  addQuestion: (question) => {
+    set((s) =>
+      s.questions.some((q) => q.id === question.id) ? s : { questions: [...s.questions, question] },
+    );
+  },
+
+  fetchQuestions: async () => {
+    try {
+      const data = await apiRequest<AgentQuestion[]>('/api/agent/questions');
+      set({ questions: Array.isArray(data) ? data : [] });
+    } catch (err) {
+      /* 拉取失败不打扰用户（后端旧版本可能没有该接口） */
+    }
+  },
+
+  answerQuestion: async (questionId, answer) => {
+    // 乐观移除：避免重复点击；失败时重新拉取把问题放回来
+    set((s) => ({ questions: s.questions.filter((q) => q.id !== questionId) }));
+    try {
+      await apiRequest('/api/agent/answer', {
+        method: 'POST',
+        body: JSON.stringify({ questionId, answer }),
+      });
+      useAppStore.getState().addNotification({
+        type: 'success',
+        message: '已回复 Agent，任务将继续执行',
+        duration: 2000,
+      });
+    } catch (err) {
+      useAppStore.getState().addNotification({
+        type: 'error',
+        message: `回复失败: ${(err as Error).message}`,
+      });
+      get().fetchQuestions();
+    }
+  },
+
   /** 添加任务实时进度日志（最多保留 100 条） */
   addProgressLog: (taskId, log) => {
     set((s) => {
@@ -347,10 +438,14 @@ export const SCHEDULE_PRESETS = [
  * 处理自动化进度事件
  */
 function handleAutomationProgress(data: AutomationProgressEvent) {
+  // 兼容「信封类型」与「步骤类型直接作 type」两种形态，见 normalizeAutomationStep 注释
+  const step = normalizeAutomationStep(data);
+  if (!step) return;
+
   const store = useAutomationStore.getState();
   store.addProgressLog(data.taskId, {
     timestamp: data.timestamp || Date.now(),
-    type: data.type,
+    type: step,
     message: data.message,
     detail: data.detail,
   });
@@ -466,6 +561,10 @@ function setDirectly(partial: Partial<ReturnType<typeof useAutomationStore.getSt
 // 注册 WebSocket 事件监听器
 on('automation_progress', (payload) => {
   handleAutomationProgress(payload as AutomationProgressEvent);
+});
+// 人在环路：Agent 提问（引擎无关，来自服务端 QuestionBroker）
+on('agent_question', (payload) => {
+  useAutomationStore.getState().addQuestion(payload as AgentQuestion);
 });
 on('automation_completed', (payload) => {
   handleAutomationCompleted(

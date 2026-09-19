@@ -4,11 +4,7 @@
  */
 import express from 'express';
 import { WebSocket } from 'ws';
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
@@ -53,6 +49,9 @@ import {
   initModelRegistryBackground,
 } from './bootstrap.js';
 import { applySecurityMiddleware } from './middleware/securityStack.js';
+
+// ========== 人在环路（HITL）==========
+import { QuestionBroker, createInteractiveAskUserTool } from './hitl.js';
 
 // ========== 路由模块（P1-1 拆分产物）==========
 // 每个 register* 负责一组路由的注册；依赖通过显式对象注入，不依赖闭包。
@@ -140,7 +139,10 @@ export async function createApp(options: CreateAppOptions = {}) {
    * @param providerConfig - 模型提供商配置
    * @param opts - 额外选项
    */
-  const newAgent = (providerConfig: Parameters<typeof createAgent>[0], opts: Parameters<typeof createAgent>[3] = {}) =>
+  const newAgent = (
+    providerConfig: Parameters<typeof createAgent>[0],
+    opts: Parameters<typeof createAgent>[3] = {},
+  ) =>
     createAgent(providerConfig, toolRegistry, sessionManager, {
       ...opts,
       engine: currentEngine,
@@ -206,7 +208,15 @@ export async function createApp(options: CreateAppOptions = {}) {
     safeSend,
     broadcastAutomationProgress,
     broadcastLangGraphNode,
+    broadcastAgentQuestion,
   } = createWsHub();
+
+  // ── 人在环路（HITL）──
+  // 用「可交互版」覆盖内置 ask_user：ToolRegistry.register() 是**按名覆盖**，
+  // 因此两个引擎（core AgentEngine / LangGraph）都会走这个版本，无需改 Agent 内核。
+  // 自动化任务无人值守时，提问会推送界面等待回答；超时则让 Agent 自行判断继续。
+  const questionBroker = new QuestionBroker({ broadcast: broadcastAgentQuestion });
+  toolRegistry.register(createInteractiveAskUserTool(questionBroker));
 
   const automationManager = createAutomationSystem({
     config,
@@ -247,7 +257,6 @@ export async function createApp(options: CreateAppOptions = {}) {
   // WebSocket 订阅集合 / safeSend / 广播函数已由上方 createWsHub() 创建（见 bootstrap.ts）；
   // system 路由（open-panel）、automation 执行器、langgraph 路由与 WebSocket 段共享同一实例。
 
-
   /** 健康检查 */
   // 【P1-1 拆分】系统(5) + Token 用量(1) + 北极星(3) 共 9 条路由已迁至 routes/system.ts。
   // ⚠️ APP_VERSION 解析块保留在本文件（入口段也要用），以 deps.appVersion 注入；
@@ -268,7 +277,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   // ⚠️ config 是 configManager.load() 的同一引用（模板与 allowed-commands 的兜底读取它）。
   registerConfigRoutes(app, { configManager, config, modelRegistry });
 
-  // ========== 会话API ========== 
+  // ========== 会话API ==========
   // 【P1-1 拆分】会话(5) + 同步聊天(1) 已迁至 routes/sessions.ts。
   registerSessionRoutes(app, { sessionManager, configManager, config, newAgent });
 
@@ -310,7 +319,13 @@ export async function createApp(options: CreateAppOptions = {}) {
   // ⚠️ marketService 是全局单例：WebSocket 段（下方）也持同一实例广播安装进度；
   //    两个「安装后自动 load / 卸载时自动 unload」回调在模块内注册，不可遗漏。
   const marketService = getPluginMarketService(pluginsDir);
-  registerPluginRoutes(app, { pluginManager, toolRegistry, configManager, pluginsDir, marketService });
+  registerPluginRoutes(app, {
+    pluginManager,
+    toolRegistry,
+    configManager,
+    pluginsDir,
+    marketService,
+  });
 
   // ========== IM 适配器管理 API ==========
   // 【P1-1 拆分】7 条路由的实现已迁至 routes/im.ts，此处仅做注册。
@@ -343,7 +358,7 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   // ========== 自动化任务 API ==========
   // 【P1-1 拆分】8 条路由的实现已迁至 routes/automations.ts，此处仅做注册。
-  registerAutomationRoutes(app, { automationManager });
+  registerAutomationRoutes(app, { automationManager, questionBroker });
 
   // ========== 静态文件服务 (Web Dashboard + 文档浏览器) ==========
   // 【P1-1 拆分】实现已迁至 routes/staticFiles.ts。
@@ -359,8 +374,6 @@ export async function createApp(options: CreateAppOptions = {}) {
   //    注册的路由抛出的错误。/api/* 统一返回 { success:false, error:{ code, message } }，
   //    错误堆栈只进日志不进响应体。详见 middleware/errorHandler.ts。
   app.use(errorHandler);
-
-
 
   // （文档浏览器与 Web Dashboard 静态文件已在 registerStaticRoutes 中注册）
 

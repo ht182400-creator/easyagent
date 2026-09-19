@@ -266,7 +266,7 @@ function Setup-DeepSeek {
     Write-Host "  • deepseek-r1-0528  - 推理增强"
     Write-Host ""
     Write-Host "启动命令行: easyagent-cli"
-    Write-Host "启动 Web UI: easyagent-server → http://localhost:3000"
+    Write-Host "启动 Web UI: easyagent-server → http://localhost:3456"
     Write-Host ""
 }
 
@@ -333,7 +333,7 @@ try {
     Write-Host ""
     Write-Host "快速开始:"
     Write-Host "  easyagent-cli             启动命令行"
-    Write-Host "  easyagent-server          启动 Web UI (http://localhost:3000)"
+    Write-Host "  easyagent-server          启动 Web UI (http://localhost:3456)"
     Write-Host "  easyagent-desktop         启动桌面应用"
     Write-Host ""
     Write-Host "配置模型:"

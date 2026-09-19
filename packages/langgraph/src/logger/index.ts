@@ -15,9 +15,5 @@ export {
 export type { LogEntry, LoggerConfig } from './Logger';
 
 // 配置加载器（推荐方式）
-export {
-  loadLogConfig,
-  setupLogConfig,
-  saveDefaultConfig,
-} from './LogConfig';
+export { loadLogConfig, setupLogConfig, saveDefaultConfig } from './LogConfig';
 export type { LogConfigFile, LangGraphConfig } from './LogConfig';

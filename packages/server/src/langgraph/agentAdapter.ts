@@ -70,7 +70,9 @@ function mapLangGraphToAgentEngineEvent(lgEvent: LGAgentEvent): UnifiedAgentEven
     }
 
     case 'tool_call': {
-      const data = lgEvent.data as { toolCallId?: string; name?: string; input?: unknown } | undefined;
+      const data = lgEvent.data as
+        | { toolCallId?: string; name?: string; input?: unknown }
+        | undefined;
       return {
         // 映射为 AgentEngine 兼容事件类型
         type: 'tool_start',
@@ -86,11 +88,13 @@ function mapLangGraphToAgentEngineEvent(lgEvent: LGAgentEvent): UnifiedAgentEven
     }
 
     case 'tool_result': {
-      const data = lgEvent.data as {
-        toolCallId?: string;
-        name?: string;
-        output?: { success?: boolean; content?: string; error?: string };
-      } | undefined;
+      const data = lgEvent.data as
+        | {
+            toolCallId?: string;
+            name?: string;
+            output?: { success?: boolean; content?: string; error?: string };
+          }
+        | undefined;
       return {
         // 映射为 AgentEngine 兼容事件类型
         type: 'tool_end',
@@ -285,7 +289,7 @@ export class LangGraphAgentAdapter {
   listSessions(): Array<{ threadId: string; turnCount: number; updatedAt: string }> {
     const threads = this.agent.listSessions();
     return threads.map((t: Record<string, unknown>) => ({
-      threadId: t.thread_id as string || String(t.threadId || ''),
+      threadId: (t.thread_id as string) || String(t.threadId || ''),
       turnCount: (t.turnCount as number) || 0,
       updatedAt: (t.updated_at as string) || new Date().toISOString(),
     }));

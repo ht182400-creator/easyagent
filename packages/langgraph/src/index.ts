@@ -1,16 +1,10 @@
 /**
  * @easyagent/langgraph — LangGraph 工作流引擎
- * 
+ *
  * 公开 API 导出
  */
 export { LangGraphAgent } from './Agent';
-export type {
-  AgentResult,
-  AgentEvent,
-  AgentEventListener,
-  RunOptions,
-  AgentConfig,
-} from './Agent';
+export type { AgentResult, AgentEvent, AgentEventListener, RunOptions, AgentConfig } from './Agent';
 
 export { createAgentGraph } from './graph/agentGraph';
 export type { AgentGraphConfig } from './graph/agentGraph';

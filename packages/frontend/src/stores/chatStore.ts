@@ -512,7 +512,8 @@ function handleWSMessage(sessionId: string, data: Record<string, unknown>) {
     case 'automation_progress':
     case 'automation_completed':
     case 'automation_failed':
-    case 'automation_stopped': {
+    case 'automation_stopped':
+    case 'agent_question': {
       // 转发自动化事件到共享事件总线，供 automationStore 消费
       emit(data.type as string, data);
       break;

@@ -8,6 +8,7 @@
 
 import type { Express } from 'express';
 import type { AutomationManager } from '@easyagent/core';
+import type { QuestionBroker } from '../hitl.js';
 
 // ===================== 依赖声明 =====================
 
@@ -15,6 +16,8 @@ import type { AutomationManager } from '@easyagent/core';
 export interface AutomationRoutesDeps {
   /** 自动化任务管理器（已在 createApp 中初始化并设置执行器） */
   automationManager: AutomationManager;
+  /** 人在环路提问代理（Agent 提问 → 用户回答） */
+  questionBroker: QuestionBroker;
 }
 
 // ===================== 路由注册 =====================
@@ -26,7 +29,32 @@ export interface AutomationRoutesDeps {
  * @param deps - 依赖（见 {@link AutomationRoutesDeps}）
  */
 export function registerAutomationRoutes(app: Express, deps: AutomationRoutesDeps): void {
-  const { automationManager } = deps;
+  const { automationManager, questionBroker } = deps;
+
+  // ========== 人在环路（HITL）：Agent 提问与回答 ==========
+
+  /** 当前待回答的 Agent 提问（页面刷新后可恢复显示） */
+  app.get('/api/agent/questions', (_req, res) => {
+    res.json(questionBroker.list());
+  });
+
+  /** 提交用户回答（Agent 会带着这个回答继续执行） */
+  app.post('/api/agent/answer', (req, res) => {
+    try {
+      const { questionId, answer } = req.body as { questionId?: string; answer?: string };
+      if (!questionId || typeof answer !== 'string') {
+        return res.status(400).json({ error: '缺少 questionId 或 answer' });
+      }
+      const ok = questionBroker.answer(questionId, answer);
+      if (!ok) {
+        // 已超时 / 已回答 / 不存在 —— 对用户来说是"这个问题不需要再答了"
+        return res.status(404).json({ success: false, error: '该问题已过期或已回答' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
 
   // ========== 自动化任务 API ==========
 
@@ -140,7 +168,9 @@ export function registerAutomationRoutes(app: Express, deps: AutomationRoutesDep
   app.post('/api/automations/:id/stop', (req, res) => {
     try {
       const stopped = automationManager.stopTask(req.params.id);
-      res.json({ success: true, stopped });
+      // 释放等待中的提问：否则工具调用会一直挂着（HITL 的 Promise 永不落地）
+      const cancelled = questionBroker.cancelAll('任务已停止');
+      res.json({ success: true, stopped, cancelledQuestions: cancelled });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }

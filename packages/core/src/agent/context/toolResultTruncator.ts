@@ -68,7 +68,9 @@ function persistFullResult(
 
 /** 清理路径片段中的非法字符 */
 function sanitizeSegment(raw: string): string {
-  const cleaned = (raw || 'unknown').replace(UNSAFE_FILENAME_CHARS, '-').slice(0, MAX_FILENAME_BASE_LENGTH);
+  const cleaned = (raw || 'unknown')
+    .replace(UNSAFE_FILENAME_CHARS, '-')
+    .slice(0, MAX_FILENAME_BASE_LENGTH);
   return cleaned || 'unknown';
 }
 

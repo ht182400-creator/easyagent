@@ -39,7 +39,7 @@ describe('SqliteCheckpointer', () => {
       { configurable: { thread_id: 't1', checkpoint_id: 'ck1' } },
       makeCheckpoint({ messages: [], turnCount: 0 }) as any,
       { source: 'loop', step: 0, writes: null, parents: {} },
-      {}
+      {},
     );
 
     const tuple = await checkpointer.getTuple({
@@ -56,13 +56,13 @@ describe('SqliteCheckpointer', () => {
       { configurable: { thread_id: 't2', checkpoint_id: 'ck1' } },
       makeCheckpoint({ turnCount: 1 }) as any,
       { source: 'loop', step: 0, writes: null, parents: {} },
-      {}
+      {},
     );
     await checkpointer.put(
       { configurable: { thread_id: 't2', checkpoint_id: 'ck2' } },
       makeCheckpoint({ turnCount: 5 }) as any,
       { source: 'loop', step: 4, writes: null, parents: {} },
-      {}
+      {},
     );
 
     const tuple = await checkpointer.getTuple({
@@ -77,13 +77,13 @@ describe('SqliteCheckpointer', () => {
       { configurable: { thread_id: 't_a', checkpoint_id: 'c1' } },
       makeCheckpoint({ data: 'A' }) as any,
       { source: 'loop', step: 0, writes: null, parents: {} },
-      {}
+      {},
     );
     await checkpointer.put(
       { configurable: { thread_id: 't_b', checkpoint_id: 'c1' } },
       makeCheckpoint({ data: 'B' }) as any,
       { source: 'loop', step: 0, writes: null, parents: {} },
-      {}
+      {},
     );
 
     const a = await checkpointer.getTuple({ configurable: { thread_id: 't_a' } });
@@ -98,7 +98,7 @@ describe('SqliteCheckpointer', () => {
       { configurable: { thread_id: 't3', checkpoint_id: 'c1' } },
       makeCheckpoint({}) as any,
       { source: 'loop', step: 0, writes: null, parents: {} },
-      {}
+      {},
     );
 
     const threads = checkpointer.listThreads();
@@ -111,7 +111,7 @@ describe('SqliteCheckpointer', () => {
       { configurable: { thread_id: 't4', checkpoint_id: 'c1' } },
       makeCheckpoint({}) as any,
       { source: 'loop', step: 0, writes: null, parents: {} },
-      {}
+      {},
     );
     checkpointer.deleteThread('t4');
 
@@ -168,7 +168,7 @@ describe('Agent 持久化集成', () => {
         sessionId: threadId,
         maxTurns: 5,
       },
-      { configurable: { thread_id: threadId } }
+      { configurable: { thread_id: threadId } },
     );
 
     // 第二轮 - 使用相同 thread_id 继续
@@ -178,7 +178,7 @@ describe('Agent 持久化集成', () => {
         sessionId: threadId,
         maxTurns: 5,
       },
-      { configurable: { thread_id: threadId } }
+      { configurable: { thread_id: threadId } },
     );
 
     // 验证两轮都执行了

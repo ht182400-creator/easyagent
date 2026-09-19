@@ -46,15 +46,33 @@ const SOURCE_DIRS = [
 ];
 
 /** 需要扫描"CSS 变量定义"的样式文件 */
-const CSS_FILES = [
-  join(PROJECT_ROOT, 'packages/frontend/src/styles/index.css'),
-];
+const CSS_FILES = [join(PROJECT_ROOT, 'packages/frontend/src/styles/index.css')];
 
 /** 令牌命名空间（与 tailwind.tokens.mjs 对应） */
-const TOKEN_NAMESPACES = ['brand', 'surface', 'text', 'border', 'success', 'warning', 'error', 'info'];
+const TOKEN_NAMESPACES = [
+  'brand',
+  'surface',
+  'text',
+  'border',
+  'success',
+  'warning',
+  'error',
+  'info',
+];
 
 /** 可能出现在令牌类名前的 utility 前缀 */
-const UTILITY_PREFIXES = ['bg', 'text', 'border', 'ring', 'fill', 'stroke', 'divide', 'from', 'to', 'via'];
+const UTILITY_PREFIXES = [
+  'bg',
+  'text',
+  'border',
+  'ring',
+  'fill',
+  'stroke',
+  'divide',
+  'from',
+  'to',
+  'via',
+];
 
 /** 安静模式（只输出结论） */
 const QUIET = process.argv.includes('--quiet');
@@ -190,11 +208,15 @@ async function main() {
     for (const name of names.slice(1)) {
       const diff = [...perPackageTokens[reference]].filter((k) => !perPackageTokens[name].has(k));
       const extra = [...perPackageTokens[name]].filter((k) => !perPackageTokens[reference].has(k));
-      if (diff.length) problem(`[令牌分裂] ${name} 缺少 ${reference} 中已有的令牌键: ${diff.join(', ')}`);
-      if (extra.length) problem(`[令牌分裂] ${name} 多出 ${reference} 中不存在的令牌键: ${extra.join(', ')}`);
+      if (diff.length)
+        problem(`[令牌分裂] ${name} 缺少 ${reference} 中已有的令牌键: ${diff.join(', ')}`);
+      if (extra.length)
+        problem(`[令牌分裂] ${name} 多出 ${reference} 中不存在的令牌键: ${extra.join(', ')}`);
     }
     if (!problems.some((p) => p.includes('令牌分裂'))) {
-      info(`  ✓ ${names.join(' / ')} 的令牌键完全一致（${perPackageTokens[reference].size} 个键路径）`);
+      info(
+        `  ✓ ${names.join(' / ')} 的令牌键完全一致（${perPackageTokens[reference].size} 个键路径）`,
+      );
     }
   }
 
@@ -252,7 +274,9 @@ async function main() {
   console.error(`❌ 设计令牌校验失败，共 ${problems.length} 项：\n`);
   problems.forEach((p, i) => console.error(`${i + 1}. ${p}\n`));
   console.error('修复指引：');
-  console.error('  · 变量未定义 → 在 packages/frontend/src/styles/index.css 的 :root 中补充 --color-* 定义');
+  console.error(
+    '  · 变量未定义 → 在 packages/frontend/src/styles/index.css 的 :root 中补充 --color-* 定义',
+  );
   console.error('  · 键不存在   → 在 packages/frontend/tailwind.tokens.mjs 中登记键名');
   console.error('  · 令牌分裂   → 三份 tailwind.config.js 必须统一展开 tailwind.tokens.mjs');
   return 1;

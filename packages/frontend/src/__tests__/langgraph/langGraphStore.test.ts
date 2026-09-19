@@ -2,7 +2,7 @@
  * langGraphStore 测试 — Phase C
  * 覆盖: 初始状态、highlightNode、场景执行、会话管理、引擎类型
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // ==================== Mock fetch ====================
 

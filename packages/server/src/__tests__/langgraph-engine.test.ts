@@ -65,7 +65,10 @@ describe('getEngineType() — 引擎配置解析', () => {
 
   it('CLI 参数优先级高于环境变量与配置文件', () => {
     expect(
-      getEngineType('legacy', { env: { EASYAGENT_ENGINE: 'langgraph' }, configProvider: LG_CONFIG }),
+      getEngineType('legacy', {
+        env: { EASYAGENT_ENGINE: 'langgraph' },
+        configProvider: LG_CONFIG,
+      }),
     ).toBe('legacy');
   });
 
@@ -75,9 +78,9 @@ describe('getEngineType() — 引擎配置解析', () => {
       'default',
     );
     // ② CLI 参数
-    expect(resolveEngineSource('langgraph', { env: NO_ENV, configProvider: NO_CONFIG }).source).toBe(
-      'cli',
-    );
+    expect(
+      resolveEngineSource('langgraph', { env: NO_ENV, configProvider: NO_CONFIG }).source,
+    ).toBe('cli');
     // ③ 环境变量
     expect(
       resolveEngineSource(null, {

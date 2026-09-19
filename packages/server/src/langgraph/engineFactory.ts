@@ -160,10 +160,7 @@ export interface EngineResolveDeps {
  * @param deps - 可选的依赖注入（测试用），不传则读真实环境变量与配置文件
  * @returns 确定的引擎类型
  */
-export function getEngineType(
-  cliEngine?: EngineType | null,
-  deps?: EngineResolveDeps,
-): EngineType {
+export function getEngineType(cliEngine?: EngineType | null, deps?: EngineResolveDeps): EngineType {
   return resolveEngineSource(cliEngine, deps).engine;
 }
 
@@ -251,19 +248,15 @@ export async function createAgent(
 
   if (engineType === 'langgraph') {
     // 使用 LangGraph 引擎
-    const lgAgent = await createLangGraphAgent(
-      providerConfig,
-      toolRegistry,
-      {
-        model: options.model,
-        systemPrompt: options.systemPrompt,
-        maxTurns: options.maxTurns ?? 25,
-        workspace: options.workspace,
-        checkpointerConfig: {
-          dbPath: process.env.EASYAGENT_LG_CHECKPOINT_DB || ':memory:',
-        },
+    const lgAgent = await createLangGraphAgent(providerConfig, toolRegistry, {
+      model: options.model,
+      systemPrompt: options.systemPrompt,
+      maxTurns: options.maxTurns ?? 25,
+      workspace: options.workspace,
+      checkpointerConfig: {
+        dbPath: process.env.EASYAGENT_LG_CHECKPOINT_DB || ':memory:',
       },
-    );
+    });
 
     return new LangGraphAgentAdapter(lgAgent);
   }

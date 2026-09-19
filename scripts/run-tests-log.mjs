@@ -78,6 +78,15 @@ const ANSI = {
   dim: '\x1b[2m',
 };
 
+/**
+ * 去掉 ANSI 颜色码
+ *
+ * ⚠️ **落盘与进 HTML 前必须剥掉**：ANSI 只在支持它的终端里渲染成颜色，
+ * 在普通文件查看器 / 浏览器里只会变成一串「小方块 + [39m」噪音
+ * （用户实报：日志查看器里全是红色小方块，2026-09-19）。
+ */
+const stripAnsi = (s) => String(s).replace(/\x1b\[[0-9;]*[A-Za-z]/g, '');
+
 /** 日志级别定义（与 scripts/lib/logger.mjs 保持一致） */
 const LEVELS = { TRACE: 0, DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 };
 
@@ -265,6 +274,9 @@ function runPackage(pkg, log, runDir) {
       encoding: 'utf8',
       maxBuffer: MAX_BUFFER_BYTES,
       timeout: PACKAGE_TIMEOUT_MS,
+      // 关掉子进程彩色输出：这些内容要落盘成 .log（纯文本查看器里 ANSI 只有噪音）；
+      // 运行器自己的控制台提示仍带颜色（见 ANSI 常量）
+      env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' },
     });
   } catch (err) {
     log.error(`[${pkg.name}] 子进程启动异常: ${err.message}`);
@@ -274,7 +286,8 @@ function runPackage(pkg, log, runDir) {
   const elapsedMs = Date.now() - startedAt;
   const stdout = result.stdout || '';
   const stderr = result.stderr || '';
-  const combined = `${stdout}\n${stderr}`;
+  // 落盘 / 文本解析 / 报告都统一用「无颜色」版本（防 npx、tsup 等环节残留 ANSI）
+  const combined = stripAnsi(`${stdout}\n${stderr}`);
 
   // 原始输出完整落盘（这是"可细查"的兜底）
   try {
@@ -290,7 +303,13 @@ function runPackage(pkg, log, runDir) {
   if (!stats) {
     const fallback = parseStatsFromText(combined);
     stats = fallback
-      ? { tests: fallback.passed + fallback.failed, passed: fallback.passed, failed: fallback.failed, skipped: 0, failures: [] }
+      ? {
+          tests: fallback.passed + fallback.failed,
+          passed: fallback.passed,
+          failed: fallback.failed,
+          skipped: 0,
+          failures: [],
+        }
       : { tests: 0, passed: 0, failed: 0, skipped: 0, failures: [] };
     degraded = true;
     log.warn(`[${pkg.name}] 未找到可用 JSON 报告，已降级为文本解析（失败用例名可能缺失）`);
@@ -316,7 +335,8 @@ function runPackage(pkg, log, runDir) {
   const ok = stats.failed === 0 && result.status === 0;
   log.info(
     `${ok ? '✅' : '❌'} 结束测试 [${pkg.name}] 耗时 ${(elapsedMs / 1000).toFixed(1)}s — ` +
-      `${stats.passed}/${stats.tests} 通过` + (stats.failed ? `，${stats.failed} 失败` : ''),
+      `${stats.passed}/${stats.tests} 通过` +
+      (stats.failed ? `，${stats.failed} 失败` : ''),
   );
 
   return {
@@ -338,7 +358,11 @@ function runPackage(pkg, log, runDir) {
 /** 生成 HTML 报告（失败标红） */
 function renderHtml(meta, results) {
   const esc = (s) =>
-    String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
 
   const total = results.reduce((a, r) => a + (r.tests || 0), 0);
   const failed = results.reduce((a, r) => a + (r.failed || 0), 0);
@@ -367,7 +391,7 @@ ${r.failures
   .map(
     (f) => `<div class="case">
   <div class="case-title">${esc(f.file)} :: ${esc(f.fullName)}</div>
-  ${f.messages ? `<pre class="msg">${esc(f.messages)}</pre>` : ''}
+  ${f.messages ? `<pre class="msg">${esc(stripAnsi(f.messages))}</pre>` : ''}
 </div>`,
   )
   .join('\n')}`,
@@ -465,9 +489,7 @@ function main() {
     return 0;
   }
 
-  const selected = opts.only
-    ? PACKAGES.filter((p) => opts.only.includes(p.name))
-    : PACKAGES;
+  const selected = opts.only ? PACKAGES.filter((p) => opts.only.includes(p.name)) : PACKAGES;
   if (selected.length === 0) {
     console.error(`未匹配到任何包，可选: ${PACKAGES.map((p) => p.name).join(', ')}`);
     return 1;
@@ -488,7 +510,9 @@ function main() {
 
   const gitCommit = readGitCommit();
   log.info('='.repeat(78));
-  log.info(`EasyAgent 回归测试开始 — 范围: ${opts.scope}（${selected.map((p) => p.name).join(', ')}）`);
+  log.info(
+    `EasyAgent 回归测试开始 — 范围: ${opts.scope}（${selected.map((p) => p.name).join(', ')}）`,
+  );
   log.info(`时间: ${stamp()}  提交: ${gitCommit}  Node: ${process.version}`);
   log.info(`日志目录: ${runDir}`);
   log.info('='.repeat(78));
@@ -500,7 +524,13 @@ function main() {
     } catch (err) {
       // 单包异常不应中断整体回归
       log.error(`[${pkg.name}] 运行过程中抛出未捕获异常: ${err.message}`);
-      results.push({ pkg: pkg.name, label: pkg.label, status: 'crash', error: err.message, failures: [] });
+      results.push({
+        pkg: pkg.name,
+        label: pkg.label,
+        status: 'crash',
+        error: err.message,
+        failures: [],
+      });
     }
   }
 
@@ -512,7 +542,9 @@ function main() {
   const allOk = failed === 0 && results.every((r) => r.status === 'pass');
 
   log.info('-'.repeat(78));
-  log.info(`汇总: ${total} 用例 / ${passed} 通过 / ${failed} 失败 / ${skipped} 跳过 / 耗时 ${(elapsedMs / 1000).toFixed(1)}s`);
+  log.info(
+    `汇总: ${total} 用例 / ${passed} 通过 / ${failed} 失败 / ${skipped} 跳过 / 耗时 ${(elapsedMs / 1000).toFixed(1)}s`,
+  );
   for (const r of results) {
     const line = `${r.pkg.padEnd(10)} ${r.status === 'pass' ? '✅ 通过' : '❌ 失败'}  ${r.passed ?? '-'}/${r.tests ?? '-'}`;
     if (r.status === 'pass') log.info(line);

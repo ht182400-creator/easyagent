@@ -2,7 +2,7 @@
  * 语义分析路由（P1-1 第二批拆分产物；P2 压测后性能重构）
  *
  * ── 性能设计（2026-09-18，依据压测 docs/76）──
- *   buildSemanticMap 是同步 CPU 密集操作（全仓扫描，实测 10s+）。
+ *   buildSemanticMap 是同步 CPU 密集操作（全仓扫描：2026-09-19 修复 O(n²) 后 ~0.6s，此前 10s+）。
  *   三层防护：
  *   1. **worker_threads**：扫描在长驻 Worker 内执行，主线程事件循环永不被冻结
  *      （压测实锤：主线程同步扫描会冻结全部并发请求 10s+）；
@@ -19,15 +19,20 @@
  */
 
 import type { Express } from 'express';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { resetSemanticCache, getCodebaseOverview, analyzeFile } from '@easyagent/core';
+import {
+  resetSemanticCache,
+  clearAnalysisCache,
+  getCodebaseOverviewAsync,
+  analyzeFile,
+} from '@easyagent/core';
 
 // ===================== Worker 宿主（长驻，扫描不冻结主线程） =====================
 
-/** Worker 单任务超时（毫秒）：全仓扫描实测可达 10s+，给足余量 */
+/** Worker 单任务超时（毫秒）：全仓扫描实测 ~0.6s（O(n²) 修复前 10s+），给足余量以应对超大仓库 */
 const WORKER_TIMEOUT_MS = 120_000;
 
 /** Worker 内地图缓存有效期（毫秒）—— 与历史 60s 缓存策略一致 */
@@ -46,8 +51,19 @@ async function getMap(m) {
   const key = m.workspace + '|' + m.maxDepth + '|' + m.maxFiles + '|' + (m.expandToRepoRoot ? 1 : 0);
   const now = Date.now();
   if (!m.force && cachedMap && cachedKey === key && now - cachedAt < TTL) return cachedMap;
-  const { buildSemanticMap } = await import(workerData.coreUrl);
-  cachedMap = buildSemanticMap(m.workspace, m.maxDepth, m.maxFiles, { expandToRepoRoot: !!m.expandToRepoRoot });
+  const core = await import(workerData.coreUrl);
+  // 强制刷新：连"单文件分析缓存"（mtime 增量缓存）一起清掉，
+  // 否则文件没变时 buildSemanticMap 会直接复用旧结果，refresh=true 形同失效
+  if (m.force && typeof core.clearAnalysisCache === 'function') core.clearAnalysisCache();
+  // 优先走**并发读盘**版本（剖析：冷启耗时 59% 在磁盘 I/O）；core dist 较旧无该导出时回退同步版
+  cachedMap =
+    typeof core.buildSemanticMapAsync === 'function'
+      ? await core.buildSemanticMapAsync(m.workspace, m.maxDepth, m.maxFiles, {
+          expandToRepoRoot: !!m.expandToRepoRoot,
+        })
+      : core.buildSemanticMap(m.workspace, m.maxDepth, m.maxFiles, {
+          expandToRepoRoot: !!m.expandToRepoRoot,
+        });
   cachedKey = key;
   cachedAt = now;
   return cachedMap;
@@ -153,7 +169,9 @@ function resolveCoreUrl(): string {
       return pathToFileURL(candidate).href;
     }
   }
-  throw new Error('无法定位 @easyagent/core 的 dist 入口（candidates: ' + candidates.join(', ') + '）');
+  throw new Error(
+    '无法定位 @easyagent/core 的 dist 入口（candidates: ' + candidates.join(', ') + '）',
+  );
 }
 
 /** 获取（或重建）长驻 Worker */
@@ -268,22 +286,59 @@ export interface SemanticRoutesDeps {
 export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): void {
   const { projectRoot } = deps;
 
+  /**
+   * 默认扫描目录 = 注入的 projectRoot（Web/CLI 为仓库根，Desktop 为宿主传入目录）
+   *
+   * ⚠️ **不要退回 `process.cwd()`**：Electron 打包后 cwd 可能是安装目录（Windows 下
+   * 甚至 System32），扫出的结果是 0 文件，而接口仍返回 `success: true` —— 前端只会
+   * 看到四张全 0 的统计卡，完全无法察觉"扫错目录了"（2026-09-19 实报问题）。
+   */
+  const defaultWorkspace = projectRoot || process.cwd();
+
+  /** 是否显式传了非空 path 参数（空串/空白视为未传） */
+  function hasExplicitPath(raw: unknown): boolean {
+    return typeof raw === 'string' && raw.trim().length > 0;
+  }
+
+  /**
+   * 解析并校验工作目录
+   *
+   * 显式 path 不存在或不是目录时返回 error（交由路由回 400），
+   * 避免"路径写错 → 静默返回 0 文件"这种无法自查的状态。
+   */
+  function resolveWorkspace(raw: unknown): { workspace: string; error?: string } {
+    const p = hasExplicitPath(raw) ? (raw as string).trim() : defaultWorkspace;
+    if (!existsSync(p)) {
+      return { workspace: p, error: `工作目录不存在: ${p}` };
+    }
+    if (!statSync(p).isDirectory()) {
+      return { workspace: p, error: `不是目录: ${p}` };
+    }
+    return { workspace: p };
+  }
+
   /** 获取代码库语义地图（Worker 执行 + SWR 缓存，不阻塞事件循环） */
   app.get('/api/semantic/map', (req, res) => {
     try {
-      const explicitPath = req.query.path as string | undefined;
-      const workspace = explicitPath || process.cwd();
+      const { workspace, error: wsError } = resolveWorkspace(req.query.path);
+      if (wsError) {
+        res.status(400).json({ success: false, error: wsError });
+        return;
+      }
       const maxDepth = parseInt(req.query.depth as string) || 6;
-      const maxFiles = parseInt(req.query.maxFiles as string) || 300;
+      // 默认 1000：O(n²) 修复后全量扫描仅 ~0.4s（旧默认 300 会截断 58% 的代码文件）
+      const maxFiles = parseInt(req.query.maxFiles as string) || 1000;
       const forceRefresh = req.query.refresh === 'true';
 
       // 路径语义修正：显式 path 只扫该目录（不再被 findRepoRoot 放大到仓库根）；
       // 未传 path 时保留"扩展到仓库根"的原默认行为
-      const expandToRepoRoot = !explicitPath;
+      const expandToRepoRoot = !hasExplicitPath(req.query.path);
 
       if (forceRefresh) {
-        // refresh=true 时连带清空 core 工具层缓存
+        // refresh=true 时连带清空 core 工具层缓存与主线程的 mtime 增量缓存
+        // （Worker 内那份增量缓存由 Worker 自己在 force 时清，见 buildWorkerSource 的 getMap）
         resetSemanticCache();
+        clearAnalysisCache();
       }
 
       const key = mapKey(workspace, maxDepth, maxFiles);
@@ -297,16 +352,20 @@ export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): 
       }
       if (entry && !forceRefresh) {
         // 过期：先返回陈旧结果，后台静默重建
-        rebuildInBackground(
-          { task: 'map', workspace, maxDepth, maxFiles, expandToRepoRoot },
-          key,
-        );
+        rebuildInBackground({ task: 'map', workspace, maxDepth, maxFiles, expandToRepoRoot }, key);
         res.json(entry.payload);
         return;
       }
 
       // 冷启动 / 强制刷新：等待 Worker 实际构建（不冻结其他请求）
-      runWorkerTask({ task: 'map', workspace, maxDepth, maxFiles, expandToRepoRoot, force: forceRefresh })
+      runWorkerTask({
+        task: 'map',
+        workspace,
+        maxDepth,
+        maxFiles,
+        expandToRepoRoot,
+        force: forceRefresh,
+      })
         .then((payload) => {
           mapCache.set(key, { payload, cachedAt: Date.now() });
           res.json(payload);
@@ -323,7 +382,6 @@ export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): 
   app.get('/api/semantic/search', (req, res) => {
     try {
       const query = req.query.q as string;
-      const workspace = (req.query.path as string) || process.cwd();
       const caseSensitive = req.query.case === 'true';
       const kind = req.query.kind as string | undefined;
 
@@ -331,12 +389,21 @@ export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): 
         return res.status(400).json({ error: '缺少 q 参数' });
       }
 
+      const { workspace, error: wsError } = resolveWorkspace(req.query.path);
+      if (wsError) {
+        return res.status(400).json({ error: wsError });
+      }
+
+      // 深度/文件上限允许调用方覆盖（对应界面「深度」「文件上限」输入框）
+      const maxDepth = parseInt(req.query.depth as string) || 8;
+      const maxFiles = parseInt(req.query.maxFiles as string) || 1000;
+
       runWorkerTask({
         task: 'search',
         workspace,
-        maxDepth: 8,
-        maxFiles: 500,
-        expandToRepoRoot: !req.query.path,
+        maxDepth,
+        maxFiles,
+        expandToRepoRoot: !hasExplicitPath(req.query.path),
         query,
         caseSensitive,
         kind,
@@ -352,18 +419,26 @@ export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): 
   app.get('/api/semantic/references', (req, res) => {
     try {
       const symbol = req.query.symbol as string;
-      const workspace = (req.query.path as string) || process.cwd();
 
       if (!symbol) {
         return res.status(400).json({ error: '缺少 symbol 参数' });
       }
 
+      const { workspace, error: wsError } = resolveWorkspace(req.query.path);
+      if (wsError) {
+        return res.status(400).json({ error: wsError });
+      }
+
+      // 深度/文件上限允许调用方覆盖（同上）
+      const maxDepth = parseInt(req.query.depth as string) || 8;
+      const maxFiles = parseInt(req.query.maxFiles as string) || 1000;
+
       runWorkerTask({
         task: 'references',
         workspace,
-        maxDepth: 8,
-        maxFiles: 500,
-        expandToRepoRoot: !req.query.path,
+        maxDepth,
+        maxFiles,
+        expandToRepoRoot: !hasExplicitPath(req.query.path),
         symbol,
       })
         .then((payload) => res.json(payload))
@@ -374,10 +449,14 @@ export function registerSemanticRoutes(app: Express, deps: SemanticRoutesDeps): 
   });
 
   /** 获取代码库概览 */
-  app.get('/api/semantic/overview', (req, res) => {
+  app.get('/api/semantic/overview', async (req, res) => {
     try {
-      const workspace = (req.query.path as string) || process.cwd();
-      const overview = getCodebaseOverview(workspace);
+      const { workspace, error: wsError } = resolveWorkspace(req.query.path);
+      if (wsError) {
+        return res.status(400).json({ success: false, error: wsError });
+      }
+      // 并发读盘版：旧同步实现逐个 readFileSync（实测 ~240ms **阻塞主线程事件循环**）
+      const overview = await getCodebaseOverviewAsync(workspace);
       res.json({
         success: true,
         root: overview.root,

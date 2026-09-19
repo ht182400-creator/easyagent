@@ -17,7 +17,4 @@ const wsBaseUrl = `ws://127.0.0.1:${__API_PORT__}/ws`;
 setupIPCBridge();
 
 // ==================== 挂载 React 应用 ====================
-mountApp(
-  { apiBase: apiBaseUrl, wsBase: wsBaseUrl, isDesktop: true },
-  true,
-);
+mountApp({ apiBase: apiBaseUrl, wsBase: wsBaseUrl, isDesktop: true }, true);

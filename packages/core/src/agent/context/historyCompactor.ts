@@ -59,7 +59,9 @@ function toSingleLine(text: string, maxChars = SUMMARY_LINE_MAX_CHARS): string {
  * 这类消息后必须紧跟其 tool 结果，否则裁剪会破坏协议配对。
  */
 function isAssistantWithToolCalls(msg: Message | undefined): boolean {
-  return !!msg && msg.role === 'assistant' && Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0;
+  return (
+    !!msg && msg.role === 'assistant' && Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0
+  );
 }
 
 /**

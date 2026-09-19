@@ -8,10 +8,14 @@ import * as path from 'path';
 import * as os from 'os';
 import {
   buildSemanticMap,
+  buildSemanticMapAsync,
+  getCodebaseOverviewAsync,
   searchSymbol,
   findReferences,
   getCodebaseOverview,
   analyzeFile,
+  analyzeFileCached,
+  clearAnalysisCache,
   extractSymbols,
   collectSourceFiles,
   findRepoRoot,
@@ -598,5 +602,303 @@ describe('SemanticTools 接口', () => {
     } as any);
     expect(result.success).toBe(true);
     expect(result.content).toContain('代码库概览');
+  });
+});
+
+// ==================== 扫描优先级与忽略规则（2026-09-19 修复回归）====================
+/**
+ * 背景：`maxFiles` 是硬上限，而 `logs/test-logs/**` 每次回归会产出
+ * summary.json + 回归测试.html + raw/*.log —— 只按遍历顺序截断时它们会把上限占满，
+ * 实测导致语义地图里 **typescript 文件数为 0**（对代码库毫无价值）。
+ */
+describe('语义扫描：忽略日志目录 + 代码文件优先', () => {
+  it('logs/ 下的 json/html 不应进入地图', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-ignore-'));
+    const logDir = path.join(dir, 'logs', 'test-logs', 'run1');
+    fs.mkdirSync(logDir, { recursive: true });
+    for (let i = 0; i < 5; i++) {
+      fs.writeFileSync(path.join(logDir, `summary${i}.json`), '{"failed":0}');
+      fs.writeFileSync(path.join(logDir, `report${i}.html`), '<html><body>ok</body></html>');
+    }
+    fs.writeFileSync(path.join(dir, 'src.ts'), 'export function alpha() { return 1; }\n');
+
+    // maxFiles=2：若日志文件不被忽略，它们会把上限吃光、看不到 src.ts
+    const map = buildSemanticMap(dir, 6, 2, { expandToRepoRoot: false });
+
+    const filePaths = map.files.map((f) => f.filePath);
+    expect(filePaths.some((p) => p.endsWith('src.ts'))).toBe(true);
+    expect(filePaths.some((p) => /logs[\\/]/.test(p))).toBe(false);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('大量符号的文件应线性耗时（行号索引 O(n²) 回归守护）', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-linear-'));
+    const file = path.join(dir, 'many.ts');
+    // 2000 行、每行一个函数 → 旧实现每个符号都复制前缀 + 全文数换行，会明显超时
+    fs.writeFileSync(
+      file,
+      Array.from({ length: 2000 }, (_, i) => `export function fn${i}() { return ${i}; }`).join(
+        '\n',
+      ),
+    );
+
+    const started = Date.now();
+    const info = analyzeFile(file);
+    const elapsed = Date.now() - started;
+
+    expect(info.symbols.length).toBeGreaterThan(1000);
+    expect(elapsed).toBeLessThan(1500); // 旧实现同规模需数秒到数十秒
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('压缩/打包产物应被跳过（否则单个 bundle 就能拖垮整次扫描）', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-minified-'));
+    const file = path.join(dir, 'bundle.js');
+    // 单行超长（≈280KB）且含大量符号匹配 —— 实测同类文件曾占全仓扫描 96% 耗时
+    fs.writeFileSync(file, 'function a(){return 1};'.repeat(14000));
+
+    const started = Date.now();
+    const info = analyzeFile(file);
+    const elapsed = Date.now() - started;
+
+    expect(info.symbols.length).toBe(0); // 压缩产物不参与符号分析
+    expect(elapsed).toBeLessThan(1000);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('代码文件应优先于文档/数据文件占满 maxFiles', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-priority-'));
+    // 先写 5 个 .md/.json（遍历顺序在前），再写 1 个 .ts：不排序时 .ts 会被挤掉
+    for (let i = 0; i < 5; i++) {
+      fs.writeFileSync(path.join(dir, `doc${i}.md`), '# doc');
+      fs.writeFileSync(path.join(dir, `data${i}.json`), '{}');
+    }
+    fs.writeFileSync(path.join(dir, 'main.ts'), 'export const x = 1;\n');
+
+    const map = buildSemanticMap(dir, 6, 1, { expandToRepoRoot: false });
+
+    expect(map.stats.languages).toHaveProperty('typescript', 1);
+    expect(map.files[0].filePath.endsWith('main.ts')).toBe(true);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+// ==================== 增量缓存（2026-09-19 新增）====================
+/**
+ * 背景：全仓扫描此前每次都要重读重解析所有文件（~0.6s）。
+ * 现按 `mtimeMs + size` 指纹缓存单文件分析结果，文件没变就跳过读盘与正则。
+ */
+describe('增量扫描缓存（mtime + size 指纹）', () => {
+  it('文件未变更时复用缓存（返回同一对象，不重复解析）', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-cache-'));
+    const file = path.join(dir, 'mod.ts');
+    fs.writeFileSync(file, 'export function alpha() { return 1; }\n');
+    clearAnalysisCache();
+
+    const first = analyzeFileCached(file);
+    const second = analyzeFileCached(file);
+
+    expect(second).toBe(first);
+    expect(first.symbols.length).toBeGreaterThan(0);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('文件变更后重新解析（不返回陈旧结果）', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-cache-stale-'));
+    const file = path.join(dir, 'mod.ts');
+    fs.writeFileSync(file, 'export function alpha() { return 1; }\n');
+    clearAnalysisCache();
+
+    const before = analyzeFileCached(file);
+    // 等 20ms：确保 mtime 前进（避免同毫秒内改写造成指纹相同）
+    await new Promise((r) => setTimeout(r, 20));
+    fs.writeFileSync(file, 'export function alpha() { return 1; }\nexport function beta() {}\n');
+
+    const after = analyzeFileCached(file);
+    expect(after).not.toBe(before);
+    expect(after.symbols.length).toBeGreaterThan(before.symbols.length);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('二次构建地图时命中增量缓存（FileSemanticInfo 为同一对象）', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-cache-build-'));
+    fs.writeFileSync(path.join(dir, 'a.ts'), 'export function alpha() { return 1; }\n');
+    fs.writeFileSync(path.join(dir, 'b.ts'), 'export function beta() { return 2; }\n');
+    clearAnalysisCache();
+
+    const first = buildSemanticMap(dir, 6, 100, { expandToRepoRoot: false });
+    const second = buildSemanticMap(dir, 6, 100, { expandToRepoRoot: false });
+
+    expect(second.files.length).toBe(2);
+    // 命中缓存 → 复用同一 FileSemanticInfo 对象（构建末尾的裁剪不应误删本次扫描的文件）
+    expect(second.files[0]).toBe(first.files[0]);
+    expect(second.stats.totalSymbols).toBe(first.stats.totalSymbols);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('clearAnalysisCache 后强制重新解析', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-cache-clear-'));
+    const file = path.join(dir, 'mod.ts');
+    fs.writeFileSync(file, 'export function alpha() { return 1; }\n');
+
+    const first = analyzeFileCached(file);
+    clearAnalysisCache();
+    const second = analyzeFileCached(file);
+
+    expect(second).not.toBe(first);
+    expect(second.symbols.length).toBe(first.symbols.length);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+// ==================== 截断可见化（2026-09-19 新增）====================
+/**
+ * 背景：`slice(0, maxFiles)` 此前是**静默截断** —— 用户看到"文件数 1000"，
+ * 无从得知还有多少文件没被纳入。现由 stats 暴露候选总数与 truncated 标记。
+ */
+describe('截断可见化（stats.totalCandidates / truncated）', () => {
+  function makeDirWith(files: number): string {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-truncate-'));
+    for (let i = 0; i < files; i++) {
+      fs.writeFileSync(path.join(dir, `f${i}.ts`), `export function fn${i}() { return ${i}; }\n`);
+    }
+    return dir;
+  }
+
+  it('超过上限：标记 truncated 并给出候选总数', () => {
+    const dir = makeDirWith(5);
+    try {
+      const map = buildSemanticMap(dir, 6, 2, { expandToRepoRoot: false });
+      expect(map.stats.totalFiles).toBe(2);
+      expect(map.stats.totalCandidates).toBe(5);
+      expect(map.stats.truncated).toBe(true);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('上限充足：truncated 为 false 且候选数等于扫描数', () => {
+    const dir = makeDirWith(3);
+    try {
+      const map = buildSemanticMap(dir, 6, 100, { expandToRepoRoot: false });
+      expect(map.stats.totalFiles).toBe(3);
+      expect(map.stats.totalCandidates).toBe(3);
+      expect(map.stats.truncated).toBe(false);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('行数统计与 split 等价（含 CRLF / 无尾换行 / 空文件）', () => {
+    // 守护「按字节统计行数」优化：必须与旧实现 content.split('\n').length 完全一致
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-lines-'));
+    const cases: Array<[string, number]> = [
+      ['', 1],
+      ['a', 1],
+      ['a\n', 2],
+      ['a\r\nb', 2],
+      ['a\nb\nc', 3],
+      ['\n\n', 3],
+    ];
+    try {
+      cases.forEach(([content, expected], i) => {
+        const file = path.join(dir, `case${i}.ts`);
+        fs.writeFileSync(file, content);
+        expect(analyzeFile(file).lineCount).toBe(expected);
+      });
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('文本输出包含截断告警（工具调用方也能看到）', () => {
+    const dir = makeDirWith(4);
+    try {
+      const map = buildSemanticMap(dir, 6, 1, { expandToRepoRoot: false });
+      const text = formatSemanticMap(map);
+      expect(text).toContain('已达文件上限');
+      expect(text).toContain('未纳入');
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+// ==================== 并发读盘版（2026-09-19 新增）====================
+/**
+ * 背景：分阶段剖析显示冷启耗时 **59% 在磁盘 I/O**（同步 `readFileSync` 无法重叠等待），
+ * 故新增并发版供 UI / Worker 使用，同步版保留给工具层与单测。
+ * 本组用例守护「两条路径的结果必须完全一致」——否则 UI 与工具会看到不同的地图。
+ */
+describe('并发构建与并发概览（与同步版口径一致）', () => {
+  function makeMixedDir(): string {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ea-semantic-async-'));
+    fs.writeFileSync(
+      path.join(dir, 'a.ts'),
+      'export function alpha() { return 1; }\nexport const x = 1;\n',
+    );
+    fs.writeFileSync(path.join(dir, 'b.js'), 'function beta() {}\nmodule.exports = { beta };\n');
+    // 无符号模式语言：只应统计行数/大小（守护「跳过解码」优化）
+    fs.writeFileSync(path.join(dir, 'note.md'), '# 标题\n第二行\n');
+    fs.writeFileSync(path.join(dir, 'data.json'), '{\n  "k": 1\n}\n');
+    return dir;
+  }
+
+  it('buildSemanticMapAsync 与同步版统计/符号索引/文件顺序完全一致', async () => {
+    const dir = makeMixedDir();
+    try {
+      clearAnalysisCache();
+      const sync = buildSemanticMap(dir, 6, 100, { expandToRepoRoot: false });
+      clearAnalysisCache();
+      const asyncMap = await buildSemanticMapAsync(dir, 6, 100, { expandToRepoRoot: false });
+
+      expect(asyncMap.stats).toEqual(sync.stats);
+      expect(asyncMap.files.map((f) => f.filePath)).toEqual(sync.files.map((f) => f.filePath));
+      expect([...asyncMap.symbolIndex.keys()].sort()).toEqual([...sync.symbolIndex.keys()].sort());
+      // markdown 被纳入且无符号（无符号模式语言跳过解析）
+      const md = asyncMap.files.find((f) => f.language === 'markdown');
+      expect(md).toBeDefined();
+      expect(md!.symbols).toHaveLength(0);
+      expect(md!.lineCount).toBe(3);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('buildSemanticMapAsync 命中增量缓存（第二次复用同一对象）', async () => {
+    const dir = makeMixedDir();
+    try {
+      clearAnalysisCache();
+      const first = await buildSemanticMapAsync(dir, 6, 100, { expandToRepoRoot: false });
+      const second = await buildSemanticMapAsync(dir, 6, 100, { expandToRepoRoot: false });
+
+      expect(second.files[0]).toBe(first.files[0]);
+      expect(second.stats.totalSymbols).toBe(first.stats.totalSymbols);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('getCodebaseOverviewAsync 与同步版统计/文件树一致', async () => {
+    const dir = makeMixedDir();
+    try {
+      clearAnalysisCache();
+      const syncOv = getCodebaseOverview(dir);
+      clearAnalysisCache();
+      const asyncOv = await getCodebaseOverviewAsync(dir);
+
+      expect(asyncOv.stats).toEqual(syncOv.stats);
+      expect(asyncOv.fileTree).toBe(syncOv.fileTree);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

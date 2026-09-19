@@ -1,12 +1,17 @@
 /**
  * GraphCanvas 组件测试 — Phase C/D
  * 覆盖: 数据完整性 + React 组件渲染验证
- * 
+ *
  * happy-dom 环境下 React hooks 正常工作，支持完整 DOM 渲染测试。
  */
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import GraphCanvas, { DEFAULT_NODES, DEFAULT_EDGES, type GraphNode, type GraphEdge } from '../../components/LangGraph/GraphCanvas';
+import GraphCanvas, {
+  DEFAULT_NODES,
+  DEFAULT_EDGES,
+  type GraphNode,
+  type GraphEdge,
+} from '../../components/LangGraph/GraphCanvas';
 
 // ==================== 数据完整性 (2) ====================
 
@@ -21,7 +26,9 @@ describe('GraphCanvas — 数据完整性', () => {
       expect(['start', 'process', 'decision', 'end']).toContain(node.type);
     }
     const nodeMap: Record<string, string> = {};
-    DEFAULT_NODES.forEach((n) => { nodeMap[n.id] = n.type; });
+    DEFAULT_NODES.forEach((n) => {
+      nodeMap[n.id] = n.type;
+    });
     expect(nodeMap['START']).toBe('start');
     expect(nodeMap['think']).toBe('process');
     expect(nodeMap['route']).toBe('decision');
@@ -59,7 +66,14 @@ describe('GraphCanvas — 数据完整性', () => {
 describe('GraphCanvas — 类型导出', () => {
   it('GraphNode 类型应可被正确构造', () => {
     const node: GraphNode = {
-      id: 'test', label: 'TEST', type: 'process', x: 100, y: 200, w: 80, h: 40, desc: '测试节点',
+      id: 'test',
+      label: 'TEST',
+      type: 'process',
+      x: 100,
+      y: 200,
+      w: 80,
+      h: 40,
+      desc: '测试节点',
     };
     expect(node.id).toBe('test');
     expect(node.x).toBe(100);
@@ -67,7 +81,10 @@ describe('GraphCanvas — 类型导出', () => {
 
   it('GraphEdge 类型应可被正确构造', () => {
     const edge: GraphEdge = {
-      from: 'A', to: 'B', type: 'solid', label: 'A→B',
+      from: 'A',
+      to: 'B',
+      type: 'solid',
+      label: 'A→B',
     };
     expect(edge.from).toBe('A');
     expect(edge.type).toBe('solid');

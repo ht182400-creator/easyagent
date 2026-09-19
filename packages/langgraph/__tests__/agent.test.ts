@@ -1,6 +1,6 @@
 /**
  * Agent 基础测试 — 验证 Think-Act-Observe 环形图
- * 
+ *
  * 使用 Mock 适配器测试（不含 Checkpoint 以简化单元测试）:
  * 1. 纯文本对话（无工具调用）
  * 2. 工具调用循环
@@ -18,12 +18,14 @@ import type { AgentGraphConfig } from '../src/graph/agentGraph';
 /**
  * 创建模拟的 chat 函数
  */
-function createMockChat(responses: Array<{
-  content?: string;
-  toolCalls?: Array<{ id: string; name: string; args: Record<string, unknown> }>;
-  finishReason?: string;
-  usage?: { inputTokens: number; outputTokens: number };
-}>) {
+function createMockChat(
+  responses: Array<{
+    content?: string;
+    toolCalls?: Array<{ id: string; name: string; args: Record<string, unknown> }>;
+    finishReason?: string;
+    usage?: { inputTokens: number; outputTokens: number };
+  }>,
+) {
   let callIndex = 0;
   return vi.fn((_messages: unknown[], _options?: unknown) => {
     const response = responses[callIndex] || {
@@ -47,7 +49,9 @@ function createMockChat(responses: Array<{
 /**
  * 创建模拟的工具执行器
  */
-function createMockToolExecutor(results: Record<string, { success: boolean; content: string }> = {}) {
+function createMockToolExecutor(
+  results: Record<string, { success: boolean; content: string }> = {},
+) {
   return {
     execute: vi.fn((name: string, _params: Record<string, unknown>) => {
       const result = results[name] || { success: true, content: `工具 ${name} 执行成功` };
@@ -59,13 +63,15 @@ function createMockToolExecutor(results: Record<string, { success: boolean; cont
 /**
  * 构建测试图（不含 checkpointer）
  */
-function buildTestGraph(config: Partial<{
-  chatResponses: Parameters<typeof createMockChat>[0];
-  toolResults: Record<string, { success: boolean; content: string }>;
-}> = {}) {
-  const mockChat = createMockChat(config.chatResponses || [
-    { content: '你好！有什么可以帮助你的？', finishReason: 'stop' },
-  ]);
+function buildTestGraph(
+  config: Partial<{
+    chatResponses: Parameters<typeof createMockChat>[0];
+    toolResults: Record<string, { success: boolean; content: string }>;
+  }> = {},
+) {
+  const mockChat = createMockChat(
+    config.chatResponses || [{ content: '你好！有什么可以帮助你的？', finishReason: 'stop' }],
+  );
   const mockExecutor = createMockToolExecutor(config.toolResults);
 
   const graphConfig: AgentGraphConfig = {
@@ -89,9 +95,7 @@ describe('AgentGraph — 核心环形图', () => {
   // 测试 1: 纯文本对话
   it('应该正确处理纯文本对话（无工具调用）', async () => {
     const { graph } = buildTestGraph({
-      chatResponses: [
-        { content: '你好！我是测试助手。', finishReason: 'stop' },
-      ],
+      chatResponses: [{ content: '你好！我是测试助手。', finishReason: 'stop' }],
     });
 
     const result = await graph.invoke({
@@ -170,9 +174,7 @@ describe('AgentGraph — 核心环形图', () => {
   // 测试 4: 空消息处理
   it('应该处理 LLM 返回空内容的情况', async () => {
     const { graph } = buildTestGraph({
-      chatResponses: [
-        { content: '', finishReason: 'stop' },
-      ],
+      chatResponses: [{ content: '', finishReason: 'stop' }],
     });
 
     const result = await graph.invoke({

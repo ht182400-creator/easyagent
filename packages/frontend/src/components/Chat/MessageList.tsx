@@ -170,11 +170,14 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           {(msg.tokenUsage || msg.duration !== undefined) && (
             <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-800 text-xs text-gray-600">
               {msg.tokenUsage && (
-                <span>Tokens: {(msg.tokenUsage.total ?? msg.tokenUsage.input + msg.tokenUsage.output).toLocaleString()}</span>
+                <span>
+                  Tokens:{' '}
+                  {(
+                    msg.tokenUsage.total ?? msg.tokenUsage.input + msg.tokenUsage.output
+                  ).toLocaleString()}
+                </span>
               )}
-              {msg.duration !== undefined && (
-                <span>耗时: {formatDuration(msg.duration)}</span>
-              )}
+              {msg.duration !== undefined && <span>耗时: {formatDuration(msg.duration)}</span>}
             </div>
           )}
         </div>
@@ -262,7 +265,6 @@ function StreamingBubble({ text, reasoning }: { text: string; reasoning: string 
 //           且**完全不过滤 `javascript:` 等协议** → 点击即执行
 // 现已统一迁入 utils/markdown.ts（markdown-it + 协议白名单 + highlight.js），
 // 本地不再保留实现，避免两处行为漂移。
-
 
 // ===================== 虚拟行组件 =====================
 

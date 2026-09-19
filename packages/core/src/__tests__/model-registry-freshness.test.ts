@@ -138,12 +138,17 @@ describe('ModelRegistry.mergeModels — 厂商 API 直连补齐', () => {
 
   it('应把厂商新增的模型并入目录', () => {
     seedCatalog(providers, daysAgo(0));
-    const added = getModelRegistry().mergeModels('deepseek', ['deepseek-v4', 'deepseek-v5'], '厂商API');
+    const added = getModelRegistry().mergeModels(
+      'deepseek',
+      ['deepseek-v4', 'deepseek-v5'],
+      '厂商API',
+    );
     expect(added).toBe(1);
-    expect(getModelRegistry().getModels('deepseek' as never)?.map((m) => m.id)).toEqual([
-      'deepseek-v4',
-      'deepseek-v5',
-    ]);
+    expect(
+      getModelRegistry()
+        .getModels('deepseek' as never)
+        ?.map((m) => m.id),
+    ).toEqual(['deepseek-v4', 'deepseek-v5']);
   });
 
   it('🛡️ 新并入的模型必须标记 unverified（元数据只是保守默认值，不能假装是真实规格）', () => {
@@ -169,7 +174,10 @@ describe('ModelRegistry.mergeModels — 厂商 API 直连补齐', () => {
   it('🛡️ 只增不删：厂商端点未返回的已有模型必须保留', () => {
     seedCatalog(providers, daysAgo(0));
     getModelRegistry().mergeModels('deepseek', ['brand-new-model'], '厂商API');
-    const ids = getModelRegistry().getModels('deepseek' as never)?.map((m) => m.id) ?? [];
+    const ids =
+      getModelRegistry()
+        .getModels('deepseek' as never)
+        ?.map((m) => m.id) ?? [];
     expect(ids).toContain('deepseek-v4');
     expect(ids).toContain('brand-new-model');
   });

@@ -81,12 +81,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     notifications,
     removeNotification,
   } = useAppStore();
-  const {
-    rightPanelVisible,
-    rightPanelUrl,
-    rightPanelTitle,
-    closeRightPanel,
-  } = useUIStore();
+  const { rightPanelVisible, rightPanelUrl, rightPanelTitle, closeRightPanel } = useUIStore();
   const location = useLocation();
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [appVersion, setAppVersion] = useState('v0.4.1');

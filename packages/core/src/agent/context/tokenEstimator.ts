@@ -77,7 +77,9 @@ function readEnvNumber(key: string, fallback: number): number {
 }
 
 /** 解析生效的估算参数 */
-export function resolveEstimatorOptions(opts: TokenEstimatorOptions = {}): Required<TokenEstimatorOptions> {
+export function resolveEstimatorOptions(
+  opts: TokenEstimatorOptions = {},
+): Required<TokenEstimatorOptions> {
   return {
     cjkCharsPerToken:
       opts.cjkCharsPerToken ??
@@ -95,7 +97,10 @@ export function resolveEstimatorOptions(opts: TokenEstimatorOptions = {}): Requi
  * @param opts - 估算参数（不传则读环境变量/默认值）
  * @returns 估算 token 数（非负整数）
  */
-export function estimateTokens(text: string | null | undefined, opts?: TokenEstimatorOptions): number {
+export function estimateTokens(
+  text: string | null | undefined,
+  opts?: TokenEstimatorOptions,
+): number {
   if (!text) return 0;
   const { cjkCharsPerToken, otherCharsPerToken } = resolveEstimatorOptions(opts);
 
@@ -165,10 +170,7 @@ export function estimateToolDefinitionsTokens(
     return estimateTokens(JSON.stringify(defs), opts);
   } catch {
     // 序列化失败时退化为逐条估算
-    return defs.reduce(
-      (sum, d) => sum + estimateTokens(`${d.name}${d.description}`, opts),
-      0,
-    );
+    return defs.reduce((sum, d) => sum + estimateTokens(`${d.name}${d.description}`, opts), 0);
   }
 }
 

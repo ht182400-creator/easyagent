@@ -121,7 +121,10 @@ export function AddDocumentModal({ scope, onClose }: AddDocumentModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
       <div
         className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg mx-4 p-6"
         onClick={(e) => e.stopPropagation()}
@@ -282,9 +285,7 @@ export function AddDocumentModal({ scope, onClose }: AddDocumentModalProps) {
 
           {/* 标签 */}
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              标签 (逗号分隔)
-            </label>
+            <label className="block text-sm font-medium text-gray-400 mb-1">标签 (逗号分隔)</label>
             <input
               type="text"
               className="input w-full"

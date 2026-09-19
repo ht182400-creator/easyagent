@@ -81,7 +81,10 @@ export class MCPClient {
    * 流程：initialize（版本协商）→ 校验协商版本 → notifications/initialized → tools/list
    */
   private async connectViaHttp(): Promise<MCPTool[]> {
-    logger.info({ server: this.serverName, url: this.config.url }, '连接 MCP 服务器（Streamable HTTP）');
+    logger.info(
+      { server: this.serverName, url: this.config.url },
+      '连接 MCP 服务器（Streamable HTTP）',
+    );
     this.httpTransport = new StreamableHttpTransport(this.config.url!, this.config.headers || {});
 
     // ── initialize + 版本协商 ──
@@ -114,7 +117,9 @@ export class MCPClient {
     await this.httpNotify('notifications/initialized', {});
 
     // ── 工具列表 ──
-    const result = (await this.httpRequest('tools/list', {})) as { tools?: Array<Record<string, unknown>> };
+    const result = (await this.httpRequest('tools/list', {})) as {
+      tools?: Array<Record<string, unknown>>;
+    };
     this.tools = (result?.tools || []).map((t) => ({
       name: t.name as string,
       description: (t.description as string) || '',

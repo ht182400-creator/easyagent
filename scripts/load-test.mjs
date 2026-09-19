@@ -116,7 +116,10 @@ async function runPool(total, concurrency, worker) {
 /** 百分位数 */
 function percentile(sortedLatencies, p) {
   if (sortedLatencies.length === 0) return 0;
-  const idx = Math.min(sortedLatencies.length - 1, Math.ceil((p / 100) * sortedLatencies.length) - 1);
+  const idx = Math.min(
+    sortedLatencies.length - 1,
+    Math.ceil((p / 100) * sortedLatencies.length) - 1,
+  );
   return Math.round(sortedLatencies[Math.max(0, idx)]);
 }
 
@@ -290,19 +293,21 @@ function printReport(report) {
 
   const h = s.healthThroughput;
   console.log(`\n[1] health 吞吐（并发${h.concurrency}×${h.total}）`);
-  console.log(`    ${h.rps} req/s · p50=${h.p50}ms p95=${h.p95}ms p99=${h.p99}ms · 错误 ${h.errors}`);
+  console.log(
+    `    ${h.rps} req/s · p50=${h.p50}ms p95=${h.p95}ms p99=${h.p99}ms · 错误 ${h.errors}`,
+  );
 
   const ss = s.sessionsRead;
   console.log(`\n[2] sessions 并发读（SQLite 路径）`);
-  console.log(`    ${ss.rps} req/s · p50=${ss.p50}ms p95=${ss.p95}ms p99=${ss.p99}ms · 错误 ${ss.errors}`);
+  console.log(
+    `    ${ss.rps} req/s · p50=${ss.p50}ms p95=${ss.p95}ms p99=${ss.p99}ms · 错误 ${ss.errors}`,
+  );
 
   const b = s.semanticBlocking;
   const blockedRatio = b.steadyMedianMs > 0 ? (b.blockedMaxMs / b.steadyMedianMs).toFixed(0) : '∞';
   console.log(`\n[3] semantic/map 事件循环阻塞量化`);
   console.log(`    稳态 health 中位 ${b.steadyMedianMs}ms · 慢请求耗时 ${b.slowRequestMs}ms`);
-  console.log(
-    `    慢请求在飞期间 health 最差延迟 ${b.blockedMaxMs}ms（${blockedRatio}× 稳态）`,
-  );
+  console.log(`    慢请求在飞期间 health 最差延迟 ${b.blockedMaxMs}ms（${blockedRatio}× 稳态）`);
   if (b.blockedMaxMs > 1000) {
     console.log(
       '    ⚠️ 判定：存在明显事件循环阻塞 —— 1 个 semantic/map 请求会冻结所有并发请求。\n' +
@@ -317,9 +322,13 @@ function printReport(report) {
   console.log(`\n[4] chat 突发限流（${r.burst} 发，costly 配额 ${r.costlyMax}/min）`);
   console.log(`    状态分布: ${JSON.stringify(r.statusSummary)}`);
   if (r.count429 >= expected429 * 0.8) {
-    console.log(`    ✅ 判定：429 正确触发（${r.count429} 次，预期 ≥${Math.floor(expected429 * 0.8)}）`);
+    console.log(
+      `    ✅ 判定：429 正确触发（${r.count429} 次，预期 ≥${Math.floor(expected429 * 0.8)}）`,
+    );
   } else {
-    console.log(`    ❌ 判定：429 未按预期触发（${r.count429} 次，预期 ≥${Math.floor(expected429 * 0.8)}）—— 限流器可能失效`);
+    console.log(
+      `    ❌ 判定：429 未按预期触发（${r.count429} 次，预期 ≥${Math.floor(expected429 * 0.8)}）—— 限流器可能失效`,
+    );
   }
 
   console.log(`\n${'═'.repeat(70)}\n`);
