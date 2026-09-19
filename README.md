@@ -1,21 +1,44 @@
-# EasyAgent - AI编程助手 v0.6.40
+# EasyAgent - AI编程助手 v0.6.43
 
 > 集成中国主流大模型的全功能AI编程助手  
 > 融合 WorkBuddy 设计风格 + 国产模型适配  
 > **模型目录动态更新 (GitHub/CDN) + 三级数据源降级 + 70工具/17分组 + 版本控制系统 + WorkBuddy 深色主题 UI**
 
-## 📊 Agent 代码质量评测 (SWE-bench Verified)
+## 📊 Agent 代码质量评测（真实执行 + 结构化启发式 · 非 SWE-bench 官方 harness）
 
-> EasyAgent 代码生成能力经过标准化评测验证。以下为使用内置 benchmark 数据集的 pass@1 评测结果：
+> ⚠️ **口径声明（先读）**
+> 评测的"解法"由**厂商模型 + EasyAgent 的 prompt/编排**共同产出，衡量的是**端到端**表现
+> （受 prompt 工程、上下文压缩、工具暴露、轮次上限影响），**不是**厂商发布时的裸模型分数。
+> 判定档两级：**真实执行**（解法与 `test_patch` 落盘 → vitest 实跑 → `FAIL_TO_PASS` 逐条核对，2026-09-19 起默认）
+> 与 **结构化启发式**（只看"非空 + 括号配对 + 含 `export`/`function`/`class`"；vitest 不可用时回退并**如实标注**）。
+> 提示词目前仍把 `test_patch` 作为"参考"给模型（**开卷**），分数天然偏乐观。
+> 详见 [`docs/77`](docs/77_SWE-bench评测现状与离线自测方案.md)。
 
-| 模型 | Pass@1 | 解决率 | Easy | Medium | Hard | 评测日期 |
+| 模型 | 通过率（真实执行） | 解决率 | Easy | Medium | Hard | 评测日期 |
 |------|:------:|:------:|:----:|:------:|:----:|:--------:|
-| **DeepSeek V4** | *(运行中)* | - | - | - | - | 2026-06 |
-| **通义千问 Qwen3 Max** | *(待评测)* | - | - | - | - | - |
-| **智谱 GLM-5** | *(待评测)* | - | - | - | - | - |
+| **DeepSeek V4** | *(待运行)* | - | - | - | - | - |
+| **通义千问 Qwen3 Max** | *(待运行)* | - | - | - | - | - |
+| **智谱 GLM-5** | *(待运行)* | - | - | - | - | - |
 
-> 💡 **运行评测**: `pnpm benchmark --provider deepseek --model deepseek-v4`  
-> 评测使用 10 道精选编码题目覆盖 easy/medium/hard 三个难度级别，包含数据结构、算法、工具函数等典型编程场景。详见 [`scripts/swe-bench/`](scripts/swe-bench/)
+> 表格留空是**如实状态**：仓库尚未产出过真实模型的评测结果（`benchmark-results/` 长期为空）。
+> 要填满它请配置 API Key 后跑真实评测；无 Key 时可用下表 4 种"零成本"方式验证链路本身。
+
+**运行姿态 × 判定档**（完整矩阵见 [`docs/77`](docs/77_SWE-bench评测现状与离线自测方案.md) §六）
+
+| 姿态           | 命令                                                          | 花钱 | 验证什么                                              |
+| -------------- | ------------------------------------------------------------- | :--: | ----------------------------------------------------- |
+| 环境检查       | `pnpm benchmark:dry`                                          |  否  | 核心包 / 数据集 / 难度分布是否就绪                    |
+| 离线自测       | `pnpm benchmark --offline`                                    |  否  | 评测流程 + 聚合口径（启发式判定，约 7/10）            |
+| 负向对照       | `pnpm benchmark --offline --real-tests`                       |  否  | **预期 0 通过** —— 证明判定真的在跑测试               |
+| Agent 轨迹自测 | `pnpm benchmark --mock-agent --allow-tools`                   |  否  | 工具注册 → 执行 → 回灌 → 多轮 → 上下文压缩            |
+| 真实评测       | `pnpm build:core && pnpm benchmark --provider X --model Y`    | **是** | 端到端能力（默认走真实执行）                          |
+| 本地零成本     | `pnpm benchmark --provider ollama --model <模型>`             |  否  | 同上，但需先 `ollama serve` + `ollama pull`           |
+| agentic 评测   | 真实评测再加 `--allow-tools --max-turns 10`                   | **是** | 允许工具与多轮（更接近真实使用）                      |
+
+> 💡 **Key 是按厂商的**：13 家预设各一个 `apiKeyEnv`，**一个 Key 覆盖该厂商全部模型** → 跑 3 家 = 3 个 Key，
+> 且跑谁配谁。花费量级：10 题 × k=1 ＝ **10 次调用/模型**（建议先 `--max-problems 1 --difficulty easy` 试水）。
+> 评测使用 10 道精选编码题目（easy 3 / medium 4 / hard 3），含数据结构、算法、工具函数等典型场景。
+> 详见 [`scripts/swe-bench/`](scripts/swe-bench/) 与 [`docs/77`](docs/77_SWE-bench评测现状与离线自测方案.md)
 
 ### 评测维度
 
@@ -154,22 +177,22 @@ cd ../langgraph && start-demo.bat              # 🆕 LangGraph Demo (http://loc
 ### 快速验证
 
 ```bash
-# 环境检查 (Node.js 版本 + 评测数据集)
+# 环境检查（Node 版本 + 评测数据集，走真实链路；无需 API Key）
 pnpm benchmark:dry
+pnpm benchmark --offline        # 评测链路全流程自测（离线桩，结果不代表模型能力）
 
-# 核心测试 (629/629 通过)
-cd packages/core && npx vitest run
+# 全量门禁（数据一致性 / 设计令牌 / 前端类型 / 路由 / 性能基线 / 类名 …）
+pnpm verify:all
 
-# 服务端测试 (160/160 通过, 含 LangGraph 引擎适配)
-cd packages/server && npx vitest run
+# 各包测试（2026-09-19 实测）
+cd packages/core && npx vitest run        # core      1143/1143
+cd packages/server && npx vitest run      # server     278/278（含 LangGraph 引擎适配）
+cd packages/langgraph && npx vitest run   # langgraph   57/57
+cd packages/desktop && npx vitest run     # desktop    215/215
+cd packages/frontend && npx vitest run    # frontend   149/149
+cd packages/web && npx vitest run         # web          2/2
 
-# Desktop 测试 (127/127 通过)
-cd packages/desktop && npx vitest run
-
-# LangGraph 测试 (57/57 通过)
-cd packages/langgraph && npx vitest run
-
-# 全量测试 (1469/1469 通过)
+# 全量测试（合计 1844 全通过）
 pnpm test:all
 ```
 

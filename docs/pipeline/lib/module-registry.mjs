@@ -269,7 +269,11 @@ export const MODULE_REGISTRY = {
     desc: '自动化评测\n数据集+评分算法',
     phase: 'P4', branch: 'B2', status: 'done',
     tags: ['benchmark', 'quality'],
-    testFiles: [],
+    testFiles: [
+      // 2026-09-19 补登记：此前该模块标 done 却无任何测试文件，
+      // 而评测链路实际上长期不可运行（产物路径/数据集格式/口径三处缺陷）。
+      'core/src/__tests__/benchmark-runner.test.ts',
+    ],
   },
   b2b: {
     id: 'b2b', name: 'GitHub Actions CI/CD', icon: '⚙️',

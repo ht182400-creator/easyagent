@@ -77,16 +77,20 @@
       "size": 50260
     },
     "2026-09-19.md": {
-      "mtimeMs": 1789798116528.5603,
-      "size": 26749
+      "mtimeMs": 1789811133087.2007,
+      "size": 50280
     },
     "MEMORY.md": {
-      "mtimeMs": 1789798336351.0173,
-      "size": 54966
+      "mtimeMs": 1789807274644.3523,
+      "size": 32613
     },
     "README.md": {
       "mtimeMs": 1782176165708.7427,
       "size": 759
+    },
+    "关键陷阱清单.md": {
+      "mtimeMs": 1789807274640.31,
+      "size": 17232
     }
   },
   "fileResults": {
@@ -12648,10 +12652,201 @@
         "_tagModuleIds": [
           "f11"
         ]
+      },
+      {
+        "moduleId": "f6",
+        "date": "2026-09-19",
+        "title": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "problem": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "solution": "版本同步: `version.json` + 7 个 `package.json` → 0.6.43（`node scripts/sync-version.mjs`）；`docs/pipeline/project-progress-data.json` 随之刷新；提交（4 个）: `499fd2f` perf（语义四轮 + 截断可见化 + 沙箱 + 端口）→ `b99feb0` docs（格式化收尾 + 数字同步 + 回归日志入库 + build_out.txt 移出跟踪）→ `8123f4e` release: v0.6.43 → `；标签: `v0.6.43`（附注标签）；推送: ✅ **GitHub（origin）** `main 32cffa6..308f50c` + 新标签 `v0.6.43`（将触发 release.yml 构建与 Release）；⏳ **Forgejo 未推** —— 本会话无 `FORGEJO_USER/F；顺手治理: 根目录 **13MB** 一次性评审 JSON（未跟踪）与误入的 `packages/web/build_out.txt` → 加 `.gitignore` 规则并 `git rm --cached`（避免 13MB 入库）；注意: `post-commit` 钩子每次提交都会改写 `docs/pipeline/*.json`（时间戳），**发版后残留 5~6 个文件差异属正常**（MEMORY 已记录，不必再追）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6",
+          "f10",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f10",
+        "date": "2026-09-19",
+        "title": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "problem": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "solution": "版本同步: `version.json` + 7 个 `package.json` → 0.6.43（`node scripts/sync-version.mjs`）；`docs/pipeline/project-progress-data.json` 随之刷新；提交（4 个）: `499fd2f` perf（语义四轮 + 截断可见化 + 沙箱 + 端口）→ `b99feb0` docs（格式化收尾 + 数字同步 + 回归日志入库 + build_out.txt 移出跟踪）→ `8123f4e` release: v0.6.43 → `；标签: `v0.6.43`（附注标签）；推送: ✅ **GitHub（origin）** `main 32cffa6..308f50c` + 新标签 `v0.6.43`（将触发 release.yml 构建与 Release）；⏳ **Forgejo 未推** —— 本会话无 `FORGEJO_USER/F；顺手治理: 根目录 **13MB** 一次性评审 JSON（未跟踪）与误入的 `packages/web/build_out.txt` → 加 `.gitignore` 规则并 `git rm --cached`（避免 13MB 入库）；注意: `post-commit` 钩子每次提交都会改写 `docs/pipeline/*.json`（时间戳），**发版后残留 5~6 个文件差异属正常**（MEMORY 已记录，不必再追）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6",
+          "f10",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f16",
+        "date": "2026-09-19",
+        "title": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "problem": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "solution": "版本同步: `version.json` + 7 个 `package.json` → 0.6.43（`node scripts/sync-version.mjs`）；`docs/pipeline/project-progress-data.json` 随之刷新；提交（4 个）: `499fd2f` perf（语义四轮 + 截断可见化 + 沙箱 + 端口）→ `b99feb0` docs（格式化收尾 + 数字同步 + 回归日志入库 + build_out.txt 移出跟踪）→ `8123f4e` release: v0.6.43 → `；标签: `v0.6.43`（附注标签）；推送: ✅ **GitHub（origin）** `main 32cffa6..308f50c` + 新标签 `v0.6.43`（将触发 release.yml 构建与 Release）；⏳ **Forgejo 未推** —— 本会话无 `FORGEJO_USER/F；顺手治理: 根目录 **13MB** 一次性评审 JSON（未跟踪）与误入的 `packages/web/build_out.txt` → 加 `.gitignore` 规则并 `git rm --cached`（避免 13MB 入库）；注意: `post-commit` 钩子每次提交都会改写 `docs/pipeline/*.json`（时间戳），**发版后残留 5~6 个文件差异属正常**（MEMORY 已记录，不必再追）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6",
+          "f10",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-09-19",
+        "title": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "problem": "[F32:发版] v0.6.43 语义扫描性能治理（14:15）",
+        "solution": "版本同步: `version.json` + 7 个 `package.json` → 0.6.43（`node scripts/sync-version.mjs`）；`docs/pipeline/project-progress-data.json` 随之刷新；提交（4 个）: `499fd2f` perf（语义四轮 + 截断可见化 + 沙箱 + 端口）→ `b99feb0` docs（格式化收尾 + 数字同步 + 回归日志入库 + build_out.txt 移出跟踪）→ `8123f4e` release: v0.6.43 → `；标签: `v0.6.43`（附注标签）；推送: ✅ **GitHub（origin）** `main 32cffa6..308f50c` + 新标签 `v0.6.43`（将触发 release.yml 构建与 Release）；⏳ **Forgejo 未推** —— 本会话无 `FORGEJO_USER/F；顺手治理: 根目录 **13MB** 一次性评审 JSON（未跟踪）与误入的 `packages/web/build_out.txt` → 加 `.gitignore` 规则并 `git rm --cached`（避免 13MB 入库）；注意: `post-commit` 钩子每次提交都会改写 `docs/pipeline/*.json`（时间戳），**发版后残留 5~6 个文件差异属正常**（MEMORY 已记录，不必再追）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f6",
+          "f10",
+          "f16",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f1",
+        "date": "2026-09-19",
+        "title": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只",
+        "problem": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只在测试环境暴露\"的缺陷）（15:50）",
+        "solution": "调试日志（用户要求）: `logs/build-logs/2026-09-19_152521_评测-离线自测.log`（含 17 条 `\"level\":\"debug\"`：`AgentEngine.run 入口`、`上下文已构建`、`数据库 schema 已是最新`）· `_15272；文档: `docs/77`（§六 运行姿态矩阵 / §七 真实执行设计 / §八 日志与留证 / §九 命令速查 / §5.1 Key 成本）· `README`（评测段：真实执行 + 姿态矩阵 + Key 成本）· `docs/44` #20 ✅（遗留\"开卷/闭卷\"",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f4",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f2",
+        "date": "2026-09-19",
+        "title": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只",
+        "problem": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只在测试环境暴露\"的缺陷）（15:50）",
+        "solution": "调试日志（用户要求）: `logs/build-logs/2026-09-19_152521_评测-离线自测.log`（含 17 条 `\"level\":\"debug\"`：`AgentEngine.run 入口`、`上下文已构建`、`数据库 schema 已是最新`）· `_15272；文档: `docs/77`（§六 运行姿态矩阵 / §七 真实执行设计 / §八 日志与留证 / §九 命令速查 / §5.1 Key 成本）· `README`（评测段：真实执行 + 姿态矩阵 + Key 成本）· `docs/44` #20 ✅（遗留\"开卷/闭卷\"",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f4",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f4",
+        "date": "2026-09-19",
+        "title": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只",
+        "problem": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只在测试环境暴露\"的缺陷）（15:50）",
+        "solution": "调试日志（用户要求）: `logs/build-logs/2026-09-19_152521_评测-离线自测.log`（含 17 条 `\"level\":\"debug\"`：`AgentEngine.run 入口`、`上下文已构建`、`数据库 schema 已是最新`）· `_15272；文档: `docs/77`（§六 运行姿态矩阵 / §七 真实执行设计 / §八 日志与留证 / §九 命令速查 / §5.1 Key 成本）· `README`（评测段：真实执行 + 姿态矩阵 + Key 成本）· `docs/44` #20 ✅（遗留\"开卷/闭卷\"",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f4",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "b2a",
+        "date": "2026-09-19",
+        "title": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只",
+        "problem": "[F37:评测] ①~④ 全部落地：真实执行 + agentic + Mock 适配器（+ 两处\"只在测试环境暴露\"的缺陷）（15:50）",
+        "solution": "调试日志（用户要求）: `logs/build-logs/2026-09-19_152521_评测-离线自测.log`（含 17 条 `\"level\":\"debug\"`：`AgentEngine.run 入口`、`上下文已构建`、`数据库 schema 已是最新`）· `_15272；文档: `docs/77`（§六 运行姿态矩阵 / §七 真实执行设计 / §八 日志与留证 / §九 命令速查 / §5.1 Key 成本）· `README`（评测段：真实执行 + 姿态矩阵 + Key 成本）· `docs/44` #20 ✅（遗留\"开卷/闭卷\"",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f1",
+          "f2",
+          "f4",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f7",
+        "date": "2026-09-19",
+        "title": "[F38:评测] 收尾：生成物污染扫描器（+21 假用例）+ 并发跑测试的假象（43 vs 33 文",
+        "problem": "[F38:评测] 收尾：生成物污染扫描器（+21 假用例）+ 并发跑测试的假象（43 vs 33 文件）（15:50）",
+        "solution": "① 扫描器新增 `EXCLUDE_DIRS`（temp/logs/release/benchmark-results/.obsidian/.codebuddy）② `SolutionRunner` 默认**通过即清、失败保留**（`keepWorkspace`/`keepOnFailure`，新增 CLI `--keep-workspace`）③ 单测的 `workDir` 收进 `temp/be；结果: 定义用例 **1855 → 1834**（污染消除），已执行 **1845**；数据一致性门禁 **PASS（1834 / 1845）**；`benchmark-runner.test.ts` **36/36**（含新增\"通过即清 / 失败保留\"两条断言）；陷阱登记: `关键陷阱清单.md` **#54 生成物留在仓库内会污染\"扫描类\"工具**（判据：凡被 gitignore 的产物目录，必须同时从扫描工具遍历范围排除）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f11",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-09-19",
+        "title": "[F38:评测] 收尾：生成物污染扫描器（+21 假用例）+ 并发跑测试的假象（43 vs 33 文",
+        "problem": "[F38:评测] 收尾：生成物污染扫描器（+21 假用例）+ 并发跑测试的假象（43 vs 33 文件）（15:50）",
+        "solution": "① 扫描器新增 `EXCLUDE_DIRS`（temp/logs/release/benchmark-results/.obsidian/.codebuddy）② `SolutionRunner` 默认**通过即清、失败保留**（`keepWorkspace`/`keepOnFailure`，新增 CLI `--keep-workspace`）③ 单测的 `workDir` 收进 `temp/be；结果: 定义用例 **1855 → 1834**（污染消除），已执行 **1845**；数据一致性门禁 **PASS（1834 / 1845）**；`benchmark-runner.test.ts` **36/36**（含新增\"通过即清 / 失败保留\"两条断言）；陷阱登记: `关键陷阱清单.md` **#54 生成物留在仓库内会污染\"扫描类\"工具**（判据：凡被 gitignore 的产物目录，必须同时从扫描工具遍历范围排除）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f11",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "b2a",
+        "date": "2026-09-19",
+        "title": "[F38:评测] 收尾：生成物污染扫描器（+21 假用例）+ 并发跑测试的假象（43 vs 33 文",
+        "problem": "[F38:评测] 收尾：生成物污染扫描器（+21 假用例）+ 并发跑测试的假象（43 vs 33 文件）（15:50）",
+        "solution": "① 扫描器新增 `EXCLUDE_DIRS`（temp/logs/release/benchmark-results/.obsidian/.codebuddy）② `SolutionRunner` 默认**通过即清、失败保留**（`keepWorkspace`/`keepOnFailure`，新增 CLI `--keep-workspace`）③ 单测的 `workDir` 收进 `temp/be；结果: 定义用例 **1855 → 1834**（污染消除），已执行 **1845**；数据一致性门禁 **PASS（1834 / 1845）**；`benchmark-runner.test.ts` **36/36**（含新增\"通过即清 / 失败保留\"两条断言）；陷阱登记: `关键陷阱清单.md` **#54 生成物留在仓库内会污染\"扫描类\"工具**（判据：凡被 gitignore 的产物目录，必须同时从扫描工具遍历范围排除）",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f7",
+          "f11",
+          "b2a"
+        ]
+      },
+      {
+        "moduleId": "f9",
+        "date": "2026-09-19",
+        "title": "[F39:性能] core 测试提速：先补基准再动手（串行 61.7s→53.6s；并行 -62% ",
+        "problem": "[F39:性能] core 测试提速：先补基准再动手（串行 61.7s→53.6s；并行 -62% 但只做开关）（17:00）",
+        "solution": "core:fast` 0.0s 失败）。已统一改为 **`process.execPath` + `vitest.mjs`**（脚本内 `createRequire` 解析入口，不经 shell、不碰 .cmd），官方运行器与快速模式同源；验证: 快速模式 43/43 全绿**且管线 JSON 未变**（mtime 15:43:30）；官方运行器 `--only core` 通过并刷新 `docs/pipeline/_vitest-core.json`；陷阱: 新增 **#55**（只在并行下失败）· **#56**（先补基准）；连带把\"spawn .cmd 必须 shell:true\"写进 `run-tests-log.mjs` 注释",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "f11",
+        "date": "2026-09-19",
+        "title": "[F39:性能] core 测试提速：先补基准再动手（串行 61.7s→53.6s；并行 -62% ",
+        "problem": "[F39:性能] core 测试提速：先补基准再动手（串行 61.7s→53.6s；并行 -62% 但只做开关）（17:00）",
+        "solution": "core:fast` 0.0s 失败）。已统一改为 **`process.execPath` + `vitest.mjs`**（脚本内 `createRequire` 解析入口，不经 shell、不碰 .cmd），官方运行器与快速模式同源；验证: 快速模式 43/43 全绿**且管线 JSON 未变**（mtime 15:43:30）；官方运行器 `--only core` 通过并刷新 `docs/pipeline/_vitest-core.json`；陷阱: 新增 **#55**（只在并行下失败）· **#56**（先补基准）；连带把\"spawn .cmd 必须 shell:true\"写进 `run-tests-log.mjs` 注释",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "p5a"
+        ]
+      },
+      {
+        "moduleId": "p5a",
+        "date": "2026-09-19",
+        "title": "[F39:性能] core 测试提速：先补基准再动手（串行 61.7s→53.6s；并行 -62% ",
+        "problem": "[F39:性能] core 测试提速：先补基准再动手（串行 61.7s→53.6s；并行 -62% 但只做开关）（17:00）",
+        "solution": "core:fast` 0.0s 失败）。已统一改为 **`process.execPath` + `vitest.mjs`**（脚本内 `createRequire` 解析入口，不经 shell、不碰 .cmd），官方运行器与快速模式同源；验证: 快速模式 43/43 全绿**且管线 JSON 未变**（mtime 15:43:30）；官方运行器 `--only core` 通过并刷新 `docs/pipeline/_vitest-core.json`；陷阱: 新增 **#55**（只在并行下失败）· **#56**（先补基准）；连带把\"spawn .cmd 必须 shell:true\"写进 `run-tests-log.mjs` 注释",
+        "status": "resolved",
+        "_tagModuleIds": [
+          "f9",
+          "f11",
+          "p5a"
+        ]
       }
     ],
     "MEMORY.md": [],
-    "README.md": []
+    "README.md": [],
+    "关键陷阱清单.md": []
   },
-  "generatedAt": "2026-09-19T06:14:46.901Z"
+  "generatedAt": "2026-09-19T10:38:05.108Z"
 }

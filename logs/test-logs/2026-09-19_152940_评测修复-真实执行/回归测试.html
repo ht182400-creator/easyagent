@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>EasyAgent 回归测试报告 — 2026-09-19 15:30:45.383</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;
+      --red:#f85149;--green:#3fb950;--amber:#d29922}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:var(--bg);color:var(--fg);
+     font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+h1{font-size:20px;margin:0 0 4px}
+h3{font-size:15px;margin:24px 0 8px}
+.meta{color:var(--dim);font-size:12px;margin-bottom:20px}
+.cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+      padding:12px 18px;min-width:120px}
+.card .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.card .v{font-size:22px;font-weight:600;margin-top:2px}
+.card.bad .v{color:var(--red)}
+.card.good .v{color:var(--green)}
+table{width:100%;border-collapse:collapse;background:var(--card);
+      border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd);font-size:13px}
+th{background:#1c2128;color:var(--dim);font-weight:600}
+tr.fail td{background:rgba(248,81,73,.08)}
+.red{color:var(--red)}.bold{font-weight:700}.ok td:nth-child(3){color:var(--green)}
+.case{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--red);
+      border-radius:6px;padding:10px 14px;margin-bottom:10px}
+.case-title{font-weight:600;margin-bottom:6px}
+pre.msg{margin:0;padding:8px;background:#0b0f14;border-radius:4px;overflow-x:auto;
+        color:#ffa198;font-size:12px;white-space:pre-wrap}
+details{margin-top:12px}summary{cursor:pointer;color:var(--dim)}
+pre.tail{background:#0b0f14;padding:10px;border-radius:6px;overflow-x:auto;
+         font-size:11.5px;color:var(--dim);max-height:320px}
+.foot{margin-top:28px;color:var(--dim);font-size:12px}
+</style></head><body>
+<h1>EasyAgent 回归测试报告</h1>
+<div class="meta">
+  运行时间：2026-09-19 15:30:45.383 ・ 范围：评测修复-真实执行 ・
+  Node：v24.13.0 ・ 提交：6409e08 ・
+  耗时：65.2s ・ 结论：<span class="red bold">❌ 存在失败</span>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="k">用例总数</div><div class="v">1144</div></div>
+  <div class="card good"><div class="k">通过</div><div class="v">1140</div></div>
+  <div class="card bad"><div class="k">失败</div><div class="v">4</div></div>
+  <div class="card"><div class="k">跳过</div><div class="v">0</div></div>
+</div>
+
+<table>
+<thead><tr><th>包</th><th>说明</th><th>结果</th><th>用例</th><th>通过</th><th>失败</th><th>跳过</th><th>耗时</th></tr></thead>
+<tbody>
+<tr class="fail">
+  <td>core</td><td>核心引擎</td>
+  <td>❌ 4 失败</td>
+  <td>1144</td><td>1140</td>
+  <td class="red bold">4</td>
+  <td>0</td>
+  <td>65.1s</td>
+</tr>
+</tbody></table>
+
+<h3 class="red">❌ core（4 个失败用例）</h3>
+<div class="case">
+  <div class="case-title">__tests__/benchmark-runner.test.ts ::  BenchmarkRunner - 错误路径与边界 非离线且提供商不存在时，报「未配置」而不是静默跑空（fail-fast）</div>
+  <pre class="msg">expected [Function] to throw error matching /未配置/ but got 'Cannot find module \'./FileTools.js\'…'</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/benchmark-runner.test.ts ::  SolutionRunner - 真实执行（嵌套 vitest，正/负对照） 正确解法 → 真实执行判定为通过（正对照）</div>
+  <pre class="msg">expected +0 to be 1 // Object.is equality</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/benchmark-runner.test.ts ::  BenchmarkMockAdapter - adapter 层离线自测 非 agentic：模型换成 Mock 适配器后仍能产出可判定的代码（mode=offline-mock）</div>
+  <pre class="msg">Cannot find module './FileTools.js'
+Require stack:
+- D:\Work_Area\AI\Claude Code  CN\packages\core\src\tools\index.ts</pre>
+</div>
+<div class="case">
+  <div class="case-title">__tests__/benchmark-runner.test.ts ::  BenchmarkMockAdapter - adapter 层离线自测 agentic：withToolCall 会真实走一遍工具链路（list_dir），且仍产出最终代码</div>
+  <pre class="msg">Cannot find module './FileTools.js'
+Require stack:
+- D:\Work_Area\AI\Claude Code  CN\packages\core\src\tools\index.ts</pre>
+</div>
+
+<h3>各包控制台输出（尾部 120 行）</h3>
+<details><summary>core — 核心引擎</summary>
+<pre class="tail">    platform: &quot;telegram&quot;
+[2026-09-19 15:30:36.993 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-19 15:30:36.993 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已停止[39m
+    platform: &quot;telegram&quot;
+[2026-09-19 15:30:36.994 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-19 15:30:36.994 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-19 15:30:36.995 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已停止[39m
+    platform: &quot;telegram&quot;
+[2026-09-19 15:30:36.998 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-19 15:30:37.000 +0800] [32mINFO[39m (easyagent): [36mIM 适配器已启动[39m
+    platform: &quot;telegram&quot;
+[2026-09-19 15:30:37.002 +0800] [31mERROR[39m (easyagent): [36m流式发送失败[39m
+    platform: &quot;telegram&quot;
+    error: &quot;Edit failed&quot;
+ ✓ src/__tests__/im-adapters.test.ts  (23 tests) 190ms
+[2026-09-19 15:30:37.598 +0800] [32mINFO[39m (easyagent): [36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）[39m
+    providerId: &quot;deepseek&quot;
+    added: 1
+    source: &quot;厂商API&quot;
+    models: [
+      &quot;deepseek-v5&quot;
+    ]
+[2026-09-19 15:30:37.604 +0800] [32mINFO[39m (easyagent): [36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）[39m
+    providerId: &quot;deepseek&quot;
+    added: 1
+    source: &quot;厂商API&quot;
+    models: [
+      &quot;deepseek-v5&quot;
+    ]
+[2026-09-19 15:30:37.605 +0800] [32mINFO[39m (easyagent): [36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）[39m
+    providerId: &quot;deepseek&quot;
+    added: 1
+    source: &quot;厂商API&quot;
+    models: [
+      &quot;brand-new-model&quot;
+    ]
+[2026-09-19 15:30:37.608 +0800] [32mINFO[39m (easyagent): [36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）[39m
+    providerId: &quot;deepseek&quot;
+    added: 1
+    source: &quot;厂商API&quot;
+    models: [
+      &quot;deepseek-v5&quot;
+    ]
+ ✓ src/__tests__/model-registry-freshness.test.ts  (16 tests) 19ms
+ ✓ src/__tests__/wechat-crypto.test.ts  (13 tests) 11ms
+[2026-09-19 15:30:38.751 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-19 15:30:38.758 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-19 15:30:38.761 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-19 15:30:38.761 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-19 15:30:38.768 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;test_tool&quot;
+[2026-09-19 15:30:38.770 +0800] [32mINFO[39m (easyagent): [36m工具已注册[39m
+    tool: &quot;tool1&quot;
+[2026-09-19 15:30:38.772 +0800] [32mINFO[39m (easyagent): [36m已加载会话[39m
+    count: 0
+[2026-09-19 15:30:38.772 +0800] [32mINFO[39m (easyagent): [36m会话管理器已初始化[39m
+[2026-09-19 15:30:38.774 +0800] [32mINFO[39m (easyagent): [36m会话已删除[39m
+    sessionId: &quot;test-session&quot;
+[2026-09-19 15:30:38.775 +0800] [32mINFO[39m (easyagent): [36m会话管理器已关闭[39m
+[2026-09-19 15:30:38.794 +0800] [32mINFO[39m (easyagent): [36m使用本地缓存模型目录[39m
+    source: &quot;jsDelivr CDN（缓存）&quot;
+[2026-09-19 15:30:38.795 +0800] [32mINFO[39m (easyagent): [36m配置加载完成[39m
+ ✓ src/__tests__/core.test.ts  (10 tests) 232ms
+ ✓ src/__tests__/provider-presets.test.ts  (14 tests) 13ms
+[2026-09-19 15:30:40.005 +0800] [31mERROR[39m (easyagent): [36mIM 适配器启动失败[39m
+    platform: &quot;wechat&quot;
+    error: &quot;企业微信接入需要配置 corpId 和 appSecret\n参考: https://developer.work.weixin.qq.com/document/path/90665&quot;
+ ✓ src/__tests__/wechat-adapter.test.ts  (9 tests) 148ms
+[2026-09-19 15:30:40.012 +0800] [32mINFO[39m (easyagent): [36m企业微信 URL 验证请求[39m
+[2026-09-19 15:30:40.013 +0800] [32mINFO[39m (easyagent): [36m企业微信 URL 验证请求[39m
+[2026-09-19 15:30:40.014 +0800] [32mINFO[39m (easyagent): [36m企业微信 URL 验证请求[39m
+[2026-09-19 15:30:40.015 +0800] [33mWARN[39m (easyagent): [36m企业微信 URL 验证解密失败，返回原始 echostr[39m
+    error: &quot;Invalid key length&quot;
+[2026-09-19 15:30:40.017 +0800] [33mWARN[39m (easyagent): [36m企业微信消息解析为空，跳过处理[39m
+[2026-09-19 15:30:40.018 +0800] [33mWARN[39m (easyagent): [36m企业微信消息解析为空，跳过处理[39m
+[2026-09-19 15:30:41.024 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {}
+[2026-09-19 15:30:41.032 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {}
+[2026-09-19 15:30:41.076 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {}
+[2026-09-19 15:30:41.100 +0800] [31mERROR[39m (easyagent): [36m解密失败[39m
+    error: {
+      &quot;code&quot;: &quot;ERR_CRYPTO_INVALID_IV&quot;
+    }
+ ✓ src/__tests__/encryption.test.ts  (18 tests) 642ms
+[2026-09-19 15:30:41.722 +0800] [32mINFO[39m (easyagent): [36m本地沙箱已就绪[39m
+    sandboxId: &quot;easyagent-local-1d4b9687&quot;
+    workspace: &quot;C:\Users\ht182\AppData\Local\Temp&quot;
+[2026-09-19 15:30:41.813 +0800] [32mINFO[39m (easyagent): [36m本地沙箱已就绪[39m
+    sandboxId: &quot;easyagent-local-b0d61ebb&quot;
+    workspace: &quot;C:\Users\ht182\AppData\Local\Temp&quot;
+[2026-09-19 15:30:41.923 +0800] [32mINFO[39m (easyagent): [36m本地沙箱已就绪[39m
+    sandboxId: &quot;easyagent-local-f76b7d52&quot;
+    workspace: &quot;C:\Users\ht182\AppData\Local\Temp&quot;
+[2026-09-19 15:30:41.926 +0800] [32mINFO[39m (easyagent): [36m本地沙箱已就绪[39m
+    sandboxId: &quot;easyagent-local-ed3b377d&quot;
+    workspace: &quot;C:\Users\ht182\AppData\Local\Temp&quot;
+[2026-09-19 15:30:44.587 +0800] [32mINFO[39m (easyagent): [36m本地沙箱已就绪[39m
+    sandboxId: &quot;easyagent-local-5b5dd8aa&quot;
+    workspace: &quot;C:\Users\ht182\AppData\Local\Temp&quot;
+[2026-09-19 15:30:44.629 +0800] [32mINFO[39m (easyagent): [36m本地沙箱已就绪[39m
+    sandboxId: &quot;easyagent-local-546aefe5&quot;
+    workspace: &quot;C:\Users\ht182\AppData\Local\Temp&quot;
+ ✓ src/__tests__/local-sandbox-exec.test.ts  (6 tests) 2920ms
+ ✓ src/__tests__/commandSafety.test.ts  (14 tests) 24ms
+
+ Test Files  1 failed | 42 passed (43)
+      Tests  4 failed | 1139 passed | 1 skipped (1144)
+   Start at  15:29:41
+   Duration  63.21s (transform 1.41s, setup 8ms, collect 3.51s, tests 45.37s, environment 12ms, prepare 6.68s)
+
+JSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-core.json
+</pre></details>
+
+<div class="foot">由 <code>scripts/run-tests-log.mjs</code> 生成 ・ 原始输出见同目录 <code>raw/</code></div>
+</body></html>

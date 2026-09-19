@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "timestamp": "2026-09-19 15:30:45.383",
+    "scope": "评测修复-真实执行",
+    "packages": [
+      "core"
+    ],
+    "elapsedMs": 65163,
+    "nodeVersion": "v24.13.0",
+    "gitCommit": "6409e08",
+    "totals": {
+      "tests": 1144,
+      "passed": 1140,
+      "failed": 4,
+      "skipped": 0
+    },
+    "allOk": false
+  },
+  "results": [
+    {
+      "pkg": "core",
+      "label": "核心引擎",
+      "status": "fail",
+      "exitCode": 1,
+      "elapsedMs": 65076,
+      "degraded": false,
+      "tests": 1144,
+      "passed": 1140,
+      "failed": 4,
+      "skipped": 0,
+      "failures": [
+        {
+          "file": "__tests__/benchmark-runner.test.ts",
+          "fullName": " BenchmarkRunner - 错误路径与边界 非离线且提供商不存在时，报「未配置」而不是静默跑空（fail-fast）",
+          "messages": "expected [Function] to throw error matching /未配置/ but got 'Cannot find module \\'./FileTools.js\\'…'"
+        },
+        {
+          "file": "__tests__/benchmark-runner.test.ts",
+          "fullName": " SolutionRunner - 真实执行（嵌套 vitest，正/负对照） 正确解法 → 真实执行判定为通过（正对照）",
+          "messages": "expected +0 to be 1 // Object.is equality"
+        },
+        {
+          "file": "__tests__/benchmark-runner.test.ts",
+          "fullName": " BenchmarkMockAdapter - adapter 层离线自测 非 agentic：模型换成 Mock 适配器后仍能产出可判定的代码（mode=offline-mock）",
+          "messages": "Cannot find module './FileTools.js'\nRequire stack:\n- D:\\Work_Area\\AI\\Claude Code  CN\\packages\\core\\src\\tools\\index.ts"
+        },
+        {
+          "file": "__tests__/benchmark-runner.test.ts",
+          "fullName": " BenchmarkMockAdapter - adapter 层离线自测 agentic：withToolCall 会真实走一遍工具链路（list_dir），且仍产出最终代码",
+          "messages": "Cannot find module './FileTools.js'\nRequire stack:\n- D:\\Work_Area\\AI\\Claude Code  CN\\packages\\core\\src\\tools\\index.ts"
+        }
+      ],
+      "consoleTail": "    platform: \"telegram\"\n[2026-09-19 15:30:36.993 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 适配器已启动\u001b[39m\n    platform: \"telegram\"\n[2026-09-19 15:30:36.993 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 适配器已停止\u001b[39m\n    platform: \"telegram\"\n[2026-09-19 15:30:36.994 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 适配器已启动\u001b[39m\n    platform: \"telegram\"\n[2026-09-19 15:30:36.994 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 适配器已启动\u001b[39m\n    platform: \"telegram\"\n[2026-09-19 15:30:36.995 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 适配器已停止\u001b[39m\n    platform: \"telegram\"\n[2026-09-19 15:30:36.998 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 适配器已启动\u001b[39m\n    platform: \"telegram\"\n[2026-09-19 15:30:37.000 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 适配器已启动\u001b[39m\n    platform: \"telegram\"\n[2026-09-19 15:30:37.002 +0800] \u001b[31mERROR\u001b[39m (easyagent): \u001b[36m流式发送失败\u001b[39m\n    platform: \"telegram\"\n    error: \"Edit failed\"\n ✓ src/__tests__/im-adapters.test.ts  (23 tests) 190ms\n[2026-09-19 15:30:37.598 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）\u001b[39m\n    providerId: \"deepseek\"\n    added: 1\n    source: \"厂商API\"\n    models: [\n      \"deepseek-v5\"\n    ]\n[2026-09-19 15:30:37.604 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）\u001b[39m\n    providerId: \"deepseek\"\n    added: 1\n    source: \"厂商API\"\n    models: [\n      \"deepseek-v5\"\n    ]\n[2026-09-19 15:30:37.605 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）\u001b[39m\n    providerId: \"deepseek\"\n    added: 1\n    source: \"厂商API\"\n    models: [\n      \"brand-new-model\"\n    ]\n[2026-09-19 15:30:37.608 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已从厂商 API 并入新模型（元数据未校准，已标记 unverified）\u001b[39m\n    providerId: \"deepseek\"\n    added: 1\n    source: \"厂商API\"\n    models: [\n      \"deepseek-v5\"\n    ]\n ✓ src/__tests__/model-registry-freshness.test.ts  (16 tests) 19ms\n ✓ src/__tests__/wechat-crypto.test.ts  (13 tests) 11ms\n[2026-09-19 15:30:38.751 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已加载会话\u001b[39m\n    count: 0\n[2026-09-19 15:30:38.758 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m会话管理器已初始化\u001b[39m\n[2026-09-19 15:30:38.761 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已加载会话\u001b[39m\n    count: 0\n[2026-09-19 15:30:38.761 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m会话管理器已初始化\u001b[39m\n[2026-09-19 15:30:38.768 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m工具已注册\u001b[39m\n    tool: \"test_tool\"\n[2026-09-19 15:30:38.770 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m工具已注册\u001b[39m\n    tool: \"tool1\"\n[2026-09-19 15:30:38.772 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已加载会话\u001b[39m\n    count: 0\n[2026-09-19 15:30:38.772 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m会话管理器已初始化\u001b[39m\n[2026-09-19 15:30:38.774 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m会话已删除\u001b[39m\n    sessionId: \"test-session\"\n[2026-09-19 15:30:38.775 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m会话管理器已关闭\u001b[39m\n[2026-09-19 15:30:38.794 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m使用本地缓存模型目录\u001b[39m\n    source: \"jsDelivr CDN（缓存）\"\n[2026-09-19 15:30:38.795 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m配置加载完成\u001b[39m\n ✓ src/__tests__/core.test.ts  (10 tests) 232ms\n ✓ src/__tests__/provider-presets.test.ts  (14 tests) 13ms\n[2026-09-19 15:30:40.005 +0800] \u001b[31mERROR\u001b[39m (easyagent): \u001b[36mIM 适配器启动失败\u001b[39m\n    platform: \"wechat\"\n    error: \"企业微信接入需要配置 corpId 和 appSecret\\n参考: https://developer.work.weixin.qq.com/document/path/90665\"\n ✓ src/__tests__/wechat-adapter.test.ts  (9 tests) 148ms\n[2026-09-19 15:30:40.012 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m企业微信 URL 验证请求\u001b[39m\n[2026-09-19 15:30:40.013 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m企业微信 URL 验证请求\u001b[39m\n[2026-09-19 15:30:40.014 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m企业微信 URL 验证请求\u001b[39m\n[2026-09-19 15:30:40.015 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36m企业微信 URL 验证解密失败，返回原始 echostr\u001b[39m\n    error: \"Invalid key length\"\n[2026-09-19 15:30:40.017 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36m企业微信消息解析为空，跳过处理\u001b[39m\n[2026-09-19 15:30:40.018 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36m企业微信消息解析为空，跳过处理\u001b[39m\n[2026-09-19 15:30:41.024 +0800] \u001b[31mERROR\u001b[39m (easyagent): \u001b[36m解密失败\u001b[39m\n    error: {}\n[2026-09-19 15:30:41.032 +0800] \u001b[31mERROR\u001b[39m (easyagent): \u001b[36m解密失败\u001b[39m\n    error: {}\n[2026-09-19 15:30:41.076 +0800] \u001b[31mERROR\u001b[39m (easyagent): \u001b[36m解密失败\u001b[39m\n    error: {}\n[2026-09-19 15:30:41.100 +0800] \u001b[31mERROR\u001b[39m (easyagent): \u001b[36m解密失败\u001b[39m\n    error: {\n      \"code\": \"ERR_CRYPTO_INVALID_IV\"\n    }\n ✓ src/__tests__/encryption.test.ts  (18 tests) 642ms\n[2026-09-19 15:30:41.722 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已就绪\u001b[39m\n    sandboxId: \"easyagent-local-1d4b9687\"\n    workspace: \"C:\\Users\\ht182\\AppData\\Local\\Temp\"\n[2026-09-19 15:30:41.813 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已就绪\u001b[39m\n    sandboxId: \"easyagent-local-b0d61ebb\"\n    workspace: \"C:\\Users\\ht182\\AppData\\Local\\Temp\"\n[2026-09-19 15:30:41.923 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已就绪\u001b[39m\n    sandboxId: \"easyagent-local-f76b7d52\"\n    workspace: \"C:\\Users\\ht182\\AppData\\Local\\Temp\"\n[2026-09-19 15:30:41.926 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已就绪\u001b[39m\n    sandboxId: \"easyagent-local-ed3b377d\"\n    workspace: \"C:\\Users\\ht182\\AppData\\Local\\Temp\"\n[2026-09-19 15:30:44.587 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已就绪\u001b[39m\n    sandboxId: \"easyagent-local-5b5dd8aa\"\n    workspace: \"C:\\Users\\ht182\\AppData\\Local\\Temp\"\n[2026-09-19 15:30:44.629 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已就绪\u001b[39m\n    sandboxId: \"easyagent-local-546aefe5\"\n    workspace: \"C:\\Users\\ht182\\AppData\\Local\\Temp\"\n ✓ src/__tests__/local-sandbox-exec.test.ts  (6 tests) 2920ms\n ✓ src/__tests__/commandSafety.test.ts  (14 tests) 24ms\n\n Test Files  1 failed | 42 passed (43)\n      Tests  4 failed | 1139 passed | 1 skipped (1144)\n   Start at  15:29:41\n   Duration  63.21s (transform 1.41s, setup 8ms, collect 3.51s, tests 45.37s, environment 12ms, prepare 6.68s)\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-core.json\n"
+    }
+  ]
+}

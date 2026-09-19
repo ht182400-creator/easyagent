@@ -237,7 +237,7 @@
             "label": "SWE-bench 评测体系",
             "desc": "自动化评测\n数据集+评分算法",
             "status": "done",
-            "testCount": 0
+            "testCount": 35
           },
           {
             "id": "b2b",
@@ -307,12 +307,12 @@
     ]
   },
   "kpi": {
-    "testCases": 1798,
+    "testCases": 1833,
     "testPassRate": 100,
-    "testPassed": 1809,
+    "testPassed": 1844,
     "testFailed": 0,
     "testSkipped": 0,
-    "_vitestTotal": 1809,
+    "_vitestTotal": 1844,
     "_uncovered": 0,
     "_coveragePct": 101,
     "_stale": false,
@@ -321,7 +321,7 @@
     "scoreTotal": 100,
     "modes": 4,
     "_source": "vitest-reports(6 files)",
-    "_totalFiles": 48,
+    "_totalFiles": 49,
     "_vitestFiles": [
       "_vitest-core.json",
       "_vitest-desktop.json",
@@ -341,7 +341,7 @@
         "label": "测试覆盖",
         "score": 100,
         "max": 100,
-        "note": "1809通过 (100%)/1809已执行 / 1798 定义 用例通过"
+        "note": "1844通过 (100%)/1844已执行 / 1833 定义 用例通过"
       },
       {
         "label": "分支优化",
@@ -406,9 +406,9 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1798用例"
+      "note": "29/29模块+1833用例"
     }
   ],
-  "lastUpdated": "2026-09-19T06:14:46.917Z",
+  "lastUpdated": "2026-09-19T10:38:05.137Z",
   "source": "module-registry.mjs (统一注册表同步)"
 }

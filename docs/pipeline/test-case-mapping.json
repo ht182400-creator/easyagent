@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-19T06:14:46.694Z",
-    "totalTestFiles": 48,
-    "totalTestCases": 1798,
+    "generatedAt": "2026-09-19T10:38:04.856Z",
+    "totalTestFiles": 49,
+    "totalTestCases": 1833,
     "unmappedCases": 577,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
@@ -416,8 +416,19 @@
     },
     "b2a": {
       "moduleId": "b2a",
-      "totalCases": 0,
-      "subModules": {}
+      "totalCases": 35,
+      "subModules": {
+        "core": {
+          "name": "SWE-bench 评测体系",
+          "cases": 35,
+          "files": [
+            {
+              "path": "packages/core/src/__tests__/benchmark-runner.test.ts",
+              "cases": 35
+            }
+          ]
+        }
+      }
     },
     "b2b": {
       "moduleId": "b2b",

@@ -2,7 +2,7 @@
 
 > 📖 **新手导航**：`docs/README.md` → `docs/00_新手上手指南.md`
 > 🔎 **精简版 v3.0（2026-09-19 重写：合并重复、修正失效状态、陷阱表外置以控制体积）**
-> 📚 附录：`关键陷阱清单.md`（52 条代码/打包陷阱 + 15 条环境陷阱 + bat 铁律）· 详表 `docs/修复汇总.md`（按日期倒序）· 管线 `docs/pipeline/ARCHITECTURE.md` · 审核 `docs/62`
+> 📚 附录：`关键陷阱清单.md`（57 条代码/打包陷阱 + 15 条环境陷阱 + bat 铁律）· 详表 `docs/修复汇总.md`（按日期倒序）· 管线 `docs/pipeline/ARCHITECTURE.md` · 审核 `docs/62`
 > ⚠️ **涉及构建 / 打包 / 环境 / 桌面端 / 测试隔离的问题，动手前先读 `关键陷阱清单.md`**（该表最易踩且症状与根因常常无关）。
 
 ## 目录
@@ -22,8 +22,8 @@
 | 版本 | **v0.6.43**（唯一版本源 `version.json`；改后跑 `node scripts/sync-version.mjs` 同步 7 个 package.json + server 硬编码兜底） |
 | 本版主题 | 语义扫描性能治理（**11.0s → 0.26s，累计 43×**）+ 截断可见化 + 沙箱不经 shell + 端口治理 |
 | 双通道 | GitHub ✅ / Forgejo ✅（`main = 713e095`、tag `v0.6.43`、Release id=82）→ §3 |
-| 测试权威数字 | 定义用例 **1798**（真源 `docs/pipeline/test-case-mapping.json`，CI 门禁校验）/ Vitest 执行 **1809 全通过**。**任何历史数字（1195…1805 等）都已过期，禁止引用** |
-| 已登记遗留 | ① 语义解析 ~150ms 剩余空间（`docs/44` #19，做前先补解析基准）② ~~Forgejo 缺 v0.6.40~42 的 Release~~ → 已于 2026-09-19 补建（id=79/80/81，正文取自 `CHANGELOG.md`） |
+| 测试权威数字 | 定义用例 **1833**（真源 `docs/pipeline/test-case-mapping.json`，CI 门禁校验）/ Vitest 执行 **1844 全通过**（core 1144 · server 278 · frontend 149 · desktop 215 · langgraph 57 · web 2）。**任何历史数字（1822/1833/1798/1809 及更早）都已过期，禁止引用** |
+| 已登记遗留 | ① 语义解析 ~150ms 剩余空间（`docs/44` #19，做前先补解析基准）② ~~Forgejo 缺 v0.6.40~42 的 Release~~ → 已于 2026-09-19 补建（id=79/80/81）③ **评测接真实测试执行**（`docs/44` #20：现在只做结构化启发式，**不跑测试** → 不得声称 SWE-bench Verified） |
 | 版本历史 | v0.6.42 = 修「关于」面板 vundefined（ESM 裸 `__dirname` 致 `/api/version` 500）· v0.6.41 = P1 全清 + 轻量压测 · 更早见 `CHANGELOG.md` |
 
 ---
@@ -92,6 +92,7 @@ build.bat --verify     # 仅预检查
 start-backend.bat      # 后端 localhost:3456        start-frontend.bat   # Web 前端 localhost:5173
 pnpm build             # core → cli → server → desktop tsup    pnpm build:web  # web 生产构建
 pnpm test:all          # core → server → langgraph → desktop → frontend → web → cli
+pnpm test:core:fast    # core 并行快跑（-62%）；结果仅"可重跑"场景采信，不写管线 JSON
 node scripts/unified-sync.mjs   # 统一同步管线数据（唯一入口）
 ```
 
@@ -234,6 +235,7 @@ node scripts/unified-sync.mjs   # 统一同步管线数据（唯一入口）
 
 ```bash
 pnpm test:log / pnpm test:log:smoke   # 全量回归+分级日志 / 冒烟（秒级）
+pnpm test:core:fast                   # core 并行快跑（19.9s vs 53.6s，-62%）；**不写管线 JSON**，结果仅"可重跑"场景采信（陷阱 #55）
 pnpm verify:all                       # 全部门禁（唯一正确入口）
 pnpm smoke                            # 真实启动 → health → sessions
 pnpm verify:data / verify:tokens / verify:runtime-log
@@ -308,3 +310,4 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 | `docs/修复汇总.md` | 全部修复详表（新→旧），每个问题含现象/根因/修复/验证 |
 | `docs/pipeline/ARCHITECTURE.md` | 管线系统架构 |
 | `docs/62` / `docs/63` | 专家团审核结论 / P0 优化实施方案与回归记录 |
+| `docs/77` | **SWE-bench 评测现状与离线自测**：无 Key 时的三种用法（dry-run / `--offline` / `--generate-readme`）；**口径限制（结构化启发式，不执行测试 → 禁止称 SWE-bench Verified）**；四处硬伤修复记录 |

@@ -1,0 +1,19 @@
+[2026-09-19 15:29:40.274] [INFO ] [test-runner] ==============================================================================
+[2026-09-19 15:29:40.277] [INFO ] [test-runner] EasyAgent 回归测试开始 — 范围: 评测修复-真实执行（core）
+[2026-09-19 15:29:40.280] [INFO ] [test-runner] 时间: 2026-09-19 15:29:40.280  提交: 6409e08  Node: v24.13.0
+[2026-09-19 15:29:40.282] [INFO ] [test-runner] 日志目录: D:\Work_Area\AI\Claude Code  CN\logs\test-logs\2026-09-19_152940_评测修复-真实执行
+[2026-09-19 15:29:40.285] [INFO ] [test-runner] ==============================================================================
+[2026-09-19 15:29:40.289] [INFO ] [test-runner] ▶ 开始测试 [core] 核心引擎 — 工作目录 packages/core
+[2026-09-19 15:29:40.291] [DEBUG] [test-runner] 执行命令: npx vitest run  (timeout=1200000ms)
+[2026-09-19 15:30:45.373] [DEBUG] [test-runner] [core] exit=1 耗时=65.1s 用例=1144 通过=1140 失败=4 跳过=0
+[2026-09-19 15:30:45.373] [ERROR] [test-runner] [core] 存在 4 个失败用例：
+[2026-09-19 15:30:45.375] [ERROR] [test-runner]   ✗ __tests__/benchmark-runner.test.ts ::  BenchmarkRunner - 错误路径与边界 非离线且提供商不存在时，报「未配置」而不是静默跑空（fail-fast）
+[2026-09-19 15:30:45.378] [ERROR] [test-runner]   ✗ __tests__/benchmark-runner.test.ts ::  SolutionRunner - 真实执行（嵌套 vitest，正/负对照） 正确解法 → 真实执行判定为通过（正对照）
+[2026-09-19 15:30:45.380] [ERROR] [test-runner]   ✗ __tests__/benchmark-runner.test.ts ::  BenchmarkMockAdapter - adapter 层离线自测 非 agentic：模型换成 Mock 适配器后仍能产出可判定的代码（mode=offline-mock）
+[2026-09-19 15:30:45.381] [ERROR] [test-runner]   ✗ __tests__/benchmark-runner.test.ts ::  BenchmarkMockAdapter - adapter 层离线自测 agentic：withToolCall 会真实走一遍工具链路（list_dir），且仍产出最终代码
+[2026-09-19 15:30:45.381] [INFO ] [test-runner] ❌ 结束测试 [core] 耗时 65.1s — 1140/1144 通过，4 失败
+[2026-09-19 15:30:45.382] [INFO ] [test-runner] ------------------------------------------------------------------------------
+[2026-09-19 15:30:45.382] [INFO ] [test-runner] 汇总: 1144 用例 / 1140 通过 / 4 失败 / 0 跳过 / 耗时 65.2s
+[2026-09-19 15:30:45.382] [ERROR] [test-runner] core       ❌ 失败  1140/1144
+[2026-09-19 15:30:45.382] [INFO ] [test-runner] ❌ 结论: 存在失败，请查看下方明细与 HTML 报告
+[2026-09-19 15:30:45.382] [INFO ] [test-runner] ------------------------------------------------------------------------------

@@ -76,6 +76,27 @@ const FILE_MODULE_MAP = [
 const DEFAULT_MODULE = { moduleId: '_unmapped', subModule: '未归类' };
 
 /**
+ * 扫描时跳过的目录名
+ *
+ * ⚠️ 2026-09-19 补 `temp` 等生成目录：
+ * 评测的"真实执行"会在 `temp/benchmark-run/<题目>/` 落盘 `solution.test.ts`（数据集里的测试原文）。
+ * 它们**不是本仓的测试资产**，但会被本函数当成测试文件统计 → 定义用例被虚增
+ * （实测 +21 条），进而触发数据一致性门禁的 `_stale`（已执行 < 映射定义）。
+ * 结论：**凡是被脚本生成到仓库内的测试文件，其所在目录必须在此跳过**。
+ */
+const EXCLUDE_DIRS = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'temp',
+  'release',
+  'logs',
+  'benchmark-results',
+  '.obsidian',
+  '.codebuddy',
+]);
+
+/** 
  * 递归获取目录下所有测试文件
  */
 function findTestFiles(dir, excludeNodeModules = true) {
@@ -85,7 +106,7 @@ function findTestFiles(dir, excludeNodeModules = true) {
     for (const entry of entries) {
       const fullPath = resolve(dir, entry.name);
       if (entry.isDirectory()) {
-        if (excludeNodeModules && (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'dist')) continue;
+        if (excludeNodeModules && EXCLUDE_DIRS.has(entry.name)) continue;
         results.push(...findTestFiles(fullPath, excludeNodeModules));
       } else if (/\.(test|spec)\.(ts|tsx|mjs|js)$/i.test(entry.name)) {
         // 排除 node_modules 下的文件
