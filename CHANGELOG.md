@@ -5,6 +5,38 @@ All notable changes to EasyAgent will be documented in this file.
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/),
 版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [0.6.41] - 2026-09-18
+
+> **本版主题：P1 清单全部清零 + 性能治理** —— MCP 升级 2025-06-18 规范（P1-3）、
+> 性能基线与 CI 回归告警（P1-7）、轻量压测（发现并修复 semantic/map 10s 级服务冻结）。
+> 进度：`docs/75` · `docs/76` · `docs/74`
+
+### Changed
+
+- **P1-3 MCP 升级**：新增 `StreamableHttpTransport`（2025-06-18 规范：单 JSON/SSE 响应分派、
+  `MCP-Session-Id`、`MCP-Protocol-Version` 头、DELETE 终止）；`MCPClient` 双传输分派
+  （`url` → HTTP，`command` → stdio）；协议版本协商（2025-06-18/2025-03-26/2024-11-05）；
+  补 stdio 遗漏的 `notifications/initialized`（`docs/75`）
+- **P1-7 性能基线**：`scripts/perf-baseline.mjs`（`pnpm bench:baseline` / `bench:check`）——
+  冷启动（3 轮中位数）/ health 稳态延迟 / 工具 schema token；>20% 告警、>50% 失败；
+  登记 `verify:all` 与 ci.yml smoke job（`docs/74`）
+- **轻量压测**：`scripts/load-test.mjs`（`pnpm bench:load`，零新依赖，4 场景双实例）——
+  health 吞吐 / sessions SQLite 并发读 / **事件循环阻塞量化** / chat 突发限流（`docs/76`）
+- **semantic/map 阻塞修复**（压测实锤 10s 级服务冻结后落地）：
+  ① `buildSemanticMap` 增 `expandToRepoRoot` 选项（显式 path 不再放大到全仓）
+  ② 长驻 Worker 承接 map/search/references 全部扫描（主线程零阻塞）
+  ③ map SWR 缓存（过期先返回陈旧 + 后台重建）
+- **测试副作用清除**：`preview-media-tools.test.ts` mock `execSync`，全量回归不再弹出浏览器
+
+### 验证
+
+| 验证项 | 结果 |
+|--------|------|
+| 全量回归 | ✅ **1758 / 1758 通过，0 失败** |
+| MCP 新规范服务器专项（5 条）| ✅ 全流程/版本协商/SSE/配置校验 |
+| 压测 | ✅ health 2342 req/s · sessions 3426 req/s · 限流突发精确 · **阻塞 10015ms → 2ms** |
+| 性能基线 | ✅ `benchmarks/baseline.json` 已建 + 门禁负向验证 |
+
 ---
 
 ## [0.6.40] - 2026-09-18

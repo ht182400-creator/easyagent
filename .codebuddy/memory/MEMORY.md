@@ -259,7 +259,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 
 ### 版本号现状（2026-09-18）
 
-- `version.json` = **0.6.40**，tag = **v0.6.40**（本次发布：P1 收官——拆分/bootstrap/P1-5 迁移/P1-6 错误中间件+冒烟）
+- `version.json` = **0.6.41**，tag = **v0.6.41**（本次发布：P1 全清——MCP 2025 规范/性能基线/压测/semantic 阻塞修复）
 - 发版后 post-commit 钩子会再次改写 `docs/pipeline/*.json` → **工作区长期残留这 5~6 个文件的差异属正常生成物行为**，用 `git commit --no-verify` 可收敛一次，但钩子会再跑一轮（不必继续追）
 
 ### 新增/变更的环境变量（服务端）
