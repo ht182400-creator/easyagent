@@ -1,6 +1,6 @@
 {
   "name": "easyagent",
-  "version": "0.6.42",
+  "version": "0.6.43",
   "description": "AI编程助手 - 集成中国主流大模型的全功能AI Agent",
   "private": true,
   "packageManager": "pnpm@11.7.0",
@@ -31,6 +31,8 @@
     "verify:tokens": "node scripts/verify-css-tokens.mjs",
     "verify:runtime-log": "node scripts/verify-runtime-log.mjs",
     "verify:server-routes": "node scripts/verify-server-routes.mjs",
+    "typecheck:frontend": "cd packages/frontend && npx tsc --noEmit -p tsconfig.json",
+    "verify:types": "node scripts/verify-frontend-types.mjs",
     "verify:readme-format": "node scripts/verify-readme-format.mjs",
     "verify:all": "node scripts/verify-all.mjs",
     "smoke": "node scripts/smoke-test.mjs",

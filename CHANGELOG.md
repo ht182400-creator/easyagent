@@ -5,6 +5,51 @@ All notable changes to EasyAgent will be documented in this file.
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/),
 版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [0.6.43] - 2026-09-19
+
+> **本版主题：语义扫描性能治理（11.0s → 0.26s，累计 43×）+ 静默失败可见化 + 端口/沙箱修复**
+> 明细：`docs/修复汇总.md` 2026-09-19 六条 · 性能画像与剩余空间：`docs/44` #19
+
+### Changed
+
+- **语义扫描四轮优化**（`packages/core/src/semantic/SemanticAnalyzer.ts`）：
+  - 第一轮 **11.0s → 0.14s**：修 `extractSymbols` 的 **O(n²) 行号计算**（每个符号都复制前缀 + 全文数换行；
+    单个压缩 bundle 25804 处匹配就要 10.3s）、签名提取的 O(n·m) 尾串复制、跳过压缩产物（`looksMinified`）、
+    忽略 `.obsidian` / `vendor`、单文件符号上限 3000
+  - 第二轮 **mtime 增量缓存**：`analyzeFileCached`（指纹 = `mtimeMs + size`）+ `clearAnalysisCache`，
+    文件没变则跳过读盘与正则（热跑 ~36ms）；默认 `maxFiles` 300 → **1000**（旧值漏扫 216 个代码文件）
+  - 第三轮：**截断可见化**（`stats.totalCandidates` / `stats.truncated`、工具与 UI 告警）、
+    地图页新增「深度」「文件上限」输入与「强制重扫」（`depth`/`maxFiles` 同时作用于搜索与引用）
+  - 第四轮（剖析驱动，瓶颈是磁盘 I/O 占 59%）：`analyzeFromBuffer` **Buffer 直读**（行数按字节统计、
+    `size` 取 `buf.length`、无符号模式语言 md/json 跳过解码）、**`buildSemanticMapAsync`** 并发读盘、
+    **`getCodebaseOverviewAsync`**（概览端点原在主线程同步阻塞 ~620ms → 213ms）、忽略模式预编译
+- **沙箱不经 shell 执行**（`LocalSandbox`）：`node -e 'console.log(1+1)'` 因 `(` `)` 被元字符黑名单拒绝 →
+  改为解析 argv 后 `spawn(file, args, { shell: false })`（注入从结构上不可能），仅 `.cmd/.bat` 走 cmd.exe；
+  新增 `commandSafety.ts`（引号感知校验；Docker 模式仍拒引号外元字符）
+- **预览端口避开 3000**（`PreviewTools`）：默认 3000（与本机 Forgejo 冲突）→ 在 **3500-3599** 自动挑空闲；
+  `isPortAvailable` 由"死代码 + 恒为真"改为真异步实现；显式端口被占用时如实告警而非擅自改端口
+
+### Fixed
+
+- **语义地图统计全 0**（静默失败）：未传 `path` 时服务端退回 `process.cwd()`（Electron 下可能是安装目录 / System32）
+  → 扫 0 文件却返回 `success: true` + 全 0 统计。改为默认使用注入的 `projectRoot`，显式路径非法返回 **400**；
+  前端记住上次工作目录，空结果时回显"本次扫描根"
+- **沙箱超时后请求永久挂起**：`proc.on('close')` 中 `if (killed) return` 使 Promise 永不落地 → 改为 reject
+- **安装脚本端口文案错误**：`install.ps1` / `install.sh` 共 4 处 `localhost:3000` → `localhost:3456`
+- 细节：`analyzeFile` 原来每个文件读两遍盘；概览新增 `lineCountCache` 复用行数
+
+### Docs
+
+- `docs/修复汇总.md`（同日六条，含"伪优化已证伪"记录）· `docs/03`（语义模块 46 → 61 用例、权威数字 1798/1809）·
+  `docs/76`（压测遗留项标注闭环）· `docs/66` · `docs/52`（端口规划 v2.1）· `docs/44`（#19 剩余空间）
+
+### 验证
+
+- **Vitest 1809/1809 全绿**（core 1108 · server 278 · frontend 149 · desktop 215 · langgraph 57 · web 2）·
+  `verify:all` 10/10 · `prettier --check` 0 不符 · 端到端探针（概览 / 地图 / 截断字段）通过
+
+---
+
 ## [0.6.42] - 2026-09-19
 
 > **本版主题：修复「关于」面板版本号不显示（vundefined）** —— `docs/修复汇总.md` 2026-09-19 条目
@@ -50,12 +95,12 @@ server + frontend 416/416
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 全量回归 | ✅ **1758 / 1758 通过，0 失败** |
-| MCP 新规范服务器专项（5 条）| ✅ 全流程/版本协商/SSE/配置校验 |
-| 压测 | ✅ health 2342 req/s · sessions 3426 req/s · 限流突发精确 · **阻塞 10015ms → 2ms** |
-| 性能基线 | ✅ `benchmarks/baseline.json` 已建 + 门禁负向验证 |
+| 验证项                       | 结果                                                                               |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| 全量回归                     | ✅ **1758 / 1758 通过，0 失败**                                                    |
+| MCP 新规范服务器专项（5 条） | ✅ 全流程/版本协商/SSE/配置校验                                                    |
+| 压测                         | ✅ health 2342 req/s · sessions 3426 req/s · 限流突发精确 · **阻塞 10015ms → 2ms** |
+| 性能基线                     | ✅ `benchmarks/baseline.json` 已建 + 门禁负向验证                                  |
 
 ---
 
@@ -78,7 +123,7 @@ server + frontend 416/416
   事务化 + fail-fast + 断点续跑 + 测试 mock 环境自动跳过）；sessions.db（v1 幂等基线 +
   v2 性能索引）与 langgraph-checkpoints.db（v1 基线）已接入。
   **新增迁移只追加不改历史，基线必须幂等**（`docs/72`）
-- **P1-6 全局错误中间件**：`middleware/errorHandler.ts` —— /api/* 统一
+- **P1-6 全局错误中间件**：`middleware/errorHandler.ts` —— /api/\* 统一
   `{ success:false, error:{ code, message } }`；堆栈只进日志不进响应；headersSent 防护；
   新增 `asyncHandler()`（Express 4 不捕获 async 路由 rejection，新代码必须包裹）（`docs/73`）
 - **P1-6 CI 冒烟**：`scripts/smoke-test.mjs`（`pnpm smoke`）+ ci.yml `smoke-test` job ——
@@ -97,13 +142,13 @@ server + frontend 416/416
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 路由快照（93 条双向一致，未动基线） | ✅ |
-| 全量回归 | ✅ **1753 / 1753 通过，0 失败**（+24：迁移器 18 + 错误中间件 6） |
-| `verify:server-routes` | ✅ 6/6 PASS（多轮） |
-| 迁移器专项 + 真实存量库副本验证 | ✅ 数据零丢失，版本 0→2 |
-| 本地冒烟（真实启动） | ✅ health 200 + sessions 200 |
+| 验证项                              | 结果                                                             |
+| ----------------------------------- | ---------------------------------------------------------------- |
+| 路由快照（93 条双向一致，未动基线） | ✅                                                               |
+| 全量回归                            | ✅ **1753 / 1753 通过，0 失败**（+24：迁移器 18 + 错误中间件 6） |
+| `verify:server-routes`              | ✅ 6/6 PASS（多轮）                                              |
+| 迁移器专项 + 真实存量库副本验证     | ✅ 数据零丢失，版本 0→2                                          |
+| 本地冒烟（真实启动）                | ✅ health 200 + sessions 200                                     |
 
 ---
 
@@ -126,18 +171,18 @@ server + frontend 416/416
 - **TDZ 运行时错误（拆分过程中发现并修复）**：`/api/test/open-panel` 依赖 WS 段的
   `wsSubscriptions`（`const`）。旧代码把引用写在回调里（请求时才执行）所以从未暴露；
   注册式搬迁让引用在 `createApp` **立即求值** → `ReferenceError: Cannot access
-  'wsSubscriptions' before initialization`，3 个测试文件加载失败。
+'wsSubscriptions' before initialization`，3 个测试文件加载失败。
   语言服务器不报 TDZ（静态上合法）—— **"编译通过"不等于"运行正确"的又一实证**
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
+| 验证项               | 结果                               |
+| -------------------- | ---------------------------------- |
 | 路由快照（比对模式） | ✅ 93 条与基线逐条一致（未动基线） |
-| 服务端全量测试 | ✅ 265 / 265 |
-| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
-| 类型检查 / 构建 | ✅ 0 诊断 / tsup 退出码 0 |
-| `pnpm verify:all` | ✅ 8 / 8（含路由顺序运行时探针） |
+| 服务端全量测试       | ✅ 265 / 265                       |
+| 全量回归             | ✅ **1729 / 1729 通过，0 失败**    |
+| 类型检查 / 构建      | ✅ 0 诊断 / tsup 退出码 0          |
+| `pnpm verify:all`    | ✅ 8 / 8（含路由顺序运行时探针）   |
 
 ---
 
@@ -164,14 +209,14 @@ server + frontend 416/416
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 路由快照（比对模式） | ✅ 93 条与基线逐条一致（未动基线） |
-| 服务端全量测试 | ✅ 265 / 265 |
-| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
-| 类型检查（语言服务器） | ✅ 0 诊断 |
-| 构建（tsup） | ✅ 退出码 0 |
-| `pnpm verify:all` | ✅ 8 / 8（含路由顺序运行时探针） |
+| 验证项                 | 结果                               |
+| ---------------------- | ---------------------------------- |
+| 路由快照（比对模式）   | ✅ 93 条与基线逐条一致（未动基线） |
+| 服务端全量测试         | ✅ 265 / 265                       |
+| 全量回归               | ✅ **1729 / 1729 通过，0 失败**    |
+| 类型检查（语言服务器） | ✅ 0 诊断                          |
+| 构建（tsup）           | ✅ 退出码 0                        |
+| `pnpm verify:all`      | ✅ 8 / 8（含路由顺序运行时探针）   |
 
 ---
 
@@ -198,14 +243,14 @@ server + frontend 416/416
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 路由快照（比对模式） | ✅ 5/5，**93 条与基线逐条一致**（未动基线） |
-| 服务端全量测试 | ✅ 265 / 265 |
-| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
-| 类型检查（语言服务器） | ✅ `packages/server/src` 0 诊断 |
-| 构建（tsup） | ✅ 退出码 0 |
-| `pnpm verify:all` | ✅ 8 / 8（含路由顺序运行时探针） |
+| 验证项                 | 结果                                        |
+| ---------------------- | ------------------------------------------- |
+| 路由快照（比对模式）   | ✅ 5/5，**93 条与基线逐条一致**（未动基线） |
+| 服务端全量测试         | ✅ 265 / 265                                |
+| 全量回归               | ✅ **1729 / 1729 通过，0 失败**             |
+| 类型检查（语言服务器） | ✅ `packages/server/src` 0 诊断             |
+| 构建（tsup）           | ✅ 退出码 0                                 |
+| `pnpm verify:all`      | ✅ 8 / 8（含路由顺序运行时探针）            |
 
 ---
 
@@ -252,20 +297,20 @@ v0.6.33 引入 `unverified`（由「厂商 API 直连」发现的新模型，元
 
 只验证「能通过」是不够的，必须证明它**真的能失败**：
 
-| 验证 | 结果 |
-|------|------|
-| 正常运行 | ✅ 46 个已定义类 / 91 个源码文件 / 18 个组件类 → 零未定义 |
+| 验证         | 结果                                                                                               |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| 正常运行     | ✅ 46 个已定义类 / 91 个源码文件 / 18 个组件类 → 零未定义                                          |
 | **负向测试** | ✅ 注入含 `badge-green`、`btn-outline-primary` 的临时文件 → **精准抓到 2 个** + 文件位置，退出码 1 |
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 服务端测试 | ✅ 33 / 33（+3） |
-| 全量回归 | ✅ **1729 / 1729 通过，0 失败** |
-| `pnpm verify:all` | ✅ **8 / 8** |
-| 类型检查（语言服务器） | ✅ 0 诊断 |
-| 构建 core / server / web | ✅ 全部退出码 0 |
+| 验证项                   | 结果                            |
+| ------------------------ | ------------------------------- |
+| 服务端测试               | ✅ 33 / 33（+3）                |
+| 全量回归                 | ✅ **1729 / 1729 通过，0 失败** |
+| `pnpm verify:all`        | ✅ **8 / 8**                    |
+| 类型检查（语言服务器）   | ✅ 0 诊断                       |
+| 构建 core / server / web | ✅ 全部退出码 0                 |
 
 ### 沉淀的约定
 
@@ -312,12 +357,12 @@ v0.6.33 引入 `unverified`（由「厂商 API 直连」发现的新模型，元
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| Anthropic 适配器 + 预设测试 | ✅ 30 / 30 |
-| 目录刷新 | ✅ 13 家 / 58 个模型 |
-| 全量回归 | ✅ **1726 / 1726 通过，0 失败** |
-| `pnpm verify:all` | ✅ **7 / 7** |
+| 验证项                      | 结果                            |
+| --------------------------- | ------------------------------- |
+| Anthropic 适配器 + 预设测试 | ✅ 30 / 30                      |
+| 目录刷新                    | ✅ 13 家 / 58 个模型            |
+| 全量回归                    | ✅ **1726 / 1726 通过，0 失败** |
+| `pnpm verify:all`           | ✅ **7 / 7**                    |
 
 ### 边界（如实说明）
 
@@ -361,12 +406,12 @@ v0.6.33 引入 `unverified`（由「厂商 API 直连」发现的新模型，元
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 预设与路由测试 | ✅ 14 / 14 |
-| 目录刷新 | ✅ 12 家 / 54 个模型（无重复、合计一致） |
-| 全量回归 | ✅ **1710 / 1710 通过，0 失败** |
-| `pnpm verify:all` | ✅ **7 / 7** |
+| 验证项            | 结果                                     |
+| ----------------- | ---------------------------------------- |
+| 预设与路由测试    | ✅ 14 / 14                               |
+| 目录刷新          | ✅ 12 家 / 54 个模型（无重复、合计一致） |
+| 全量回归          | ✅ **1710 / 1710 通过，0 失败**          |
+| `pnpm verify:all` | ✅ **7 / 7**                             |
 
 ### 未完成（透明）
 
@@ -431,14 +476,14 @@ v0.6.33 引入 `unverified`（由「厂商 API 直连」发现的新模型，元
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 目录生成 | ✅ 11 家 / 52 个模型（原 40） |
-| 过期检测 | ✅ 修复前报「91 天未更新 → FAIL」，重建后 PASS |
-| 多源降级端到端 | ✅ 5 / 5（自定义文件生效，缓存正确还原） |
-| 单元测试 | ✅ 16 / 16（只增不删 / 不覆盖已校准元数据 / 必标 unverified / 幂等） |
-| 全量回归 | ✅ **1696 / 1696 通过，0 失败** |
-| `pnpm verify:all` | ✅ **7 / 7 通过**（新增"目录新鲜度"与"目录多源降级"两项） |
+| 验证项            | 结果                                                                 |
+| ----------------- | -------------------------------------------------------------------- |
+| 目录生成          | ✅ 11 家 / 52 个模型（原 40）                                        |
+| 过期检测          | ✅ 修复前报「91 天未更新 → FAIL」，重建后 PASS                       |
+| 多源降级端到端    | ✅ 5 / 5（自定义文件生效，缓存正确还原）                             |
+| 单元测试          | ✅ 16 / 16（只增不删 / 不覆盖已校准元数据 / 必标 unverified / 幂等） |
+| 全量回归          | ✅ **1696 / 1696 通过，0 失败**                                      |
+| `pnpm verify:all` | ✅ **7 / 7 通过**（新增"目录新鲜度"与"目录多源降级"两项）            |
 
 ### 已知边界
 
@@ -480,11 +525,11 @@ node scripts/verify-server-routes.mjs 2>&1 | Select-String '✅ 路由|❌'
 
 ### 状态契约（新增约定）
 
-| 状态 | 含义 | 退出码 |
-|------|------|:---:|
-| `PASS` | 校验通过 | 0 |
-| `FAIL` | 发现真实问题 | 1 |
-| `SKIP` | **未做校验**（网络/环境原因） | 0 |
+| 状态   | 含义                          | 退出码 |
+| ------ | ----------------------------- | :----: |
+| `PASS` | 校验通过                      |   0    |
+| `FAIL` | 发现真实问题                  |   1    |
+| `SKIP` | **未做校验**（网络/环境原因） |   0    |
 
 ⚠️ `SKIP` 退出码为 0 但**不可当作通过** —— `verify-all` 会单独列出并提示。
 
@@ -501,6 +546,7 @@ node scripts/verify-server-routes.mjs 2>&1 | Select-String '✅ 路由|❌'
 ```
 
 另做了两项负向测试，确认盲区真的被堵住：
+
 1. `verify-all` 首跑因**脚本路径缺 `scripts/` 前缀**报 `MODULE_NOT_FOUND` → 汇总为 ❌ 5 失败（**未静默通过**）
 2. `verify-readme-format` 对不存在仓库返回 404 → 输出 `__VERIFY_STATUS__=SKIP`（显式可见）
 
@@ -545,14 +591,14 @@ reasoning / reasoningDelta ← 思考过程，仅用于展示，不污染上下�
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 推理解析模块测试 | ✅ 8 / 8 |
-| 全量回归 | ✅ **1680 / 1680 通过，0 失败** |
-| 类型检查（语言服务器） | ✅ 0 诊断 |
-| 构建（core / server / web） | ✅ 全部退出码 0 |
-| 真实链路冒烟 | ✅ 服务健康 / README 为 Markdown / 未匹配 API 404 |
-| `verify:readme-format` | ✅ 未回退为 HTML |
+| 验证项                      | 结果                                              |
+| --------------------------- | ------------------------------------------------- |
+| 推理解析模块测试            | ✅ 8 / 8                                          |
+| 全量回归                    | ✅ **1680 / 1680 通过，0 失败**                   |
+| 类型检查（语言服务器）      | ✅ 0 诊断                                         |
+| 构建（core / server / web） | ✅ 全部退出码 0                                   |
+| 真实链路冒烟                | ✅ 服务健康 / README 为 Markdown / 未匹配 API 404 |
+| `verify:readme-format`      | ✅ 未回退为 HTML                                  |
 
 ### 已知边界
 
@@ -602,15 +648,15 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 服务端插件市场测试 | ✅ 50 / 50 |
-| Markdown 模块测试 | ✅ 32 / 32 |
-| 全量回归 | ✅ **1672 / 1672 通过，0 失败** |
-| 类型检查（语言服务器） | ✅ 0 诊断 |
-| Web 构建 | ✅ 退出码 0 |
-| 产物核验 | ✅ `dompurify` 已完全移出（0 处命中） |
-| 数据一致性 / 设计令牌门禁 | ✅ 均通过 |
+| 验证项                    | 结果                                  |
+| ------------------------- | ------------------------------------- |
+| 服务端插件市场测试        | ✅ 50 / 50                            |
+| Markdown 模块测试         | ✅ 32 / 32                            |
+| 全量回归                  | ✅ **1672 / 1672 通过，0 失败**       |
+| 类型检查（语言服务器）    | ✅ 0 诊断                             |
+| Web 构建                  | ✅ 退出码 0                           |
+| 产物核验                  | ✅ `dompurify` 已完全移出（0 处命中） |
+| 数据一致性 / 设计令牌门禁 | ✅ 均通过                             |
 
 ### 已知后续项
 
@@ -662,15 +708,15 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| Markdown 模块测试 | ✅ 35 / 35（含 6 条安全回归） |
-| 前端包全量测试 | ✅ 148 / 148（113 → +35） |
-| 全量回归 | ✅ **1675 / 1675 通过，0 失败** |
-| 类型检查（语言服务器） | ✅ 0 诊断 |
-| Web 构建 | ✅ 退出码 0 |
-| 产物核验 | ✅ JS 渲染逻辑未被 tree-shake；CSS 中 hljs token 类已打包且应用覆写在后 |
-| 数据一致性 / 设计令牌门禁 | ✅ 均通过 |
+| 验证项                    | 结果                                                                    |
+| ------------------------- | ----------------------------------------------------------------------- |
+| Markdown 模块测试         | ✅ 35 / 35（含 6 条安全回归）                                           |
+| 前端包全量测试            | ✅ 148 / 148（113 → +35）                                               |
+| 全量回归                  | ✅ **1675 / 1675 通过，0 失败**                                         |
+| 类型检查（语言服务器）    | ✅ 0 诊断                                                               |
+| Web 构建                  | ✅ 退出码 0                                                             |
+| 产物核验                  | ✅ JS 渲染逻辑未被 tree-shake；CSS 中 hljs token 类已打包且应用覆写在后 |
+| 数据一致性 / 设计令牌门禁 | ✅ 均通过                                                               |
 
 ### 已知后续项
 
@@ -718,14 +764,14 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ### 验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 路由集合逐条等价 | ✅ 93 条与基线完全一致 |
-| 服务端测试 | ✅ 262 / 262 |
-| 全量回归 | ✅ **1640 / 1640 通过，0 失败** |
-| 类型检查（语言服务器） | ✅ `packages/server/src` 0 诊断 |
-| 构建（tsup） | ✅ 退出码 0 |
-| 运行时行为 | ✅ 6 / 6（含「未匹配 API → 404 JSON」最高风险探针） |
+| 验证项                 | 结果                                                |
+| ---------------------- | --------------------------------------------------- |
+| 路由集合逐条等价       | ✅ 93 条与基线完全一致                              |
+| 服务端测试             | ✅ 262 / 262                                        |
+| 全量回归               | ✅ **1640 / 1640 通过，0 失败**                     |
+| 类型检查（语言服务器） | ✅ `packages/server/src` 0 诊断                     |
+| 构建（tsup）           | ✅ 退出码 0                                         |
+| 运行时行为             | ✅ 6 / 6（含「未匹配 API → 404 JSON」最高风险探针） |
 
 ---
 
@@ -766,25 +812,25 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ### 实测收益
 
-| 档位 | 模型窗口 | 工具数 | 改造前占窗口 | 改造后占窗口 | 节省 |
-|------|---------|-------|------------|------------|------|
-| small | 32,768 | 70 → **17** | **45.3%** | **6.8%** | **12,605 token（85.0%）** |
-| medium | 131,072 | 70 → **47** | 11.3% | 4.9% | 8,418 token（56.8%） |
-| large | 200,001 | 70 → **66** | 7.4% | 4.9% | 5,036 token（34.0%） |
+| 档位   | 模型窗口 | 工具数      | 改造前占窗口 | 改造后占窗口 | 节省                      |
+| ------ | -------- | ----------- | ------------ | ------------ | ------------------------- |
+| small  | 32,768   | 70 → **17** | **45.3%**    | **6.8%**     | **12,605 token（85.0%）** |
+| medium | 131,072  | 70 → **47** | 11.3%        | 4.9%         | 8,418 token（56.8%）      |
+| large  | 200,001  | 70 → **66** | 7.4%         | 4.9%         | 5,036 token（34.0%）      |
 
 > 小模型收益最大：**从"近一半上下文被工具吃掉"降到"约十五分之一"**。
 
 ### 新增环境变量
 
-| 变量 | 默认 | 说明 |
-|------|------|------|
-| `EASYAGENT_CONTEXT_V2` | `1` | 置 `0` **完全回滚**到改造前行为 |
-| `EASYAGENT_CONTEXT_TOOL_TIER` | `1` | 关闭工具分级（仍排除 `benchmark_*`） |
-| `EASYAGENT_CONTEXT_RESULT_LIMIT` | `8000` | 工具结果字符上限；`0` = 不截断 |
-| `EASYAGENT_CONTEXT_COMPACT` | `1` | 关闭历史压缩与结果截断 |
-| `EASYAGENT_CONTEXT_USABLE_RATIO` | `0.7` | 可用上下文比例（预留 30% 给输出） |
-| `EASYAGENT_CONTEXT_DEDUPE_DESC` | `1` | 关闭提示词去重（不支持 function calling 时自动关闭） |
-| `EASYAGENT_TOKEN_CJK_PER_TOKEN` / `EASYAGENT_TOKEN_OTHER_PER_TOKEN` | `1` / `4` | token 估算校准 |
+| 变量                                                                | 默认      | 说明                                                 |
+| ------------------------------------------------------------------- | --------- | ---------------------------------------------------- |
+| `EASYAGENT_CONTEXT_V2`                                              | `1`       | 置 `0` **完全回滚**到改造前行为                      |
+| `EASYAGENT_CONTEXT_TOOL_TIER`                                       | `1`       | 关闭工具分级（仍排除 `benchmark_*`）                 |
+| `EASYAGENT_CONTEXT_RESULT_LIMIT`                                    | `8000`    | 工具结果字符上限；`0` = 不截断                       |
+| `EASYAGENT_CONTEXT_COMPACT`                                         | `1`       | 关闭历史压缩与结果截断                               |
+| `EASYAGENT_CONTEXT_USABLE_RATIO`                                    | `0.7`     | 可用上下文比例（预留 30% 给输出）                    |
+| `EASYAGENT_CONTEXT_DEDUPE_DESC`                                     | `1`       | 关闭提示词去重（不支持 function calling 时自动关闭） |
+| `EASYAGENT_TOKEN_CJK_PER_TOKEN` / `EASYAGENT_TOKEN_OTHER_PER_TOKEN` | `1` / `4` | token 估算校准                                       |
 
 ### 回归验证
 
@@ -889,6 +935,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.25] - 2026-07-02
 
 ### Added
+
 - feat(plugins): 方案 D CI/CD 落地 — 插件 GitHub Actions 自动构建 + Release Asset 分发
   - 新增 `.github/workflows/build.yml` (npm ci + softprops/action-gh-release)
   - `PluginMarketService.ts` 支持下载 Release Asset `plugin.zip`
@@ -896,6 +943,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
   - `obsidian-doc-viewer` 插件仓库 v1.0.6 发布成功 (plugin.zip 1.18 MB)
 
 ### Fixed
+
 - fix(plugins): open_panel 触发链 Bug 修复
   - Server switch case: `'tool_end'` → `'tool_result'`
   - toolName 字段路径: `event.toolName` → `event.data.name`
@@ -908,7 +956,8 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 - fix(plugins): CI 打包从 `dist.zip` 改为 `plugin.zip` (三件套: manifest.json + plugin.js + dist/)
 
 ### Changed
-- docs(52_项目端口统一规划): v2.0→**v2.2**，新增 §十"方案 D"章节 + §十一变更日志 + §十二里程碑记录
+
+- docs(52\_项目端口统一规划): v2.0→**v2.2**，新增 §十"方案 D"章节 + §十一变更日志 + §十二里程碑记录
 - `packages/easyagent-plugin-obsidian-doc-viewer/package.json`: version 0.1.0 → 1.0.6
 - **CI/CD 关键教训**: pnpm 在 GitHub Actions 中存在兼容性问题，改用 `npm ci` + `package-lock.json`
 - **CI/CD 关键教训**: `extractZip` 必须区分 zipball (有包装目录) vs 平铺 (用 manifest.json 标记) 两种模式
@@ -917,12 +966,14 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.24] - 2026-07-01
 
 ### Added
+
 - feat(langgraph): Phase D 完成 — WebSocket 实时节点高亮广播 (server + store)
 - feat(langgraph): SessionDetailModal — Checkpoint 详情弹窗 + 恢复对话 (Phase D)
 - feat(langgraph): 节点遍历动画 (langGraphStore.getScenarioTraversalPath)
 - test(frontend): LangGraph 前端组件测试 6 文件 92 用例 100% 通过 (happy-dom 环境)
 
 ### Changed
+
 - refactor(langgraph): langGraphStore 新增 WebSocket 连接/断开/广播 + SCENARIO_PATHS
 - refactor(server): index.ts 新增 langgraphSubscriptions + broadcastLangGraphNode()
 - fix(frontend): FlowZoomModal 缩放公式 deltaY 符号修正
@@ -930,17 +981,20 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.23] - 2026-06-29
 
 ### Added
+
 - feat(langgraph): Phase C 完成 — 前端可视化 (/langgraph 页面 + 4 组件 + Zustand Store)
 - feat(cli): EASYAGENT_ENGINE 环境变量支持 langgraph/legacy 引擎切换
 - feat(langgraph): GraphCanvas/MiniFlowGraph/ScenarioCard/FlowZoomModal 组件
 
 ### Changed
+
 - refactor(frontend): App.tsx 新增 /langgraph 路由
 - refactor(frontend): Layout.tsx 侧边栏新增 LangGraph 入口
 
 ## [0.6.22] - 2026-06-28
 
 ### Fixed
+
 - fix(lint): 修复剩余10个errors (prefer-const, no-unsafe-function-type, no-require-imports, no-misleading-character-class) + 51号文档 (ht182400-creator)
 - fix(lint): 修复12个测试文件中51处 no-empty 错误（catch块添加注释） (ht182400-creator)
 - fix(ci): package.json eslint 版本号与 pnpm-lock.yaml 对齐 (^9.15.0→^9.39.4, ^8.15.0→^8.62.0) (ht182400-creator)
@@ -948,17 +1002,20 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.21] - 2026-06-28
 
 ### Fixed
+
 - fix(ci): release sync-pipeline checkout main + 补全 eslint 依赖 [skip ci] (ht182400-creator)
 - fix(release): 阻止管线数据进入 release commit [skip ci] (ht182400-creator)
 
 ## [0.6.20] - 2026-06-28
 
 ### Changed
+
 - chore: release artifacts for v0.6.19 [skip ci] (ht182400-creator)
 
 ## [0.6.19] - 2026-06-28
 
 ### Changed
+
 - 复盘文档
 - GitHub Release EXE 大文件清理
 - CI Sync Pipeline Data rebase 冲突根治
@@ -966,6 +1023,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 - GitHub Release EXE 大文件清理
 
 ### Fixed
+
 - CI sync-pipeline 竞态修复
 - CI sync-pipeline unstaged 残留修复
 - Release workflow Build Desktop + Build Web 修复
@@ -976,76 +1034,89 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.18] - 2026-06-28
 
 ### Fixed
+
 - fix: release.mjs 分两次 push，避免 [skip ci] 抑制 tag 触发的 release.yml (ht182400-creator)
 
 ## [0.6.17] - 2026-06-28
 
 ### Fixed
+
 - fix: CI sync-pipeline 冲突根治 — rebase 失败时 reset + 重新生成管线数据 (ht182400-creator)
 
 ## [0.6.16] - 2026-06-28
 
 ### Fixed
+
 - fix: CI sync-pipeline 冲突根治 — rebase 失败时 reset + 重新生成管线数据 (ht182400-creator)
 
 ## [0.6.15] - 2026-06-27
 
 ### Changed
+
 - chore: release artifacts for v0.6.14 (ht182400-creator)
 
 ## [0.6.14] - 2026-06-27
 
 ### Added
+
 - fix: CI sync-pipeline 改用 git add docs/pipeline/ + stash 保护，杜绝 unstaged 残留阻塞 rebase (ht182400-creator)
 
 ### Fixed
+
 - fix: Release workflow 修复 Build Desktop GH_TOKEN + Build Web react 依赖缺失 (ht182400-creator)
 
 ## [0.6.13] - 2026-06-27
 
 ### Fixed
+
 - fix: CI sync-pipeline push 竞态修复 + 文档完善 (ht182400-creator)
 
 ## [0.6.12] - 2026-06-27
 
 ### Added
-- fix(ci): format all files with prettier, add *.d.ts+package-lock.json to prettierignore, add continue-on-error to format check (ht182400-creator)
+
+- fix(ci): format all files with prettier, add \*.d.ts+package-lock.json to prettierignore, add continue-on-error to format check (ht182400-creator)
 - docs: add CI all-failure root cause analysis (Ch8) to pipeline sync troubleshooting guide (ht182400-creator)
 - docs: add pipeline sync troubleshooting guide (4 issues diagnosed: CI blocking, PS encoding, JSON parse, verification logic) (ht182400-creator)
 - fix: add missing runtime deps to desktop (express, ws, cors, multer, body-parser, mime, send) for electron-builder packaging (ht182400-creator)
 
 ### Fixed
+
 - fix(frontend): resolve all tsc --noEmit type errors - BrowseResponse.error, AlertTriangle import, MessageRole import, ProviderId type, SemanticStats.totalSize, Map grouping (ht182400-creator)
 - fix(ci): replace vite build with tsc --noEmit for frontend lib, use npx eslint in CI (ht182400-creator)
 - fix: repair CI failures - CLI JSX loader, lint max-warnings, continue-on-error (ht182400-creator)
-- fix: verification logic now correctly separates KPI/mapping (source parse) from _test_detail (vitest execution) (ht182400-creator)
+- fix: verification logic now correctly separates KPI/mapping (source parse) from \_test_detail (vitest execution) (ht182400-creator)
 - fix: specify UTF-8 encoding in pipeline sync script (ht182400-creator)
 - fix: prevent pipeline sync blocking release + fix CMD/PowerShell encoding garbled text (ht182400-creator)
 
 ## [0.6.11] - 2026-06-27
 
 ### Added
-- fix(ci): format all files with prettier, add *.d.ts+package-lock.json to prettierignore, add continue-on-error to format check (ht182400-creator)
+
+- fix(ci): format all files with prettier, add \*.d.ts+package-lock.json to prettierignore, add continue-on-error to format check (ht182400-creator)
 - docs: add CI all-failure root cause analysis (Ch8) to pipeline sync troubleshooting guide (ht182400-creator)
 - docs: add pipeline sync troubleshooting guide (4 issues diagnosed: CI blocking, PS encoding, JSON parse, verification logic) (ht182400-creator)
 - fix: add missing runtime deps to desktop (express, ws, cors, multer, body-parser, mime, send) for electron-builder packaging (ht182400-creator)
 
 ### Fixed
+
 - fix(frontend): resolve all tsc --noEmit type errors - BrowseResponse.error, AlertTriangle import, MessageRole import, ProviderId type, SemanticStats.totalSize, Map grouping (ht182400-creator)
 - fix(ci): replace vite build with tsc --noEmit for frontend lib, use npx eslint in CI (ht182400-creator)
 - fix: repair CI failures - CLI JSX loader, lint max-warnings, continue-on-error (ht182400-creator)
-- fix: verification logic now correctly separates KPI/mapping (source parse) from _test_detail (vitest execution) (ht182400-creator)
+- fix: verification logic now correctly separates KPI/mapping (source parse) from \_test_detail (vitest execution) (ht182400-creator)
 - fix: specify UTF-8 encoding in pipeline sync script (ht182400-creator)
 - fix: prevent pipeline sync blocking release + fix CMD/PowerShell encoding garbled text (ht182400-creator)
 
 ## [0.6.10] - 2026-06-27
 
 ### Added
-- fix(ci): format all files with prettier, add *.d.ts+package-lock.json to prettierignore, add continue-on-error to format check (ht182400-creator)
+
+- fix(ci): format all files with prettier, add \*.d.ts+package-lock.json to prettierignore, add continue-on-error to format check (ht182400-creator)
 - docs: add CI all-failure root cause analysis (Ch8) to pipeline sync troubleshooting guide (ht182400-creator)
 - docs: add pipeline sync troubleshooting guide (4 issues diagnosed: CI blocking, PS encoding, JSON parse, verification logic) (ht182400-creator)
 
 ### Fixed
+
 - fix(frontend): resolve all tsc --noEmit type errors - BrowseResponse.error, AlertTriangle import, MessageRole import, ProviderId type, SemanticStats.totalSize, Map grouping (ht182400-creator)
 - fix(ci): replace vite build with tsc --noEmit for frontend lib, use npx eslint in CI (ht182400-creator)
 - fix: repair CI failures - CLI JSX loader, lint max-warnings, continue-on-error (ht182400-creator)
@@ -1053,45 +1124,53 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.9] - 2026-06-27
 
 ### Fixed
-- fix: verification logic now correctly separates KPI/mapping (source parse) from _test_detail (vitest execution) (ht182400-creator)
+
+- fix: verification logic now correctly separates KPI/mapping (source parse) from \_test_detail (vitest execution) (ht182400-creator)
 - fix: specify UTF-8 encoding in pipeline sync script (ht182400-creator)
 - fix: prevent pipeline sync blocking release + fix CMD/PowerShell encoding garbled text (ht182400-creator)
 
 ## [0.6.8] - 2026-06-27
 
 ### Added
+
 - fix: add missing runtime deps to desktop (express, ws, cors, multer, body-parser, mime, send) for electron-builder packaging (ht182400-creator)
 
 ## [0.6.7] - 2026-06-27
 
 ### Added
+
 - test: remove obsolete simulateUpdate button tests (feature removed in v0.5.21) (ht182400-creator)
 
 ### Fixed
+
 - fix(ci): normalize .pnpmfile.cjs to LF + update lockfile checksum to fix pnpmfileChecksum mismatch on CI (ht182400-creator)
 - fix(ci): upgrade NODE_VERSION from 20 to 22 for pnpm 11.7.0 compatibility (ht182400-creator)
 
 ## [0.6.6] - 2026-06-27
 
 ### Fixed
+
 - chore: release artifacts for v0.6.5 + fix release-publish.bat Step 7 (ht182400-creator)
 
 ## [0.6.5] - 2026-06-27
 
 ### Added
+
 - 为 Web 版本创建独立的构建脚本（类似 build.bat）
 
 ### Changed
+
 - 用户要求将使用方法写入规范文档 `docs/36_调试日志规范体系.md`
 - 用户发现 Web 版本(localhost:5173)也走 Desktop 的 electron-updater 更新流程，询问是否合理
 - 将 Desktop/Web 构建分析过程、bat 参数用法、优化建议写成高质量文档，方便初学者使用
 - 实现 CI/CD 自动构建，推送标签 `v*` 时自动构建 Desktop + Web 并发布到 GitHub Release
-- 1) 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
+- 1. 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
 - 保证 `git commit` 的 message 必须有实际内容，而非只有 `release: v0.x.x`
 - 避免手动 git commit 才能生成有意义的 CHANGELOG，改为从 `.codebuddy/memory/` 结构化记录自动提取
 - `docs/39_CHANGELOG自动生成机制_三级Fallback.md`
 
 ### Fixed
+
 - Desktop 更新签名校验失败修复
 - Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本
 - release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容
@@ -1105,19 +1184,22 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.4] - 2026-06-27
 
 ### Added
+
 - 为 Web 版本创建独立的构建脚本（类似 build.bat）
 
 ### Changed
+
 - 用户要求将使用方法写入规范文档 `docs/36_调试日志规范体系.md`
 - 用户发现 Web 版本(localhost:5173)也走 Desktop 的 electron-updater 更新流程，询问是否合理
 - 将 Desktop/Web 构建分析过程、bat 参数用法、优化建议写成高质量文档，方便初学者使用
 - 实现 CI/CD 自动构建，推送标签 `v*` 时自动构建 Desktop + Web 并发布到 GitHub Release
-- 1) 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
+- 1. 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
 - 保证 `git commit` 的 message 必须有实际内容，而非只有 `release: v0.x.x`
 - 避免手动 git commit 才能生成有意义的 CHANGELOG，改为从 `.codebuddy/memory/` 结构化记录自动提取
 - `docs/39_CHANGELOG自动生成机制_三级Fallback.md`
 
 ### Fixed
+
 - Desktop 更新签名校验失败修复
 - Settings 页面在 v0.6.1 仍显示 `🔧 v0.5.29 — 修复 CSP 字体加载 ...` 硬编码文本
 - release.mjs 的 `generateChangelogEntry()` 在 git log 返回空时（上一个 tag 到 HEAD 无 commit），只生成空标题 `## [0.6.1] - date`，无实质内容
@@ -1129,10 +1211,12 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.3] - 2026-06-27
 
 ### Added
+
 - MEMORY.md 新增：日志优先排查原则
 - 为 Web 版本创建独立的构建脚本（类似 build.bat）
 
 ### Changed
+
 - 用户要求将 GitHub Push → CI → 管线数据更新的完整流程标准化写入 memory，确保所有管线功能块显示正常
 - 🔴 管线自动化修正 — CI 触发而非定时
 - v0.5.3 版本发布
@@ -1170,17 +1254,18 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 - 用户发现 Web 版本(localhost:5173)也走 Desktop 的 electron-updater 更新流程，询问是否合理
 - 将 Desktop/Web 构建分析过程、bat 参数用法、优化建议写成高质量文档，方便初学者使用
 - 实现 CI/CD 自动构建，推送标签 `v*` 时自动构建 Desktop + Web 并发布到 GitHub Release
-- 1) 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
+- 1. 把服务端发布步骤写成 .bat 脚本；2) 将本地构建 vs 服务器构建两种发布方式写成详细对比文档，供初学者参考
 - 保证 `git commit` 的 message 必须有实际内容，而非只有 `release: v0.x.x`
 - 避免手动 git commit 才能生成有意义的 CHANGELOG，改为从 `.codebuddy/memory/` 结构化记录自动提取
 - `docs/39_CHANGELOG自动生成机制_三级Fallback.md`
 
 ### Fixed
+
 - Web 版设置页面显示"当前版本 v0.3.0"，而实际 `version.json` 已是 `0.5.3`
 - v0.5.4 发布时 NSIS "Can't open output file" 失败。之前加的 retry 逻辑有 bug：
 - release-publish.bat 和 build.bat 输出的管线数据中文全部显示为乱码（如 "瑙﹀彂闆嗘垚" 而非 "触发集成"）
-- - **为什么第一版修复没生效
-- - **真正修复
+- - \*\*为什么第一版修复没生效
+- - \*\*真正修复
 - Settings 页面显示"发现新版本 v0.5.10"但无下载动作
 - [F19-续] 重新打包 v0.5.10 EXE with 修复
 - [F24] v0.5.15: 根本修复更新进度不显示问题
@@ -1202,15 +1287,18 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.2] - 2026-06-27
 
 ### Changed
+
 - 新版本发布
 
 ## [0.6.1] - 2026-06-26
 
 ### Fixed
+
 - fix: Settings 页面移除硬编码 v0.5.29 文本，避免版本更新后仍显示旧版变更内容 (ht182400-creator)
 - fix: `/api/version` changelog 提取逻辑改为跳过空条目，避免 release.mjs 生成的空白标题导致更新日志区域无内容 (ht182400-creator)
 
 ### Changed
+
 - refactor: release-publish.bat 简化上传流程，移除冗余的交互步骤 (ht182400-creator)
 - docs: 新增双通道发布对比文档 `docs/38_双通道发布指南_本地vs服务器.md` (ht182400-creator)
 - docs: 新增服务器端发布脚本 `release-server.bat` (ht182400-creator)
@@ -1218,25 +1306,30 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.6.0] - 2026-06-26
 
 ### Added
+
 - feat: 双通道发布支持 — 本地构建 (`release-publish.bat`) + CI/CD 服务器构建 (`release.yml`) (ht182400-creator)
 - feat: electron-updater 自动更新支持，Settings 页面新增下载进度和安装状态显示 (ht182400-creator)
 
 ### Fixed
+
 - fix: hasUpdate=false 时错误状态未清除导致 UI 误显"更新失败" (ht182400-creator)
 - fix: GitHub Release 缺少 latest.yml 导致 electron-updater 检查 404 (ht182400-creator)
 
 ### Changed
+
 - refactor: 构建链优化 — 移除 webpack 依赖，统一使用 tsup + vite (ht182400-creator)
 - refactor: `build.bat` Phase 2.5/3.5 sqlite3 路径修复 + 并行编译支持 (ht182400-creator)
 
 ## [0.5.32] - 2026-06-26
 
 ### Changed
+
 - chore: 版本号更新至 0.5.32，清理旧 Release 大文件 (ht182400-creator)
 
 ## [0.5.31] - 2026-06-26
 
 ### Fixed
+
 - fix: hasUpdate=false 时错误状态未清除导致 UI 误显"更新失败" — `Settings.tsx` checkForUpdates() 中 hasUpdate=false 分支增加 `setUpdaterStatus(null)` (ht182400-creator)
 - fix: 修复 GitHub Release v0.5.30 缺少 latest.yml 导致 electron-updater 检查 404 的问题，补传 latest.yml 到 Release (ht182400-creator)
 
@@ -1251,6 +1344,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.5.7] - 2026-06-26
 
 ### Fixed
+
 - fix: 修复 EXE 内 Server 版本号误报问题，Desktop 主进程启动时设置 `EASYAGENT_VERSION` 环境变量传递正确版本号 (ht182400-creator)
 - fix: Server `/api/version` 优先读取 `version.json` 动态版本，解决 EXE (asar) 内回退到硬编码 `0.3.0` 导致"发现新版本"误报 (ht182400-creator)
 - fix: better-sqlite3 NODE_MODULE_VERSION 根治 — 删除 build-sqlite3.bat 等 3 个重复脚本，`rebuild-sqlite3.mjs` 为唯一编译入口，SHA256 验证替代字节扫描 (ht182400-creator)
@@ -1260,9 +1354,11 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.5.6] - 2026-06-25
 
 ### Added
+
 - feat(ci): 新增 CI 数据自动回取机制 (fetch-ci-data.mjs) (ht182400-creator)
 
 ### Fixed
+
 - fix: 前端 file:// 协议 fetch 修复 + build.bat sqlite3 路径修复 + 双版本管理工具 (ht182400-creator)
 - fix(ci): core 测试超时：动态导入大型索引模块需更长时间 (ht182400-creator)
 - fix(ci): 修复 Pipeline Tests 2个失败用例 + 本地管线数据同步 (ht182400-creator)
@@ -1273,25 +1369,28 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ## [0.5.3] - 2026-06-25
 
-
 ## [0.5.2] - 2026-06-25
 
 ### Added
+
 - feat: B3b VS Code 插件 — IDE 深度集成 · 代码分析/解释 · 状态栏监控 · Dashboard 联动 (ht182400-creator)
 - feat: P4 发布层阶段补齐到 project-progress-data.json (f13-f16) (ht182400-creator)
 
 ### Fixed
+
 - fix: MODULES 6 个分支模块状态同步 (b2c/b2d/b2e/b3a/b3b/b3c pending→done) (ht182400-creator)
 - fix: P2 阶段状态 running→done (ht182400-creator)
 - fix: p5a 管线数据看板状态 in-progress→done (ht182400-creator)
 - fix: `.github/CONTRIBUTING.md` 新增 (修复文档完整度检测) (ht182400-creator)
 
 ### Changed
+
 - 综合评分: 86→96→**100** (10/10 分支完成 + 文档 4/4 齐全) (ht182400-creator)
 
 ## [0.5.1] - 2026-06-25
 
 ### Added
+
 - feat: P1-2 PluginManager 沙箱隔离完成 — 94 个测试用例 (plugin-sandbox 45 + plugin-manager 49), 全部通过 (ht182400-creator)
 - feat: PluginWorkerEntry.js Windows 兼容 (pathToFileURL) (ht182400-creator)
 - feat: P2 集成测试完成 — 4 个测试文件 106 用例覆盖 40+ 端点，Server 总测试数 45→151 (ht182400-creator)
@@ -1301,6 +1400,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 - feat: P3 CONTRIBUTING.md — 贡献者指南 + 10 个 good-first-issue + 开发工作流 (ht182400-creator)
 
 ### Fixed
+
 - fix: `/api/sessions/search` 路由顺序 bug — 在 `:id` 之后注册导致 "search" 被参数捕获返回 404 (ht182400-creator)
 - fix: pipeline-data.json KPI 数据过期 (testCases 40→1146, providers 4→10) (ht182400-creator)
 - fix: update-progress.mjs getTestCount() 修复 — 从 test-case-mapping.json 读取真实用例数而非文件计数 (ht182400-creator)
@@ -1327,10 +1427,12 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.5.0] - 2026-06-24
 
 ### Added
+
 - feat: 评分自动计算（五维度加权）— 取代硬编码 scoreTotal (ht182400-creator)
 - feat: P1-2 Web←Desktop 前端合并到 packages/frontend (ht182400-creator)
 
 ### Fixed
+
 - fix(frontend): 修复 Sidebar SessionMeta 字段访问 (title/messageCount → metadata.title/metadata.messageCount) (ht182400-creator)
 - fix(frontend): 修复 ChatView/Sidebar 的 store 导入 (sessionStore → chatStore) (ht182400-creator)
 - fix: 修复评审建议级问题 C2-C8 + S2-S7 (13个建议级) (ht182400-creator)
@@ -1343,26 +1445,31 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.4.1] - 2026-06-23
 
 ### Fixed
+
 - 修复 `update-progress.mjs` syncPipelineData 中 `pipeline-data.json` 结构不匹配导致的 TypeError
 
 ### Changed
+
 - `.gitignore` 补充规则：排除含 Token 的历史文件 (`history_*.md`)、临时测试脚本、`packages/docs/`
 - 更新开发记忆文档和项目进度数据
 
 ## [0.4.0] - 2026-06-22
 
 ### Added
+
 - **工具系统自动分组**: `ITool` 接口新增 `group?: string` 字段，`getAllBuiltinTools()` 自动标注分组，替代 43 行硬编码分组表
 - **工具启用/禁用持久化**: 新增 `POST /api/tools/:name` toggle 端点，`ToolRegistry` 新增 `disabledSet` + `setEnabled`/`isEnabled` 管理方法
 - **工具开关 UI**: Desktop 和 Web 版 Tools 页面均添加滑动开关，支持乐观更新 + 失败回滚
 - **`ConfigManager` 工具禁用列表**: `getDisabledToolNames`/`saveDisabledToolNames`，保存到 `tool_settings.json`
 
 ### Changed
+
 - Desktop `projectRoot` 改为 `homedir()`，解决 asar 只读归档路径限制
 - `createApp()` 支持外部传入 `projectRoot` 参数
 - Desktop 打包压缩级别设为 `maximum`
 
 ### Fixed
+
 - 修复 `tsup.config.ts` treeshake 导致外部调用方法被移除的问题
 - 修复 `KnowledgeService.ts` 类型错误
 - 修复 `release.mjs` 参数解析 bug（`process.argv.find` 误匹配 node 路径）
@@ -1371,20 +1478,24 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.3.3] - 2026-06-21
 
 ### Fixed
+
 - **Desktop 知识库/自动化/技能数据不互通**: 修复 Desktop 版本中 `PROJECT_ROOT` 指向 asar 只读归档导致知识库写入失败(400)、读取返回空的问题。现在 Desktop 使用 `homedir()` 作为 projectRoot
 - **`createApp()` 支持外部传入 projectRoot**: 新增 `CreateAppOptions.projectRoot` 参数，Desktop 版传入用户 home 目录避免 asar 路径限制
 
 ### Changed
+
 - Desktop 打包配置优化：压缩级别设为 `maximum`，清理 node_modules 中不必要的文件
 
 ## [0.3.2] - 2026-06-20
 
 ### Changed
+
 - 新版本发布
 
 ## [0.3.0] - 2026-06-20
 
 ### Added
+
 - **版本控制与升级系统**: 统一版本号管理，新增 CHANGELOG、版本检查 API、升级提示 UI
 - **更新日志页面**: 在设置页面可见完整的版本更新记录
 - **Web 端升级提醒**: Web 版本定期检查 GitHub Release，发现新版本时通知用户
@@ -1392,11 +1503,13 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 - **构建时版本注入**: 通过环境变量 `EASYAGENT_VERSION` 统一注入版本号
 
 ### Changed
+
 - 版本号统一为 `0.3.0`（之前各模块版本不一致：0.1.0/0.2.0/0.5.0/0.8.0 并存）
 - Desktop 自动更新仓库地址修正为 `ht182400-creator/easyagent`
 - 所有 UI 组件版本号改为从 API 动态获取，消除硬编码
 
 ### Fixed
+
 - 修复 electron-updater 仓库路径指向错误的 GitHub 账户
 - 修复 Layout/Settings/Banner 等 6 处版本号不一致问题
 
@@ -1405,6 +1518,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.2.0] - 2026-06-12
 
 ### Added
+
 - **Desktop 桌面版**: Electron 完整桌面应用，内嵌后端服务
 - **自动更新系统**: 基于 electron-updater + GitHub Releases
 - **13 个功能页面**: Dashboard、对话、模型管理、会话管理、工具管理、知识库、自动化、用量分析、技能、IM、沙箱、语义搜索、设置
@@ -1412,6 +1526,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 - **NSIS 安装包**: 中文安装界面、桌面快捷方式、开始菜单项
 
 ### Changed
+
 - CLI 升级到 v0.5.0，支持交互式命令面板
 - Server 重构为支持 Web + Desktop 双模式
 - WebSocket 连接稳定性增强，自动重连机制
@@ -1421,6 +1536,7 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 ## [0.1.0] - 2026-05-20
 
 ### Added
+
 - **初始版本发布**: EasyAgent AI 编程助手
 - **多模型支持**: 集成 DeepSeek、通义千问、智谱GLM、Kimi、文心一言、豆包、混元、MiniMax、OpenAI、Ollama
 - **CLI 命令行界面**: 支持对话、模型切换、会话管理

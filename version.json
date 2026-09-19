@@ -1,6 +1,6 @@
 {
-  "version": "0.6.42",
-  "codename": "关于面板版本号修复",
+  "version": "0.6.43",
+  "codename": "语义扫描性能治理",
   "releaseDate": "2026-09-19",
   "electronVersion": "30.0.0",
   "nodeVersion": ">=18.0.0"
