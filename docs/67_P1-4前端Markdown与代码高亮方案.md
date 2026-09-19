@@ -16,11 +16,11 @@
 
 ### 1.1 三处渲染点
 
-| 位置 | 渲染内容 | 原实现 | 安全状态 |
-|------|---------|--------|---------|
-| `components/Chat/MessageList.tsx` | AI 回复 / 流式输出 | **自研正则**（约 40 行） | 有缺口（见下） |
-| `pages/PluginsMarket.tsx` | GitHub 远程 README | 直接 `dangerouslySetInnerHTML` | v0.6.29 前**完全无消毒**（裸 HTML）；v0.6.30 起服务端改返原始 Markdown，与聊天共用 `renderMarkdown()` |
-| `easyagent-plugin-obsidian-doc-viewer/.../SearchPanel.tsx` | 搜索片段高亮 `highlightText()` | 自研 | 同类问题（插件包，**未处理**） |
+| 位置                                                       | 渲染内容                       | 原实现                         | 安全状态                                                                                              |
+| ---------------------------------------------------------- | ------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `components/Chat/MessageList.tsx`                          | AI 回复 / 流式输出             | **自研正则**（约 40 行）       | 有缺口（见下）                                                                                        |
+| `pages/PluginsMarket.tsx`                                  | GitHub 远程 README             | 直接 `dangerouslySetInnerHTML` | v0.6.29 前**完全无消毒**（裸 HTML）；v0.6.30 起服务端改返原始 Markdown，与聊天共用 `renderMarkdown()` |
+| `easyagent-plugin-obsidian-doc-viewer/.../SearchPanel.tsx` | 搜索片段高亮 `highlightText()` | 自研                           | 同类问题（插件包，**未处理**）                                                                        |
 
 ### 1.2 两个真实安全缺口（原自研渲染器）
 
@@ -28,13 +28,16 @@
 // 原实现第一步只转义了 & < >，漏了 "
 let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // 后续直接把 $2 拼进 href —— 两个缺口同时成立：
-html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+html = html.replace(
+  /\[([^\]]+)\]\(([^)]+)\)/g,
+  '<a href="$2" target="_blank" rel="noopener">$1</a>',
+);
 ```
 
-| # | 缺口 | 攻击样例 | 后果 |
-|---|------|---------|------|
-| ① | **`"` 未转义** → 属性逃逸 | `[链接](x" onmouseover="alert(1))` | 拼出 `<a href="x" onmouseover="...">`，可注入任意属性 |
-| ② | **URI 协议完全不过滤** | `[点我](javascript:alert(1))` | **点击即执行** —— 比 ① 更直接 |
+| #   | 缺口                      | 攻击样例                           | 后果                                                  |
+| --- | ------------------------- | ---------------------------------- | ----------------------------------------------------- |
+| ①   | **`"` 未转义** → 属性逃逸 | `[链接](x" onmouseover="alert(1))` | 拼出 `<a href="x" onmouseover="...">`，可注入任意属性 |
+| ②   | **URI 协议完全不过滤**    | `[点我](javascript:alert(1))`      | **点击即执行** —— 比 ① 更直接                         |
 
 > ② 尤其危险：它是常见 XSS 教科书案例，AI 输出/知识库文档/工具返回值只要含这类链接就会中招。
 
@@ -49,11 +52,11 @@ html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" re
 
 ## 二、技术选型
 
-| 需求 | 候选 | 选择 | 理由 |
-|------|------|------|------|
-| Markdown 解析 | `markdown-it` / `marked` | **markdown-it** | `html: false` 默认转义原始 HTML；原生支持表格；插件生态成熟；v15 **自带类型** |
-| 代码高亮 | `highlight.js` / `shiki` / `prismjs` | **highlight.js** | markdown-it 的 `highlight` 钩子是**同步**的；shiki 需异步加载 WASM/语法，会成为 reset；hljs 同步 + 可按需注册语言，天然契合并易于单元测试 |
-| 远程 HTML 消毒 | `dompurify` / `sanitize-html` | **DOMPurify** | 事实标准；浏览器 API 同步、无需额外环境 |
+| 需求           | 候选                                 | 选择             | 理由                                                                                                                                      |
+| -------------- | ------------------------------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Markdown 解析  | `markdown-it` / `marked`             | **markdown-it**  | `html: false` 默认转义原始 HTML；原生支持表格；插件生态成熟；v15 **自带类型**                                                             |
+| 代码高亮       | `highlight.js` / `shiki` / `prismjs` | **highlight.js** | markdown-it 的 `highlight` 钩子是**同步**的；shiki 需异步加载 WASM/语法，会成为 reset；hljs 同步 + 可按需注册语言，天然契合并易于单元测试 |
+| 远程 HTML 消毒 | `dompurify` / `sanitize-html`        | **DOMPurify**    | 事实标准；浏览器 API 同步、无需额外环境                                                                                                   |
 
 **未选 shiki / monaco 的原因**：两者都能提供更好的渲染质量，但 shiki 的异步加载会迫使流式渲染改造（收益/风险比不划算），monaco 的定位是编辑器而非展示。它们属于后续可选项，见 §七。
 
@@ -78,11 +81,11 @@ html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" re
 
 `server/src/utils/githubClient.ts` 的 `getReadmeHtml()` → `getReadmeMarkdown()`：
 
-| | 旧 | 新 |
-|---|---|---|
-| Accept | `application/vnd.github.html+json` | **`application/vnd.github.raw`** |
-| 返回 | GitHub 渲染后的**裸 HTML** | **原始 Markdown** |
-| 前端处理 | `sanitizeHtml()` 事后消毒 | `renderMarkdown()` 直接渲染 |
+|          | 旧                                 | 新                               |
+| -------- | ---------------------------------- | -------------------------------- |
+| Accept   | `application/vnd.github.html+json` | **`application/vnd.github.raw`** |
+| 返回     | GitHub 渲染后的**裸 HTML**         | **原始 Markdown**                |
+| 前端处理 | `sanitizeHtml()` 事后消毒          | `renderMarkdown()` 直接渲染      |
 
 **真实 API 实测**（`ht182400-creator/easyagent`）：
 
@@ -102,11 +105,11 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ### 3.2 三层防线（`renderMarkdown`）
 
-| 层 | 手段 | 防住的攻击 |
-|---|------|-----------|
-| 1 | `new MarkdownIt({ html: false })` | `<script>` / `<img onerror>` 等原始 HTML 一律转义为文本 |
-| 2 | `md.validateLink = isSafeUrl` | `javascript:` / `data:` / `vbscript:` / `file:` 协议拦截（白名单：http/https/mailto/tel + 相对路径） |
-| 3 | 链接统一 `target="_blank" rel="noopener noreferrer"` | 反向标签钓鱼（`rel="noreferrer"` 是原实现缺的） |
+| 层  | 手段                                                 | 防住的攻击                                                                                           |
+| --- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 1   | `new MarkdownIt({ html: false })`                    | `<script>` / `<img onerror>` 等原始 HTML 一律转义为文本                                              |
+| 2   | `md.validateLink = isSafeUrl`                        | `javascript:` / `data:` / `vbscript:` / `file:` 协议拦截（白名单：http/https/mailto/tel + 相对路径） |
+| 3   | 链接统一 `target="_blank" rel="noopener noreferrer"` | 反向标签钓鱼（`rel="noreferrer"` 是原实现缺的）                                                      |
 
 ### 3.3 代码高亮
 
@@ -116,11 +119,11 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ### 3.4 接入点
 
-| 文件 | 改动 |
-|------|------|
-| `components/Chat/MessageList.tsx` | 删除本地 `renderMarkdown`（47 行），改为从 `utils/markdown.js` 导入 |
-| `pages/PluginsMarket.tsx` | `dangerouslySetInnerHTML` 前加 `sanitizeHtml()`；`prose` → `.markdown-body` |
-| `styles/index.css` | 新增 highlight.js 主题配色覆写（见 §五.3） |
+| 文件                              | 改动                                                                        |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `components/Chat/MessageList.tsx` | 删除本地 `renderMarkdown`（47 行），改为从 `utils/markdown.js` 导入         |
+| `pages/PluginsMarket.tsx`         | `dangerouslySetInnerHTML` 前加 `sanitizeHtml()`；`prose` → `.markdown-body` |
+| `styles/index.css`                | 新增 highlight.js 主题配色覆写（见 §五.3）                                  |
 
 ---
 
@@ -128,14 +131,14 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 标 🛡️ 的是**安全回归**，每条对应一个真实缺口：
 
-| 分组 | 覆盖 |
-|------|------|
-| 基础渲染 | 标题/粗体/斜体/行内代码、**表格**、**有序列表**、**嵌套列表**、引用、分隔线、链接 target/rel |
-| 代码高亮 | 指定语言产出 hljs 标记、**8 组别名**（用符合语法的样例）、未知语言降级、无语言降级 |
-| 🛡️ 安全 | 原始 HTML 转义、`img onerror` 失效、`javascript:` 拒绝、`data:` 拒绝、**属性逃逸**、大小写变形协议、正常链接不误伤 |
-| URL 白名单 | `isSafeUrl` 的放行/拦截矩阵（含「冒号出现在路径中」不得误判） |
-| 🛡️ 远程 HTML | `sanitizeHtml` 移除 script / 事件属性 / `javascript:` href / iframe；保留正常排版与 hljs class |
-| 字数估算 | CJK 单字计数 |
+| 分组         | 覆盖                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| 基础渲染     | 标题/粗体/斜体/行内代码、**表格**、**有序列表**、**嵌套列表**、引用、分隔线、链接 target/rel                       |
+| 代码高亮     | 指定语言产出 hljs 标记、**8 组别名**（用符合语法的样例）、未知语言降级、无语言降级                                 |
+| 🛡️ 安全      | 原始 HTML 转义、`img onerror` 失效、`javascript:` 拒绝、`data:` 拒绝、**属性逃逸**、大小写变形协议、正常链接不误伤 |
+| URL 白名单   | `isSafeUrl` 的放行/拦截矩阵（含「冒号出现在路径中」不得误判）                                                      |
+| 🛡️ 远程 HTML | `sanitizeHtml` 移除 script / 事件属性 / `javascript:` href / iframe；保留正常排版与 hljs class                     |
+| 字数估算     | CJK 单字计数                                                                                                       |
 
 ---
 
@@ -159,12 +162,12 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 实测矩阵（输入 → 输出）：
 
-| 输入 | happy-dom 下 DOMPurify 输出 |
-|------|---------------------------|
-| `<script>alert(1)</script>` | `alert(1)` |
-| `<p>hi</p>` | `hi` ← **`<p>` 被剥掉** |
-| `<h2>标题</h2>` | `标题` ← **`<h2>` 被剥掉** |
-| `<span class="hljs-keyword">const</span>` | `const` ← **class 丢失** |
+| 输入                                      | happy-dom 下 DOMPurify 输出 |
+| ----------------------------------------- | --------------------------- |
+| `<script>alert(1)</script>`               | `alert(1)`                  |
+| `<p>hi</p>`                               | `hi` ← **`<p>` 被剥掉**     |
+| `<h2>标题</h2>`                           | `标题` ← **`<h2>` 被剥掉**  |
+| `<span class="hljs-keyword">const</span>` | `const` ← **class 丢失**    |
 
 连默认配置都会把正常标签整类剥掉，而多元素场景下 `<script>` 反而可能存活 —— **危险的方向**。
 安全断言在这种环境下会失去意义，甚至给出**错误的安全结论**。
@@ -178,7 +181,11 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 **解法**：保留主题的词法着色，把容器外观交还应用令牌：
 
 ```css
-.hljs { background: transparent !important; color: inherit !important; padding: 0 !important; }
+.hljs {
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+}
 ```
 
 **实测建筑顺序**（`packages/web/dist/assets/index-*.css`）：主题基规则在 **偏移 8**，应用覆写在 **72582** → 覆写在后，必然生效。
@@ -186,11 +193,11 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ### 5.4 三条测试断言写错了（而非产品缺陷）
 
-| 用例 | 我原本的断言 | 实测 | 修正 |
-|------|------------|------|------|
-| html 围栏转义 | 含 `&lt;script&gt;` | hljs 输出 `&lt;<span…>script</span>&gt;`（中间插了 span） | 改为「不含 `<script` + 含 `&lt;`」 |
-| `sh` 别名高亮 | `const x = 1` 应产出高亮 | bash 语法下确实无 token | 改用符合语法的样例（`echo hello`） |
-| 属性逃逸 | 不含 `onmouseover=` | 输出是**已转义的纯文本**，天然含该字符串 | 改为「不含 `<a … onmouseover` 的真实属性」 |
+| 用例          | 我原本的断言             | 实测                                                      | 修正                                       |
+| ------------- | ------------------------ | --------------------------------------------------------- | ------------------------------------------ |
+| html 围栏转义 | 含 `&lt;script&gt;`      | hljs 输出 `&lt;<span…>script</span>&gt;`（中间插了 span） | 改为「不含 `<script` + 含 `&lt;`」         |
+| `sh` 别名高亮 | `const x = 1` 应产出高亮 | bash 语法下确实无 token                                   | 改用符合语法的样例（`echo hello`）         |
+| 属性逃逸      | 不含 `onmouseover=`      | 输出是**已转义的纯文本**，天然含该字符串                  | 改为「不含 `<a … onmouseover` 的真实属性」 |
 
 > 值得注意：第 3 条修正后反而揭示了更强的保证 —— markdown-it **压根不把带引号的 URL 识别为链接**。
 
@@ -198,17 +205,17 @@ html → "<div id=\"readme\" class=\"md\" data-path=\"README.md\"><article …><
 
 ## 六、验证
 
-| 验证项 | 结果 |
-|--------|------|
-| Markdown 模块测试 | ✅ **35 / 35 通过**（含 6 条安全回归） |
-| 前端包全量测试 | ✅ 148 / 148（113 → +35） |
-| 全量回归 | ✅ **1675 / 1675 通过，0 失败**（core 991 · server 262 · frontend 148 · desktop 215 · langgraph 57 · web 2） |
-| 类型检查（语言服务器） | ✅ 0 诊断 |
-| Web 构建 | ✅ 退出码 0 |
-| 产物 CSS | ✅ hljs token 类已打包；应用覆写在后（偏移 72582 > 8） |
-| 产物 JS | ✅ 渲染逻辑未被 tree-shake（11 处命中） |
-| 数据一致性门禁 | ✅ 通过 |
-| 设计令牌门禁 | ✅ 通过 |
+| 验证项                 | 结果                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Markdown 模块测试      | ✅ **35 / 35 通过**（含 6 条安全回归）                                                                       |
+| 前端包全量测试         | ✅ 148 / 148（113 → +35）                                                                                    |
+| 全量回归               | ✅ **1675 / 1675 通过，0 失败**（core 991 · server 262 · frontend 148 · desktop 215 · langgraph 57 · web 2） |
+| 类型检查（语言服务器） | ✅ 0 诊断                                                                                                    |
+| Web 构建               | ✅ 退出码 0                                                                                                  |
+| 产物 CSS               | ✅ hljs token 类已打包；应用覆写在后（偏移 72582 > 8）                                                       |
+| 产物 JS                | ✅ 渲染逻辑未被 tree-shake（11 处命中）                                                                      |
+| 数据一致性门禁         | ✅ 通过                                                                                                      |
+| 设计令牌门禁           | ✅ 通过                                                                                                      |
 
 **产物体积**：JS 741 KB / CSS 89 KB（含 markdown-it + 16 种语言的 highlight.js）。Desktop 不受影响；Web 若在意首屏，可考虑按需异步加载（见 §七）。
 

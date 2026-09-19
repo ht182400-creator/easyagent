@@ -20,7 +20,7 @@
             "label": "Agent 系统",
             "desc": "ReAct循环\n多Agent协作+计划",
             "status": "done",
-            "testCount": 137
+            "testCount": 152
           },
           {
             "id": "f3",
@@ -28,7 +28,7 @@
             "label": "工具系统 51 tools",
             "desc": "17分组全覆盖\n文件/搜索/Git/知识库",
             "status": "done",
-            "testCount": 307
+            "testCount": 309
           }
         ],
         "status": "done"
@@ -76,7 +76,7 @@
             "label": "知识库 RAG",
             "desc": "双作用域架构\n5工具+HTTP API",
             "status": "done",
-            "testCount": 70
+            "testCount": 71
           },
           {
             "id": "f5",
@@ -92,7 +92,7 @@
             "label": "沙箱执行环境",
             "desc": "Docker+本地降级\n3种模式自动检测",
             "status": "done",
-            "testCount": 27
+            "testCount": 29
           }
         ],
         "status": "done"
@@ -180,7 +180,7 @@
             "label": "管线数据看板",
             "desc": "全量数据可视化\nKPI仪表板+问题追踪",
             "status": "done",
-            "testCount": 33
+            "testCount": 34
           },
           {
             "id": "p5b",
@@ -307,12 +307,12 @@
     ]
   },
   "kpi": {
-    "testCases": 1718,
+    "testCases": 1798,
     "testPassRate": 100,
-    "testPassed": 1729,
+    "testPassed": 1809,
     "testFailed": 0,
     "testSkipped": 0,
-    "_vitestTotal": 1729,
+    "_vitestTotal": 1809,
     "_uncovered": 0,
     "_coveragePct": 101,
     "_stale": false,
@@ -341,7 +341,7 @@
         "label": "测试覆盖",
         "score": 100,
         "max": 100,
-        "note": "1729通过 (100%)/1729已执行 / 1718 定义 用例通过"
+        "note": "1809通过 (100%)/1809已执行 / 1798 定义 用例通过"
       },
       {
         "label": "分支优化",
@@ -406,9 +406,9 @@
       "version": "v0.5.2",
       "date": "2026-06-25",
       "score": 100,
-      "note": "29/29模块+1718用例"
+      "note": "29/29模块+1798用例"
     }
   ],
-  "lastUpdated": "2026-09-18T07:12:54.527Z",
+  "lastUpdated": "2026-09-19T06:14:03.104Z",
   "source": "module-registry.mjs (统一注册表同步)"
 }

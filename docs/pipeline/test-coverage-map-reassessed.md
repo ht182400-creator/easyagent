@@ -9,24 +9,24 @@
 
 ## 一、单元测试层级 (Unit Test)
 
-| 序号  | 目标模块              | 核心场景                                                                           | 原始评估 | 重评估          | 现有测试文件                                         | 用例数(估) | 缺失点                                       |
-| ----- | --------------------- | ---------------------------------------------------------------------------------- | -------- | --------------- | ---------------------------------------------------- | ---------- | -------------------------------------------- |
-| UT-01 | **AgentEngine**       | ReAct循环终止(max25轮)、AbortSignal中断、流式回调(onPartialResponse)、最终答案提取 | 部分覆盖 | ✅ **已覆盖**   | `agent-engine.test.ts`                               | ~55        | max25轮边界、onPartialResponse深度验证可加强 |
-| UT-02 | **ToolRegistry**      | 51工具注册/覆盖、getTool查找、execute参数校验、requiresConfirm权限拦截、超时(30s)  | 部分覆盖 | ✅ **已覆盖**   | `tool-registry.test.ts`                              | ~40        | 超时处理(30s)未覆盖                          |
-| UT-03 | **ModelAdapter**      | 10家提供商实例化、连接验证、模型列表获取                                           | 需补充   | ✅ **已覆盖**   | `adapter-factory.test.ts`                            | ~45        | —                                            |
-| UT-04 | **KnowledgeService**  | 双作用域CRUD、1000字符分块、跨域fallback                                           | 需补充   | ✅ **已覆盖**   | `knowledge-service.test.ts`                          | ~50        | 1000字符分块存储未验证                       |
-| UT-05 | **SessionManager**    | SQLite持久化、WAL模式、消息序列化、Token统计                                       | ✅已覆盖 | ✅ **已覆盖**   | `session-manager.test.ts`                            | ~35        | —                                            |
-| UT-06 | **PluginManager**     | 插件加载/卸载/启用/禁用、6个内置技能、7种钩子触发                                  | 骨架完成 | ✅ **已覆盖**   | `plugins-skills.test.ts`                             | ~30        | 钩子触发机制(7种)深度不足                    |
-| UT-07 | **ModelRegistry**     | 远程catalog下载、24h TTL缓存、三级降级、强制刷新                                   | 需补充   | 🔴 **完全缺失** | —                                                    | 0          | 368行源码，零覆盖                            |
-| UT-08 | **AutomationManager** | RRULE解析、nextRun计算、超时、历史500条限制                                        | 需补充   | ✅ **已覆盖**   | `automation-manager.test.ts`                         | ~30        | maxDurationMinutes超时未验证                 |
-| UT-09 | **MCPManager**        | stdio启动/关闭、JSON-RPC(listTools/callTool)、超时                                 | 需补充   | ✅ **已覆盖**   | `mcp-client.test.ts`                                 | ~35        | —                                            |
-| UT-10 | **i18n国际化**        | t()翻译、zh-CN/en-US完整覆盖、嵌套键值、缺失键降级                                 | 需补充   | 🟡 **骨架**     | `utils.test.ts`                                      | 5          | 仅测导出+locale切换，无实际翻译内容验证      |
-| UT-11 | **SandboxManager**    | Docker检测降级、exec执行、输出限制10MB                                             | 需补充   | ✅ **已覆盖**   | `sandbox.test.ts`                                    | ~25        | 输出限制10MB未验证                           |
-| UT-12 | **ConfigManager**     | 去硬编码、模型列表、仪表盘模板、命令白名单                                         | 需补充   | ✅ **已覆盖**   | `config-manager.test.ts`                             | ~40        | —                                            |
-| UT-13 | **FileTools**         | 路径穿越防护、大文件读写、编码处理                                                 | 部分覆盖 | ✅ **已覆盖**   | `builtin-tools.test.ts` + `file-extra-tools.test.ts` | ~60        | 路径穿越防护场景不足                         |
-| UT-14 | **ExecTools**         | 危险命令白名单、Shell注入防护、超时终止、环境变量                                  | 部分覆盖 | 🟡 **部分**     | `builtin-tools.test.ts`                              | ~25        | 注入防护场景深度不足                         |
-| UT-15 | **GitTools**          | 7个Git命令解析、非Git仓库降级                                                      | 需补充   | 🟡 **部分**     | `builtin-tools.test.ts`                              | ~15        | GitAdvancedTools(21.96KB)零覆盖              |
-| UT-16 | **PluginMarketService** | 安装/卸载/更新、缓存TTL、进度回调、版本比较、manifest准入、GitHub API交互、回调注册           | 需补充   | ✅ **已覆盖**   | `plugin-market-service.test.ts`                      | 32         | —                                            |
+| 序号  | 目标模块                | 核心场景                                                                            | 原始评估 | 重评估          | 现有测试文件                                         | 用例数(估) | 缺失点                                       |
+| ----- | ----------------------- | ----------------------------------------------------------------------------------- | -------- | --------------- | ---------------------------------------------------- | ---------- | -------------------------------------------- |
+| UT-01 | **AgentEngine**         | ReAct循环终止(max25轮)、AbortSignal中断、流式回调(onPartialResponse)、最终答案提取  | 部分覆盖 | ✅ **已覆盖**   | `agent-engine.test.ts`                               | ~55        | max25轮边界、onPartialResponse深度验证可加强 |
+| UT-02 | **ToolRegistry**        | 51工具注册/覆盖、getTool查找、execute参数校验、requiresConfirm权限拦截、超时(30s)   | 部分覆盖 | ✅ **已覆盖**   | `tool-registry.test.ts`                              | ~40        | 超时处理(30s)未覆盖                          |
+| UT-03 | **ModelAdapter**        | 10家提供商实例化、连接验证、模型列表获取                                            | 需补充   | ✅ **已覆盖**   | `adapter-factory.test.ts`                            | ~45        | —                                            |
+| UT-04 | **KnowledgeService**    | 双作用域CRUD、1000字符分块、跨域fallback                                            | 需补充   | ✅ **已覆盖**   | `knowledge-service.test.ts`                          | ~50        | 1000字符分块存储未验证                       |
+| UT-05 | **SessionManager**      | SQLite持久化、WAL模式、消息序列化、Token统计                                        | ✅已覆盖 | ✅ **已覆盖**   | `session-manager.test.ts`                            | ~35        | —                                            |
+| UT-06 | **PluginManager**       | 插件加载/卸载/启用/禁用、6个内置技能、7种钩子触发                                   | 骨架完成 | ✅ **已覆盖**   | `plugins-skills.test.ts`                             | ~30        | 钩子触发机制(7种)深度不足                    |
+| UT-07 | **ModelRegistry**       | 远程catalog下载、24h TTL缓存、三级降级、强制刷新                                    | 需补充   | 🔴 **完全缺失** | —                                                    | 0          | 368行源码，零覆盖                            |
+| UT-08 | **AutomationManager**   | RRULE解析、nextRun计算、超时、历史500条限制                                         | 需补充   | ✅ **已覆盖**   | `automation-manager.test.ts`                         | ~30        | maxDurationMinutes超时未验证                 |
+| UT-09 | **MCPManager**          | stdio启动/关闭、JSON-RPC(listTools/callTool)、超时                                  | 需补充   | ✅ **已覆盖**   | `mcp-client.test.ts`                                 | ~35        | —                                            |
+| UT-10 | **i18n国际化**          | t()翻译、zh-CN/en-US完整覆盖、嵌套键值、缺失键降级                                  | 需补充   | 🟡 **骨架**     | `utils.test.ts`                                      | 5          | 仅测导出+locale切换，无实际翻译内容验证      |
+| UT-11 | **SandboxManager**      | Docker检测降级、exec执行、输出限制10MB                                              | 需补充   | ✅ **已覆盖**   | `sandbox.test.ts`                                    | ~25        | 输出限制10MB未验证                           |
+| UT-12 | **ConfigManager**       | 去硬编码、模型列表、仪表盘模板、命令白名单                                          | 需补充   | ✅ **已覆盖**   | `config-manager.test.ts`                             | ~40        | —                                            |
+| UT-13 | **FileTools**           | 路径穿越防护、大文件读写、编码处理                                                  | 部分覆盖 | ✅ **已覆盖**   | `builtin-tools.test.ts` + `file-extra-tools.test.ts` | ~60        | 路径穿越防护场景不足                         |
+| UT-14 | **ExecTools**           | 危险命令白名单、Shell注入防护、超时终止、环境变量                                   | 部分覆盖 | 🟡 **部分**     | `builtin-tools.test.ts`                              | ~25        | 注入防护场景深度不足                         |
+| UT-15 | **GitTools**            | 7个Git命令解析、非Git仓库降级                                                       | 需补充   | 🟡 **部分**     | `builtin-tools.test.ts`                              | ~15        | GitAdvancedTools(21.96KB)零覆盖              |
+| UT-16 | **PluginMarketService** | 安装/卸载/更新、缓存TTL、进度回调、版本比较、manifest准入、GitHub API交互、回调注册 | 需补充   | ✅ **已覆盖**   | `plugin-market-service.test.ts`                      | 32         | —                                            |
 
 ### UT 层级小结
 
@@ -40,19 +40,19 @@
 
 ## 二、集成测试层级 (Integration Test)
 
-| 序号  | 目标模块                  | 核心场景                                            | 原始评估   | 重评估        | 现有测试                                           | 用例数 | 缺失点                                      |
-| ----- | ------------------------- | --------------------------------------------------- | ---------- | ------------- | -------------------------------------------------- | ------ | ------------------------------------------- |
-| IT-01 | **Server REST API**       | 所有HTTP端点                                        | 🔴严重缺失 | ✅ **已覆盖** | `server/api.test.ts`                               | ~25    | 覆盖率待量化，部分端点可能缺                |
-| IT-02 | **Server WebSocket**      | /ws流式消息推送、断开重连                           | 严重缺失   | ✅ **已覆盖** | `server/websocket.test.ts`                         | ~10    | 重连机制未验证                              |
-| IT-03 | **TelegramAdapter**       | 长轮询/Webhook双模式、流式编辑、白名单              | 严重缺失   | 🟡 **骨架**   | `im-adapters.test.ts` (BaseIMAdapter)              | ~20    | **无TelegramAdapter专项测试**，仅测抽象基类 |
-| IT-04 | **FeishuAdapter**         | token刷新、URL验证、Lua/Lark双域名                  | 严重缺失   | ✅ **已覆盖** | `feishu-adapter.test.ts`                           | ~20    | —                                           |
-| IT-05 | **WeChatAdapter**         | AES-256解密、XML解析、Token管理                     | 严重缺失   | ✅ **已覆盖** | `wechat-adapter.test.ts` + `wechat-crypto.test.ts` | ~25    | —                                           |
-| IT-06 | **IMManager路由**         | 多平台消息路由、并发处理、启停切换                  | 需补充     | 🟡 **部分**   | `im-adapters.test.ts`                              | ~15    | 并发消息处理未测                            |
-| IT-07 | **KnowledgeService+HTTP** | 文件上传(10MB)、作用域切换、统计合并                | 需补充     | 🟡 **部分**   | `knowledge-service.test.ts` (单元)                 | ~50    | 无HTTP层集成测试                            |
-| IT-08 | **AutomationManager调度** | 定时执行、AgentEngine集成、历史记录、超时           | 需补充     | 🟡 **部分**   | `automation-manager.test.ts` (单元)                | ~30    | 无AgentEngine集成调用测试                   |
-| IT-09 | **ModelRegistry+Server**  | 启动下载、/api/providers/catalog/refresh、5分钟缓存 | 需补充     | 🔴 **缺失**   | —                                                  | 0      | ModelRegistry完全无测试                     |
-| IT-10 | **Desktop IPC**           | get-app-version、check-update、update-status事件    | 需补充     | 🟡 **骨架**   | `desktop/preload.test.ts`                          | ~10    | 仅测API规范，无实际IPC调用模拟              |
-| IT-11 | **PluginMarket API**      | 市场列表/详情、安装/卸载/更新检查/安全模式、进度查询、错误处理 | 需补充     | ✅ **已覆盖**   | `server/plugin-market-api.test.ts`                  | 18     | —                                            |
+| 序号  | 目标模块                  | 核心场景                                                       | 原始评估   | 重评估        | 现有测试                                           | 用例数 | 缺失点                                      |
+| ----- | ------------------------- | -------------------------------------------------------------- | ---------- | ------------- | -------------------------------------------------- | ------ | ------------------------------------------- |
+| IT-01 | **Server REST API**       | 所有HTTP端点                                                   | 🔴严重缺失 | ✅ **已覆盖** | `server/api.test.ts`                               | ~25    | 覆盖率待量化，部分端点可能缺                |
+| IT-02 | **Server WebSocket**      | /ws流式消息推送、断开重连                                      | 严重缺失   | ✅ **已覆盖** | `server/websocket.test.ts`                         | ~10    | 重连机制未验证                              |
+| IT-03 | **TelegramAdapter**       | 长轮询/Webhook双模式、流式编辑、白名单                         | 严重缺失   | 🟡 **骨架**   | `im-adapters.test.ts` (BaseIMAdapter)              | ~20    | **无TelegramAdapter专项测试**，仅测抽象基类 |
+| IT-04 | **FeishuAdapter**         | token刷新、URL验证、Lua/Lark双域名                             | 严重缺失   | ✅ **已覆盖** | `feishu-adapter.test.ts`                           | ~20    | —                                           |
+| IT-05 | **WeChatAdapter**         | AES-256解密、XML解析、Token管理                                | 严重缺失   | ✅ **已覆盖** | `wechat-adapter.test.ts` + `wechat-crypto.test.ts` | ~25    | —                                           |
+| IT-06 | **IMManager路由**         | 多平台消息路由、并发处理、启停切换                             | 需补充     | 🟡 **部分**   | `im-adapters.test.ts`                              | ~15    | 并发消息处理未测                            |
+| IT-07 | **KnowledgeService+HTTP** | 文件上传(10MB)、作用域切换、统计合并                           | 需补充     | 🟡 **部分**   | `knowledge-service.test.ts` (单元)                 | ~50    | 无HTTP层集成测试                            |
+| IT-08 | **AutomationManager调度** | 定时执行、AgentEngine集成、历史记录、超时                      | 需补充     | 🟡 **部分**   | `automation-manager.test.ts` (单元)                | ~30    | 无AgentEngine集成调用测试                   |
+| IT-09 | **ModelRegistry+Server**  | 启动下载、/api/providers/catalog/refresh、5分钟缓存            | 需补充     | 🔴 **缺失**   | —                                                  | 0      | ModelRegistry完全无测试                     |
+| IT-10 | **Desktop IPC**           | get-app-version、check-update、update-status事件               | 需补充     | 🟡 **骨架**   | `desktop/preload.test.ts`                          | ~10    | 仅测API规范，无实际IPC调用模拟              |
+| IT-11 | **PluginMarket API**      | 市场列表/详情、安装/卸载/更新检查/安全模式、进度查询、错误处理 | 需补充     | ✅ **已覆盖** | `server/plugin-market-api.test.ts`                 | 18     | —                                           |
 
 ### IT 层级小结
 
@@ -233,19 +233,19 @@ docs/pipeline/
 
 ### 状态分布
 
-| 层级            | 🔴 缺失 | 🟡 部分 | ✅ 已覆盖 | 合计 |
-| --------------- | ------- | ------- | --------- | ---- |
-| 单元测试 (UT)   | 1       | 4       | 11        | 16   |
-| 集成测试 (IT)   | 2       | 4       | 5         | 11   |
-| E2E (E2E)       | 6       | 0       | 0         | 6    |
-| 性能 (PT)       | 7       | 0       | 0         | 7    |
-| 跨平台 (CP)     | 5       | 0       | 0         | 5    |
-| 安全 (ST)       | 6       | 0       | 1         | 7    |
-| UI/UX           | 3       | 1       | 0         | 4    |
-| 文档交付        | 5       | 0       | 0         | 5    |
-| **主线合计**    | **35**  | **9**   | **17**    | **61**|
-| 管线自测试 (P5) | 0       | 0       | ✅ 4      | 4    |
-| **全项目合计**  | **35**  | **9**   | **21**    | **65**|
+| 层级            | 🔴 缺失 | 🟡 部分 | ✅ 已覆盖 | 合计   |
+| --------------- | ------- | ------- | --------- | ------ |
+| 单元测试 (UT)   | 1       | 4       | 11        | 16     |
+| 集成测试 (IT)   | 2       | 4       | 5         | 11     |
+| E2E (E2E)       | 6       | 0       | 0         | 6      |
+| 性能 (PT)       | 7       | 0       | 0         | 7      |
+| 跨平台 (CP)     | 5       | 0       | 0         | 5      |
+| 安全 (ST)       | 6       | 0       | 1         | 7      |
+| UI/UX           | 3       | 1       | 0         | 4      |
+| 文档交付        | 5       | 0       | 0         | 5      |
+| **主线合计**    | **35**  | **9**   | **17**    | **61** |
+| 管线自测试 (P5) | 0       | 0       | ✅ 4      | 4      |
+| **全项目合计**  | **35**  | **9**   | **21**    | **65** |
 
 ### 与原始评估的主要差异
 

@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-18T07:12:54.306Z",
+    "generatedAt": "2026-09-19T06:14:02.873Z",
     "totalTestFiles": 48,
-    "totalTestCases": 1718,
-    "unmappedCases": 518,
+    "totalTestCases": 1798,
+    "unmappedCases": 577,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -30,11 +30,11 @@
     },
     "f2": {
       "moduleId": "f2",
-      "totalCases": 137,
+      "totalCases": 152,
       "subModules": {
         "core": {
           "name": "Agent 系统",
-          "cases": 137,
+          "cases": 152,
           "files": [
             {
               "path": "packages/core/src/__tests__/agent-engine.test.ts",
@@ -54,7 +54,7 @@
             },
             {
               "path": "packages/core/src/__tests__/semantic.test.ts",
-              "cases": 46
+              "cases": 61
             },
             {
               "path": "packages/core/src/__tests__/automation-manager.test.ts",
@@ -66,11 +66,11 @@
     },
     "f3": {
       "moduleId": "f3",
-      "totalCases": 307,
+      "totalCases": 309,
       "subModules": {
         "core": {
           "name": "工具系统 51 tools",
-          "cases": 307,
+          "cases": 309,
           "files": [
             {
               "path": "packages/core/src/__tests__/builtin-tools.test.ts",
@@ -98,7 +98,7 @@
             },
             {
               "path": "packages/core/src/__tests__/preview-media-tools.test.ts",
-              "cases": 36
+              "cases": 38
             },
             {
               "path": "packages/core/src/__tests__/project-tools.test.ts",
@@ -197,15 +197,15 @@
     },
     "f4": {
       "moduleId": "f4",
-      "totalCases": 70,
+      "totalCases": 71,
       "subModules": {
         "core": {
           "name": "知识库 RAG",
-          "cases": 70,
+          "cases": 71,
           "files": [
             {
               "path": "packages/core/src/__tests__/knowledge-service.test.ts",
-              "cases": 41
+              "cases": 42
             },
             {
               "path": "packages/core/src/__tests__/knowledge-tools.test.ts",
@@ -233,15 +233,15 @@
     },
     "f6": {
       "moduleId": "f6",
-      "totalCases": 27,
+      "totalCases": 29,
       "subModules": {
         "core": {
           "name": "沙箱执行环境",
-          "cases": 27,
+          "cases": 29,
           "files": [
             {
               "path": "packages/core/src/__tests__/sandbox.test.ts",
-              "cases": 27
+              "cases": 29
             }
           ]
         }
@@ -337,7 +337,7 @@
     },
     "p5a": {
       "moduleId": "p5a",
-      "totalCases": 33,
+      "totalCases": 34,
       "subModules": {
         "core": {
           "name": "管线数据看板",
@@ -351,11 +351,11 @@
         },
         "server": {
           "name": "管线数据看板·服务器",
-          "cases": 33,
+          "cases": 34,
           "files": [
             {
               "path": "packages/server/src/__tests__/automation-knowledge-api.test.ts",
-              "cases": 33
+              "cases": 34
             }
           ]
         }
@@ -471,19 +471,35 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 518,
+      "totalCases": 577,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 518,
+          "cases": 577,
           "files": [
             {
               "path": "packages/core/src/__tests__/anthropic-adapter.test.ts",
               "cases": 16
             },
             {
+              "path": "packages/core/src/__tests__/commandsafety.test.ts",
+              "cases": 14
+            },
+            {
               "path": "packages/core/src/__tests__/context-manager.test.ts",
               "cases": 63
+            },
+            {
+              "path": "packages/core/src/__tests__/databasemigrator.test.ts",
+              "cases": 18
+            },
+            {
+              "path": "packages/core/src/__tests__/local-sandbox-exec.test.ts",
+              "cases": 6
+            },
+            {
+              "path": "packages/core/src/__tests__/mcp-streamable-http.test.ts",
+              "cases": 5
             },
             {
               "path": "packages/core/src/__tests__/model-registry-freshness.test.ts",
@@ -516,6 +532,10 @@
             {
               "path": "packages/frontend/src/__tests__/api.test.ts",
               "cases": 12
+            },
+            {
+              "path": "packages/frontend/src/__tests__/automation-progress.test.ts",
+              "cases": 4
             },
             {
               "path": "packages/frontend/src/__tests__/config.test.tsx",
@@ -588,6 +608,14 @@
             {
               "path": "packages/server/src/__tests__/api-security.test.ts",
               "cases": 43
+            },
+            {
+              "path": "packages/server/src/__tests__/errorhandler.test.ts",
+              "cases": 6
+            },
+            {
+              "path": "packages/server/src/__tests__/hitl.test.ts",
+              "cases": 6
             },
             {
               "path": "packages/server/src/__tests__/langgraph-engine.test.ts",

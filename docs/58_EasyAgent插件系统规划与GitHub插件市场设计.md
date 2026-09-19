@@ -29,10 +29,10 @@
 
 ### 1.1 用户原始需求
 
-| # | 需求 | 交付物位置 | 关键功能 |
-|---|------|----------|----------|
-| 1 | EasyAgent 支持插件功能 | EasyAgent 项目内 | 第三方插件市场、安装、使用、更新 |
-| 2 | GitHub 上的插件项目 | `ht182400-creator` GitHub Org | 类似 Obsidian 的 MD 文档工具：预览目录、关系图谱、点击节点预览、搜索、知识库索引 |
+| #   | 需求                   | 交付物位置                    | 关键功能                                                                         |
+| --- | ---------------------- | ----------------------------- | -------------------------------------------------------------------------------- |
+| 1   | EasyAgent 支持插件功能 | EasyAgent 项目内              | 第三方插件市场、安装、使用、更新                                                 |
+| 2   | GitHub 上的插件项目    | `ht182400-creator` GitHub Org | 类似 Obsidian 的 MD 文档工具：预览目录、关系图谱、点击节点预览、搜索、知识库索引 |
 
 ### 1.2 拆解后的功能清单
 
@@ -74,25 +74,25 @@
 
 ### 2.1 正面论证 — 为什么应该做
 
-| 角色 | 论点 | 权重 |
-|------|------|------|
-| **产品专家** | 插件生态是 Agent 平台从"工具"升级为"平台"的关键路径。Obsidian 5,000+ 插件是其核心壁垒。 | ⭐⭐⭐⭐⭐ |
-| **架构师** | EasyAgent 已有 `PluginManager` + `PluginSandbox` + `PluginManifest` 三层基础，增量成本低。 | ⭐⭐⭐⭐ |
-| **界面专家** | 用户对"Obsidian 式插件市场"有明确心智模型，UI 可高度复用其布局。 | ⭐⭐⭐⭐ |
-| **代码专家** | 第三方插件可用 Worker 沙箱运行，安全风险可控；GitHub 作为 registry 免维护。 | ⭐⭐⭐⭐ |
-| **维护专家** | 插件系统与核心解耦，新功能通过插件交付可减少 core 的发布频率。 | ⭐⭐⭐ |
-| **测试专家** | 插件可独立测试，沙箱隔离后回归范围可控。 | ⭐⭐⭐ |
+| 角色         | 论点                                                                                       | 权重       |
+| ------------ | ------------------------------------------------------------------------------------------ | ---------- |
+| **产品专家** | 插件生态是 Agent 平台从"工具"升级为"平台"的关键路径。Obsidian 5,000+ 插件是其核心壁垒。    | ⭐⭐⭐⭐⭐ |
+| **架构师**   | EasyAgent 已有 `PluginManager` + `PluginSandbox` + `PluginManifest` 三层基础，增量成本低。 | ⭐⭐⭐⭐   |
+| **界面专家** | 用户对"Obsidian 式插件市场"有明确心智模型，UI 可高度复用其布局。                           | ⭐⭐⭐⭐   |
+| **代码专家** | 第三方插件可用 Worker 沙箱运行，安全风险可控；GitHub 作为 registry 免维护。                | ⭐⭐⭐⭐   |
+| **维护专家** | 插件系统与核心解耦，新功能通过插件交付可减少 core 的发布频率。                             | ⭐⭐⭐     |
+| **测试专家** | 插件可独立测试，沙箱隔离后回归范围可控。                                                   | ⭐⭐⭐     |
 
 ### 2.2 反面论证 — 风险与代价
 
-| 角色 | 论点 | 风险等级 |
-|------|------|----------|
-| **安全专家** | 第三方插件即使沙箱隔离，仍可能通过社会工程学诱导用户授权危险权限。 | 🔴 高 |
-| **维护专家** | GitHub API 限流、仓库删除/改名、Release 资产格式不统一会导致安装失败。 | 🟡 中 |
-| **产品专家** | 插件质量参差不齐，用户可能因某个插件崩溃而归咎于 EasyAgent 主产品。 | 🟡 中 |
-| **测试专家** | 插件组合爆炸，不同插件之间的 hook/tool 命名冲突难以完全避免。 | 🟡 中 |
-| **架构师** | 当前 PluginSandbox 缺少网络白名单、文件系统 chroot、内存硬限制等高级隔离。 | 🟡 中 |
-| **界面专家** | 前端需要新增大量设置页面，若设计不当会破坏现有简洁体验。 | 🟢 低 |
+| 角色         | 论点                                                                       | 风险等级 |
+| ------------ | -------------------------------------------------------------------------- | -------- |
+| **安全专家** | 第三方插件即使沙箱隔离，仍可能通过社会工程学诱导用户授权危险权限。         | 🔴 高    |
+| **维护专家** | GitHub API 限流、仓库删除/改名、Release 资产格式不统一会导致安装失败。     | 🟡 中    |
+| **产品专家** | 插件质量参差不齐，用户可能因某个插件崩溃而归咎于 EasyAgent 主产品。        | 🟡 中    |
+| **测试专家** | 插件组合爆炸，不同插件之间的 hook/tool 命名冲突难以完全避免。              | 🟡 中    |
+| **架构师**   | 当前 PluginSandbox 缺少网络白名单、文件系统 chroot、内存硬限制等高级隔离。 | 🟡 中    |
+| **界面专家** | 前端需要新增大量设置页面，若设计不当会破坏现有简洁体验。                   | 🟢 低    |
 
 ### 2.3 综合评估结论
 
@@ -115,28 +115,28 @@
 
 ### 3.1 已具备能力
 
-| 模块 | 文件 | 能力 | 成熟度 |
-|------|------|------|--------|
-| **类型定义** | `packages/core/src/plugins/types.ts` | IPlugin / ISkill / IPluginHook / 生命周期 | ⭐⭐⭐⭐ |
-| **插件管理器** | `PluginManager.ts` | 加载/卸载/启用/禁用/批量加载/依赖检查 | ⭐⭐⭐⭐ |
-| **Manifest 验证** | `PluginManifest.ts` | JSON Schema 验证、权限声明、semver | ⭐⭐⭐⭐ |
-| **权限系统** | `PluginPermission.ts` | 危险权限检测、权限级别 | ⭐⭐⭐ |
-| **沙箱系统** | `PluginSandbox.ts` | Worker 线程隔离、RPC 通信、资源限制 | ⭐⭐⭐ |
-| **内置技能** | `BuiltinSkills.ts` | 6 个内置技能 | ⭐⭐⭐⭐ |
-| **Worker 入口** | `PluginWorkerEntry.ts` | 插件 Worker 主循环 | ⭐⭐⭐ |
+| 模块              | 文件                                 | 能力                                      | 成熟度   |
+| ----------------- | ------------------------------------ | ----------------------------------------- | -------- |
+| **类型定义**      | `packages/core/src/plugins/types.ts` | IPlugin / ISkill / IPluginHook / 生命周期 | ⭐⭐⭐⭐ |
+| **插件管理器**    | `PluginManager.ts`                   | 加载/卸载/启用/禁用/批量加载/依赖检查     | ⭐⭐⭐⭐ |
+| **Manifest 验证** | `PluginManifest.ts`                  | JSON Schema 验证、权限声明、semver        | ⭐⭐⭐⭐ |
+| **权限系统**      | `PluginPermission.ts`                | 危险权限检测、权限级别                    | ⭐⭐⭐   |
+| **沙箱系统**      | `PluginSandbox.ts`                   | Worker 线程隔离、RPC 通信、资源限制       | ⭐⭐⭐   |
+| **内置技能**      | `BuiltinSkills.ts`                   | 6 个内置技能                              | ⭐⭐⭐⭐ |
+| **Worker 入口**   | `PluginWorkerEntry.ts`               | 插件 Worker 主循环                        | ⭐⭐⭐   |
 
 ### 3.2 关键缺失
 
-| 缺失项 | 影响 | 优先级 |
-|--------|------|--------|
-| **前端插件 UI** | 用户无法可视化安装管理插件 | P0 |
-| **远程插件源** | 无法从 GitHub 浏览/下载 | P0 |
-| **插件更新机制** | 安装后无法自动更新 | P0 |
-| **插件仓库协议** | 缺少 GitHub 插件 registry 规范 | P0 |
-| **网络沙箱白名单** | 插件可能访问任意 URL | P1 |
-| **文件系统 chroot** | 插件可读写用户插件目录外文件 | P1 |
-| **签名/校验** | 无法验证插件来源完整性 | P2 |
-| **热重载** | 开发体验不佳 | P2 |
+| 缺失项              | 影响                           | 优先级 |
+| ------------------- | ------------------------------ | ------ |
+| **前端插件 UI**     | 用户无法可视化安装管理插件     | P0     |
+| **远程插件源**      | 无法从 GitHub 浏览/下载        | P0     |
+| **插件更新机制**    | 安装后无法自动更新             | P0     |
+| **插件仓库协议**    | 缺少 GitHub 插件 registry 规范 | P0     |
+| **网络沙箱白名单**  | 插件可能访问任意 URL           | P1     |
+| **文件系统 chroot** | 插件可读写用户插件目录外文件   | P1     |
+| **签名/校验**       | 无法验证插件来源完整性         | P2     |
+| **热重载**          | 开发体验不佳                   | P2     |
 
 ---
 
@@ -302,7 +302,7 @@ interface PluginMarketState {
 }
 
 interface RemotePluginInfo {
-  id: string;              // owner/repo
+  id: string; // owner/repo
   name: string;
   description: string;
   author: string;
@@ -336,12 +336,12 @@ interface PluginInstallProgress {
 ```typescript
 // packages/server/src/types/pluginMarket.ts
 interface PluginRegistryEntry {
-  id: string;           // owner/repo
+  id: string; // owner/repo
   name: string;
   repo: string;
   latestVersion: string;
   manifestUrl: string;
-  downloadUrl: string;  // GitHub Release zipball
+  downloadUrl: string; // GitHub Release zipball
   publishedAt: string;
   lastFetchedAt: number;
 }
@@ -350,7 +350,7 @@ interface PluginCache {
   entries: PluginRegistryEntry[];
   etag?: string;
   fetchedAt: number;
-  ttl: number;          // 默认 1小时
+  ttl: number; // 默认 1小时
 }
 
 interface InstallJob {
@@ -365,12 +365,12 @@ interface InstallJob {
 
 ### 5.3 持久化存储
 
-| 数据 | 存储位置 | 格式 |
-|------|----------|------|
-| 已安装插件元信息 | `~/.easyagent/plugins/installed.json` | JSON |
-| 插件缓存 | `~/.easyagent/plugins/.cache/market.json` | JSON |
-| 插件源码 | `~/.easyagent/plugins/{pluginName}/` | 目录 |
-| 安装任务状态 | Server 内存 (短生命周期) | Map |
+| 数据             | 存储位置                                  | 格式 |
+| ---------------- | ----------------------------------------- | ---- |
+| 已安装插件元信息 | `~/.easyagent/plugins/installed.json`     | JSON |
+| 插件缓存         | `~/.easyagent/plugins/.cache/market.json` | JSON |
+| 插件源码         | `~/.easyagent/plugins/{pluginName}/`      | 目录 |
+| 安装任务状态     | Server 内存 (短生命周期)                  | Map  |
 
 ---
 
@@ -556,12 +556,12 @@ Accept: application/vnd.github.html+json  // 返回 HTML 便于展示
 
 #### 各页面分工
 
-| 操作 | 页面 | 说明 |
-|------|------|------|
-| 浏览/搜索/安装/卸载插件 | `/plugins` | 插件市场页面，三标签页（社区/已安装/安全） |
-| **使用插件功能** | `/chat` | 对话页面，用自然语言让 AI 调用 |
-| 查看所有可用工具（含插件） | `/tools` | 工具管理页面，展示全部注册的工具清单 |
-| 查看所有可用技能（含插件） | `/skills` | 技能管理页面 |
+| 操作                       | 页面       | 说明                                       |
+| -------------------------- | ---------- | ------------------------------------------ |
+| 浏览/搜索/安装/卸载插件    | `/plugins` | 插件市场页面，三标签页（社区/已安装/安全） |
+| **使用插件功能**           | `/chat`    | 对话页面，用自然语言让 AI 调用             |
+| 查看所有可用工具（含插件） | `/tools`   | 工具管理页面，展示全部注册的工具清单       |
+| 查看所有可用技能（含插件） | `/skills`  | 技能管理页面                               |
 
 #### 使用示例
 
@@ -578,6 +578,7 @@ Accept: application/vnd.github.html+json  // 返回 HTML 便于展示
 **Q: 已经安装并启用插件，但发消息后 AI 回复"错误: fetch failed"？**
 
 A: 这通常是 LLM provider 不可达导致的。插件工具调用需要 AI 先理解意图并选择工具，这步推理必须经过 LLM。排查步骤：
+
 1. 检查 Ollama 是否启动：`ollama serve`（默认 provider）
 2. 或切换到已配置 API Key 的云端模型（`/模型` 页面）
 3. 临时可用内置引擎标签验证（无 LangGraph 图谱能力）
@@ -643,20 +644,20 @@ async execute({ workspacePath }) {
 
 EasyAgent 在 4 个层面对该契约违规做兜底：
 
-| 层 | 文件 | 行为 |
-|----|------|------|
-| **L1 插件** | `packages/easyagent-plugin-obsidian-doc-viewer/plugin.js` | 直接返回 ToolResult |
-| **L2 模板** | `packages/plugin-template/plugin.js` | 模板以身作则，注释警告 |
-| **L3 沙箱** | `packages/core/src/plugins/PluginSandbox.ts` `normalizePluginResult()` | 兜底 4 种形态（标准/半结构/字符串/null）→ 强制规范为 ToolResult |
-| **L4 执行节点** | `packages/langgraph/src/nodes/actNode.ts` `executeSingleTool()` | 检测 `result.success` 缺失时按成功处理 + 附加"系统提示" |
+| 层              | 文件                                                                   | 行为                                                            |
+| --------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **L1 插件**     | `packages/easyagent-plugin-obsidian-doc-viewer/plugin.js`              | 直接返回 ToolResult                                             |
+| **L2 模板**     | `packages/plugin-template/plugin.js`                                   | 模板以身作则，注释警告                                          |
+| **L3 沙箱**     | `packages/core/src/plugins/PluginSandbox.ts` `normalizePluginResult()` | 兜底 4 种形态（标准/半结构/字符串/null）→ 强制规范为 ToolResult |
+| **L4 执行节点** | `packages/langgraph/src/nodes/actNode.ts` `executeSingleTool()`        | 检测 `result.success` 缺失时按成功处理 + 附加"系统提示"         |
 
 #### 常见错误日志与定位
 
-| 错误现象 | 真正原因 | 修复 |
-|---------|---------|------|
-| `工具执行失败: 未知错误` | 插件返回 string 或 undefined 而非 ToolResult | 修复 plugin.js 用 `{success, content}` 返回 |
-| `LLM 反思 144s + 282 字"恭喜"消息` | 插件返回结构异常被 LLM 当作工具失败 → 走无意义循环 | 修复 plugin + 检查 PluginSandbox 规范化是否生效 |
-| `actNode 工具并行执行 50ms 返回，contentLen: 12` | 错误信息前缀"工具执行失败: 未知错误"刚好 12 字节 | 同上 |
+| 错误现象                                         | 真正原因                                           | 修复                                            |
+| ------------------------------------------------ | -------------------------------------------------- | ----------------------------------------------- |
+| `工具执行失败: 未知错误`                         | 插件返回 string 或 undefined 而非 ToolResult       | 修复 plugin.js 用 `{success, content}` 返回     |
+| `LLM 反思 144s + 282 字"恭喜"消息`               | 插件返回结构异常被 LLM 当作工具失败 → 走无意义循环 | 修复 plugin + 检查 PluginSandbox 规范化是否生效 |
+| `actNode 工具并行执行 50ms 返回，contentLen: 12` | 错误信息前缀"工具执行失败: 未知错误"刚好 12 字节   | 同上                                            |
 
 #### 调试方法
 
@@ -703,14 +704,14 @@ Layer 6: 安全模式
 ```typescript
 interface PluginPermissions {
   filesystem?: {
-    read?: string[];    // glob 数组，如 ["**/*.md"]
-    write?: string[];   // 写权限更危险
+    read?: string[]; // glob 数组，如 ["**/*.md"]
+    write?: string[]; // 写权限更危险
   };
   network?: {
     domains?: string[]; // 允许访问的域名
     allowAll?: boolean; // 默认 false
   };
-  shell?: boolean;      // 是否允许执行 shell
+  shell?: boolean; // 是否允许执行 shell
   notifications?: boolean;
   clipboard?: boolean;
 }
@@ -740,16 +741,16 @@ interface PluginPermissions {
 
 ### 9.2 关键测试用例
 
-| 用例 | 类型 | 说明 |
-|------|------|------|
-| 正常安装 GitHub 插件 | E2E | 从真实/模拟 GitHub 下载并加载 |
-| Manifest 缺少字段拒绝安装 | 单元 | 验证必填字段校验 |
-| 危险权限必须用户确认 | 集成 | 安装流程阻塞等待确认 |
-| 插件崩溃不影响主应用 | 集成 | Worker 异常后主应用继续运行 |
-| 安全模式禁用所有第三方插件 | E2E | 一键切换后插件不再加载 |
-| 安装失败自动清理 | 单元 | 临时文件不残留 |
-| GitHub API 限流降级 | 集成 | 使用本地缓存 |
-| 插件更新版本比对 | 单元 | semver 比较逻辑 |
+| 用例                       | 类型 | 说明                          |
+| -------------------------- | ---- | ----------------------------- |
+| 正常安装 GitHub 插件       | E2E  | 从真实/模拟 GitHub 下载并加载 |
+| Manifest 缺少字段拒绝安装  | 单元 | 验证必填字段校验              |
+| 危险权限必须用户确认       | 集成 | 安装流程阻塞等待确认          |
+| 插件崩溃不影响主应用       | 集成 | Worker 异常后主应用继续运行   |
+| 安全模式禁用所有第三方插件 | E2E  | 一键切换后插件不再加载        |
+| 安装失败自动清理           | 单元 | 临时文件不残留                |
+| GitHub API 限流降级        | 集成 | 使用本地缓存                  |
+| 插件更新版本比对           | 单元 | semver 比较逻辑               |
 
 ### 9.3 Mock 策略
 
@@ -824,13 +825,14 @@ const mockGitHubClient = {
 
 **修复方案**：
 
-| 方案 | 操作 | 适用场景 |
-|------|------|---------|
-| A：启动 Ollama | `ollama serve`，确保模型已拉取（如 `ollama pull qwen3.5:9b`） | 本地开发，无需 API Key |
-| B：切换云端模型 | 进 `/模型` 页面选已配 Key 的 provider | 有云端 API Key 时 |
-| C：切内置引擎 | 顶部 Tab 切到"内置引擎" | 临时验证，无 LangGraph 能力 |
+| 方案            | 操作                                                          | 适用场景                    |
+| --------------- | ------------------------------------------------------------- | --------------------------- |
+| A：启动 Ollama  | `ollama serve`，确保模型已拉取（如 `ollama pull qwen3.5:9b`） | 本地开发，无需 API Key      |
+| B：切换云端模型 | 进 `/模型` 页面选已配 Key 的 provider                         | 有云端 API Key 时           |
+| C：切内置引擎   | 顶部 Tab 切到"内置引擎"                                       | 临时验证，无 LangGraph 能力 |
 
 **长期改进建议**：
+
 - 后端 adapter 层 catch 时判断目标端口 → 给出友好提示（如"Ollama 服务未启动，请运行 ollama serve"）
 - 前端区分后端宕机（HTTP 503）vs 上游 LLM 不可达（fetch failed 来自适配器层），给出不同级别的错误提示
 - `/api/config` 可快速诊断当前 provider 状态（已有端点）
@@ -838,6 +840,7 @@ const mockGitHubClient = {
 #### 9.4.4 插件 `execute` 返回 string 而非 ToolResult → "工具执行失败: 未知错误" → LLM 反思循环 🆕 v0.6.24+
 
 **症状**（2026-07-02 实测截图）：
+
 - Ollama 已启动 + LLM 推理成功（130s），决定调用 `open-doc-viewer`
 - 工具执行返回 `args: {}`（LLM 没传参）
 - ToolMessage content 变成 `工具执行失败: 未知错误`（12 字节）
@@ -862,23 +865,24 @@ LLM 误判"工具坏了" → 反思循环
 
 **四层防御修复**（v0.6.24+）：
 
-| 层 | 文件 | 改动 |
-|----|------|------|
-| L1 插件 | `packages/easyagent-plugin-obsidian-doc-viewer/plugin.js` | `return "string"` → `return { success: true, content: "..." }` |
-| L2 模板 | `packages/plugin-template/plugin.js` | 同步修复 + 注释警告 |
-| L3 沙箱 | `packages/core/src/plugins/PluginSandbox.ts` | 新增 `normalizePluginResult()` 兜底 4 种形态 |
-| L4 执行 | `packages/langgraph/src/nodes/actNode.ts` | `executeSingleTool` 检测非标准返回值时按成功处理 + 附加系统提示 |
+| 层      | 文件                                                      | 改动                                                            |
+| ------- | --------------------------------------------------------- | --------------------------------------------------------------- |
+| L1 插件 | `packages/easyagent-plugin-obsidian-doc-viewer/plugin.js` | `return "string"` → `return { success: true, content: "..." }`  |
+| L2 模板 | `packages/plugin-template/plugin.js`                      | 同步修复 + 注释警告                                             |
+| L3 沙箱 | `packages/core/src/plugins/PluginSandbox.ts`              | 新增 `normalizePluginResult()` 兜底 4 种形态                    |
+| L4 执行 | `packages/langgraph/src/nodes/actNode.ts`                 | `executeSingleTool` 检测非标准返回值时按成功处理 + 附加系统提示 |
 
 **修复后日志变化**：
 
-| 修复前 | 修复后 |
-|--------|--------|
+| 修复前                                                                                                                | 修复后                                                         |
+| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `[actNode] 工具结果: open-doc-viewer \| {"success":false,"contentLen":12,"contentPreview":"工具 执行失败: 未知错误"}` | `[actNode] 工具执行成功: open-doc-viewer \| {"contentLen":14}` |
-| LLM 反思 144s + 282 字"恭喜" | 直接进入文档浏览器 UI |
+| LLM 反思 144s + 282 字"恭喜"                                                                                          | 直接进入文档浏览器 UI                                          |
 
 **关联陷阱**（MEMORY #47）：插件 `execute` 返回 string 而非 ToolResult → "工具执行失败: 未知错误" → LLM 无意义反思循环
 
 **长期改进建议**：
+
 - 在 `PluginManager.install()` 后做"插件健康检查"：注册一个空 tool，调用一遍确保返回值符合契约，不符合则警告用户
 - 提供 `easyagent-plugin-validate` CLI 工具，静态分析 plugin.js 源码是否遵守契约
 - `ITool.execute` 返回类型从 `Promise<ToolResult>` 改为 branded type `Promise<Brand<ToolResult, 'ToolResult'>>` 防止 `as` 断言绕过
@@ -889,44 +893,44 @@ LLM 误判"工具坏了" → 反思循环
 
 ### 🔴 P0 — MVP (2-3 周)
 
-| # | 任务 | 交付物 | 负责人 |
-|---|------|--------|--------|
-| P0-1 | 设计并实现 PluginMarketService | `packages/server/src/services/PluginMarketService.ts` | 后端 |
-| P0-2 | 新增 Server API 路由 | `packages/server/src/routes/pluginMarket.ts` | 后端 |
-| P0-3 | 实现 GitHub 搜索/Release 下载 | `packages/server/src/utils/githubClient.ts` | 后端 |
-| P0-4 | 增强 PluginSandbox 网络/文件代理 | `PluginSandbox.ts` + `PluginWorkerEntry.ts` | 核心 |
-| P0-5 | 前端插件市场页面 | `packages/frontend/src/pages/settings/PluginsPage.tsx` | 前端 |
-| P0-6 | 前端 pluginStore | `packages/frontend/src/stores/pluginStore.ts` | 前端 |
-| P0-7 | 安装进度 WebSocket 推送 | Server broadcast + frontend listener | 全栈 |
-| P0-8 | 编写单元测试 | coverage ≥ 70% | 测试 |
+| #    | 任务                             | 交付物                                                 | 负责人 |
+| ---- | -------------------------------- | ------------------------------------------------------ | ------ |
+| P0-1 | 设计并实现 PluginMarketService   | `packages/server/src/services/PluginMarketService.ts`  | 后端   |
+| P0-2 | 新增 Server API 路由             | `packages/server/src/routes/pluginMarket.ts`           | 后端   |
+| P0-3 | 实现 GitHub 搜索/Release 下载    | `packages/server/src/utils/githubClient.ts`            | 后端   |
+| P0-4 | 增强 PluginSandbox 网络/文件代理 | `PluginSandbox.ts` + `PluginWorkerEntry.ts`            | 核心   |
+| P0-5 | 前端插件市场页面                 | `packages/frontend/src/pages/settings/PluginsPage.tsx` | 前端   |
+| P0-6 | 前端 pluginStore                 | `packages/frontend/src/stores/pluginStore.ts`          | 前端   |
+| P0-7 | 安装进度 WebSocket 推送          | Server broadcast + frontend listener                   | 全栈   |
+| P0-8 | 编写单元测试                     | coverage ≥ 70%                                         | 测试   |
 
 ### 🟡 P1 — 稳定版 (3-4 周)
 
-| # | 任务 | 交付物 |
-|---|------|--------|
+| #    | 任务                  | 交付物                               |
+| ---- | --------------------- | ------------------------------------ |
 | P1-1 | Curated Registry 仓库 | `ht182400-creator/easyagent-plugins` |
-| P1-2 | 插件自动更新 | 后台检查 + 批量更新 |
-| P1-3 | 本地 zip 安装 | 拖放/文件选择上传 |
-| P1-4 | 插件配置持久化 | 每个插件独立 config.json |
-| P1-5 | 安全模式启动 | 崩溃后自动进入 |
-| P1-6 | README 渲染优化 | markdown-it + 代码高亮 |
+| P1-2 | 插件自动更新          | 后台检查 + 批量更新                  |
+| P1-3 | 本地 zip 安装         | 拖放/文件选择上传                    |
+| P1-4 | 插件配置持久化        | 每个插件独立 config.json             |
+| P1-5 | 安全模式启动          | 崩溃后自动进入                       |
+| P1-6 | README 渲染优化       | markdown-it + 代码高亮               |
 
 ### 🟢 P2 — 体验增强 (4-6 周)
 
-| # | 任务 | 交付物 |
-|---|------|--------|
-| P2-1 | 插件评分/下载统计展示 | 前端 UI |
-| P2-2 | 插件图标/截图展示 | 图片懒加载 |
-| P2-3 | 插件分类筛选 | category tags |
-| P2-4 | 插件热重载 (开发模式) | watch + reload |
-| P2-5 | 插件开发者文档 | `docs/59_插件开发指南.md` |
+| #    | 任务                  | 交付物                    |
+| ---- | --------------------- | ------------------------- |
+| P2-1 | 插件评分/下载统计展示 | 前端 UI                   |
+| P2-2 | 插件图标/截图展示     | 图片懒加载                |
+| P2-3 | 插件分类筛选          | category tags             |
+| P2-4 | 插件热重载 (开发模式) | watch + reload            |
+| P2-5 | 插件开发者文档        | `docs/59_插件开发指南.md` |
 
 ### 🔵 P3 — 生态 (远期)
 
-| # | 任务 | 交付物 |
-|---|------|--------|
-| P3-1 | 官方插件审核机制 | 人工/自动审核 |
-| P3-2 | 插件崩溃报告收集 | 遥测 (可选) |
+| #    | 任务              | 交付物          |
+| ---- | ----------------- | --------------- |
+| P3-1 | 官方插件审核机制  | 人工/自动审核   |
+| P3-2 | 插件崩溃报告收集  | 遥测 (可选)     |
 | P3-3 | 付费/赞助插件支持 | Stripe/微信支付 |
 
 ---
@@ -986,17 +990,17 @@ D:\Work_Area\AI\Doc_project\
 
 ### 11.3 技术栈
 
-| 层 | 技术 | 理由 |
-|----|------|------|
-| 框架 | React 18 + TypeScript | 与 EasyAgent 一致，便于复用 |
-| 构建 | Vite | 快速 HMR |
-| 样式 | Tailwind CSS | 与 EasyAgent 一致 |
-| 图谱 | D3.js (force-directed) | 成熟、可控 |
-| MD 渲染 | react-markdown + remark-gfm | 支持 Obsidian 扩展语法 |
-| WikiLink | remark-wiki-link | 解析 `[[...]]` |
-| 全文搜索 | FlexSearch | 轻量、高性能 |
-| 向量索引 | transformers.js / fastembed-js | 本地 embedding |
-| 状态 | Zustand | 与 EasyAgent 一致 |
+| 层       | 技术                           | 理由                        |
+| -------- | ------------------------------ | --------------------------- |
+| 框架     | React 18 + TypeScript          | 与 EasyAgent 一致，便于复用 |
+| 构建     | Vite                           | 快速 HMR                    |
+| 样式     | Tailwind CSS                   | 与 EasyAgent 一致           |
+| 图谱     | D3.js (force-directed)         | 成熟、可控                  |
+| MD 渲染  | react-markdown + remark-gfm    | 支持 Obsidian 扩展语法      |
+| WikiLink | remark-wiki-link               | 解析 `[[...]]`              |
+| 全文搜索 | FlexSearch                     | 轻量、高性能                |
+| 向量索引 | transformers.js / fastembed-js | 本地 embedding              |
+| 状态     | Zustand                        | 与 EasyAgent 一致           |
 
 ### 11.4 核心功能实现要点
 
@@ -1005,12 +1009,12 @@ D:\Work_Area\AI\Doc_project\
 ```typescript
 // 扫描文件 (浏览器环境使用 File System Access API 或从 GitHub API 获取)
 interface DocNode {
-  id: string;        // 相对路径
+  id: string; // 相对路径
   name: string;
   type: 'file' | 'folder';
   path: string;
   children?: DocNode[];
-  links: string[];   //  outgoing wiki links
+  links: string[]; //  outgoing wiki links
   backlinks: string[]; // incoming wiki links
 }
 ```
@@ -1021,8 +1025,8 @@ interface DocNode {
 interface GraphNode {
   id: string;
   label: string;
-  group?: string;    // 按目录分组着色
-  radius: number;    // 基于链接数量
+  group?: string; // 按目录分组着色
+  radius: number; // 基于链接数量
 }
 
 interface GraphLink {
@@ -1032,9 +1036,16 @@ interface GraphLink {
 }
 
 // D3 force simulation
-const simulation = d3.forceSimulation<GraphNode>(nodes)
+const simulation = d3
+  .forceSimulation<GraphNode>(nodes)
   .force('charge', d3.forceManyBody().strength(-300))
-  .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+  .force(
+    'link',
+    d3
+      .forceLink(links)
+      .id((d) => d.id)
+      .distance(100),
+  )
   .force('center', d3.forceCenter(width / 2, height / 2));
 ```
 
@@ -1042,8 +1053,8 @@ const simulation = d3.forceSimulation<GraphNode>(nodes)
 
 ```typescript
 // 点击图谱节点 → 设置 selectedDocId → MarkdownPreview 组件加载内容
-<MarkdownPreview 
-  content={doc.content} 
+<MarkdownPreview
+  content={doc.content}
   onLinkClick={(targetId) => setSelectedDocId(targetId)}
 />
 ```
@@ -1067,10 +1078,10 @@ const results = cosineSimilarity(queryEmbedding, embeddings);
 
 ### 11.5 两种数据来源
 
-| 模式 | 适用场景 | 实现方式 |
-|------|----------|----------|
-| **本地文件** | 桌面端/本地开发 | File System Access API + Electron 主进程 |
-| **GitHub 仓库** | Web 部署/在线浏览 | GitHub API 递归获取 tree + raw content |
+| 模式            | 适用场景          | 实现方式                                 |
+| --------------- | ----------------- | ---------------------------------------- |
+| **本地文件**    | 桌面端/本地开发   | File System Access API + Electron 主进程 |
+| **GitHub 仓库** | Web 部署/在线浏览 | GitHub API 递归获取 tree + raw content   |
 
 ### 11.6 与 EasyAgent 的关系
 
@@ -1097,6 +1108,7 @@ LLM调用 open-doc-viewer 工具
 ```
 
 关键设计决策：
+
 - **iframe 而非组件**：Doc_project 是独立 Vite 项目，iframe 隔离避免依赖冲突
 - **同源托管**：Server 通过 `express.static` 托管 dev 产物 (`/doc-viewer/`)，`X-Frame-Options: SAMEORIGIN`
 - **vite base**：`Doc_project/vite.config.ts` 设置 `base: '/doc-viewer/'` 使产物路径正确
@@ -1108,24 +1120,24 @@ LLM调用 open-doc-viewer 工具
 
 ### 12.1 风险矩阵
 
-| 风险 | 概率 | 影响 | 缓解措施 |
-|------|------|------|----------|
-| GitHub API 限流导致市场无法加载 | 中 | 高 | 本地缓存 + 可选 Registry 仓库 + GITHUB_TOKEN |
-| 第三方插件安全漏洞 | 中 | 高 | Worker 沙箱 + 权限授权 + 安全模式 |
-| 插件依赖冲突 | 中 | 中 | 依赖版本锁定 + 启动前依赖检查 |
-| 插件质量差导致口碑下降 | 中 | 中 | Curated Registry + 评分机制 |
-| Doc_project 向量索引性能差 | 中 | 中 | 使用轻量模型 / Web Worker / 分页 |
-| 前端代码膨胀 | 中 | 中 | 懒加载插件市场页面 |
+| 风险                            | 概率 | 影响 | 缓解措施                                     |
+| ------------------------------- | ---- | ---- | -------------------------------------------- |
+| GitHub API 限流导致市场无法加载 | 中   | 高   | 本地缓存 + 可选 Registry 仓库 + GITHUB_TOKEN |
+| 第三方插件安全漏洞              | 中   | 高   | Worker 沙箱 + 权限授权 + 安全模式            |
+| 插件依赖冲突                    | 中   | 中   | 依赖版本锁定 + 启动前依赖检查                |
+| 插件质量差导致口碑下降          | 中   | 中   | Curated Registry + 评分机制                  |
+| Doc_project 向量索引性能差      | 中   | 中   | 使用轻量模型 / Web Worker / 分页             |
+| 前端代码膨胀                    | 中   | 中   | 懒加载插件市场页面                           |
 
 ### 12.2 维护成本估算
 
-| 项目 | 初始开发 (人月) | 持续维护 (人月/年) |
-|------|----------------|-------------------|
-| EasyAgent 插件市场 | 1.5-2 | 0.5 |
-| PluginSandbox 安全增强 | 0.5-1 | 0.3 |
-| Doc_project MVP | 1-1.5 | 0.3 |
-| 文档与测试 | 0.5 | 0.2 |
-| **总计** | **3.5-5** | **1.3** |
+| 项目                   | 初始开发 (人月) | 持续维护 (人月/年) |
+| ---------------------- | --------------- | ------------------ |
+| EasyAgent 插件市场     | 1.5-2           | 0.5                |
+| PluginSandbox 安全增强 | 0.5-1           | 0.3                |
+| Doc_project MVP        | 1-1.5           | 0.3                |
+| 文档与测试             | 0.5             | 0.2                |
+| **总计**               | **3.5-5**       | **1.3**            |
 
 ---
 
@@ -1157,13 +1169,14 @@ LLM调用 open-doc-viewer 工具
 
 ### 13.3 立即执行的 3 件事 (状态)
 
-| # | 任务 | 状态 | 产物 |
-|---|------|------|------|
-| 1 | 创建 GitHub 插件规范仓库 | ✅ 已完成 | [easyagent-plugin-template](https://github.com/ht182400-creator/easyagent-plugin-template) |
-| 2 | 创建 Doc_project 目录结构 | ✅ 已完成 | `D:\Work_Area\AI\Doc_project` (完整项目骨架，构建通过，7 测试通过) |
-| 3 | 补充 PluginSandbox 安全能力 | ⏳ 待实施 | 网络白名单 + 文件访问代理 |
+| #   | 任务                        | 状态      | 产物                                                                                       |
+| --- | --------------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| 1   | 创建 GitHub 插件规范仓库    | ✅ 已完成 | [easyagent-plugin-template](https://github.com/ht182400-creator/easyagent-plugin-template) |
+| 2   | 创建 Doc_project 目录结构   | ✅ 已完成 | `D:\Work_Area\AI\Doc_project` (完整项目骨架，构建通过，7 测试通过)                         |
+| 3   | 补充 PluginSandbox 安全能力 | ⏳ 待实施 | 网络白名单 + 文件访问代理                                                                  |
 
 **已额外完成**:
+
 - ✅ [easyagent-plugin-obsidian-doc-viewer](https://github.com/ht182400-creator/easyagent-plugin-obsidian-doc-viewer) — Doc_project 的 EasyAgent 插件包装
 - ✅ [easyagent-plugins](https://github.com/ht182400-creator/easyagent-plugins) — 官方插件注册表 (registry.json + README)
 - ✅ 所有仓库已打 `easyagent-plugin` Topic 标签
@@ -1184,14 +1197,14 @@ LLM调用 open-doc-viewer 工具
 
 ## 附录 B: 关键决策记录 (ADR)
 
-| # | 决策 | 方案 | 理由 |
-|---|------|------|------|
-| 1 | 插件发现 | GitHub Topic 搜索 + Curated Registry | 零成本启动 + 长期质量可控 |
-| 2 | 插件包格式 | GitHub Release zipball | 无需自建存储 |
-| 3 | 隔离方式 | Worker Threads (现有) | 复用已有架构 |
-| 4 | 前端框架 | React + Tailwind (与 EasyAgent 一致) | 降低维护成本 |
-| 5 | 图谱引擎 | D3.js | 可控、成熟 |
-| 6 | 搜索 | FlexSearch + 可选向量 | 平衡性能与精度 |
+| #   | 决策       | 方案                                 | 理由                      |
+| --- | ---------- | ------------------------------------ | ------------------------- |
+| 1   | 插件发现   | GitHub Topic 搜索 + Curated Registry | 零成本启动 + 长期质量可控 |
+| 2   | 插件包格式 | GitHub Release zipball               | 无需自建存储              |
+| 3   | 隔离方式   | Worker Threads (现有)                | 复用已有架构              |
+| 4   | 前端框架   | React + Tailwind (与 EasyAgent 一致) | 降低维护成本              |
+| 5   | 图谱引擎   | D3.js                                | 可控、成熟                |
+| 6   | 搜索       | FlexSearch + 可选向量                | 平衡性能与精度            |
 
 ---
 

@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "timestamp": "2026-09-19 12:26:59.341",
+    "scope": "ANSI剥离验证",
+    "packages": [
+      "web"
+    ],
+    "elapsedMs": 2802,
+    "nodeVersion": "v24.13.0",
+    "gitCommit": "a8f9cc7",
+    "totals": {
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "allOk": true
+  },
+  "results": [
+    {
+      "pkg": "web",
+      "label": "Web 壳",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 2747,
+      "degraded": false,
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n RUN  v1.6.0 D:/Work_Area/AI/Claude Code  CN/packages/web\n\n ✓ src/__tests__/main.test.ts  (2 tests) 17ms\n\n Test Files  1 passed (1)\n      Tests  2 passed (2)\n   Start at  12:26:57\n   Duration  1.23s (transform 37ms, setup 0ms, collect 25ms, tests 17ms, environment 438ms, prepare 111ms)\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-web.json\n"
+    }
+  ]
+}

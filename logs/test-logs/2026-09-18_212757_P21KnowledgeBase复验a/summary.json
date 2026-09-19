@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "timestamp": "2026-09-18 21:28:14.095",
+    "scope": "P21KnowledgeBase复验a",
+    "packages": [
+      "frontend",
+      "desktop",
+      "web"
+    ],
+    "elapsedMs": 17051,
+    "nodeVersion": "v24.13.0",
+    "gitCommit": "62e6ca9",
+    "totals": {
+      "tests": 362,
+      "passed": 362,
+      "failed": 0,
+      "skipped": 0
+    },
+    "allOk": true
+  },
+  "results": [
+    {
+      "pkg": "frontend",
+      "label": "前端共享包",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 8514,
+      "degraded": false,
+      "tests": 145,
+      "passed": 145,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n\u001b[7m\u001b[1m\u001b[36m RUN \u001b[39m\u001b[22m\u001b[27m \u001b[36mv1.6.0\u001b[39m \u001b[90mD:/Work_Area/AI/Claude Code  CN/packages/frontend\u001b[39m\n\n \u001b[32m✓\u001b[39m src/__tests__/events.test.ts \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 33\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/request.test.ts \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/pluginsStore.test.ts \u001b[2m (\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 23\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/api.test.ts \u001b[2m (\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/MiniFlowGraph.test.tsx \u001b[2m (\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 118\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/FlowZoomModal.test.tsx \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 156\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/ScenarioCard.test.tsx \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 165\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/LangGraphPage.test.tsx \u001b[2m (\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 701\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/GraphCanvas.test.tsx \u001b[2m (\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 124\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/markdown.test.ts \u001b[2m (\u001b[22m\u001b[2m32 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 131\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/config.test.tsx \u001b[2m (\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/mountApp.test.tsx \u001b[2m (\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 686\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/langGraphStore.test.ts \u001b[2m (\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4142\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m145 passed\u001b[39m\u001b[22m\u001b[90m (145)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:27:58\n\u001b[2m   Duration \u001b[22m 6.75s\u001b[2m (transform 1.76s, setup 1ms, collect 4.26s, tests 6.33s, environment 15.95s, prepare 5.20s)\u001b[22m\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-frontend.json\n"
+    },
+    {
+      "pkg": "desktop",
+      "label": "桌面端",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 5457,
+      "degraded": false,
+      "tests": 215,
+      "passed": 215,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n\u001b[7m\u001b[1m\u001b[36m RUN \u001b[39m\u001b[22m\u001b[27m \u001b[36mv1.6.0\u001b[39m \u001b[90mD:/Work_Area/AI/Claude Code  CN/packages/desktop\u001b[39m\n\n \u001b[32m✓\u001b[39m src/__tests__/ipc/preload.test.ts \u001b[2m (\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/main/version.test.ts \u001b[2m (\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/main/auto-updater-state.test.ts \u001b[2m (\u001b[22m\u001b[2m60 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/stores/uiStore.test.ts \u001b[2m (\u001b[22m\u001b[2m24 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 24\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/stores/sessionStore.test.ts \u001b[2m (\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 103\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/stores/chatStore.test.ts \u001b[2m (\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 36\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/components/StatusBar.test.tsx \u001b[2m (\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 119\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/components/TabBar.test.tsx \u001b[2m (\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 115\u001b[2mms\u001b[22m\u001b[39m\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m基础渲染\u001b[2m > \u001b[22m\u001b[2m应渲染\"检查更新\"按钮\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m基础渲染\u001b[2m > \u001b[22m\u001b[2m应显示当前版本号\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m状态辅助函数 - getStatusCardStyle\u001b[2m > \u001b[22m\u001b[2mdownloading 状态应显示蓝色卡片+进度条\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"downloading\",\"lastUpdateInfo\":{\"version\":\"0.5.21\",\"percent\":45}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m状态辅助函数 - getStatusCardStyle\u001b[2m > \u001b[22m\u001b[2merror 状态应显示黄色卡片+重试按钮\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"error\",\"lastUpdateInfo\":{\"version\":\"0.5.21\",\"error\":\"ETIMEDOUT\"}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m状态辅助函数 - getStatusCardStyle\u001b[2m > \u001b[22m\u001b[2mchecking 状态应显示蓝色卡片\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"checking\",\"lastUpdateInfo\":{}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m状态辅助函数 - getStatusCardStyle\u001b[2m > \u001b[22m\u001b[2minstalling 状态应显示紫色卡片\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"installing\",\"lastUpdateInfo\":{\"version\":\"0.5.21\"}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m按钮行为\u001b[2m > \u001b[22m\u001b[2m点击\"立即重启安装\"应调用 installUpdate\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"downloaded\",\"lastUpdateInfo\":{\"version\":\"0.5.21\"}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m按钮行为\u001b[2m > \u001b[22m\u001b[2m点击\"立即重启安装\"应调用 installUpdate\u001b[22m\u001b[39m\n[Settings] 用户确认安装更新...\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m按钮行为\u001b[2m > \u001b[22m\u001b[2m点击\"重试\"应调用 checkForUpdates\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"error\",\"lastUpdateInfo\":{\"error\":\"ETIMEDOUT\"}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m按钮行为\u001b[2m > \u001b[22m\u001b[2m点击\"重试\"应调用 checkForUpdates\u001b[22m\u001b[39m\n[Settings] 检查更新... 环境: Desktop\n[Settings] 后台更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"error\",\"lastUpdateInfo\":{\"error\":\"ETIMEDOUT\"}}\n[Settings] Server API 返回: {\"version\":\"0.5.20\",\"codename\":\"Test\",\"releaseDate\":\"2026-06-26\",\"changelog\":\"Test changelog\"}\n[Settings] 已是最新版本，清除更新状态\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m事件监听\u001b[2m > \u001b[22m\u001b[2m应注册 onUpdateStatus 监听器\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m事件监听\u001b[2m > \u001b[22m\u001b[2m组件卸载时应清理监听器\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m非桌面环境\u001b[2m > \u001b[22m\u001b[2m没有 easyAgent 时不应崩溃\u001b[22m\u001b[39m\n[Settings] Web 环境，跳过 Desktop 更新监听\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m非桌面环境\u001b[2m > \u001b[22m\u001b[2m没有 easyAgent 时仍显示检查更新按钮\u001b[22m\u001b[39m\n[Settings] Web 环境，跳过 Desktop 更新监听\n\n\u001b[90mstdout\u001b[2m | src/__tests__/components/Settings-update.test.tsx\u001b[2m > \u001b[22m\u001b[2mSettings 页面 - 自动更新 UI\u001b[2m > \u001b[22m\u001b[2m状态卡片条件渲染\u001b[2m > \u001b[22m\u001b[2midle 状态且无 updateInfo 时不显示状态卡片\u001b[22m\u001b[39m\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\n \u001b[32m✓\u001b[39m src/__tests__/components/Settings-update.test.tsx \u001b[2m (\u001b[22m\u001b[2m37 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 566\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m215 passed\u001b[39m\u001b[22m\u001b[90m (215)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:28:07\n\u001b[2m   Duration \u001b[22m 3.82s\u001b[2m (transform 1.59s, setup 5.38s, collect 2.88s, tests 991ms, environment 11.37s, prepare 5.11s)\u001b[22m\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-desktop.json\n"
+    },
+    {
+      "pkg": "web",
+      "label": "Web 壳",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 2997,
+      "degraded": false,
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n\u001b[7m\u001b[1m\u001b[36m RUN \u001b[39m\u001b[22m\u001b[27m \u001b[36mv1.6.0\u001b[39m \u001b[90mD:/Work_Area/AI/Claude Code  CN/packages/web\u001b[39m\n\n \u001b[32m✓\u001b[39m src/__tests__/main.test.ts \u001b[2m (\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 20\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:28:12\n\u001b[2m   Duration \u001b[22m 1.02s\u001b[2m (transform 31ms, setup 0ms, collect 23ms, tests 20ms, environment 478ms, prepare 180ms)\u001b[22m\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-web.json\n"
+    }
+  ]
+}

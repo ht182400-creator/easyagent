@@ -8,15 +8,15 @@
 
 ## 一、实例信息
 
-| 项 | 值 |
-|----|----|
-| 服务地址 | `http://localhost:3000` |
-| 版本 | `16.0.2+gitea-1.22.0`（Forgejo，兼容 Gitea 1.22 API） |
-| 用户名 | `ht182400`（注意：不是 `ht82400`，少一个 `1` 会得到 `user does not exist`） |
-| 仓库 | `http://localhost:3000/ht182400/easyagent` |
-| Clone URL | `http://localhost:3000/ht182400/easyagent.git` |
-| 默认分支 | `main` |
-| 可见性 | 公开（与 GitHub 侧保持一致） |
+| 项        | 值                                                                          |
+| --------- | --------------------------------------------------------------------------- |
+| 服务地址  | `http://localhost:3000`                                                     |
+| 版本      | `16.0.2+gitea-1.22.0`（Forgejo，兼容 Gitea 1.22 API）                       |
+| 用户名    | `ht182400`（注意：不是 `ht82400`，少一个 `1` 会得到 `user does not exist`） |
+| 仓库      | `http://localhost:3000/ht182400/easyagent`                                  |
+| Clone URL | `http://localhost:3000/ht182400/easyagent.git`                              |
+| 默认分支  | `main`                                                                      |
+| 可见性    | 公开（与 GitHub 侧保持一致）                                                |
 
 **远端配置（已完成，不含凭据）**：
 
@@ -26,10 +26,10 @@ git remote add forgejo http://localhost:3000/ht182400/easyagent.git
 
 当前远端一览：
 
-| remote | 地址 | 认证方式 |
-|--------|------|---------|
-| `origin` | `git@github.com:ht182400-creator/easyagent.git` | SSH 密钥 |
-| `forgejo` | `http://localhost:3000/ht182400/easyagent.git` | HTTP Basic（运行时注入，见下） |
+| remote    | 地址                                            | 认证方式                       |
+| --------- | ----------------------------------------------- | ------------------------------ |
+| `origin`  | `git@github.com:ht182400-creator/easyagent.git` | SSH 密钥                       |
+| `forgejo` | `http://localhost:3000/ht182400/easyagent.git`  | HTTP Basic（运行时注入，见下） |
 
 ---
 
@@ -121,12 +121,12 @@ curl.exe -H 'Content-Type: application/json' \
 
 ## 四、与 GitHub 通道的差异
 
-| 项 | GitHub（origin） | Forgejo（forgejo） |
-|----|-----------------|-------------------|
-| 传输 | SSH | HTTP |
-| CI | ✅ `.github/workflows/*`：push 触发测试、**tag 触发构建 + 自动创建 Release** | ❌ 无工作流（该实例未配置） |
-| Release | 由 `release.yml` 自动创建，含 EXE 产物 | **需手动调 API 创建**，无构建产物（仅源码归档 zip/tar.gz） |
-| 推送命令 | `git push origin main && git push origin <tag>` | `pnpm push:forgejo` |
+| 项       | GitHub（origin）                                                             | Forgejo（forgejo）                                         |
+| -------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 传输     | SSH                                                                          | HTTP                                                       |
+| CI       | ✅ `.github/workflows/*`：push 触发测试、**tag 触发构建 + 自动创建 Release** | ❌ 无工作流（该实例未配置）                                |
+| Release  | 由 `release.yml` 自动创建，含 EXE 产物                                       | **需手动调 API 创建**，无构建产物（仅源码归档 zip/tar.gz） |
+| 推送命令 | `git push origin main && git push origin <tag>`                              | `pnpm push:forgejo`                                        |
 
 **因此一次完整发布 = 两处都推**：
 
@@ -154,14 +154,14 @@ pnpm push:forgejo --tag vX.Y.Z
 
 ## 五、踩坑记录
 
-| # | 现象 | 根因 | 对策 |
-|---|------|------|------|
-| 1 | API 返回 `user does not exist [name: ht82400]` | 用户名少打了一个 `1` | 正确用户名是 `ht182400` |
-| 2 | PowerShell 里 `curl -s -m 8 ...` 报「参数名称 m 具有二义性」 | PowerShell 的 `curl` 是 `Invoke-WebRequest` 的别名，参数集不同 | 显式写 `curl.exe` |
-| 3 | 建仓返回 `repository with the same name already exists` | 仓库早已存在（2026-08-19 创建） | 先 `GET /api/v1/repos/{owner}/{repo}` 探测；存在则跳过建仓，直接比对历史 |
-| 4 | 担心推送覆盖远端 | 未确认历史是否同源 | 先 `git fetch forgejo` 比对 HEAD；本次确认 `forgejo/main` 与本地完全一致后才推送（**若历史不同源，绝不可 force push，需先与用户确认**） |
-| 5 | `write:repository` 权限不足 | 令牌 scope 不含 `write:user` | 建仓需 `write:user`；纯推送 `write:repository` 即可 |
-| 6 | 脚本报「(up-to-date)」但实际推送成功 | **git 的推送结果写在 stderr**，`execFileSync` 只返回 stdout → `output` 为空，被 `\|\| '(up-to-date)'` 兜底误判 | 改用 `spawnSync` 同时捕获 stdout+stderr；并区分「已推送 / 已是最新」两种文案 |
+| #   | 现象                                                         | 根因                                                                                                           | 对策                                                                                                                                    |
+| --- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | API 返回 `user does not exist [name: ht82400]`               | 用户名少打了一个 `1`                                                                                           | 正确用户名是 `ht182400`                                                                                                                 |
+| 2   | PowerShell 里 `curl -s -m 8 ...` 报「参数名称 m 具有二义性」 | PowerShell 的 `curl` 是 `Invoke-WebRequest` 的别名，参数集不同                                                 | 显式写 `curl.exe`                                                                                                                       |
+| 3   | 建仓返回 `repository with the same name already exists`      | 仓库早已存在（2026-08-19 创建）                                                                                | 先 `GET /api/v1/repos/{owner}/{repo}` 探测；存在则跳过建仓，直接比对历史                                                                |
+| 4   | 担心推送覆盖远端                                             | 未确认历史是否同源                                                                                             | 先 `git fetch forgejo` 比对 HEAD；本次确认 `forgejo/main` 与本地完全一致后才推送（**若历史不同源，绝不可 force push，需先与用户确认**） |
+| 5   | `write:repository` 权限不足                                  | 令牌 scope 不含 `write:user`                                                                                   | 建仓需 `write:user`；纯推送 `write:repository` 即可                                                                                     |
+| 6   | 脚本报「(up-to-date)」但实际推送成功                         | **git 的推送结果写在 stderr**，`execFileSync` 只返回 stdout → `output` 为空，被 `\|\| '(up-to-date)'` 兜底误判 | 改用 `spawnSync` 同时捕获 stdout+stderr；并区分「已推送 / 已是最新」两种文案                                                            |
 
 ---
 

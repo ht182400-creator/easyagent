@@ -10,17 +10,22 @@
 
 ### 1.1 双传输架构（`MCPClient` 按 config 分派）
 
-| 传输 | 配置 | 说明 |
-|------|------|------|
+| 传输                | 配置                                      | 说明                                                             |
+| ------------------- | ----------------------------------------- | ---------------------------------------------------------------- |
 | **Streamable HTTP** | `url`（可选 `headers`，如 Authorization） | MCP **2025-06-18** 规范；新实现 `mcp/StreamableHttpTransport.ts` |
-| **stdio** | `command` + `args` | 原实现，逻辑保持不变（协议版本升级见下） |
+| **stdio**           | `command` + `args`                        | 原实现，逻辑保持不变（协议版本升级见下）                         |
 
 ```ts
 // 新规范服务器（streamable HTTP）
 await mcpManager.connect({ name: 'remote', url: 'https://mcp.example.com/mcp', enabled: true });
 
 // 本地 stdio 服务器（原方式不变）
-await mcpManager.connect({ name: 'local', command: 'npx', args: ['-y', 'some-mcp-server'], enabled: true });
+await mcpManager.connect({
+  name: 'local',
+  command: 'npx',
+  args: ['-y', 'some-mcp-server'],
+  enabled: true,
+});
 ```
 
 ### 1.2 协议版本协商（两个传输都已实现）
@@ -32,14 +37,14 @@ await mcpManager.connect({ name: 'local', command: 'npx', args: ['-y', 'some-mcp
 
 ### 1.3 Streamable HTTP 会话细节（`StreamableHttpTransport`）
 
-| 规范点 | 实现 |
-|--------|------|
-| `Accept: application/json, text/event-stream` | ✅ 所有 POST |
-| 响应形态分派 | 单 JSON / **SSE 流**（多帧 `data:` 解析，命中请求 id 即返回；夹带通知帧转发 `eventCallback`）/ 202 通知 |
-| `MCP-Session-Id` | initialize 响应捕获，后续请求回带；**404 = 会话失效**（明确报错提示重连） |
-| `MCP-Protocol-Version` 头 | 协商完成后所有请求携带 |
-| DELETE 终止会话 | `disconnect()` 发送；服务器不支持时静默忽略 |
-| 安全 | 请求超时 30s；错误体截断 200 字符防泄漏/刷屏；错误堆栈只进日志 |
+| 规范点                                        | 实现                                                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `Accept: application/json, text/event-stream` | ✅ 所有 POST                                                                                            |
+| 响应形态分派                                  | 单 JSON / **SSE 流**（多帧 `data:` 解析，命中请求 id 即返回；夹带通知帧转发 `eventCallback`）/ 202 通知 |
+| `MCP-Session-Id`                              | initialize 响应捕获，后续请求回带；**404 = 会话失效**（明确报错提示重连）                               |
+| `MCP-Protocol-Version` 头                     | 协商完成后所有请求携带                                                                                  |
+| DELETE 终止会话                               | `disconnect()` 发送；服务器不支持时静默忽略                                                             |
+| 安全                                          | 请求超时 30s；错误体截断 200 字符防泄漏/刷屏；错误堆栈只进日志                                          |
 
 **未实现（记录 TODO）**：GET 长连接 SSE 通道（服务器主动推送）—— 工具列表/调用为客户端驱动
 场景不需要常驻连接；将来做 server-initiated 能力（sampling/roots）时再引入。

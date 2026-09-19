@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "timestamp": "2026-09-19 12:59:13.870",
+    "scope": "HITL人在环路a",
+    "packages": [
+      "server",
+      "frontend"
+    ],
+    "elapsedMs": 39383,
+    "nodeVersion": "v24.13.0",
+    "gitCommit": "a8f9cc7",
+    "totals": {
+      "tests": 427,
+      "passed": 425,
+      "failed": 2,
+      "skipped": 0
+    },
+    "allOk": false
+  },
+  "results": [
+    {
+      "pkg": "server",
+      "label": "服务端",
+      "status": "fail",
+      "exitCode": 1,
+      "elapsedMs": 28571,
+      "degraded": false,
+      "tests": 278,
+      "passed": 276,
+      "failed": 2,
+      "skipped": 0,
+      "failures": [
+        {
+          "file": "__tests__/hitl.test.ts",
+          "fullName": " QuestionBroker - Agent 提问与用户回答 超时返回「自行决策」说明，且 Promise 落地（不挂起）",
+          "messages": "expected '（用户在 0 秒内未回答，属于无人值守场景：请基于已有信息和你的判断自行选…' to contain '自行判断'"
+        },
+        {
+          "file": "__tests__/route-inventory.test.ts",
+          "fullName": " 路由清单快照 — 防止重构静默丢路由 路由清单应与基线逐条一致",
+          "messages": "以下路由为**新增**（若非有意添加，请检查）:\n  POST /api/agent/answer\n  GET /api/agent/questions: expected [ 'POST /api/agent/answer', …(1) ] to deeply equal []"
+        }
+      ],
+      "consoleTail": "    tool: \"benchmark_report\"\n[2026-09-19 12:58:41.031 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m工具已注册\u001b[39m\n    tool: \"benchmark_scan\"\n[2026-09-19 12:58:41.032 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m开始初始化插件系统\u001b[39m\n[2026-09-19 12:58:41.033 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36m工具已存在，将覆盖\u001b[39m\n    tool: \"ask_user\"\n[2026-09-19 12:58:41.034 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m工具已注册\u001b[39m\n    tool: \"ask_user\"\n[2026-09-19 12:58:41.037 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m自动化管理器已初始化\u001b[39m\n    path: \"C:\\Users\\ht182\\.easyagent\\data\\automations.json\"\n    interval: 30000\n[2026-09-19 12:58:41.039 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m已加载会话\u001b[39m\n    count: 0\n[2026-09-19 12:58:41.040 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m会话管理器已初始化\u001b[39m\n[2026-09-19 12:58:41.307 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36mDocker 不可用: Command failed: docker version --format \"{{.Server.Version}}\"\nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n\u001b[39m\n[2026-09-19 12:58:41.311 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m文档浏览器静态文件已托管\u001b[39m\n    path: \"C:\\Users\\ht182\\.easyagent\\plugins\\easyagent-plugin-obsidian-doc-viewer\\dist\"\n    source: \"已安装插件: easyagent-plugin-obsidian-doc-viewer\"\n[2026-09-19 12:58:41.314 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36mDocker 不可用，已降级为本地进程模式\u001b[39m\n    reason: \"Command failed: docker version --format \\\"{{.Server.Version}}\\\"\\nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\\n\"\n    fallback: \"本地进程 (Windows Windows_NT)\"\n[2026-09-19 12:58:41.351 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36mDocker 不可用，沙箱已降级为本地进程模式\u001b[39m\n    version: \"本地进程 (Windows Windows_NT)\"\n[2026-09-19 12:58:41.352 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m加载插件\u001b[39m\n    path: \"C:\\Users\\ht182\\.easyagent\\plugins\\easyagent-plugin-obsidian-doc-viewer\"\n[2026-09-19 12:58:41.353 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m插件加载模式\u001b[39m\n    path: \"C:\\Users\\ht182\\.easyagent\\plugins\\easyagent-plugin-obsidian-doc-viewer\"\n    mode: \"sandbox\"\n[2026-09-19 12:58:41.359 +0800] \u001b[32mINFO\u001b[39m (obsidian-doc-viewer): \u001b[36mManifest 验证通过\u001b[39m\n    valid: true\n    errors: 0\n[2026-09-19 12:58:41.423 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已连接\u001b[39m\n    ip: \"127.0.0.1\"\n    authRequired: false\n[2026-09-19 12:58:41.443 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36mDocker 不可用: Command failed: docker version --format \"{{.Server.Version}}\"\nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n\u001b[39m\n[2026-09-19 12:58:41.446 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m模型目录已就绪\u001b[39m\n    version: \"1.0.3\"\n    ageDays: 1\n    source: \"GitHub raw（缓存）\"\n    stale: false\n[2026-09-19 12:58:41.474 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已连接\u001b[39m\n    ip: \"127.0.0.1\"\n    authRequired: false\n[2026-09-19 12:58:41.483 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已断开\u001b[39m\n[2026-09-19 12:58:41.486 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已连接\u001b[39m\n    ip: \"127.0.0.1\"\n    authRequired: false\n[2026-09-19 12:58:41.489 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已断开\u001b[39m\n[2026-09-19 12:58:41.491 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m客户端订阅会话\u001b[39m\n    sessionId: \"test_session\"\n[2026-09-19 12:58:41.504 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m插件沙箱启动成功\u001b[39m\n    plugin: \"obsidian-doc-viewer\"\n    version: \"0.1.0\"\n[2026-09-19 12:58:41.505 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m工具已注册\u001b[39m\n    tool: \"open-doc-viewer\"\n[2026-09-19 12:58:41.505 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m沙箱插件工具已注册\u001b[39m\n    plugin: \"obsidian-doc-viewer\"\n    count: 1\n[2026-09-19 12:58:41.506 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m插件(沙箱)加载成功\u001b[39m\n    plugin: \"obsidian-doc-viewer\"\n    version: \"0.1.0\"\n    mode: \"sandbox\"\n[2026-09-19 12:58:41.512 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m加载插件\u001b[39m\n    path: \"C:\\Users\\ht182\\.easyagent\\plugins\\easyagent-plugin-template\"\n[2026-09-19 12:58:41.512 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m插件加载模式\u001b[39m\n    path: \"C:\\Users\\ht182\\.easyagent\\plugins\\easyagent-plugin-template\"\n    mode: \"sandbox\"\n[2026-09-19 12:58:41.515 +0800] \u001b[32mINFO\u001b[39m (plugin-template): \u001b[36mManifest 验证通过\u001b[39m\n    valid: true\n    errors: 0\n[2026-09-19 12:58:41.575 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m插件沙箱启动成功\u001b[39m\n    plugin: \"plugin-template\"\n    version: \"0.1.0\"\n[2026-09-19 12:58:41.576 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m工具已注册\u001b[39m\n    tool: \"say-hello\"\n[2026-09-19 12:58:41.576 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m沙箱插件工具已注册\u001b[39m\n    plugin: \"plugin-template\"\n    count: 1\n[2026-09-19 12:58:41.576 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m插件(沙箱)加载成功\u001b[39m\n    plugin: \"plugin-template\"\n    version: \"0.1.0\"\n    mode: \"sandbox\"\n[2026-09-19 12:58:41.576 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m插件系统初始化完成\u001b[39m\n    count: 2\n[2026-09-19 12:58:41.669 +0800] \u001b[33mWARN\u001b[39m (easyagent): \u001b[36mDocker 不可用: Command failed: docker version --format \"{{.Server.Version}}\"\nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n\u001b[39m\n[2026-09-19 12:58:41.670 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已就绪\u001b[39m\n    sandboxId: \"easyagent-local-85967155\"\n    workspace: \"D:\\Work_Area\\AI\\Claude Code  CN\\packages\\server\"\n[2026-09-19 12:58:41.670 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36m本地沙箱已创建\u001b[39m\n    sandboxId: \"easyagent-local-85967155\"\n    total: 1\n    mode: \"local\"\n[2026-09-19 12:58:41.694 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mIM 配置已删除\u001b[39m\n    platform: \"nonexistent-plat\"\n[2026-09-19 12:58:41.995 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已连接\u001b[39m\n    ip: \"127.0.0.1\"\n    authRequired: false\n[2026-09-19 12:58:41.998 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已断开\u001b[39m\n[2026-09-19 12:58:42.002 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已连接\u001b[39m\n    ip: \"127.0.0.1\"\n    authRequired: false\n[2026-09-19 12:58:42.004 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已断开\u001b[39m\n ✓ src/__tests__/websocket.test.ts  (5 tests) 1501ms\n[2026-09-19 12:58:42.512 +0800] \u001b[32mINFO\u001b[39m (easyagent): \u001b[36mWebSocket 客户端已断开\u001b[39m\n ✓ src/__tests__/plugin-market-service.test.ts  (32 tests) 5410ms\n ✓ src/__tests__/automation-knowledge-api.test.ts  (34 tests) 25566ms\n\n Test Files  2 failed | 12 passed (14)\n      Tests  2 failed | 276 passed (278)\n   Start at  12:58:36\n   Duration  26.82s (transform 1.76s, setup 2ms, collect 16.36s, tests 48.25s, environment 5ms, prepare 4.52s)\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-server.json\n"
+    },
+    {
+      "pkg": "frontend",
+      "label": "前端共享包",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 10738,
+      "degraded": false,
+      "tests": 149,
+      "passed": 149,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n RUN  v1.6.0 D:/Work_Area/AI/Claude Code  CN/packages/frontend\n\n ✓ src/__tests__/events.test.ts  (11 tests) 58ms\n ✓ src/__tests__/pluginsStore.test.ts  (8 tests) 71ms\n ✓ src/__tests__/request.test.ts  (11 tests) 36ms\n ✓ src/__tests__/api.test.ts  (12 tests) 62ms\n ✓ src/__tests__/langgraph/MiniFlowGraph.test.tsx  (10 tests) 306ms\n ✓ src/__tests__/langgraph/FlowZoomModal.test.tsx  (11 tests) 410ms\n ✓ src/__tests__/langgraph/LangGraphPage.test.tsx  (7 tests) 1747ms\n ✓ src/__tests__/langgraph/GraphCanvas.test.tsx  (8 tests) 533ms\n ✓ src/__tests__/langgraph/ScenarioCard.test.tsx  (11 tests) 501ms\n ✓ src/__tests__/markdown.test.ts  (32 tests) 239ms\n ✓ src/__tests__/config.test.tsx  (3 tests) 7ms\n ✓ src/__tests__/langgraph/langGraphStore.test.ts  (16 tests) 4341ms\n ✓ src/__tests__/automation-progress.test.ts  (4 tests) 7ms\n ✓ src/__tests__/mountApp.test.tsx  (5 tests) 1677ms\n\n Test Files  14 passed (14)\n      Tests  149 passed (149)\n   Start at  12:59:04\n   Duration  8.71s (transform 5.30s, setup 1ms, collect 12.60s, tests 9.99s, environment 22.57s, prepare 8.45s)\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-frontend.json\n"
+    }
+  ]
+}

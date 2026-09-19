@@ -24,11 +24,11 @@ release-publish.bat Step 7:
 
 ### 1.2 核心痛点
 
-| 痛点 | 说明 |
-|------|------|
-| CI 重复跑 | artifacts commit 触发第 2 轮 CI，8 个 job 完全重复 |
-| 无质量门禁 | Release 流程不等 CI 结果，测试挂了照样构建发版 |
-| Windows runner 浪费 | 每次发版 6 个 Windows job（CI × 2 + Release × 1） |
+| 痛点                | 说明                                               |
+| ------------------- | -------------------------------------------------- |
+| CI 重复跑           | artifacts commit 触发第 2 轮 CI，8 个 job 完全重复 |
+| 无质量门禁          | Release 流程不等 CI 结果，测试挂了照样构建发版     |
+| Windows runner 浪费 | 每次发版 6 个 Windows job（CI × 2 + Release × 1）  |
 
 ---
 
@@ -50,14 +50,14 @@ CI 的测试 job 复制到 release.yml，发版 workflow 从 3 → 1。
 
 提取测试 job 为共享模块 `_test.yml`，`ci.yml` 和 `release.yml` 都引用同一份。
 
-| 维度 | 当前 | A | B | **D** |
-|------|------|------|------|------|
-| 发版 workflow 数 | 3 | 2 | 1 | **1** |
-| 测试配置重复 | 无 | 无 | ⚠️ 两份 | ✅ **无** |
-| 发版质量门禁 | ❌ | ❌ | ✅ | ✅ |
-| 发版耗时 | ~15-20min | ~15-20min | ~20-28min | ~20-28min |
-| 维护复杂度 | 中 | 中 | ⚠️ 高 | ✅ **低** |
-| 日常 push 影响 | - | 不变 | 不变 | 不变 |
+| 维度             | 当前      | A         | B         | **D**     |
+| ---------------- | --------- | --------- | --------- | --------- |
+| 发版 workflow 数 | 3         | 2         | 1         | **1**     |
+| 测试配置重复     | 无        | 无        | ⚠️ 两份   | ✅ **无** |
+| 发版质量门禁     | ❌        | ❌        | ✅        | ✅        |
+| 发版耗时         | ~15-20min | ~15-20min | ~20-28min | ~20-28min |
+| 维护复杂度       | 中        | 中        | ⚠️ 高     | ✅ **低** |
+| 日常 push 影响   | -         | 不变      | 不变      | 不变      |
 
 ---
 
@@ -70,7 +70,7 @@ CI 的测试 job 复制到 release.yml，发版 workflow 从 3 → 1。
   release.yml      ← 引用 _test.yml + build + release + sync-pipeline
 ```
 
-### 3.1 _test.yml（共享测试模块）
+### 3.1 \_test.yml（共享测试模块）
 
 ```yaml
 on: workflow_call   # 仅被调用，不被事件直接触发
@@ -92,9 +92,9 @@ on: [push: main, pull_request: main]
 
 jobs:
   tests:
-    uses: ./.github/workflows/_test.yml    # 引用共享测试
+    uses: ./.github/workflows/_test.yml # 引用共享测试
   sync-pipeline:
-    needs: tests    # 所有测试通过后才同步管线数据
+    needs: tests # 所有测试通过后才同步管线数据
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 ```
 
@@ -104,20 +104,20 @@ jobs:
 on: [push: tags v*, workflow_dispatch]
 
 jobs:
-  version:          # 解析版本号
-  tests:            # 质量门禁（测试不通过 → 不构建）
+  version: # 解析版本号
+  tests: # 质量门禁（测试不通过 → 不构建）
     uses: ./.github/workflows/_test.yml
-  build-desktop:    # Windows EXE 构建，needs: [version, tests]
-  build-web:        # Web 构建，needs: [version, tests]
-  release:          # 创建 Release，needs: [build-desktop, build-web]
-  sync-pipeline:    # 管线数据同步，needs: [tests, build-desktop, build-web]
+  build-desktop: # Windows EXE 构建，needs: [version, tests]
+  build-web: # Web 构建，needs: [version, tests]
+  release: # 创建 Release，needs: [build-desktop, build-web]
+  sync-pipeline: # 管线数据同步，needs: [tests, build-desktop, build-web]
 ```
 
 ### 3.4 配套修改
 
-| 文件 | 改动 | 说明 |
-|------|------|------|
-| `scripts/release.mjs` | commit message 加 `[skip ci]` | 发版 commit 不触发 CI |
+| 文件                  | 改动                            | 说明                  |
+| --------------------- | ------------------------------- | --------------------- |
+| `scripts/release.mjs` | commit message 加 `[skip ci]`   | 发版 commit 不触发 CI |
 | `release-publish.bat` | artifacts commit 加 `[skip ci]` | 产物 commit 不触发 CI |
 
 ---
@@ -137,14 +137,14 @@ jobs:
 
 `_test.yml` 只是代码组织方式，不是新的 workflow trigger。它不会被 push 事件直接触发，只被 `ci.yml` 的 `workflow_call` 调用。
 
-| 维度 | 当前 | D 方案 | 变化 |
-|------|------|--------|------|
-| 触发条件 | push main | push main | ❌ 不变 |
-| 测试内容 | 相同 vitest/lint/build-check | 相同 | ❌ 不变 |
-| sync-pipeline | 每次 push 都跑 | 每次 push 都跑 | ❌ 不变 |
-| Actions 分钟消耗 | 相同 | 相同 | ❌ 不变 |
-| GitHub UI 状态 | CI workflow 通过/失败 | CI workflow 通过/失败 | ❌ 不变 |
-| PR CI checks | 正常 | 正常 | ❌ 不变 |
+| 维度             | 当前                         | D 方案                | 变化    |
+| ---------------- | ---------------------------- | --------------------- | ------- |
+| 触发条件         | push main                    | push main             | ❌ 不变 |
+| 测试内容         | 相同 vitest/lint/build-check | 相同                  | ❌ 不变 |
+| sync-pipeline    | 每次 push 都跑               | 每次 push 都跑        | ❌ 不变 |
+| Actions 分钟消耗 | 相同                         | 相同                  | ❌ 不变 |
+| GitHub UI 状态   | CI workflow 通过/失败        | CI workflow 通过/失败 | ❌ 不变 |
+| PR CI checks     | 正常                         | 正常                  | ❌ 不变 |
 
 唯一外观差异：Actions 日志中测试 job 显示为 `tests / test-core`（嵌套一层）。
 
@@ -152,25 +152,25 @@ jobs:
 
 ## 5. 风险分析
 
-| 风险 | 等级 | 说明 | 缓解 |
-|------|------|------|------|
-| 发版耗时增加 5-8min | 🟡 中 | 测试必须完成后才构建 | 可接受，质量门禁更重要 |
-| workflow_call 嵌套调试 | 🟢 低 | 多一层间接调用 | GitHub Actions UI 支持展开查看 |
-| 日常同步不受影响 | 🟢 无 | 触发机制不变 | - |
-| `[skip ci]` 误影响 | 🟢 无 | 只跳过 push/pr 触发，不影响 tag/手动触发 | - |
-| Artifact 命名冲突 | 🟢 无 | 同一 workflow run 内 artifact 唯一 | - |
+| 风险                   | 等级  | 说明                                     | 缓解                           |
+| ---------------------- | ----- | ---------------------------------------- | ------------------------------ |
+| 发版耗时增加 5-8min    | 🟡 中 | 测试必须完成后才构建                     | 可接受，质量门禁更重要         |
+| workflow_call 嵌套调试 | 🟢 低 | 多一层间接调用                           | GitHub Actions UI 支持展开查看 |
+| 日常同步不受影响       | 🟢 无 | 触发机制不变                             | -                              |
+| `[skip ci]` 误影响     | 🟢 无 | 只跳过 push/pr 触发，不影响 tag/手动触发 | -                              |
+| Artifact 命名冲突      | 🟢 无 | 同一 workflow run 内 artifact 唯一       | -                              |
 
 ---
 
 ## 6. 改动范围汇总
 
-| 文件 | 操作 | 行数变化 |
-|------|------|----------|
-| `.github/workflows/_test.yml` | **新建** | +160 行 |
-| `.github/workflows/ci.yml` | **删减** | -180 行 → +25 行 |
-| `.github/workflows/release.yml` | **扩增** | +50 行 |
-| `scripts/release.mjs` | **1 行** | commit message 加 `[skip ci]` |
-| `release-publish.bat` | **1 行** | artifacts commit 加 `[skip ci]` |
+| 文件                            | 操作     | 行数变化                        |
+| ------------------------------- | -------- | ------------------------------- |
+| `.github/workflows/_test.yml`   | **新建** | +160 行                         |
+| `.github/workflows/ci.yml`      | **删减** | -180 行 → +25 行                |
+| `.github/workflows/release.yml` | **扩增** | +50 行                          |
+| `scripts/release.mjs`           | **1 行** | commit message 加 `[skip ci]`   |
+| `release-publish.bat`           | **1 行** | artifacts commit 加 `[skip ci]` |
 
 **不受影响**：`build.bat`, `build-web.bat`, `release-server.bat`, 所有 `package.json`, `pnpm-lock.yaml`
 
@@ -191,7 +191,7 @@ jobs:
 
 ## 8. 实战场验证：v0.6.17 发布问题与修复
 
-> 日期: 2026-06-28  ·  版本: v0.6.17  ·  状态: ✅ 已修复
+> 日期: 2026-06-28 · 版本: v0.6.17 · 状态: ✅ 已修复
 
 ### 8.1 现象
 
@@ -213,6 +213,7 @@ execSync('git push origin main --follow-tags', { cwd: root, stdio: 'inherit' });
 ```
 
 这条命令一次性推送了：
+
 - Commit `cf3a750`（消息：`release: v0.6.17 [skip ci]`）
 - Tag `v0.6.17`（消息：`EasyAgent v0.6.17`）
 
@@ -266,7 +267,9 @@ GitHub 的 skip 规则是**以 push 事件为单位判断的**：
 // ① 回退 post-commit hook 产生的管线文件修改（避免 rebase 冲突）
 try {
   execSync('git restore docs/pipeline/', { cwd: root, stdio: 'pipe' });
-} catch { /* 没有修改则跳过 */ }
+} catch {
+  /* 没有修改则跳过 */
+}
 
 // ② rebase 远程（CI 管线同步可能提前推了新 commit）
 execSync('git pull --rebase origin main', { cwd: root, stdio: 'inherit' });
@@ -312,11 +315,11 @@ commit → hook 改脏管线文件 → stash 保护 → rebase → stash pop 恢
 
 #### 8.4.2 风险说明
 
-| 场景 | 风险 | 缓解 |
-|------|------|------|
-| 两次 push 之间远程有新 commit | git push 可能 non-fast-forward | 仍在 try-catch 内，失败会提示手动处理 |
-| tag 已存在的重复推送 | git push tag 报错 | release-publish.bat Step 5 会先检查 tag 是否存在 |
-| post-commit hook 持续改文件 | `git restore` 后 hook 可能再次触发 | 仅影响本地工作区，不影响远程；Step 7 会处理 |
+| 场景                          | 风险                               | 缓解                                             |
+| ----------------------------- | ---------------------------------- | ------------------------------------------------ |
+| 两次 push 之间远程有新 commit | git push 可能 non-fast-forward     | 仍在 try-catch 内，失败会提示手动处理            |
+| tag 已存在的重复推送          | git push tag 报错                  | release-publish.bat Step 5 会先检查 tag 是否存在 |
+| post-commit hook 持续改文件   | `git restore` 后 hook 可能再次触发 | 仅影响本地工作区，不影响远程；Step 7 会处理      |
 
 ### 8.5 经验教训
 

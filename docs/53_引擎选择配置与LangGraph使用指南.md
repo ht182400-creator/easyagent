@@ -9,13 +9,13 @@
 
 原方案通过环境变量 `EASYAGENT_ENGINE` 控制引擎选择，架构审查发现以下局限性：
 
-| 维度 | 环境变量 | 配置文件 | CLI 参数 |
-|------|---------|---------|---------|
+| 维度         | 环境变量                  | 配置文件            | CLI 参数               |
+| ------------ | ------------------------- | ------------------- | ---------------------- |
 | **可发现性** | ❌ 隐式，`set` 命令不可见 | ✅ 文件存在于项目根 | ✅ `--help` 可直接显示 |
-| **持久化** | ❌ 进程重启消失 | ✅ 一次写入持久生效 | ❌ 每次都要传 |
-| **版本管控** | ❌ 不受 git 管理 | ✅ 可提交到仓库共享 | ❌ 不受 git 管理 |
-| **UI 友好** | ❌ 普通用户无感知 | ✅ 可在设置页暴露 | ⚠️ 仅 CLI 用户 |
-| **部署友好** | ✅ Docker/k8s 标配 | ⚠️ 需挂载卷 | ⚠️ 需改 Dockerfile |
+| **持久化**   | ❌ 进程重启消失           | ✅ 一次写入持久生效 | ❌ 每次都要传          |
+| **版本管控** | ❌ 不受 git 管理          | ✅ 可提交到仓库共享 | ❌ 不受 git 管理       |
+| **UI 友好**  | ❌ 普通用户无感知         | ✅ 可在设置页暴露   | ⚠️ 仅 CLI 用户         |
+| **部署友好** | ✅ Docker/k8s 标配        | ⚠️ 需挂载卷         | ⚠️ 需改 Dockerfile     |
 
 **最终方案：三级优先级**。以配置文件为主、CLI 和 env 为覆盖手段。
 
@@ -55,11 +55,11 @@
 
 配置项说明：
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `engine` | `"legacy"` \| `"langgraph"` | 引擎类型 |
-| `langgraph.maxTurns` | `number` | LangGraph 最大对话轮次 |
-| `langgraph.checkpointDb` | `string` | Checkpoint 数据库路径 |
+| 字段                     | 类型                        | 说明                   |
+| ------------------------ | --------------------------- | ---------------------- |
+| `engine`                 | `"legacy"` \| `"langgraph"` | 引擎类型               |
+| `langgraph.maxTurns`     | `number`                    | LangGraph 最大对话轮次 |
+| `langgraph.checkpointDb` | `string`                    | Checkpoint 数据库路径  |
 
 配置文件的查找策略：从当前工作目录开始向上逐级查找（最多 6 层），无论从 `packages/server/` 还是 `packages/server/dist/` 启动都能找到。
 
@@ -119,13 +119,13 @@ curl http://localhost:3456/api/engine-type
 
 关键字段说明：
 
-| 字段 | 含义 |
-|------|------|
-| `engine` | 实际生效的引擎：`langgraph` 或 `legacy` |
-| `source` | 来源类型：`cli` / `env` / `config` / `default` |
-| `cli` | CLI 参数值，无则为 `无` |
-| `env` | 环境变量值，无则为 `无` |
-| `configPath` | 配置文件绝对路径（仅 `source=config` 时有效） |
+| 字段         | 含义                                           |
+| ------------ | ---------------------------------------------- |
+| `engine`     | 实际生效的引擎：`langgraph` 或 `legacy`        |
+| `source`     | 来源类型：`cli` / `env` / `config` / `default` |
+| `cli`        | CLI 参数值，无则为 `无`                        |
+| `env`        | 环境变量值，无则为 `无`                        |
+| `configPath` | 配置文件绝对路径（仅 `source=config` 时有效）  |
 
 ---
 
@@ -135,11 +135,11 @@ curl http://localhost:3456/api/engine-type
 
 进入 `/langgraph` 页面后，首先看到模式选择器：
 
-| 模式 | 图标 | 界面 | 用途 |
-|------|------|------|------|
-| **集成可视化** | 🔵 Monitor | 大图(420px) + 9 张场景卡片 + Checkpoint 会话 | 日常开发、手动逐项验证 |
-| **终端演示** | 🟢 Terminal | 紧凑图(260px) + PowerShell 终端日志 | 演示、批量回归、一键跑全量 |
-| **独立 Demo** | 🟠 Zap | 终端控制台 + iframe 内嵌 | 启动独立 Demo 服务展示原始页面 |
+| 模式           | 图标        | 界面                                         | 用途                           |
+| -------------- | ----------- | -------------------------------------------- | ------------------------------ |
+| **集成可视化** | 🔵 Monitor  | 大图(420px) + 9 张场景卡片 + Checkpoint 会话 | 日常开发、手动逐项验证         |
+| **终端演示**   | 🟢 Terminal | 紧凑图(260px) + PowerShell 终端日志          | 演示、批量回归、一键跑全量     |
+| **独立 Demo**  | 🟠 Zap      | 终端控制台 + iframe 内嵌                     | 启动独立 Demo 服务展示原始页面 |
 
 点击「切换模式」可随时回到选择界面。
 
@@ -162,19 +162,20 @@ curl http://localhost:3456/api/engine-type
 
 > 这 9 个场景是 **LangGraph 引擎的能力验收用例**，用于验证引擎的各个功能模块，非聊天时自动触发。
 
-| # | 场景名称 | 测试能力 | 执行路径 |
-|---|---------|---------|---------|
-| 1 | 纯文本对话 | 最简单的 think→END | START→think→route→END |
-| 2 | 工具调用循环 | 调用天气工具后观察再思考 | think→act→observe→think→END |
-| 3 | 多工具并行 | 同时调用多个工具 | think→act(并行)→observe→END |
-| 4 | maxTurns 安全终止 | 防止无限循环 | think→act→observe (×3)→END |
-| 5 | Checkpoint + Resume | 保存并恢复上下文 | 两段独立 session → 断点续传 |
-| 6 | 图结构可视化 | 静态展示全部节点和边 | 全节点+条件分支+循环边 |
-| 7 | 上下文摘要与压缩 | 200+条消息自动摘要 | think→act→observe→END |
-| 8 | 工具失败自动重试 | 工具失败后修正重试 | 失败→修正→重试成功 |
-| 9 | 链式工具调用 | A输出→B输入链式流转 | 2轮循环·链式工具 |
+| #   | 场景名称            | 测试能力                 | 执行路径                    |
+| --- | ------------------- | ------------------------ | --------------------------- |
+| 1   | 纯文本对话          | 最简单的 think→END       | START→think→route→END       |
+| 2   | 工具调用循环        | 调用天气工具后观察再思考 | think→act→observe→think→END |
+| 3   | 多工具并行          | 同时调用多个工具         | think→act(并行)→observe→END |
+| 4   | maxTurns 安全终止   | 防止无限循环             | think→act→observe (×3)→END  |
+| 5   | Checkpoint + Resume | 保存并恢复上下文         | 两段独立 session → 断点续传 |
+| 6   | 图结构可视化        | 静态展示全部节点和边     | 全节点+条件分支+循环边      |
+| 7   | 上下文摘要与压缩    | 200+条消息自动摘要       | think→act→observe→END       |
+| 8   | 工具失败自动重试    | 工具失败后修正重试       | 失败→修正→重试成功          |
+| 9   | 链式工具调用        | A输出→B输入链式流转      | 2轮循环·链式工具            |
 
 **操作方式**：
+
 - 点击单张卡片的 **运行** 按钮 → 仅执行该场景
 - 点击顶部 **▶ 执行全部场景** → 自动顺序执行全部 9 个
 
@@ -205,12 +206,14 @@ curl http://localhost:3456/api/engine-type
 ```
 
 启用后，聊天消息会经过 LangGraph 的 `START→think→route→act→observe→END` 有向图执行，具备：
+
 - Checkpoint 自动保存/恢复
 - maxTurns 安全截断
 - 工具调用循环管理
 
 **如何确认 Chat 已启用 LangGraph**：
 打开 **AI 对话** 页面，标题栏连接状态旁边会显示引擎徽章：
+
 - `Legacy`（灰色）→ 仍在使用旧引擎
 - `LangGraph`（青色）→ 已切换到 LangGraph 引擎
 
@@ -224,11 +227,11 @@ curl http://localhost:3456/api/engine-type
 
 ## 7. 相关文件
 
-| 文件 | 说明 |
-|------|------|
-| `engine.config.json` | 引擎配置文件（可提交 Git） |
-| `packages/server/src/langgraph/engineFactory.ts` | 引擎工厂：优先级解析 + Agent 创建 |
-| `packages/server/src/langgraph/index.ts` | 模块导出 |
-| `packages/server/src/index.ts` | 后端入口：CLI 解析 + API 路由 |
-| `packages/frontend/src/pages/LangGraph.tsx` | 前端：三种模式 + 9 个场景 UI |
-| `start-backend.bat` | 后端启动脚本：支持 `--engine` 参数 |
+| 文件                                             | 说明                               |
+| ------------------------------------------------ | ---------------------------------- |
+| `engine.config.json`                             | 引擎配置文件（可提交 Git）         |
+| `packages/server/src/langgraph/engineFactory.ts` | 引擎工厂：优先级解析 + Agent 创建  |
+| `packages/server/src/langgraph/index.ts`         | 模块导出                           |
+| `packages/server/src/index.ts`                   | 后端入口：CLI 解析 + API 路由      |
+| `packages/frontend/src/pages/LangGraph.tsx`      | 前端：三种模式 + 9 个场景 UI       |
+| `start-backend.bat`                              | 后端启动脚本：支持 `--engine` 参数 |

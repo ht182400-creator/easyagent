@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "timestamp": "2026-09-18 21:21:14.282",
+    "scope": "P21DocsGuide拆分复验a",
+    "packages": [
+      "frontend",
+      "web"
+    ],
+    "elapsedMs": 11808,
+    "nodeVersion": "v24.13.0",
+    "gitCommit": "aae723b",
+    "totals": {
+      "tests": 147,
+      "passed": 147,
+      "failed": 0,
+      "skipped": 0
+    },
+    "allOk": true
+  },
+  "results": [
+    {
+      "pkg": "frontend",
+      "label": "前端共享包",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 8808,
+      "degraded": false,
+      "tests": 145,
+      "passed": 145,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n\u001b[7m\u001b[1m\u001b[36m RUN \u001b[39m\u001b[22m\u001b[27m \u001b[36mv1.6.0\u001b[39m \u001b[90mD:/Work_Area/AI/Claude Code  CN/packages/frontend\u001b[39m\n\n \u001b[32m✓\u001b[39m src/__tests__/events.test.ts \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 24\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/request.test.ts \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 22\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/api.test.ts \u001b[2m (\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 32\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/pluginsStore.test.ts \u001b[2m (\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 17\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/MiniFlowGraph.test.tsx \u001b[2m (\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 103\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/FlowZoomModal.test.tsx \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 134\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/GraphCanvas.test.tsx \u001b[2m (\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 208\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/ScenarioCard.test.tsx \u001b[2m (\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 136\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/LangGraphPage.test.tsx \u001b[2m (\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 770\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/markdown.test.ts \u001b[2m (\u001b[22m\u001b[2m32 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 147\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/config.test.tsx \u001b[2m (\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/mountApp.test.tsx \u001b[2m (\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 798\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/langgraph/langGraphStore.test.ts \u001b[2m (\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4189\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m145 passed\u001b[39m\u001b[22m\u001b[90m (145)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:21:04\n\u001b[2m   Duration \u001b[22m 6.89s\u001b[2m (transform 1.77s, setup 3ms, collect 4.23s, tests 6.58s, environment 15.48s, prepare 8.97s)\u001b[22m\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-frontend.json\n"
+    },
+    {
+      "pkg": "web",
+      "label": "Web 壳",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 2922,
+      "degraded": false,
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n\u001b[7m\u001b[1m\u001b[36m RUN \u001b[39m\u001b[22m\u001b[27m \u001b[36mv1.6.0\u001b[39m \u001b[90mD:/Work_Area/AI/Claude Code  CN/packages/web\u001b[39m\n\n \u001b[32m✓\u001b[39m src/__tests__/main.test.ts \u001b[2m (\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[90m 18\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:21:12\n\u001b[2m   Duration \u001b[22m 1.32s\u001b[2m (transform 41ms, setup 0ms, collect 33ms, tests 18ms, environment 513ms, prepare 116ms)\u001b[22m\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-web.json\n"
+    }
+  ]
+}

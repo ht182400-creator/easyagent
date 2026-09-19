@@ -3,6 +3,7 @@
 > **建立日期**: 2026-09-18
 > **来源**: `docs/62_专家团最终审核报告.md` —— P1-2 指出「缺 Anthropic / Google 两个 provider」
 > **当前状态**（v0.6.35 更新）:
+>
 > - ✅ **Google Gemini 已补齐**（走官方 OpenAI 兼容端点，无需新适配器）
 > - ✅ **修复了适配器路由的静默失败陷阱**
 > - ✅ **AnthropicAdapter 已实现**（`packages/core/src/adapters/AnthropicAdapter.ts`）
@@ -16,12 +17,12 @@
 
 Google 官方提供 **OpenAI 兼容层**，因此不需要写新适配器：
 
-| 项 | 值 |
-|----|-----|
-| Base URL | `https://generativelanguage.googleapis.com/v1beta/openai/` |
-| 鉴权 | 标准 `Authorization: Bearer $GEMINI_API_KEY` |
-| 环境变量 | `GEMINI_API_KEY` |
-| `apiFormat` | `openai` |
+| 项          | 值                                                         |
+| ----------- | ---------------------------------------------------------- |
+| Base URL    | `https://generativelanguage.googleapis.com/v1beta/openai/` |
+| 鉴权        | 标准 `Authorization: Bearer $GEMINI_API_KEY`               |
+| 环境变量    | `GEMINI_API_KEY`                                           |
+| `apiFormat` | `openai`                                                   |
 
 > ⚠️ **末尾的 `/openai/` 不能漏** —— 这是最容易写错的一处，写成
 > `.../v1beta` 会直接 404。已在预设里加了醒目注释，并有测试锁定该字符串。
@@ -81,14 +82,14 @@ case 'anthropic':
 
 ## 三、验证
 
-| 验证项 | 结果 |
-|--------|------|
-| 预设完整性（12 家） | ✅ id/name/baseURL/apiFormat/apiKeyEnv 齐全；每家至少 1 个模型且 `defaultModel` 在列表内；id 不重复；baseURL 为 https |
-| Google 专项 | ✅ baseURL 精确匹配（含 `/openai/`）、格式为 openai、env 为 GEMINI_API_KEY、工厂可创建适配器 |
-| 🛡️ anthropic 显式失败 | ✅ 抛错而非静默回退 |
-| 目录刷新 | ✅ 12 家 / 54 个模型（无重复 ID，合计校验一致） |
-| 全量回归 | ✅ **1710 / 1710 通过，0 失败** |
-| `pnpm verify:all` | ✅ **7 / 7** |
+| 验证项                | 结果                                                                                                                  |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 预设完整性（12 家）   | ✅ id/name/baseURL/apiFormat/apiKeyEnv 齐全；每家至少 1 个模型且 `defaultModel` 在列表内；id 不重复；baseURL 为 https |
+| Google 专项           | ✅ baseURL 精确匹配（含 `/openai/`）、格式为 openai、env 为 GEMINI_API_KEY、工厂可创建适配器                          |
+| 🛡️ anthropic 显式失败 | ✅ 抛错而非静默回退                                                                                                   |
+| 目录刷新              | ✅ 12 家 / 54 个模型（无重复 ID，合计校验一致）                                                                       |
+| 全量回归              | ✅ **1710 / 1710 通过，0 失败**                                                                                       |
+| `pnpm verify:all`     | ✅ **7 / 7**                                                                                                          |
 
 ---
 
@@ -98,14 +99,14 @@ case 'anthropic':
 
 Anthropic Messages API 与 OpenAI 格式在**四个层面**都不同：
 
-| 层面 | OpenAI | Anthropic |
-|------|--------|-----------|
-| 鉴权 | `Authorization: Bearer` | `x-api-key` + **`anthropic-version`** 头 |
-| 系统提示 | `messages` 里 role=system | **顶层 `system` 字段**（不在 messages 中） |
-| 请求体 | `max_tokens` 可选 | **`max_tokens` 必填** |
-| 流式 | `data:` 单事件流 | **命名事件**（`content_block_delta` / `message_delta` …） |
-| 工具 | `tools[]` + `tool_calls` | `tools[]` 用 **`input_schema`**；返回 **`tool_use` 内容块** |
-| 工具结果 | role=tool 消息 | **`tool_result` 内容块**（在 user 消息里） |
+| 层面     | OpenAI                    | Anthropic                                                   |
+| -------- | ------------------------- | ----------------------------------------------------------- |
+| 鉴权     | `Authorization: Bearer`   | `x-api-key` + **`anthropic-version`** 头                    |
+| 系统提示 | `messages` 里 role=system | **顶层 `system` 字段**（不在 messages 中）                  |
+| 请求体   | `max_tokens` 可选         | **`max_tokens` 必填**                                       |
+| 流式     | `data:` 单事件流          | **命名事件**（`content_block_delta` / `message_delta` …）   |
+| 工具     | `tools[]` + `tool_calls`  | `tools[]` 用 **`input_schema`**；返回 **`tool_use` 内容块** |
+| 工具结果 | role=tool 消息            | **`tool_result` 内容块**（在 user 消息里）                  |
 
 ### 4.2 实现要点（`packages/core/src/adapters/AnthropicAdapter.ts`）
 
@@ -125,15 +126,16 @@ Anthropic Messages API 与 OpenAI 格式在**四个层面**都不同：
 
 ### 4.4 实现完成记录（v0.6.35）
 
-| 项 | 结果 |
-|----|------|
-| 适配器 | `packages/core/src/adapters/AnthropicAdapter.ts`（约 430 行） |
-| 工厂接入 | `case 'anthropic'` 由「显式抛错」改为 `new AnthropicAdapter(...)` |
-| 预设 | `ProviderId` 新增 `'anthropic'`；4 个模型；`apiFormat: 'anthropic'` |
+| 项       | 结果                                                                                                    |
+| -------- | ------------------------------------------------------------------------------------------------------- |
+| 适配器   | `packages/core/src/adapters/AnthropicAdapter.ts`（约 430 行）                                           |
+| 工厂接入 | `case 'anthropic'` 由「显式抛错」改为 `new AnthropicAdapter(...)`                                       |
+| 预设     | `ProviderId` 新增 `'anthropic'`；4 个模型；`apiFormat: 'anthropic'`                                     |
 | 动态刷新 | `fetchModelsFromProvider` 增加 Anthropic 分支（`x-api-key` + `anthropic-version`，解析 `display_name`） |
-| 测试 | **16 条**（`anthropic-adapter.test.ts`）+ 预设测试更新 |
+| 测试     | **16 条**（`anthropic-adapter.test.ts`）+ 预设测试更新                                                  |
 
 **实现中处理的三个易错点**：
+
 1. **`max_tokens` 必填** —— 取 `options.maxTokens` → 模型配置 `maxOutputTokens` → 兜底 4096
 2. **工具参数分片** —— Anthropic 用 `input_json_delta.partial_json` 分片下发，
    必须按 `index` 累积到 `content_block_stop` 才能拼成完整 JSON（已加专测）

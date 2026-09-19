@@ -364,20 +364,20 @@ EasyAgent 是一款**基于中国主流大模型的全功能AI编程助手**，�
 
 ## 五、项目排期
 
-| 阶段      | 内容                                                                  | 状态    |
-| --------- | --------------------------------------------------------------------- | ------- |
-| Phase 1   | 核心框架 + 模型适配器 (10家提供商)                                    | ✅ 完成 |
-| Phase 2   | Agent系统 + 工具集 (51 tools)                                         | ✅ 完成 |
-| Phase 3   | Ink CLI (React Terminal) + 会话管理                                   | ✅ 完成 |
-| Phase 4   | Web Dashboard v4 WorkBuddy 风格 (10 Store + WS + 虚拟滚动 + 图标系统) | ✅ 完成 |
-| Phase 5   | Desktop 原生应用 (Electron)                                           | ✅ 完成 |
-| Phase 5.5 | Desktop 自动升级 + 测试 (127测试用例)                                 | ✅ 完成 |
-| Phase 6   | MCP 协议 + i18n 国际化                                                | ✅ 完成 |
-| Phase 7   | Skills/Plugins 系统 (6内置技能)                                       | ✅ 完成 |
-| Phase 8   | IM 适配器 (Telegram/飞书/企业微信)                                    | ✅ 完成 |
-| Phase 9   | 知识库 RAG + 自动化任务                                               | ✅ 完成 |
-| Phase 10  | 模型目录动态更新 + 去硬编码重构                                       | ✅ 完成 |
-| Phase 11  | 版本控制与升级系统 (version.json + CHANGELOG + 升级提示)              | ✅ 完成 |
+| 阶段      | 内容                                                                                                               | 状态                      |
+| --------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| Phase 1   | 核心框架 + 模型适配器 (10家提供商)                                                                                 | ✅ 完成                   |
+| Phase 2   | Agent系统 + 工具集 (51 tools)                                                                                      | ✅ 完成                   |
+| Phase 3   | Ink CLI (React Terminal) + 会话管理                                                                                | ✅ 完成                   |
+| Phase 4   | Web Dashboard v4 WorkBuddy 风格 (10 Store + WS + 虚拟滚动 + 图标系统)                                              | ✅ 完成                   |
+| Phase 5   | Desktop 原生应用 (Electron)                                                                                        | ✅ 完成                   |
+| Phase 5.5 | Desktop 自动升级 + 测试 (127测试用例)                                                                              | ✅ 完成                   |
+| Phase 6   | MCP 协议 + i18n 国际化                                                                                             | ✅ 完成                   |
+| Phase 7   | Skills/Plugins 系统 (6内置技能)                                                                                    | ✅ 完成                   |
+| Phase 8   | IM 适配器 (Telegram/飞书/企业微信)                                                                                 | ✅ 完成                   |
+| Phase 9   | 知识库 RAG + 自动化任务                                                                                            | ✅ 完成                   |
+| Phase 10  | 模型目录动态更新 + 去硬编码重构                                                                                    | ✅ 完成                   |
+| Phase 11  | 版本控制与升级系统 (version.json + CHANGELOG + 升级提示)                                                           | ✅ 完成                   |
 | Phase 12  | LangGraph 双引擎集成 🆕 (StateGraph + Checkpoint + 前端可视化 + WebSocket 实时高亮 + Checkpoint UI + CLI 引擎切换) | ✅ Phase A/B/C/D 全部完成 |
 
 ---

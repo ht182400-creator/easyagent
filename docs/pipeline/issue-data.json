@@ -269,6 +269,13 @@
           "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
           "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "problem": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "solution": "① 前端新增 `normalizeAutomationStep()`（`step ?? type` + 步骤类型白名单，两种形态兼容），`Automation.tsx` 与 store 均改用 ② `TaskList` 增加**当前步骤**高亮、**已运行 Ns**（每秒 tick）、出错提示（检查模型/API Key）、`ask_user` 需人工介入提示、步骤流水；验证: 前端 149/149（+4 用例）· 全量 **1788/1788** · 0 诊断 · WS 探针确证前后端形态一致；说明: 前端改动 vite 热更新即可见；后端无需改（协议未动）",
+          "status": "resolved"
         }
       ]
     },
@@ -716,6 +723,62 @@
           "problem": ": 改造前无 token 预算 / 无历史压缩 / 无工具结果截断 / 70 个工具无条件全量下发",
           "solution": "新增 `packages/core/src/agent/context/`（6 个文件）+ 接入 AgentEngine + 度量脚本",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:服务端拆分] 第五批（langgraph / sessions+chat / webso",
+          "problem": ": 收官复验 b/c 两轮 `/api/semantic/map` 2 用例 15s 超时（263/265），疑似拆分回归",
+          "solution": "复核时间线（16:03 复验3、16:04 全量 1729/1729 均全绿、代码未变）→ 定性为**全量回归刚结束机器繁忙导致的偶发超时**；复验 d/e 重跑均 **265/265 全绿**。顺带逐符号核查清理 3 个死导入（`relative`/`basename`/`AgentInstance`）；验证: 路由快照 93 条双向一致 · `verify:server-routes` 6/6 PASS · tsup 构建 · 语言服务器 0 诊断；文档: `docs/66` §5.4、`docs/修复汇总.md`、`MEMORY.md`（含\"紧跟全量跑单包复验会假失败\"教训）；遗留: 785 行仍超 500 目标；下一批候选 `bootstrap.ts`（初始化引导，共享状态多，单独开批）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-5:数据库] 迁移机制 PRAGMA user_version（19:40）",
+          "problem": ": sessions.db / langgraph-checkpoints.db 裸建表无版本戳，schema 变更无法安全升级（R-7 升级丢数据风险）",
+          "solution": "`core/src/db/DatabaseMigrator.ts`（事务化 + fail-fast + 断点续跑 + mock 环境自动跳过）+ sessionMigrations（v1 基线幂等 + v2 性能索引）+ checkpointerMigrations；SessionManager / Checkpointer 构造时接入；验证: 18 条专项用例 ✅（createRequire 绕 vitest 别名加载真实 better-sqlite3）· 全量回归 **1747/1747**（+18）· 真实存量库副本验证（0→2 版本推进、数据零丢失）；文档: `docs/72_P15数据库迁移机制.md`、`docs/修复汇总.md`、`MEMORY.md`；坑: ① 测试内 `SESSION_MIGRATIONS` 从错误模块导入 → 传 undefined → 4 个假失败（修正导入即过）；② Windows 动态 import 绝对路径必须 `pathToFileURL()`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22",
+          "problem": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22:35）",
+          "solution": "① core `buildSemanticMap` 增 `expandToRepoRoot` 选项（显式 path 不再放大到全仓）② 长驻 Worker 承接 map/search/references 扫描（eval + 动态 import core ESM）③ map SWR 缓存（过期先返回陈旧+后台重建）；验证: core+server 1339/1339 · 压测 4 场景全过 · 实测 map 200 返回 5207 符号真实数据；坑: ① require.resolve('@easyagent/core') 被 exports 全禁 → 基于模块位置探测 ② Worker eval:true 必须显式传 workerData ③ Windows kill 后 libuv 断言为无害噪音",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F13:版本] 「关于」面板 vundefined 修复（09:50）",
+          "problem": ": 用户报障 —— 设置页「关于 EasyAgent」显示 `当前版本: vundefined`，技术栈/支持模型文案过时 [根因] : P1-1 拆分 `routes/system.ts` 时误用裸 `__dirname`（ESM 不存在）→ `/api/version` 抛 ReferenceError → 全局错误中间件返回 500 `{success,error}` → 前端当版本对象渲染成 vundefined。**单测与路由快照都测不到（只验注册不验响应体）**",
+          "solution": "① system.ts 改用注入的 `serverDir`（与 files/staticFiles/langgraph 同一约定）② 冒烟新增 `/api/version` 校验（200+version 非空）③ 「关于」文案更新（技术栈 +SQLite/Electron；厂商 11 家含 Anthropic/OpenAI 兼容）；教训: **拆分模块时 ESM 下的 `__dirname` 是隐形炸弹** —— 原 index.ts 顶部自定义了 `const __dirname`，模块搬出去就没了；所有路径基准必须用注入的 serverDir（这条约定早已写在 staticFiles.ts ",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F17:沙箱根治] 不经 shell 执行 + 引号感知校验（11:00）",
+          "problem": "[F17:沙箱根治] 不经 shell 执行 + 引号感知校验（11:00）",
+          "solution": "新增 `core/src/sandbox/commandSafety.ts`（`parseCommandLine` / `findUnquotedShellOperator` / `checkCommand`）；`LocalSandbox` 改用 `spawn(argv[0], argv.slice(1), {shell:false})` —— 不经 shell，元字符语义消失；Docker 仍走；顺带修: ① exec 超时被 kill 后 Promise 永不 settle（改 reject）② Windows `.cmd/.bat`（npm/npx）经 cmd.exe 兜底 + 自行加引号 ③ UI「退出码 0 但无输出」时给明确提示；验证: core 1089/1089（+18 用例，含真实执行 `node -e 'console.log(1+1)'` → `2`、超时不挂死）· 全量 1780/1780；坑: ① `checkCommand` 用联合返回类型导致 DTS 构建失败（`result.argv` 无法收窄）→ 改为两字段可选 + 显式判空；② 新用例用临时**子目录**做 workspace → spawn 子进程持有 cwd，Windows 下 rmS",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F18:知识库] 全量回归假失败：测试写真实全局库 + 同名 id 错位（11:05）",
+          "problem": ": `全局实例添加的文档应带 scope: global` 持续失败（expected false to be true），且**隔离复跑仍失败** [根因] : ① **真 bug** — `addDocument` 同名文档时索引复用旧 id、返回值给新 id → 调用方查不到（分块还写在新 id 目录，堆积 96 个孤儿目录）② **测试污染** — `getGlobal()` 默认写 `~/.easyagent/.easyagent/knowledge`（用户真实数据），core 与 server 测试并行互污；失败后清理不执行 → 自我毒化",
+          "solution": "① `getGlobal()` 支持 `EASYAGENT_GLOBAL_KB_DIR` 覆盖，两个测试文件重定向临时目录 ② `addDocument` 同名复用旧 id + 覆盖分块目录 ③ 清理真实目录测试残留（2 索引 + 96 孤儿目录，保留用户 3 条真实文档）④ 新增同名复用用例；验证: core 1089/1089 · server 272/272 · **全量 1780/1780**；教训: **测试绝不能写用户真实数据目录**；「用例失败 → 清理代码不执行 → 永久失败」是典型的自我毒化模式，隔离复现又能复现时要先怀疑测试自身留下的脏状态",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F23:自动化] 任务列表 100 条 —— 测试写用户真实数据文件（12:40）",
+          "problem": ": 服务端测试通过真实 API 建 2 条任务（集成/一次性测试自动化），而 `AutomationManager` 默认落盘 `~/.easyagent/data/automations.json`（用户真实数据）→ **每跑一次回归留 2 条、永不清理**；今天约 50 次回归 → 100 条（F18 知识库污染同类）",
+          "solution": "① `AutomationManager` 支持 `EASYAGENT_AUTOMATIONS_FILE` 覆盖存储路径 ② 服务端测试在 `createApp()` 前指向临时文件 ③ 清理真实数据（删除 99 条测试任务 + 39 条历史，保留用户的「每日代码审查」）；验证: server 272/272 后真实文件时间/任务数不变 · 全量 1784/1784 后复跑清理脚本「删除 0 条」",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "problem": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "solution": "文案改「已启用」，真正执行中由带旋转图标的「执行中」徽标表示；③HITL（新能力）: 引擎无关方案 —— `ToolRegistry.register()` **按名覆盖**，服务端注册「可交互版 ask_user」即对两个引擎生效（无需改 Agent 内核）。新增 `server/src/hitl.ts`（`QuestionBroker` +；验证: server 278/278（+6 HITL 用例）· 前端 149/149 · 全量 **1794/1794** · 0 诊断；门禁亮点: 新增 2 条路由被**路由快照测试**拦下 → 基线 93 → 95（diff 复核仅新增这 2 条），说明重构安全网有效；补充（13:15）: 任务卡操作按钮重做 —— 旧版「立即执行」与「启用」**都是三角形**（▶）语义无法区分（用户实报易误解）；现改为**图标 + 文字**：`▶ 执行`（立即执行一次）/ `⏻ 停用`·`⏻ 启用`（PowerOff/Power 电源语义 = 调度开关）/ `■",
+          "status": "resolved"
         }
       ]
     },
@@ -924,6 +987,34 @@
           "title": "[模块:lg1] LangGraph 普通聊天触发 benchmark 工具循环至死锁 (00:36",
           "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
           "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[T:测试规范] 全量回归弹浏览器（Example Domain）根因清除（21:20）",
+          "problem": ": 每次全量回归自动弹出 https://example.com/page 浏览器页签 [根因] : `preview-media-tools.test.ts` 真实执行 `PreviewURLTool` → 工具内 `execSync('start \"\" <url>')` 打开系统浏览器 —— 测试带真实外部副作用",
+          "solution": "测试 mock `node:child_process.execSync`（spawn 保持真实）+ 副作用断言（命令须含目标 URL）；教训: 产生真实外部副作用的测试（开浏览器/网络/系统目录）必须 mock 隔离",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "problem": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "solution": "fs')` 改为顶部 import（ESM 隐患）② `install.ps1`/`install.sh` 共 4 处 `localhost:3000` → `3456` ③ 新增 2 条回归用例；验证: core **1070/1070**（+2）· **全量回归 1761/1761** · 0 诊断 · core dist 已重建；文档: `docs/52` 升至 v2.1（§3.3 标记已修复 + 新增 §3.4）、`docs/修复汇总.md`、`MEMORY.md`（新增「3000 已被 Forgejo 占用」陷阱条）；坑: 新用例最初用临时子目录做 workspace → spawn 的子进程持有 cwd，Windows 下 `rmSync` 报 EPERM；改用系统临时目录（不建子目录、无需清理）即过",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "problem": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "solution": "文案改「已启用」，真正执行中由带旋转图标的「执行中」徽标表示；③HITL（新能力）: 引擎无关方案 —— `ToolRegistry.register()` **按名覆盖**，服务端注册「可交互版 ask_user」即对两个引擎生效（无需改 Agent 内核）。新增 `server/src/hitl.ts`（`QuestionBroker` +；验证: server 278/278（+6 HITL 用例）· 前端 149/149 · 全量 **1794/1794** · 0 诊断；门禁亮点: 新增 2 条路由被**路由快照测试**拦下 → 基线 93 → 95（diff 复核仅新增这 2 条），说明重构安全网有效；补充（13:15）: 任务卡操作按钮重做 —— 旧版「立即执行」与「启用」**都是三角形**（▶）语义无法区分（用户实报易误解）；现改为**图标 + 文字**：`▶ 执行`（立即执行一次）/ `⏻ 停用`·`⏻ 启用`（PowerOff/Power 电源语义 = 调度开关）/ `■",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F26:前端] 点击「立即触发」黑屏 —— 缺 import 引发 ReferenceError（",
+          "problem": ": 选择器 JSX 里用了 `<RefreshCw />`，但 `Automation.tsx` 的 lucide 导入列表漏了它。**ESM 下缺失标识符是运行时错误**：esbuild/vite 构建不拦、vitest 不做类型检查、IDE 诊断这次也漏报",
+          "solution": "补导入；并用 `tsc --noEmit` 真查一遍 → 又抓出 3 个类型问题并一并修掉： ① `TaskTemplatePrefill` 导入来源写错（在 `CreateTaskModal.tsx`，却从 `./automation/data` 导入） ② 功能卡片 tooltip 仍在比较已废弃的 `'tasklist'` 动作 ③ `TaskList` 的 `progressLogs` props 类型写成 `AutomationProgressEvent[]`，与 store 实际存的 `AutomationProgressLog[]` 不一致；验证: 前端源码 `tsc` **0 错误**（残留 3 处历史遗留错误都在 `__tests__/`）· 前端 149/149 · 全量 **1794/1794**；教训: **改完前端必须跑 `npx tsc --noEmit`** —— 缺 import 这类错误只有它能发现；建议把类型检查加进 CI/verify 脚本（待办）",
           "status": "resolved"
         }
       ]
@@ -1231,6 +1322,55 @@
           "title": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
           "problem": "已装 vs 市场版本号不一致 → 4 处遗漏修复 (22:50)",
           "solution": "| 文件 | 改动 | |------|------| | `PluginMarketService.ts` | `checkAllUpdates()` 入口加 `client.clearCache()`；循环内 `getLatestRelease(p.id, true)` | | `pluginsStore.ts` | `updateInstallProgress` 的 `done` 分支末尾追加 `void get().fetchInstalled().then(() => get().checkUpdates())` |",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F5:MCP] P1-3 升级 2025-06-18 规范 + Streamable HTTP（2",
+          "problem": ": MCP 仅 stdio + 旧协议版本，无法连接仅支持新规范的服务器（P1 最后存项）",
+          "solution": "`StreamableHttpTransport`（POST + 单 JSON/SSE 分派 + Session-Id/Protocol-Version 头 + DELETE）+ `MCPClient` 双传输分派 + 三版本协商 + 补 initialized 通知；`MCPServerConfig` 增 url/headers；验证: 仅新规范伪服务器 5 条用例 ✅ · 全量回归 **1758/1758**（+5）；文档: `docs/75`、`docs/修复汇总.md`、`MEMORY.md`、README MCP 行",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第二批：KnowledgeBase 840 → 294 行（21:3",
+          "problem": ": 单个 ~765 行巨型组件（8 个 form state + 多个 handler + 三段弹窗 JSX 全堆在主组件）",
+          "solution": "拆为 `pages/knowledge-base/` —— helpers(45)/AddDocumentModal(304)/DocumentViewModal(98)/DocList(168) + 主组件 294 行；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 巨型单组件页面优先抽「自带状态的弹窗」—— 弹窗条件挂载（`{show && <Modal/>}`）天然替代 resetForm，胶水逻辑消失",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22",
+          "problem": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22:35）",
+          "solution": "① core `buildSemanticMap` 增 `expandToRepoRoot` 选项（显式 path 不再放大到全仓）② 长驻 Worker 承接 map/search/references 扫描（eval + 动态 import core ESM）③ map SWR 缓存（过期先返回陈旧+后台重建）；验证: core+server 1339/1339 · 压测 4 场景全过 · 实测 map 200 返回 5207 符号真实数据；坑: ① require.resolve('@easyagent/core') 被 exports 全禁 → 基于模块位置探测 ② Worker eval:true 必须显式传 workerData ③ Windows kill 后 libuv 断言为无害噪音",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F13:版本] 「关于」面板 vundefined 修复（09:50）",
+          "problem": ": 用户报障 —— 设置页「关于 EasyAgent」显示 `当前版本: vundefined`，技术栈/支持模型文案过时 [根因] : P1-1 拆分 `routes/system.ts` 时误用裸 `__dirname`（ESM 不存在）→ `/api/version` 抛 ReferenceError → 全局错误中间件返回 500 `{success,error}` → 前端当版本对象渲染成 vundefined。**单测与路由快照都测不到（只验注册不验响应体）**",
+          "solution": "① system.ts 改用注入的 `serverDir`（与 files/staticFiles/langgraph 同一约定）② 冒烟新增 `/api/version` 校验（200+version 非空）③ 「关于」文案更新（技术栈 +SQLite/Electron；厂商 11 家含 Anthropic/OpenAI 兼容）；教训: **拆分模块时 ESM 下的 `__dirname` 是隐形炸弹** —— 原 index.ts 顶部自定义了 `const __dirname`，模块搬出去就没了；所有路径基准必须用注入的 serverDir（这条约定早已写在 staticFiles.ts ",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F14:语义地图] 统计全 0 —— 默认扫描目录错用 process.cwd()（10:25）",
+          "problem": ": 用户报障 —— 语义地图页四张统计卡全 0（文件/行/符号/语言），语言分布空白，**无任何报错** [根因] : 接口本身正常（实测默认目录 300 文件 / 41 万行 / 39603 符号 / 7 语言）。真因是「扫了哪个目录」：前端工作目录默认空 + 无全局工作区 → 不传 `path`；服务端未传 path 时退回 **`process.cwd()`**（Electron 下可能是安装目录/System32）→ 扫到 0 文件但返回 `success:true` + 全 0 → 前端渲染四张 0 ",
+          "solution": "'packages'` 依赖 cwd 布局，脆弱）；验证: server **272/272** · frontend **145/145** · 0 诊断 · tsup 构建成功；教训: **「静默 0」比报错更危险**；「默认目录」这类隐式回退（cwd）在多宿主（Web/CLI/Electron）下几乎总是错的，必须用显式注入的基准路径",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "problem": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "solution": "fs')` 改为顶部 import（ESM 隐患）② `install.ps1`/`install.sh` 共 4 处 `localhost:3000` → `3456` ③ 新增 2 条回归用例；验证: core **1070/1070**（+2）· **全量回归 1761/1761** · 0 诊断 · core dist 已重建；文档: `docs/52` 升至 v2.1（§3.3 标记已修复 + 新增 §3.4）、`docs/修复汇总.md`、`MEMORY.md`（新增「3000 已被 Forgejo 占用」陷阱条）；坑: 新用例最初用临时子目录做 workspace → spawn 的子进程持有 cwd，Windows 下 `rmSync` 报 EPERM；改用系统临时目录（不建子目录、无需清理）即过",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F26:前端] 点击「立即触发」黑屏 —— 缺 import 引发 ReferenceError（",
+          "problem": ": 选择器 JSX 里用了 `<RefreshCw />`，但 `Automation.tsx` 的 lucide 导入列表漏了它。**ESM 下缺失标识符是运行时错误**：esbuild/vite 构建不拦、vitest 不做类型检查、IDE 诊断这次也漏报",
+          "solution": "补导入；并用 `tsc --noEmit` 真查一遍 → 又抓出 3 个类型问题并一并修掉： ① `TaskTemplatePrefill` 导入来源写错（在 `CreateTaskModal.tsx`，却从 `./automation/data` 导入） ② 功能卡片 tooltip 仍在比较已废弃的 `'tasklist'` 动作 ③ `TaskList` 的 `progressLogs` props 类型写成 `AutomationProgressEvent[]`，与 store 实际存的 `AutomationProgressLog[]` 不一致；验证: 前端源码 `tsc` **0 错误**（残留 3 处历史遗留错误都在 `__tests__/`）· 前端 149/149 · 全量 **1794/1794**；教训: **改完前端必须跑 `npx tsc --noEmit`** —— 缺 import 这类错误只有它能发现；建议把类型检查加进 CI/verify 脚本（待办）",
           "status": "resolved"
         }
       ]
@@ -1657,6 +1797,62 @@
           "title": "[P1-2 之一:功能] 推理模型「思考过程」支持：思维链与正文分离",
           "problem": ": P1-2「推理通道 `reasoning_content` 未解析」→ 思考期间界面空白，用户以为卡死",
           "solution": "四层打通（类型 / 适配器 / 引擎 / 服务端 WS / 前端 UI）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第一批：DocsGuide 952 → 258 行（21:25）",
+          "problem": ": 9 个前端页面 664~952 行超标（P2-1 清单）；选定 DocsGuide（最大）建立拆分范式",
+          "solution": "拆为 `pages/docs-guide/` 子模块 —— data.tsx(342)/FlowCard.tsx(170)/DetailPanel.tsx(162)/PipelineRow.tsx(65) + 主组件 258 行；**纯搬迁，主入口路径与默认导出不变 → 路由零改动**；CSS 动画 docsguide-* 唯一前缀保留在主组件；验证: frontend 147/147 · web 构建 EXIT=0 · desktop 215/215 · 0 诊断；范式要点: ① 页面私有组件放 `pages/<page>/` 子目录不放全局 components（防命名污染）② 预计算 Tailwind 类名必须保持静态 ③ 每批独立验证提交",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第二批：KnowledgeBase 840 → 294 行（21:3",
+          "problem": ": 单个 ~765 行巨型组件（8 个 form state + 多个 handler + 三段弹窗 JSX 全堆在主组件）",
+          "solution": "拆为 `pages/knowledge-base/` —— helpers(45)/AddDocumentModal(304)/DocumentViewModal(98)/DocList(168) + 主组件 294 行；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 巨型单组件页面优先抽「自带状态的弹窗」—— 弹窗条件挂载（`{show && <Modal/>}`）天然替代 resetForm，胶水逻辑消失",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "problem": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "solution": "`pages/automation/` —— data(80)/CreateTaskModal(253，模板预填经 template prop)/HistoryPanel(101)/TaskList(184) + 主组件 240 行（WS 订阅保留）；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 模板预填模式 —— 主组件 `setTemplate(prefill|null)` + 弹窗以 props 初始化 state，条件挂载即全新表单",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F13:版本] 「关于」面板 vundefined 修复（09:50）",
+          "problem": ": 用户报障 —— 设置页「关于 EasyAgent」显示 `当前版本: vundefined`，技术栈/支持模型文案过时 [根因] : P1-1 拆分 `routes/system.ts` 时误用裸 `__dirname`（ESM 不存在）→ `/api/version` 抛 ReferenceError → 全局错误中间件返回 500 `{success,error}` → 前端当版本对象渲染成 vundefined。**单测与路由快照都测不到（只验注册不验响应体）**",
+          "solution": "① system.ts 改用注入的 `serverDir`（与 files/staticFiles/langgraph 同一约定）② 冒烟新增 `/api/version` 校验（200+version 非空）③ 「关于」文案更新（技术栈 +SQLite/Electron；厂商 11 家含 Anthropic/OpenAI 兼容）；教训: **拆分模块时 ESM 下的 `__dirname` 是隐形炸弹** —— 原 index.ts 顶部自定义了 `const __dirname`，模块搬出去就没了；所有路径基准必须用注入的 serverDir（这条约定早已写在 staticFiles.ts ",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F14:语义地图] 统计全 0 —— 默认扫描目录错用 process.cwd()（10:25）",
+          "problem": ": 用户报障 —— 语义地图页四张统计卡全 0（文件/行/符号/语言），语言分布空白，**无任何报错** [根因] : 接口本身正常（实测默认目录 300 文件 / 41 万行 / 39603 符号 / 7 语言）。真因是「扫了哪个目录」：前端工作目录默认空 + 无全局工作区 → 不传 `path`；服务端未传 path 时退回 **`process.cwd()`**（Electron 下可能是安装目录/System32）→ 扫到 0 文件但返回 `success:true` + 全 0 → 前端渲染四张 0 ",
+          "solution": "'packages'` 依赖 cwd 布局，脆弱）；验证: server **272/272** · frontend **145/145** · 0 诊断 · tsup 构建成功；教训: **「静默 0」比报错更危险**；「默认目录」这类隐式回退（cwd）在多宿主（Web/CLI/Electron）下几乎总是错的，必须用显式注入的基准路径",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "problem": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "solution": "① 前端新增 `normalizeAutomationStep()`（`step ?? type` + 步骤类型白名单，两种形态兼容），`Automation.tsx` 与 store 均改用 ② `TaskList` 增加**当前步骤**高亮、**已运行 Ns**（每秒 tick）、出错提示（检查模型/API Key）、`ask_user` 需人工介入提示、步骤流水；验证: 前端 149/149（+4 用例）· 全量 **1788/1788** · 0 诊断 · WS 探针确证前后端形态一致；说明: 前端改动 vite 热更新即可见；后端无需改（协议未动）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "problem": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "solution": "文案改「已启用」，真正执行中由带旋转图标的「执行中」徽标表示；③HITL（新能力）: 引擎无关方案 —— `ToolRegistry.register()` **按名覆盖**，服务端注册「可交互版 ask_user」即对两个引擎生效（无需改 Agent 内核）。新增 `server/src/hitl.ts`（`QuestionBroker` +；验证: server 278/278（+6 HITL 用例）· 前端 149/149 · 全量 **1794/1794** · 0 诊断；门禁亮点: 新增 2 条路由被**路由快照测试**拦下 → 基线 93 → 95（diff 复核仅新增这 2 条），说明重构安全网有效；补充（13:15）: 任务卡操作按钮重做 —— 旧版「立即执行」与「启用」**都是三角形**（▶）语义无法区分（用户实报易误解）；现改为**图标 + 文字**：`▶ 执行`（立即执行一次）/ `⏻ 停用`·`⏻ 启用`（PowerOff/Power 电源语义 = 调度开关）/ `■",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F26:前端] 点击「立即触发」黑屏 —— 缺 import 引发 ReferenceError（",
+          "problem": ": 选择器 JSX 里用了 `<RefreshCw />`，但 `Automation.tsx` 的 lucide 导入列表漏了它。**ESM 下缺失标识符是运行时错误**：esbuild/vite 构建不拦、vitest 不做类型检查、IDE 诊断这次也漏报",
+          "solution": "补导入；并用 `tsc --noEmit` 真查一遍 → 又抓出 3 个类型问题并一并修掉： ① `TaskTemplatePrefill` 导入来源写错（在 `CreateTaskModal.tsx`，却从 `./automation/data` 导入） ② 功能卡片 tooltip 仍在比较已废弃的 `'tasklist'` 动作 ③ `TaskList` 的 `progressLogs` props 类型写成 `AutomationProgressEvent[]`，与 store 实际存的 `AutomationProgressLog[]` 不一致；验证: 前端源码 `tsc` **0 错误**（残留 3 处历史遗留错误都在 `__tests__/`）· 前端 149/149 · 全量 **1794/1794**；教训: **改完前端必须跑 `npx tsc --noEmit`** —— 缺 import 这类错误只有它能发现；建议把类型检查加进 CI/verify 脚本（待办）",
           "status": "resolved"
         }
       ]
@@ -2385,6 +2581,55 @@
           "problem": ": `docs/62` 称\"存在 30 个孤儿测试\" [根因] : 该结论来自 mtime 停在 2026-06-27 的 `_vitest-desktop.json` 过期快照；重跑 desktop 全量实际 **215/215 全通过**",
           "solution": "已在 `docs/63` §3.1 明确更正；`docs/62` 保留原样存证；教训: 判断测试状态必须重跑，不能只看管线快照",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第一批：DocsGuide 952 → 258 行（21:25）",
+          "problem": ": 9 个前端页面 664~952 行超标（P2-1 清单）；选定 DocsGuide（最大）建立拆分范式",
+          "solution": "拆为 `pages/docs-guide/` 子模块 —— data.tsx(342)/FlowCard.tsx(170)/DetailPanel.tsx(162)/PipelineRow.tsx(65) + 主组件 258 行；**纯搬迁，主入口路径与默认导出不变 → 路由零改动**；CSS 动画 docsguide-* 唯一前缀保留在主组件；验证: frontend 147/147 · web 构建 EXIT=0 · desktop 215/215 · 0 诊断；范式要点: ① 页面私有组件放 `pages/<page>/` 子目录不放全局 components（防命名污染）② 预计算 Tailwind 类名必须保持静态 ③ 每批独立验证提交",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第二批：KnowledgeBase 840 → 294 行（21:3",
+          "problem": ": 单个 ~765 行巨型组件（8 个 form state + 多个 handler + 三段弹窗 JSX 全堆在主组件）",
+          "solution": "拆为 `pages/knowledge-base/` —— helpers(45)/AddDocumentModal(304)/DocumentViewModal(98)/DocList(168) + 主组件 294 行；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 巨型单组件页面优先抽「自带状态的弹窗」—— 弹窗条件挂载（`{show && <Modal/>}`）天然替代 resetForm，胶水逻辑消失",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "problem": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "solution": "`pages/automation/` —— data(80)/CreateTaskModal(253，模板预填经 template prop)/HistoryPanel(101)/TaskList(184) + 主组件 240 行（WS 订阅保留）；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 模板预填模式 —— 主组件 `setTemplate(prefill|null)` + 弹窗以 props 初始化 state，条件挂载即全新表单",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F13:版本] 「关于」面板 vundefined 修复（09:50）",
+          "problem": ": 用户报障 —— 设置页「关于 EasyAgent」显示 `当前版本: vundefined`，技术栈/支持模型文案过时 [根因] : P1-1 拆分 `routes/system.ts` 时误用裸 `__dirname`（ESM 不存在）→ `/api/version` 抛 ReferenceError → 全局错误中间件返回 500 `{success,error}` → 前端当版本对象渲染成 vundefined。**单测与路由快照都测不到（只验注册不验响应体）**",
+          "solution": "① system.ts 改用注入的 `serverDir`（与 files/staticFiles/langgraph 同一约定）② 冒烟新增 `/api/version` 校验（200+version 非空）③ 「关于」文案更新（技术栈 +SQLite/Electron；厂商 11 家含 Anthropic/OpenAI 兼容）；教训: **拆分模块时 ESM 下的 `__dirname` 是隐形炸弹** —— 原 index.ts 顶部自定义了 `const __dirname`，模块搬出去就没了；所有路径基准必须用注入的 serverDir（这条约定早已写在 staticFiles.ts ",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F14:语义地图] 统计全 0 —— 默认扫描目录错用 process.cwd()（10:25）",
+          "problem": ": 用户报障 —— 语义地图页四张统计卡全 0（文件/行/符号/语言），语言分布空白，**无任何报错** [根因] : 接口本身正常（实测默认目录 300 文件 / 41 万行 / 39603 符号 / 7 语言）。真因是「扫了哪个目录」：前端工作目录默认空 + 无全局工作区 → 不传 `path`；服务端未传 path 时退回 **`process.cwd()`**（Electron 下可能是安装目录/System32）→ 扫到 0 文件但返回 `success:true` + 全 0 → 前端渲染四张 0 ",
+          "solution": "'packages'` 依赖 cwd 布局，脆弱）；验证: server **272/272** · frontend **145/145** · 0 诊断 · tsup 构建成功；教训: **「静默 0」比报错更危险**；「默认目录」这类隐式回退（cwd）在多宿主（Web/CLI/Electron）下几乎总是错的，必须用显式注入的基准路径",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F17:沙箱根治] 不经 shell 执行 + 引号感知校验（11:00）",
+          "problem": "[F17:沙箱根治] 不经 shell 执行 + 引号感知校验（11:00）",
+          "solution": "新增 `core/src/sandbox/commandSafety.ts`（`parseCommandLine` / `findUnquotedShellOperator` / `checkCommand`）；`LocalSandbox` 改用 `spawn(argv[0], argv.slice(1), {shell:false})` —— 不经 shell，元字符语义消失；Docker 仍走；顺带修: ① exec 超时被 kill 后 Promise 永不 settle（改 reject）② Windows `.cmd/.bat`（npm/npx）经 cmd.exe 兜底 + 自行加引号 ③ UI「退出码 0 但无输出」时给明确提示；验证: core 1089/1089（+18 用例，含真实执行 `node -e 'console.log(1+1)'` → `2`、超时不挂死）· 全量 1780/1780；坑: ① `checkCommand` 用联合返回类型导致 DTS 构建失败（`result.argv` 无法收窄）→ 改为两字段可选 + 显式判空；② 新用例用临时**子目录**做 workspace → spawn 子进程持有 cwd，Windows 下 rmS",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F20:沙箱] 本地进程模式：内建命令兼容 + ENOENT 中文提示（12:15）",
+          "problem": "[F20:沙箱] 本地进程模式：内建命令兼容 + ENOENT 中文提示（12:15）",
+          "solution": "① `ENOENT` → 中文可操作提示（\"要执行 JS 请写成 node -e ...\"）② Windows 内建命令（echo/dir/type…）保留 cmd.exe 兼容路径（「不经 shell」改造带来的可用性回归）③ cmd 命令行**外层再包一层引号**（`cmd /s` 会剥首尾引号；否则 `\"echo\" \"arg\"` 被拆坏，实测 exit 1；含空格的 `npm.cmd` 路径；验证: core 1091/1091（+2 用例）· 全量 1782/1782 · 0 诊断 · core dist 已重建；待办（未做）: 沙箱模式在 `SandboxManager.init()` 时**一次性判定** → Docker 若在后端启动之后才可用，会一直停留在本地模式（用户本次就是这样）→ 可做「创建沙箱时自愈重检」",
+          "status": "resolved"
         }
       ]
     },
@@ -2832,6 +3077,90 @@
           "problem": ": `packages/server/src/index.ts` 3827 行 / 93 条路由，违反项目「单文件 ≤500 行」规范 7.5 倍",
           "solution": "先建安全网（路由快照 + 运行时验证），再搬迁 3 组路由（knowledge / automations / staticFiles）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:服务端拆分] 第五批（langgraph / sessions+chat / webso",
+          "problem": ": 收官复验 b/c 两轮 `/api/semantic/map` 2 用例 15s 超时（263/265），疑似拆分回归",
+          "solution": "复核时间线（16:03 复验3、16:04 全量 1729/1729 均全绿、代码未变）→ 定性为**全量回归刚结束机器繁忙导致的偶发超时**；复验 d/e 重跑均 **265/265 全绿**。顺带逐符号核查清理 3 个死导入（`relative`/`basename`/`AgentInstance`）；验证: 路由快照 93 条双向一致 · `verify:server-routes` 6/6 PASS · tsup 构建 · 语言服务器 0 诊断；文档: `docs/66` §5.4、`docs/修复汇总.md`、`MEMORY.md`（含\"紧跟全量跑单包复验会假失败\"教训）；遗留: 785 行仍超 500 目标；下一批候选 `bootstrap.ts`（初始化引导，共享状态多，单独开批）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:服务端拆分] 第六批 bootstrap + 偶发超时根因修复（19:15）",
+          "problem": ": ① index.ts 785 行仍超 500 目标；② semantic/map 假失败反复出现，需系统性根因",
+          "solution": "新增 `bootstrap.ts` 承接五块初始化（模型目录/createWsHub/createAutomationSystem/createIMManagerFor/applySecurityMiddleware），index.ts 785 → **389 行（-89.8%）达成 ≤500 目标**；TDZ 防范 = wsHub 先于自动化系统创建。偶发超时根因 = 路由绕过 60s 缓存每次；验证: server 265/265（快照一致）· verify:server-routes 6/6 · **全量回归 1729/1729** · tsup · 0 诊断 · 死导入核查 PASS（顺带清 9 个）；文档: `docs/66` §5.5、`docs/修复汇总.md`、`MEMORY.md`；补记: bootstrap.ts 初版 561 行超标，自检后按职责二次拆出 `middleware/securityStack.ts` （114 行），bootstrap.ts 447 行；复验（tsup + verify:server-routes + 全量 1729/1729）全绿",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-5:数据库] 迁移机制 PRAGMA user_version（19:40）",
+          "problem": ": sessions.db / langgraph-checkpoints.db 裸建表无版本戳，schema 变更无法安全升级（R-7 升级丢数据风险）",
+          "solution": "`core/src/db/DatabaseMigrator.ts`（事务化 + fail-fast + 断点续跑 + mock 环境自动跳过）+ sessionMigrations（v1 基线幂等 + v2 性能索引）+ checkpointerMigrations；SessionManager / Checkpointer 构造时接入；验证: 18 条专项用例 ✅（createRequire 绕 vitest 别名加载真实 better-sqlite3）· 全量回归 **1747/1747**（+18）· 真实存量库副本验证（0→2 版本推进、数据零丢失）；文档: `docs/72_P15数据库迁移机制.md`、`docs/修复汇总.md`、`MEMORY.md`；坑: ① 测试内 `SESSION_MIGRATIONS` 从错误模块导入 → 传 undefined → 4 个假失败（修正导入即过）；② Windows 动态 import 绝对路径必须 `pathToFileURL()`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-6:服务端] 全局错误中间件 + CI 冒烟测试（20:20）",
+          "problem": ": 无全局错误处理（错误格式各路由自定、堆栈可能外泄）；CI 只验单测不验\"构建产物能否真实启动\"",
+          "solution": "`middleware/errorHandler.ts`（统一 `{success:false,error:{code,message}}` + asyncHandler + headersSent 防护，注册在所有路由之后）+ `scripts/smoke-test.mjs` + ci.yml `smoke-test` job（tests 全绿后构建 core+server → 真实启动 → h；验证: 6 条错误中间件用例 ✅ · 路由快照不受影响 · 全量回归 **1753/1753**（+6）· 本地冒烟 ✅；文档: `docs/73_P16全局错误中间件与CI冒烟.md`、`docs/修复汇总.md`、`MEMORY.md`；坑: 流式测试用 application/json 时 supertest 会对截断体报 Unexpected end of JSON —— 改 text/plain（实现行为本身正确，rawResponse 已是预期的半截内容）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F5:MCP] P1-3 升级 2025-06-18 规范 + Streamable HTTP（2",
+          "problem": ": MCP 仅 stdio + 旧协议版本，无法连接仅支持新规范的服务器（P1 最后存项）",
+          "solution": "`StreamableHttpTransport`（POST + 单 JSON/SSE 分派 + Session-Id/Protocol-Version 头 + DELETE）+ `MCPClient` 双传输分派 + 三版本协商 + 补 initialized 通知；`MCPServerConfig` 增 url/headers；验证: 仅新规范伪服务器 5 条用例 ✅ · 全量回归 **1758/1758**（+5）；文档: `docs/75`、`docs/修复汇总.md`、`MEMORY.md`、README MCP 行",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第二批：KnowledgeBase 840 → 294 行（21:3",
+          "problem": ": 单个 ~765 行巨型组件（8 个 form state + 多个 handler + 三段弹窗 JSX 全堆在主组件）",
+          "solution": "拆为 `pages/knowledge-base/` —— helpers(45)/AddDocumentModal(304)/DocumentViewModal(98)/DocList(168) + 主组件 294 行；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 巨型单组件页面优先抽「自带状态的弹窗」—— 弹窗条件挂载（`{show && <Modal/>}`）天然替代 resetForm，胶水逻辑消失",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "problem": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "solution": "fs')` 改为顶部 import（ESM 隐患）② `install.ps1`/`install.sh` 共 4 处 `localhost:3000` → `3456` ③ 新增 2 条回归用例；验证: core **1070/1070**（+2）· **全量回归 1761/1761** · 0 诊断 · core dist 已重建；文档: `docs/52` 升至 v2.1（§3.3 标记已修复 + 新增 §3.4）、`docs/修复汇总.md`、`MEMORY.md`（新增「3000 已被 Forgejo 占用」陷阱条）；坑: 新用例最初用临时子目录做 workspace → spawn 的子进程持有 cwd，Windows 下 `rmSync` 报 EPERM；改用系统临时目录（不建子目录、无需清理）即过",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F18:知识库] 全量回归假失败：测试写真实全局库 + 同名 id 错位（11:05）",
+          "problem": ": `全局实例添加的文档应带 scope: global` 持续失败（expected false to be true），且**隔离复跑仍失败** [根因] : ① **真 bug** — `addDocument` 同名文档时索引复用旧 id、返回值给新 id → 调用方查不到（分块还写在新 id 目录，堆积 96 个孤儿目录）② **测试污染** — `getGlobal()` 默认写 `~/.easyagent/.easyagent/knowledge`（用户真实数据），core 与 server 测试并行互污；失败后清理不执行 → 自我毒化",
+          "solution": "① `getGlobal()` 支持 `EASYAGENT_GLOBAL_KB_DIR` 覆盖，两个测试文件重定向临时目录 ② `addDocument` 同名复用旧 id + 覆盖分块目录 ③ 清理真实目录测试残留（2 索引 + 96 孤儿目录，保留用户 3 条真实文档）④ 新增同名复用用例；验证: core 1089/1089 · server 272/272 · **全量 1780/1780**；教训: **测试绝不能写用户真实数据目录**；「用例失败 → 清理代码不执行 → 永久失败」是典型的自我毒化模式，隔离复现又能复现时要先怀疑测试自身留下的脏状态",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F23:自动化] 任务列表 100 条 —— 测试写用户真实数据文件（12:40）",
+          "problem": ": 服务端测试通过真实 API 建 2 条任务（集成/一次性测试自动化），而 `AutomationManager` 默认落盘 `~/.easyagent/data/automations.json`（用户真实数据）→ **每跑一次回归留 2 条、永不清理**；今天约 50 次回归 → 100 条（F18 知识库污染同类）",
+          "solution": "① `AutomationManager` 支持 `EASYAGENT_AUTOMATIONS_FILE` 覆盖存储路径 ② 服务端测试在 `createApp()` 前指向临时文件 ③ 清理真实数据（删除 99 条测试任务 + 39 条历史，保留用户的「每日代码审查」）；验证: server 272/272 后真实文件时间/任务数不变 · 全量 1784/1784 后复跑清理脚本「删除 0 条」",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F26:前端] 点击「立即触发」黑屏 —— 缺 import 引发 ReferenceError（",
+          "problem": ": 选择器 JSX 里用了 `<RefreshCw />`，但 `Automation.tsx` 的 lucide 导入列表漏了它。**ESM 下缺失标识符是运行时错误**：esbuild/vite 构建不拦、vitest 不做类型检查、IDE 诊断这次也漏报",
+          "solution": "补导入；并用 `tsc --noEmit` 真查一遍 → 又抓出 3 个类型问题并一并修掉： ① `TaskTemplatePrefill` 导入来源写错（在 `CreateTaskModal.tsx`，却从 `./automation/data` 导入） ② 功能卡片 tooltip 仍在比较已废弃的 `'tasklist'` 动作 ③ `TaskList` 的 `progressLogs` props 类型写成 `AutomationProgressEvent[]`，与 store 实际存的 `AutomationProgressLog[]` 不一致；验证: 前端源码 `tsc` **0 错误**（残留 3 处历史遗留错误都在 `__tests__/`）· 前端 149/149 · 全量 **1794/1794**；教训: **改完前端必须跑 `npx tsc --noEmit`** —— 缺 import 这类错误只有它能发现；建议把类型检查加进 CI/verify 脚本（待办）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F28:债务清理] 全仓格式化 + 语义扫描噪音修复 + 文档数字同步（13:35）",
+          "problem": "[F28:债务清理] 全仓格式化 + 语义扫描噪音修复 + 文档数字同步（13:35）",
+          "solution": "ts 0 → typescript 177 + tsx 68 + js 55，符号 39603 → 61067**；+2 条守护用例；语义用例超时按最坏负载提到 60s；C 文档/KPI 数字过期: `unified-sync.mjs` 刷新（KPI 1785 / 实测 1796）→ `MEMORY.md` 与 `docs/03` 显式声明权威数字，旧值列「历史值」；验证: **`verify:all` 10/10 全通过** · `prettier --check` 0 不符 · 全量回归 **1796/1796**（6 包）；教训: ① 格式化/重写大量文件后立即跑全量回归，超时要先怀疑**扫描类逻辑被新文件影响**，别直接归因环境；② `maxFiles` 这类硬上限必须配合**优先级排序**，否则会被低价值文件吃光",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F29:性能] 语义扫描 11s → 0.14s（O(n²) 根治）（13:45）",
+          "problem": ": ① `extractSymbols` 对**每个符号匹配**都 `content.substring(0, matchPos)` + 全文数 `\\n` → **O(符号数 × 文件长度)** ② 签名提取同样复制尾串 ③ 压缩产物只按文件名（`*.min.js`）忽略，实为 `main.js`；`.obsidian/` 未忽略 ④ `maxFiles=300` 时 300 名额全被代码文件占满",
+          "solution": "ripgrep=极致单遍+并行遍历（我们瓶颈在正则外的 O(n²)，不在正则）；zoekt/tgrep/csearch=trigram 倒排索引；tree-sitter=增量解析（准确率天花板）；LSP=按需+增量缓存。**下一步最划算 = mtime/size 增量缓存**，其次 worker_threads 并行，最后才是 tree-sitter；教训: 性能问题先**剖析**再动手 —— 本次 96% 耗时集中在一个文件，若盲目\"优化正则\"会完全走错方向",
+          "status": "resolved"
         }
       ]
     },
@@ -2879,6 +3208,13 @@
           "title": "🔴 问题 26: apiFetch 全项目 43+ 处双重 .json() 系统性 bug (16",
           "problem": "[现象] : Desktop Providers 页面只显示\"快速开始\"不显示提供商列表，和 Web 不一样 [根因] : 之前修复 Dashboard/ChatInput/Automation 3 处时以为修完了，实际上 13 个文件 43+ 处都有同样 bug",
           "solution": "Pages: Providers.tsx(2), Skills.tsx(5), Chat.tsx(1), TokenUsage.tsx(1), IMSettings.tsx(2) = 11处；Components: ChatInput.tsx(1), FileBrowser.tsx(1) = 2处；Stores: toolsStore(1), sessionStore(1), settingsStore(1), providerStore(2), pluginsStore(1), mcpStore(1), automationStore(4), semanticStor；另外 api.ts 中的 `res.json()` 是正确的（真正的 fetch 封装）；verify-build.cjs 增强: 双击重检检查从仅 3 个文件扩展为遍历 `src/**/*.{ts,tsx}` 所有文件 1. 之前修复时说\"已修复 3 处\"是错觉，只修了可见报错的 3 处，绝大多数被 `.catch()` 静默吞掉 2. 全局搜索不能只搜一种模式（`.then(r=>r.json())`），要搜 `res.json()` 确认 `res` 来自 `apiFetch` 3. verify-build.cjs 必须检查所有文件，不能只查 3 个文件名",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F5:MCP] P1-3 升级 2025-06-18 规范 + Streamable HTTP（2",
+          "problem": ": MCP 仅 stdio + 旧协议版本，无法连接仅支持新规范的服务器（P1 最后存项）",
+          "solution": "`StreamableHttpTransport`（POST + 单 JSON/SSE 分派 + Session-Id/Protocol-Version 头 + DELETE）+ `MCPClient` 双传输分派 + 三版本协商 + 补 initialized 通知；`MCPServerConfig` 增 url/headers；验证: 仅新规范伪服务器 5 条用例 ✅ · 全量回归 **1758/1758**（+5）；文档: `docs/75`、`docs/修复汇总.md`、`MEMORY.md`、README MCP 行",
           "status": "resolved"
         }
       ]
@@ -2990,6 +3326,55 @@
           "title": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
           "problem": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
           "solution": "搬迁 IM 适配器(7) / Docker 沙箱(6) / 语义分析(5) / 文件浏览(1) 四组路由到 `routes/`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:服务端拆分] 第六批 bootstrap + 偶发超时根因修复（19:15）",
+          "problem": ": ① index.ts 785 行仍超 500 目标；② semantic/map 假失败反复出现，需系统性根因",
+          "solution": "新增 `bootstrap.ts` 承接五块初始化（模型目录/createWsHub/createAutomationSystem/createIMManagerFor/applySecurityMiddleware），index.ts 785 → **389 行（-89.8%）达成 ≤500 目标**；TDZ 防范 = wsHub 先于自动化系统创建。偶发超时根因 = 路由绕过 60s 缓存每次；验证: server 265/265（快照一致）· verify:server-routes 6/6 · **全量回归 1729/1729** · tsup · 0 诊断 · 死导入核查 PASS（顺带清 9 个）；文档: `docs/66` §5.5、`docs/修复汇总.md`、`MEMORY.md`；补记: bootstrap.ts 初版 561 行超标，自检后按职责二次拆出 `middleware/securityStack.ts` （114 行），bootstrap.ts 447 行；复验（tsup + verify:server-routes + 全量 1729/1729）全绿",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F13:版本] 「关于」面板 vundefined 修复（09:50）",
+          "problem": ": 用户报障 —— 设置页「关于 EasyAgent」显示 `当前版本: vundefined`，技术栈/支持模型文案过时 [根因] : P1-1 拆分 `routes/system.ts` 时误用裸 `__dirname`（ESM 不存在）→ `/api/version` 抛 ReferenceError → 全局错误中间件返回 500 `{success,error}` → 前端当版本对象渲染成 vundefined。**单测与路由快照都测不到（只验注册不验响应体）**",
+          "solution": "① system.ts 改用注入的 `serverDir`（与 files/staticFiles/langgraph 同一约定）② 冒烟新增 `/api/version` 校验（200+version 非空）③ 「关于」文案更新（技术栈 +SQLite/Electron；厂商 11 家含 Anthropic/OpenAI 兼容）；教训: **拆分模块时 ESM 下的 `__dirname` 是隐形炸弹** —— 原 index.ts 顶部自定义了 `const __dirname`，模块搬出去就没了；所有路径基准必须用注入的 serverDir（这条约定早已写在 staticFiles.ts ",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F16:沙箱] 用户报障：`node -e 'console.log(1+1)'` 被拒 / `n",
+          "problem": "[现象] : ① 命令被「不安全的 shell 元字符」拒绝 ② 去掉括号后能跑，但退出码 0、无任何输出 [根因] : **同一个根因** —— `LocalSandbox.containsShellMetacharacters` 的黑名单 `/[;&|`$()><#…]/` 把 `(` `)` 一律当子 shell，忽略了**引号内是字面量**；于是任何带函数调用的 JS 单行代码（必须写括号）都被拒。用户去掉括号后命令合法但语义变了：`node -e console.log abc` 只求值表达式 `con",
+          "solution": "详见原文",
+          "status": "pending"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F17:沙箱根治] 不经 shell 执行 + 引号感知校验（11:00）",
+          "problem": "[F17:沙箱根治] 不经 shell 执行 + 引号感知校验（11:00）",
+          "solution": "新增 `core/src/sandbox/commandSafety.ts`（`parseCommandLine` / `findUnquotedShellOperator` / `checkCommand`）；`LocalSandbox` 改用 `spawn(argv[0], argv.slice(1), {shell:false})` —— 不经 shell，元字符语义消失；Docker 仍走；顺带修: ① exec 超时被 kill 后 Promise 永不 settle（改 reject）② Windows `.cmd/.bat`（npm/npx）经 cmd.exe 兜底 + 自行加引号 ③ UI「退出码 0 但无输出」时给明确提示；验证: core 1089/1089（+18 用例，含真实执行 `node -e 'console.log(1+1)'` → `2`、超时不挂死）· 全量 1780/1780；坑: ① `checkCommand` 用联合返回类型导致 DTS 构建失败（`result.argv` 无法收窄）→ 改为两字段可选 + 显式判空；② 新用例用临时**子目录**做 workspace → spawn 子进程持有 cwd，Windows 下 rmS",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F20:沙箱] 本地进程模式：内建命令兼容 + ENOENT 中文提示（12:15）",
+          "problem": "[F20:沙箱] 本地进程模式：内建命令兼容 + ENOENT 中文提示（12:15）",
+          "solution": "① `ENOENT` → 中文可操作提示（\"要执行 JS 请写成 node -e ...\"）② Windows 内建命令（echo/dir/type…）保留 cmd.exe 兼容路径（「不经 shell」改造带来的可用性回归）③ cmd 命令行**外层再包一层引号**（`cmd /s` 会剥首尾引号；否则 `\"echo\" \"arg\"` 被拆坏，实测 exit 1；含空格的 `npm.cmd` 路径；验证: core 1091/1091（+2 用例）· 全量 1782/1782 · 0 诊断 · core dist 已重建；待办（未做）: 沙箱模式在 `SandboxManager.init()` 时**一次性判定** → Docker 若在后端启动之后才可用，会一直停留在本地模式（用户本次就是这样）→ 可做「创建沙箱时自愈重检」",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F21:沙箱] Docker 自愈重检 + /status 实探（12:25）",
+          "problem": ": 用户启动 Docker 后界面仍显示「本地进程模式」；根因 = 模式在 `init()` 一次性判定，且 `checkDockerAvailability` 缓存是**一次性闩锁**（无 TTL）→ 连 UI「重新检测」按钮也只会读到旧结论",
+          "solution": "① `createSandbox` 前 `tryRecoverDocker()`（本地模式下重探，可用即切回容器模式；**必须 `resetDockerCache()`**；30s 节流）② `/api/sandbox/status` 每次实探（让「重新检测」真正生效）③ `resetDockerCache` 从 core 根入口导出；验证: core 1093/1093（+2 用例）· 全量 **1784/1784** · 0 诊断 · core dist 已重建；说明: 后端需重启才生效；重启后 Docker 后来才起也会在下次创建沙箱时自动切回",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F26:前端] 点击「立即触发」黑屏 —— 缺 import 引发 ReferenceError（",
+          "problem": ": 选择器 JSX 里用了 `<RefreshCw />`，但 `Automation.tsx` 的 lucide 导入列表漏了它。**ESM 下缺失标识符是运行时错误**：esbuild/vite 构建不拦、vitest 不做类型检查、IDE 诊断这次也漏报",
+          "solution": "补导入；并用 `tsc --noEmit` 真查一遍 → 又抓出 3 个类型问题并一并修掉： ① `TaskTemplatePrefill` 导入来源写错（在 `CreateTaskModal.tsx`，却从 `./automation/data` 导入） ② 功能卡片 tooltip 仍在比较已废弃的 `'tasklist'` 动作 ③ `TaskList` 的 `progressLogs` props 类型写成 `AutomationProgressEvent[]`，与 store 实际存的 `AutomationProgressLog[]` 不一致；验证: 前端源码 `tsc` **0 错误**（残留 3 处历史遗留错误都在 `__tests__/`）· 前端 149/149 · 全量 **1794/1794**；教训: **改完前端必须跑 `npx tsc --noEmit`** —— 缺 import 这类错误只有它能发现；建议把类型检查加进 CI/verify 脚本（待办）",
           "status": "resolved"
         }
       ]
@@ -3270,6 +3655,13 @@
           "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
           "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "problem": "[F25:自动化] 立即触发无反馈 + 状态文案误导 + 人在环路 HITL（13:05）",
+          "solution": "文案改「已启用」，真正执行中由带旋转图标的「执行中」徽标表示；③HITL（新能力）: 引擎无关方案 —— `ToolRegistry.register()` **按名覆盖**，服务端注册「可交互版 ask_user」即对两个引擎生效（无需改 Agent 内核）。新增 `server/src/hitl.ts`（`QuestionBroker` +；验证: server 278/278（+6 HITL 用例）· 前端 149/149 · 全量 **1794/1794** · 0 诊断；门禁亮点: 新增 2 条路由被**路由快照测试**拦下 → 基线 93 → 95（diff 复核仅新增这 2 条），说明重构安全网有效；补充（13:15）: 任务卡操作按钮重做 —— 旧版「立即执行」与「启用」**都是三角形**（▶）语义无法区分（用户实报易误解）；现改为**图标 + 文字**：`▶ 执行`（立即执行一次）/ `⏻ 停用`·`⏻ 启用`（PowerOff/Power 电源语义 = 调度开关）/ `■",
+          "status": "resolved"
         }
       ]
     },
@@ -3541,6 +3933,62 @@
           "title": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
           "problem": "[P1-1:重构] 服务端入口拆分第二批：3401 → 3074 行（累计 -753）",
           "solution": "搬迁 IM 适配器(7) / Docker 沙箱(6) / 语义分析(5) / 文件浏览(1) 四组路由到 `routes/`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:服务端拆分] 第六批 bootstrap + 偶发超时根因修复（19:15）",
+          "problem": ": ① index.ts 785 行仍超 500 目标；② semantic/map 假失败反复出现，需系统性根因",
+          "solution": "新增 `bootstrap.ts` 承接五块初始化（模型目录/createWsHub/createAutomationSystem/createIMManagerFor/applySecurityMiddleware），index.ts 785 → **389 行（-89.8%）达成 ≤500 目标**；TDZ 防范 = wsHub 先于自动化系统创建。偶发超时根因 = 路由绕过 60s 缓存每次；验证: server 265/265（快照一致）· verify:server-routes 6/6 · **全量回归 1729/1729** · tsup · 0 诊断 · 死导入核查 PASS（顺带清 9 个）；文档: `docs/66` §5.5、`docs/修复汇总.md`、`MEMORY.md`；补记: bootstrap.ts 初版 561 行超标，自检后按职责二次拆出 `middleware/securityStack.ts` （114 行），bootstrap.ts 447 行；复验（tsup + verify:server-routes + 全量 1729/1729）全绿",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-5:数据库] 迁移机制 PRAGMA user_version（19:40）",
+          "problem": ": sessions.db / langgraph-checkpoints.db 裸建表无版本戳，schema 变更无法安全升级（R-7 升级丢数据风险）",
+          "solution": "`core/src/db/DatabaseMigrator.ts`（事务化 + fail-fast + 断点续跑 + mock 环境自动跳过）+ sessionMigrations（v1 基线幂等 + v2 性能索引）+ checkpointerMigrations；SessionManager / Checkpointer 构造时接入；验证: 18 条专项用例 ✅（createRequire 绕 vitest 别名加载真实 better-sqlite3）· 全量回归 **1747/1747**（+18）· 真实存量库副本验证（0→2 版本推进、数据零丢失）；文档: `docs/72_P15数据库迁移机制.md`、`docs/修复汇总.md`、`MEMORY.md`；坑: ① 测试内 `SESSION_MIGRATIONS` 从错误模块导入 → 传 undefined → 4 个假失败（修正导入即过）；② Windows 动态 import 绝对路径必须 `pathToFileURL()`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22",
+          "problem": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22:35）",
+          "solution": "① core `buildSemanticMap` 增 `expandToRepoRoot` 选项（显式 path 不再放大到全仓）② 长驻 Worker 承接 map/search/references 扫描（eval + 动态 import core ESM）③ map SWR 缓存（过期先返回陈旧+后台重建）；验证: core+server 1339/1339 · 压测 4 场景全过 · 实测 map 200 返回 5207 符号真实数据；坑: ① require.resolve('@easyagent/core') 被 exports 全禁 → 基于模块位置探测 ② Worker eval:true 必须显式传 workerData ③ Windows kill 后 libuv 断言为无害噪音",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "problem": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "solution": "fs')` 改为顶部 import（ESM 隐患）② `install.ps1`/`install.sh` 共 4 处 `localhost:3000` → `3456` ③ 新增 2 条回归用例；验证: core **1070/1070**（+2）· **全量回归 1761/1761** · 0 诊断 · core dist 已重建；文档: `docs/52` 升至 v2.1（§3.3 标记已修复 + 新增 §3.4）、`docs/修复汇总.md`、`MEMORY.md`（新增「3000 已被 Forgejo 占用」陷阱条）；坑: 新用例最初用临时子目录做 workspace → spawn 的子进程持有 cwd，Windows 下 `rmSync` 报 EPERM；改用系统临时目录（不建子目录、无需清理）即过",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F26:前端] 点击「立即触发」黑屏 —— 缺 import 引发 ReferenceError（",
+          "problem": ": 选择器 JSX 里用了 `<RefreshCw />`，但 `Automation.tsx` 的 lucide 导入列表漏了它。**ESM 下缺失标识符是运行时错误**：esbuild/vite 构建不拦、vitest 不做类型检查、IDE 诊断这次也漏报",
+          "solution": "补导入；并用 `tsc --noEmit` 真查一遍 → 又抓出 3 个类型问题并一并修掉： ① `TaskTemplatePrefill` 导入来源写错（在 `CreateTaskModal.tsx`，却从 `./automation/data` 导入） ② 功能卡片 tooltip 仍在比较已废弃的 `'tasklist'` 动作 ③ `TaskList` 的 `progressLogs` props 类型写成 `AutomationProgressEvent[]`，与 store 实际存的 `AutomationProgressLog[]` 不一致；验证: 前端源码 `tsc` **0 错误**（残留 3 处历史遗留错误都在 `__tests__/`）· 前端 149/149 · 全量 **1794/1794**；教训: **改完前端必须跑 `npx tsc --noEmit`** —— 缺 import 这类错误只有它能发现；建议把类型检查加进 CI/verify 脚本（待办）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F29:性能] 语义扫描 11s → 0.14s（O(n²) 根治）（13:45）",
+          "problem": ": ① `extractSymbols` 对**每个符号匹配**都 `content.substring(0, matchPos)` + 全文数 `\\n` → **O(符号数 × 文件长度)** ② 签名提取同样复制尾串 ③ 压缩产物只按文件名（`*.min.js`）忽略，实为 `main.js`；`.obsidian/` 未忽略 ④ `maxFiles=300` 时 300 名额全被代码文件占满",
+          "solution": "ripgrep=极致单遍+并行遍历（我们瓶颈在正则外的 O(n²)，不在正则）；zoekt/tgrep/csearch=trigram 倒排索引；tree-sitter=增量解析（准确率天花板）；LSP=按需+增量缓存。**下一步最划算 = mtime/size 增量缓存**，其次 worker_threads 并行，最后才是 tree-sitter；教训: 性能问题先**剖析**再动手 —— 本次 96% 耗时集中在一个文件，若盲目\"优化正则\"会完全走错方向",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "problem": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "solution": "禁止静默截断 + 缓存必须接 force 路径）；注意: **CHANGELOG 与版本号未动** —— 属发版动作（需 8 个 `package.json` + `version.json` + `docs/pipeline/project-progress-data.json` 联动，流程见 `docs/64`）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F31:性能] 语义扫描第四轮：Buffer 直读 + 并发读盘（剖析驱动）（14:10）",
+          "problem": "[F31:性能] 语义扫描第四轮：Buffer 直读 + 并发读盘（剖析驱动）（14:10）",
+          "solution": "瓶颈是 I/O 不是 CPU」陷阱条）",
           "status": "resolved"
         }
       ]
@@ -3862,6 +4310,20 @@
           "problem": ": ① 厂商发新模型能否自动升级 ② 连不上 GitHub 怎么办",
           "solution": "详见原文",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F21:沙箱] Docker 自愈重检 + /status 实探（12:25）",
+          "problem": ": 用户启动 Docker 后界面仍显示「本地进程模式」；根因 = 模式在 `init()` 一次性判定，且 `checkDockerAvailability` 缓存是**一次性闩锁**（无 TTL）→ 连 UI「重新检测」按钮也只会读到旧结论",
+          "solution": "① `createSandbox` 前 `tryRecoverDocker()`（本地模式下重探，可用即切回容器模式；**必须 `resetDockerCache()`**；30s 节流）② `/api/sandbox/status` 每次实探（让「重新检测」真正生效）③ `resetDockerCache` 从 core 根入口导出；验证: core 1093/1093（+2 用例）· 全量 **1784/1784** · 0 诊断 · core dist 已重建；说明: 后端需重启才生效；重启后 Docker 后来才起也会在下次创建沙箱时自动切回",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "problem": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "solution": "① 前端新增 `normalizeAutomationStep()`（`step ?? type` + 步骤类型白名单，两种形态兼容），`Automation.tsx` 与 store 均改用 ② `TaskList` 增加**当前步骤**高亮、**已运行 Ns**（每秒 tick）、出错提示（检查模型/API Key）、`ask_user` 需人工介入提示、步骤流水；验证: 前端 149/149（+4 用例）· 全量 **1788/1788** · 0 诊断 · WS 探针确证前后端形态一致；说明: 前端改动 vite 热更新即可见；后端无需改（协议未动）",
+          "status": "resolved"
         }
       ]
     },
@@ -4106,6 +4568,41 @@
           "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
           "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:服务端拆分] 第六批 bootstrap + 偶发超时根因修复（19:15）",
+          "problem": ": ① index.ts 785 行仍超 500 目标；② semantic/map 假失败反复出现，需系统性根因",
+          "solution": "新增 `bootstrap.ts` 承接五块初始化（模型目录/createWsHub/createAutomationSystem/createIMManagerFor/applySecurityMiddleware），index.ts 785 → **389 行（-89.8%）达成 ≤500 目标**；TDZ 防范 = wsHub 先于自动化系统创建。偶发超时根因 = 路由绕过 60s 缓存每次；验证: server 265/265（快照一致）· verify:server-routes 6/6 · **全量回归 1729/1729** · tsup · 0 诊断 · 死导入核查 PASS（顺带清 9 个）；文档: `docs/66` §5.5、`docs/修复汇总.md`、`MEMORY.md`；补记: bootstrap.ts 初版 561 行超标，自检后按职责二次拆出 `middleware/securityStack.ts` （114 行），bootstrap.ts 447 行；复验（tsup + verify:server-routes + 全量 1729/1729）全绿",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22",
+          "problem": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22:35）",
+          "solution": "① core `buildSemanticMap` 增 `expandToRepoRoot` 选项（显式 path 不再放大到全仓）② 长驻 Worker 承接 map/search/references 扫描（eval + 动态 import core ESM）③ map SWR 缓存（过期先返回陈旧+后台重建）；验证: core+server 1339/1339 · 压测 4 场景全过 · 实测 map 200 返回 5207 符号真实数据；坑: ① require.resolve('@easyagent/core') 被 exports 全禁 → 基于模块位置探测 ② Worker eval:true 必须显式传 workerData ③ Windows kill 后 libuv 断言为无害噪音",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F21:沙箱] Docker 自愈重检 + /status 实探（12:25）",
+          "problem": ": 用户启动 Docker 后界面仍显示「本地进程模式」；根因 = 模式在 `init()` 一次性判定，且 `checkDockerAvailability` 缓存是**一次性闩锁**（无 TTL）→ 连 UI「重新检测」按钮也只会读到旧结论",
+          "solution": "① `createSandbox` 前 `tryRecoverDocker()`（本地模式下重探，可用即切回容器模式；**必须 `resetDockerCache()`**；30s 节流）② `/api/sandbox/status` 每次实探（让「重新检测」真正生效）③ `resetDockerCache` 从 core 根入口导出；验证: core 1093/1093（+2 用例）· 全量 **1784/1784** · 0 诊断 · core dist 已重建；说明: 后端需重启才生效；重启后 Docker 后来才起也会在下次创建沙箱时自动切回",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F29:性能] 语义扫描 11s → 0.14s（O(n²) 根治）（13:45）",
+          "problem": ": ① `extractSymbols` 对**每个符号匹配**都 `content.substring(0, matchPos)` + 全文数 `\\n` → **O(符号数 × 文件长度)** ② 签名提取同样复制尾串 ③ 压缩产物只按文件名（`*.min.js`）忽略，实为 `main.js`；`.obsidian/` 未忽略 ④ `maxFiles=300` 时 300 名额全被代码文件占满",
+          "solution": "ripgrep=极致单遍+并行遍历（我们瓶颈在正则外的 O(n²)，不在正则）；zoekt/tgrep/csearch=trigram 倒排索引；tree-sitter=增量解析（准确率天花板）；LSP=按需+增量缓存。**下一步最划算 = mtime/size 增量缓存**，其次 worker_threads 并行，最后才是 tree-sitter；教训: 性能问题先**剖析**再动手 —— 本次 96% 耗时集中在一个文件，若盲目\"优化正则\"会完全走错方向",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "problem": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "solution": "禁止静默截断 + 缓存必须接 force 路径）；注意: **CHANGELOG 与版本号未动** —— 属发版动作（需 8 个 `package.json` + `version.json` + `docs/pipeline/project-progress-data.json` 联动，流程见 `docs/64`）",
+          "status": "resolved"
         }
       ]
     },
@@ -4244,6 +4741,13 @@
           "title": "Doc_project 功能修复 (19:52-20:05)",
           "problem": ": 用户反馈 6 项问题：打开目录无效、树形结构、图谱节点预览错误、搜索不支持内容、硬编码数据、设置无效。",
           "solution": "1. 使用 File System Access API 实现真实目录打开 (`src/services/fileLoader.ts`) 2. 目录树按资源管理器风格仅展示 `.md` 文件和包含 MD 的目录 3. 修复 WikiLink 相对路径解析 (`wikiLinkParser.ts`) 4. 搜索改为标题 + 内容全文搜索，结果卡片高亮 (`searchIndex.ts` + `SearchPanel.tsx`) 5. 移除自动加载示例数据，改为设置中手动加载 6. 新增 `SettingsModal.tsx` 设置面板 7. 图谱增加「全局 / 关联」双模式切换；验证: `npx tsc --noEmit` 通过，12 个单元测试通过，`npx vite build` 成功，开发服务器在 5184 运行。；文档更新: `Doc_project/README.md`、`docs/00_项目规划.md`、`docs/02_开发指南.md`",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "problem": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "solution": "`pages/automation/` —— data(80)/CreateTaskModal(253，模板预填经 template prop)/HistoryPanel(101)/TaskList(184) + 主组件 240 行（WS 订阅保留）；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 模板预填模式 —— 主组件 `setTemplate(prefill|null)` + 弹窗以 props 初始化 state，条件挂载即全新表单",
           "status": "resolved"
         }
       ]
@@ -4755,6 +5259,13 @@
           "problem": "[发布:v0.6.26] 双通道发布完成（GitHub + Forgejo）",
           "solution": "完成 v0.6.26 发版并推送到两个远端 + 在 Forgejo 创建 Release",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "problem": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "solution": "禁止静默截断 + 缓存必须接 force 路径）；注意: **CHANGELOG 与版本号未动** —— 属发版动作（需 8 个 `package.json` + `version.json` + `docs/pipeline/project-progress-data.json` 联动，流程见 `docs/64`）",
+          "status": "resolved"
         }
       ]
     },
@@ -5132,6 +5643,27 @@
           "problem": ": `MEMORY.md` 达 712 行 / 77KB，超出会话注入上限被截断，且内含过期数据（\"1195 tests / 100% 通过\"）",
           "solution": "就地重写为约 360 行结构化精简版 —— 保留全部 52 条陷阱清单 + 核心规则 + bat 铁律 + 服务器部署事实；把管线 v2.1 细节改为指针式引用（`docs/pipeline/ARCHITECTURE.md`）；更正测试数字为实测值",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第一批：DocsGuide 952 → 258 行（21:25）",
+          "problem": ": 9 个前端页面 664~952 行超标（P2-1 清单）；选定 DocsGuide（最大）建立拆分范式",
+          "solution": "拆为 `pages/docs-guide/` 子模块 —— data.tsx(342)/FlowCard.tsx(170)/DetailPanel.tsx(162)/PipelineRow.tsx(65) + 主组件 258 行；**纯搬迁，主入口路径与默认导出不变 → 路由零改动**；CSS 动画 docsguide-* 唯一前缀保留在主组件；验证: frontend 147/147 · web 构建 EXIT=0 · desktop 215/215 · 0 诊断；范式要点: ① 页面私有组件放 `pages/<page>/` 子目录不放全局 components（防命名污染）② 预计算 Tailwind 类名必须保持静态 ③ 每批独立验证提交",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F28:债务清理] 全仓格式化 + 语义扫描噪音修复 + 文档数字同步（13:35）",
+          "problem": "[F28:债务清理] 全仓格式化 + 语义扫描噪音修复 + 文档数字同步（13:35）",
+          "solution": "ts 0 → typescript 177 + tsx 68 + js 55，符号 39603 → 61067**；+2 条守护用例；语义用例超时按最坏负载提到 60s；C 文档/KPI 数字过期: `unified-sync.mjs` 刷新（KPI 1785 / 实测 1796）→ `MEMORY.md` 与 `docs/03` 显式声明权威数字，旧值列「历史值」；验证: **`verify:all` 10/10 全通过** · `prettier --check` 0 不符 · 全量回归 **1796/1796**（6 包）；教训: ① 格式化/重写大量文件后立即跑全量回归，超时要先怀疑**扫描类逻辑被新文件影响**，别直接归因环境；② `maxFiles` 这类硬上限必须配合**优先级排序**，否则会被低价值文件吃光",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "problem": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "solution": "禁止静默截断 + 缓存必须接 force 路径）；注意: **CHANGELOG 与版本号未动** —— 属发版动作（需 8 个 `package.json` + `version.json` + `docs/pipeline/project-progress-data.json` 联动，流程见 `docs/64`）",
+          "status": "resolved"
         }
       ]
     },
@@ -5313,6 +5845,41 @@
           "problem": "双缓存问题彻底修复 (22:48)",
           "solution": "| 文件 | 改动 | |------|------| | `githubClient.ts` | 新增 `RELEASE_CACHE_TTL=5min`；`getLatestRelease`/`getManifest` 新增 `skipCache` 参数；`getCache` 支持自定义 TTL | | `PluginMarketService.ts` | `listMarket(forceRefresh=true)` 先调 `client.clearCache()` 再 `{skipCache:true}` 传到 `searchPluginRepos`/`getLatestRelease`/` | `PluginMarketService.ts` | `executeInstall` 的 `getLatestRelease` 传 `skipCache=true`（安装时必须拿最新版） | | `index.ts` | 新增 `POST /api/plugins/market/refresh` 端点 |",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-1:服务端拆分] 第六批 bootstrap + 偶发超时根因修复（19:15）",
+          "problem": ": ① index.ts 785 行仍超 500 目标；② semantic/map 假失败反复出现，需系统性根因",
+          "solution": "新增 `bootstrap.ts` 承接五块初始化（模型目录/createWsHub/createAutomationSystem/createIMManagerFor/applySecurityMiddleware），index.ts 785 → **389 行（-89.8%）达成 ≤500 目标**；TDZ 防范 = wsHub 先于自动化系统创建。偶发超时根因 = 路由绕过 60s 缓存每次；验证: server 265/265（快照一致）· verify:server-routes 6/6 · **全量回归 1729/1729** · tsup · 0 诊断 · 死导入核查 PASS（顺带清 9 个）；文档: `docs/66` §5.5、`docs/修复汇总.md`、`MEMORY.md`；补记: bootstrap.ts 初版 561 行超标，自检后按职责二次拆出 `middleware/securityStack.ts` （114 行），bootstrap.ts 447 行；复验（tsup + verify:server-routes + 全量 1729/1729）全绿",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22",
+          "problem": "[F3:工具] semantic/map 阻塞修复落地：SWR + 路径修正 + worker（22:35）",
+          "solution": "① core `buildSemanticMap` 增 `expandToRepoRoot` 选项（显式 path 不再放大到全仓）② 长驻 Worker 承接 map/search/references 扫描（eval + 动态 import core ESM）③ map SWR 缓存（过期先返回陈旧+后台重建）；验证: core+server 1339/1339 · 压测 4 场景全过 · 实测 map 200 返回 5207 符号真实数据；坑: ① require.resolve('@easyagent/core') 被 exports 全禁 → 基于模块位置探测 ② Worker eval:true 必须显式传 workerData ③ Windows kill 后 libuv 断言为无害噪音",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F21:沙箱] Docker 自愈重检 + /status 实探（12:25）",
+          "problem": ": 用户启动 Docker 后界面仍显示「本地进程模式」；根因 = 模式在 `init()` 一次性判定，且 `checkDockerAvailability` 缓存是**一次性闩锁**（无 TTL）→ 连 UI「重新检测」按钮也只会读到旧结论",
+          "solution": "① `createSandbox` 前 `tryRecoverDocker()`（本地模式下重探，可用即切回容器模式；**必须 `resetDockerCache()`**；30s 节流）② `/api/sandbox/status` 每次实探（让「重新检测」真正生效）③ `resetDockerCache` 从 core 根入口导出；验证: core 1093/1093（+2 用例）· 全量 **1784/1784** · 0 诊断 · core dist 已重建；说明: 后端需重启才生效；重启后 Docker 后来才起也会在下次创建沙箱时自动切回",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F29:性能] 语义扫描 11s → 0.14s（O(n²) 根治）（13:45）",
+          "problem": ": ① `extractSymbols` 对**每个符号匹配**都 `content.substring(0, matchPos)` + 全文数 `\\n` → **O(符号数 × 文件长度)** ② 签名提取同样复制尾串 ③ 压缩产物只按文件名（`*.min.js`）忽略，实为 `main.js`；`.obsidian/` 未忽略 ④ `maxFiles=300` 时 300 名额全被代码文件占满",
+          "solution": "ripgrep=极致单遍+并行遍历（我们瓶颈在正则外的 O(n²)，不在正则）；zoekt/tgrep/csearch=trigram 倒排索引；tree-sitter=增量解析（准确率天花板）；LSP=按需+增量缓存。**下一步最划算 = mtime/size 增量缓存**，其次 worker_threads 并行，最后才是 tree-sitter；教训: 性能问题先**剖析**再动手 —— 本次 96% 耗时集中在一个文件，若盲目\"优化正则\"会完全走错方向",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "problem": "[F30:语义] 三项补强：mtime 增量缓存 + 截断可见化 + 界面扫描参数（13:55）",
+          "solution": "禁止静默截断 + 缓存必须接 force 路径）；注意: **CHANGELOG 与版本号未动** —— 属发版动作（需 8 个 `package.json` + `version.json` + `docs/pipeline/project-progress-data.json` 联动，流程见 `docs/64`）",
+          "status": "resolved"
         }
       ]
     },
@@ -5473,6 +6040,13 @@
           "problem": ": 用户发送普通问候\"再次你好\"，LangGraph 引擎却反复调用 benchmark_report → benchmark_run → benchmark_load 工具，最终 `Recursion limit of 25 reached` 报错；前端显示红色错误气泡。 [根因] : 四重缺陷叠加：1) 系统提示词未划定工具使用边界；2) AgentFactory 把 69 个工具全量下发（含 benchmark_* 评测工具）；3) observeNode 工具失败后无条件继续循环；4) LangGraph 默认 `recursionLimit=25` 按图步数计算，而 `maxTurns=25` 按轮次计算，导致 maxTurns 还未生效就被 LangGraph 截断",
           "solution": "`packages/langgraph/src/Agent.ts`: 默认系统提示词增加\"普通聊天不调用工具\"等行为准则；`streamEvents` 运行时传入 `recursionLimit = maxTurns * 3 + 10`。；`packages/langgraph/src/bridge/AgentFactory.ts`: `getToolDefinitions` 默认过滤 `benchmark_*` 工具，避免普通聊天暴露评测工具。；`packages/langgraph/src/state/AgentState.ts`: 新增 `consecutiveFailures` 字段。；`packages/langgraph/src/nodes/actNode.ts`: 统计每轮工具成功/失败数，更新 `consecutiveFailures`（成功则重置为 0）。；`packages/langgraph/src/nodes/observeNode.ts`: 当 `consecutiveFailures >= 3` 时停止循环并返回友好提示。；`packages/core/src/tools/BenchmarkTools.ts`: `benchmark_run` / `benchmark_report` 失败结果补充 `error` 字段，避免 actNode 显示\"未知错误\"。；构建: `pnpm --filter core build && pnpm --filter langgraph build && pnpm --filter server build` 全部成功。；范围: [🔀 两者影响]（LangGraph 引擎同时被 web/desktop/server 使用）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F14:语义地图] 统计全 0 —— 默认扫描目录错用 process.cwd()（10:25）",
+          "problem": ": 用户报障 —— 语义地图页四张统计卡全 0（文件/行/符号/语言），语言分布空白，**无任何报错** [根因] : 接口本身正常（实测默认目录 300 文件 / 41 万行 / 39603 符号 / 7 语言）。真因是「扫了哪个目录」：前端工作目录默认空 + 无全局工作区 → 不传 `path`；服务端未传 path 时退回 **`process.cwd()`**（Electron 下可能是安装目录/System32）→ 扫到 0 文件但返回 `success:true` + 全 0 → 前端渲染四张 0 ",
+          "solution": "'packages'` 依赖 cwd 布局，脆弱）；验证: server **272/272** · frontend **145/145** · 0 诊断 · tsup 构建成功；教训: **「静默 0」比报错更危险**；「默认目录」这类隐式回退（cwd）在多宿主（Web/CLI/Electron）下几乎总是错的，必须用显式注入的基准路径",
+          "status": "resolved"
         }
       ]
     },
@@ -5591,6 +6165,34 @@
           "problem": ": 审核报告只记了 1 个点（D9 属性逃逸），勘察后发现实际是 **3 处渲染点 + 2 类安全缺口 + 1 处样式静默失效**",
           "solution": "新增统一模块 `packages/frontend/src/utils/markdown.ts`（markdown-it + highlight.js + DOMPurify）",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第一批：DocsGuide 952 → 258 行（21:25）",
+          "problem": ": 9 个前端页面 664~952 行超标（P2-1 清单）；选定 DocsGuide（最大）建立拆分范式",
+          "solution": "拆为 `pages/docs-guide/` 子模块 —— data.tsx(342)/FlowCard.tsx(170)/DetailPanel.tsx(162)/PipelineRow.tsx(65) + 主组件 258 行；**纯搬迁，主入口路径与默认导出不变 → 路由零改动**；CSS 动画 docsguide-* 唯一前缀保留在主组件；验证: frontend 147/147 · web 构建 EXIT=0 · desktop 215/215 · 0 诊断；范式要点: ① 页面私有组件放 `pages/<page>/` 子目录不放全局 components（防命名污染）② 预计算 Tailwind 类名必须保持静态 ③ 每批独立验证提交",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第二批：KnowledgeBase 840 → 294 行（21:3",
+          "problem": ": 单个 ~765 行巨型组件（8 个 form state + 多个 handler + 三段弹窗 JSX 全堆在主组件）",
+          "solution": "拆为 `pages/knowledge-base/` —— helpers(45)/AddDocumentModal(304)/DocumentViewModal(98)/DocList(168) + 主组件 294 行；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 巨型单组件页面优先抽「自带状态的弹窗」—— 弹窗条件挂载（`{show && <Modal/>}`）天然替代 resetForm，胶水逻辑消失",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "problem": "[P2-1:前端] 巨型页面拆分第三批：Automation 815 → 240 行（21:40）",
+          "solution": "`pages/automation/` —— data(80)/CreateTaskModal(253，模板预填经 template prop)/HistoryPanel(101)/TaskList(184) + 主组件 240 行（WS 订阅保留）；验证: frontend+web+desktop 362/362 · web 构建 EXIT=0 · 0 诊断；范式补充: 模板预填模式 —— 主组件 `setTemplate(prefill|null)` + 弹窗以 props 初始化 state，条件挂载即全新表单",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F14:语义地图] 统计全 0 —— 默认扫描目录错用 process.cwd()（10:25）",
+          "problem": ": 用户报障 —— 语义地图页四张统计卡全 0（文件/行/符号/语言），语言分布空白，**无任何报错** [根因] : 接口本身正常（实测默认目录 300 文件 / 41 万行 / 39603 符号 / 7 语言）。真因是「扫了哪个目录」：前端工作目录默认空 + 无全局工作区 → 不传 `path`；服务端未传 path 时退回 **`process.cwd()`**（Electron 下可能是安装目录/System32）→ 扫到 0 文件但返回 `success:true` + 全 0 → 前端渲染四张 0 ",
+          "solution": "'packages'` 依赖 cwd 布局，脆弱）；验证: server **272/272** · frontend **145/145** · 0 诊断 · tsup 构建成功；教训: **「静默 0」比报错更危险**；「默认目录」这类隐式回退（cwd）在多宿主（Web/CLI/Electron）下几乎总是错的，必须用显式注入的基准路径",
+          "status": "resolved"
         }
       ]
     },
@@ -5617,6 +6219,20 @@
           "title": "[F10] Desktop \"无法连接到后端服务\" — CORS origin 拒绝 file://",
           "problem": "[现象] : 后端 API 正常（端口 3456 监听、API 返回 JSON、WebSocket 升级成功），但前端持续显示\"无法连接到后端服务\" [根因] : Electron 通过 `loadFile()` 加载前端 → 渲染进程 origin 为 `file://` → `fetch()` 请求发送 `Origin: null` → 后端 CORS 配置使用三元运算符 `corsOrigin ? corsOrigin : callback`，当 `process.env.CORS_ORIGIN` 被设置为 `http://127.0.0.1:34",
           "solution": "始终走回调，`CORS_ORIGIN` 用于精确白名单匹配（生产环境），默认宽松（开发 + Desktop）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "problem": "[F24:自动化] 「执行中但看不到进度详情」根因修复 + 任务卡进度增强（12:55）",
+          "solution": "① 前端新增 `normalizeAutomationStep()`（`step ?? type` + 步骤类型白名单，两种形态兼容），`Automation.tsx` 与 store 均改用 ② `TaskList` 增加**当前步骤**高亮、**已运行 Ns**（每秒 tick）、出错提示（检查模型/API Key）、`ask_user` 需人工介入提示、步骤流水；验证: 前端 149/149（+4 用例）· 全量 **1788/1788** · 0 诊断 · WS 探针确证前后端形态一致；说明: 前端改动 vite 热更新即可见；后端无需改（协议未动）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F29:性能] 语义扫描 11s → 0.14s（O(n²) 根治）（13:45）",
+          "problem": ": ① `extractSymbols` 对**每个符号匹配**都 `content.substring(0, matchPos)` + 全文数 `\\n` → **O(符号数 × 文件长度)** ② 签名提取同样复制尾串 ③ 压缩产物只按文件名（`*.min.js`）忽略，实为 `main.js`；`.obsidian/` 未忽略 ④ `maxFiles=300` 时 300 名额全被代码文件占满",
+          "solution": "ripgrep=极致单遍+并行遍历（我们瓶颈在正则外的 O(n²)，不在正则）；zoekt/tgrep/csearch=trigram 倒排索引；tree-sitter=增量解析（准确率天花板）；LSP=按需+增量缓存。**下一步最划算 = mtime/size 增量缓存**，其次 worker_threads 并行，最后才是 tree-sitter；教训: 性能问题先**剖析**再动手 —— 本次 96% 耗时集中在一个文件，若盲目\"优化正则\"会完全走错方向",
           "status": "resolved"
         }
       ]
@@ -5798,6 +6414,20 @@
           "problem": "CI 修复第2轮 — 2个新根因定位 (23:10-23:20)",
           "solution": "CI 仍全部失败，同样3个job出错；根因3 — Frontend `vite build` 不应在 CI 执行: Frontend 是共享库，`index.html` 引用 `/src/main.tsx` 但该文件不存在（已重命名为 `mountApp.tsx`）；修复: `ci.yml` 两处 `cd ../frontend && npx vite build` → `cd ../frontend && npx tsc --noEmit`；根因4 — ESLint 在 pnpm 环境中不存在: ESLint 是传递依赖，`pnpm install --frozen-lockfile` 不会安装；`scripts/lint.bat` 的 `for /d` glob 在 CI 环境中匹配失败；修复: CI lint 步骤从 `scripts\\\\lint.bat` → `npx eslint . --max-warnings 700 --config packages/frontend/eslint.config.cjs`（npx 自动下载）；提交: `d6ea0f2`；CI #81 运行中，等待结果",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P1-6:服务端] 全局错误中间件 + CI 冒烟测试（20:20）",
+          "problem": ": 无全局错误处理（错误格式各路由自定、堆栈可能外泄）；CI 只验单测不验\"构建产物能否真实启动\"",
+          "solution": "`middleware/errorHandler.ts`（统一 `{success:false,error:{code,message}}` + asyncHandler + headersSent 防护，注册在所有路由之后）+ `scripts/smoke-test.mjs` + ci.yml `smoke-test` job（tests 全绿后构建 core+server → 真实启动 → h；验证: 6 条错误中间件用例 ✅ · 路由快照不受影响 · 全量回归 **1753/1753**（+6）· 本地冒烟 ✅；文档: `docs/73_P16全局错误中间件与CI冒烟.md`、`docs/修复汇总.md`、`MEMORY.md`；坑: 流式测试用 application/json 时 supertest 会对截断体报 Unexpected end of JSON —— 改 text/plain（实现行为本身正确，rawResponse 已是预期的半截内容）",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[B2b:CI] P1-7 性能基线与回归告警（21:00）",
+          "problem": ": 无性能基线，渐进劣化（冷启动变慢/工具 schema 膨胀）无人察觉",
+          "solution": "`scripts/perf-baseline.mjs`（`pnpm bench:baseline`/`bench:check`；冷启动 3 轮中位数 + health RTT + 工具 schema token 同 measure:context 口径）；判定 20% 告警/50% 失败（startup 宽容档 40/80）；登记 verify-all(key=perf) + ci.yml smo；验证: 基线快照 startupMs=714/rtt=1/schema=8774 · 检查 PASS · **负向测试 FAIL 正确（exit 1）**；坑: PowerShell Set-Content -Encoding UTF8 写 JSON 带 BOM → JSON.parse 报 Unexpected token '﻿'（再次印证：生成 JSON 必须用 Node writeFileSync）",
+          "status": "resolved"
         }
       ]
     },
@@ -5883,6 +6513,13 @@
           "title": "v0.6.0 Release 上传修复 + release-publish.bat v2.1 (22",
           "problem": ": release-publish.bat Method 2 使用内联 curl 上传，脆弱的 CMD JSON 解析 + `curl -s` 静默失败，导致 GitHub Release 上 0 个 assets",
           "solution": "用 `_release.mjs` (PowerShell Invoke-RestMethod) 替代内联 curl，已验证可靠上传 EXE + blockmap + latest.yml；v0.6.0 补传: `node _release.mjs 0.6.0` → 删除旧 assets → 重新上传 3 个文件全部成功 (合 105.4 MB)；release-publish.bat: v2.0 → v2.1，Method 2 从 85 行内联 curl 简化为调用 `_release.mjs`，auto 模式默认选 Method 2",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "problem": "[F15:端口] PreviewTool 3000 冲突修复 + 安装脚本文案（10:30）",
+          "solution": "fs')` 改为顶部 import（ESM 隐患）② `install.ps1`/`install.sh` 共 4 处 `localhost:3000` → `3456` ③ 新增 2 条回归用例；验证: core **1070/1070**（+2）· **全量回归 1761/1761** · 0 诊断 · core dist 已重建；文档: `docs/52` 升至 v2.1（§3.3 标记已修复 + 新增 §3.4）、`docs/修复汇总.md`、`MEMORY.md`（新增「3000 已被 Forgejo 占用」陷阱条）；坑: 新用例最初用临时子目录做 workspace → spawn 的子进程持有 cwd，Windows 下 `rmSync` 报 EPERM；改用系统临时目录（不建子目录、无需清理）即过",
           "status": "resolved"
         }
       ]
@@ -6107,6 +6744,20 @@
           "problem": "[P1-1:重构] 服务端入口拆分第三批：3074 → 2146 行（累计 -44%）",
           "solution": "搬迁 config/providers(13 条，含 ~450 行模型获取/合并辅助) + plugins/技能/工具(20 条) 到 `routes/`",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-18",
+          "title": "[P2-1:前端] 巨型页面拆分第一批：DocsGuide 952 → 258 行（21:25）",
+          "problem": ": 9 个前端页面 664~952 行超标（P2-1 清单）；选定 DocsGuide（最大）建立拆分范式",
+          "solution": "拆为 `pages/docs-guide/` 子模块 —— data.tsx(342)/FlowCard.tsx(170)/DetailPanel.tsx(162)/PipelineRow.tsx(65) + 主组件 258 行；**纯搬迁，主入口路径与默认导出不变 → 路由零改动**；CSS 动画 docsguide-* 唯一前缀保留在主组件；验证: frontend 147/147 · web 构建 EXIT=0 · desktop 215/215 · 0 诊断；范式要点: ① 页面私有组件放 `pages/<page>/` 子目录不放全局 components（防命名污染）② 预计算 Tailwind 类名必须保持静态 ③ 每批独立验证提交",
+          "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F26:前端] 点击「立即触发」黑屏 —— 缺 import 引发 ReferenceError（",
+          "problem": ": 选择器 JSX 里用了 `<RefreshCw />`，但 `Automation.tsx` 的 lucide 导入列表漏了它。**ESM 下缺失标识符是运行时错误**：esbuild/vite 构建不拦、vitest 不做类型检查、IDE 诊断这次也漏报",
+          "solution": "补导入；并用 `tsc --noEmit` 真查一遍 → 又抓出 3 个类型问题并一并修掉： ① `TaskTemplatePrefill` 导入来源写错（在 `CreateTaskModal.tsx`，却从 `./automation/data` 导入） ② 功能卡片 tooltip 仍在比较已废弃的 `'tasklist'` 动作 ③ `TaskList` 的 `progressLogs` props 类型写成 `AutomationProgressEvent[]`，与 store 实际存的 `AutomationProgressLog[]` 不一致；验证: 前端源码 `tsc` **0 错误**（残留 3 处历史遗留错误都在 `__tests__/`）· 前端 149/149 · 全量 **1794/1794**；教训: **改完前端必须跑 `npx tsc --noEmit`** —— 缺 import 这类错误只有它能发现；建议把类型检查加进 CI/verify 脚本（待办）",
+          "status": "resolved"
         }
       ]
     },
@@ -6116,8 +6767,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 849,
-  "_generatedAt": "2026-09-18T07:12:54.513Z",
+  "_totalIssues": 942,
+  "_generatedAt": "2026-09-19T06:14:03.093Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6138,16 +6789,17 @@
     "2026-07-11.md",
     "2026-09-17.md",
     "2026-09-18.md",
+    "2026-09-19.md",
     "MEMORY.md",
     "README.md"
   ],
   "_cacheStats": {
-    "totalFiles": 21,
+    "totalFiles": 22,
     "cacheHits": 0,
-    "reparsed": 21
+    "reparsed": 22
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-18T07:12:54.530Z"
+    "exportedAt": "2026-09-19T06:14:03.107Z"
   }
 }
