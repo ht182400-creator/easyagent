@@ -51,6 +51,8 @@ scripts/.release_token
 
 # 一次性评审产物（13MB JSON 报告；如需留存请放 docs/ 并压缩后再入库）
 /专家团审核报告与架构改进方案_*.json
+# 一次性缺陷/用例 JSON 报告（12MB 级，根目录 dump；如需留存请放 docs/ 并压缩后再入库）
+/修复*.json
 
 # vite 构建输出日志（误提交于 v0.6.43 前，已 git rm --cached 移除跟踪）
 build_out.txt
