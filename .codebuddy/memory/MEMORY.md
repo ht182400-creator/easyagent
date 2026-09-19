@@ -271,9 +271,15 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 **规避**：用 `spawnSync` + `stdio: ['ignore','pipe','pipe']`，把 `stdout + stderr` 合并后再判断。
 **适用**：任何"包装外部命令并依据输出做判断"的脚本（`push-forgejo.mjs`、`run-logged.mjs`）——已修 `013e996`。
 
-### 版本号现状（2026-09-18）
+### 版本号现状（2026-09-19）
 
-- `version.json` = **0.6.42**，tag = **v0.6.42**（本次发布：修复「关于」面板 vundefined —— /api/version 因 ESM 裸 `__dirname` 500）。**双通道均已同步**（origin + forgejo main=tag 一致，2026-09-19 核对）
+- `version.json` = **0.6.43**，tag = **v0.6.43**（本版主题：**语义扫描性能治理 11.0s → 0.26s** + 截断可见化 + 沙箱不经 shell + 端口治理）
+  - ✅ **GitHub（origin）已推送**：`main` `32cffa6..308f50c`、新标签 `v0.6.43` → 触发 `release.yml` 自动构建并创建 Release（含 EXE）
+  - ⏳ **Forgejo 待推**：本会话无凭据（脚本按纪律拒绝），需在**本地终端**执行：
+    `$env:FORGEJO_USER='ht182400'; $env:FORGEJO_TOKEN='<token>'` → `pnpm push:forgejo --tag v0.6.43`；
+    Release 还需按 `docs/64` §3.3 调 API 创建（该实例无工作流，推标签不会自动建 Release）
+  - 提交序列：`499fd2f` perf(语义四轮) → `b99feb0` docs(格式化收尾+数字 1798/1809) → `8123f4e` release → `308f50c` chore(进度数据)
+- 历史：v0.6.42 = 修复「关于」面板 vundefined（`/api/version` 因 ESM 裸 `__dirname` 500），双通道已同步
 - 🔴 **凭据纪律**：`FORGEJO_USER`/`FORGEJO_TOKEN` 只在**本地终端**设环境变量；**禁止贴进对话/文档/仓库**（2026-09-19 曾发生用户贴明文事件，已提醒轮换）
 - 发版后 post-commit 钩子会再次改写 `docs/pipeline/*.json` → **工作区长期残留这 5~6 个文件的差异属正常生成物行为**，用 `git commit --no-verify` 可收敛一次，但钩子会再跑一轮（不必继续追）
 
