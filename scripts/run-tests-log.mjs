@@ -33,7 +33,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -211,13 +211,25 @@ EasyAgent 统一回归测试运行器
 
 /**
  * 读取某包的 vitest JSON 报告并归一化为统一结构
+ *
+ * ⚠️ **新鲜度校验**：报告文件可能是**上一轮**留下的（例如本轮 vitest 进程崩溃、没来得及写报告）。
+ * 不校验就会把崩溃显示成"上一轮的通过"—— 本运行器曾因此在 core 进程 `0xC0000005` 崩溃时
+ * 输出"1167/1167 通过"（属"假通过"）。故调用方传入本轮开始时间，**早于它的报告一律不采信**。
+ *
  * @param {string} pkgName 包名（对应 docs/pipeline/_vitest-<pkg>.json）
+ * @param {number} freshSince 本轮开始时间戳（ms）
  * @returns {{tests:number,passed:number,failed:number,skipped:number,failures:Array}|null}
  */
-function readJsonReport(pkgName) {
+function readJsonReport(pkgName, freshSince) {
   const file = join(PIPELINE_DIR, `_vitest-${pkgName}.json`);
   try {
     if (!existsSync(file)) return null;
+    if (freshSince && statSync(file).mtimeMs < freshSince) {
+      consoleLog.warn(
+        `[${pkgName}] JSON 报告早于本轮运行（上一轮遗留，本轮可能崩溃），已忽略：${file}`,
+      );
+      return null;
+    }
     const j = JSON.parse(readFileSync(file, 'utf-8'));
     const failures = [];
     for (const tr of j.testResults || []) {
@@ -335,8 +347,16 @@ function runPackage(pkg, log, runDir) {
     log.warn(`[${pkg.name}] 原始输出落盘失败: ${err.message}`);
   }
 
-  // 优先用 JSON 报告（结构化、可提取失败用例名）
-  let stats = readJsonReport(pkg.name);
+  // 进程异常退出（崩溃/被中断）时明确报出来：这类情况下"通过数"极可能是不可信的
+  if (result.status !== 0 && result.status !== null) {
+    log.error(
+      `[${pkg.name}] 进程异常退出（exitCode=${result.status}）——` +
+        ` 本轮数字不可信，且**不会**采用上一轮遗留的 JSON 报告`,
+    );
+  }
+
+  // 优先用 JSON 报告（结构化、可提取失败用例名）；并要求报告是本轮新生成的
+  let stats = readJsonReport(pkg.name, startedAt);
   let degraded = false;
   if (!stats) {
     const fallback = parseStatsFromText(combined);
