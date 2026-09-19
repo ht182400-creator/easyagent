@@ -5,6 +5,26 @@ All notable changes to EasyAgent will be documented in this file.
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/),
 版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
+## [0.6.42] - 2026-09-19
+
+> **本版主题：修复「关于」面板版本号不显示（vundefined）** —— `docs/修复汇总.md` 2026-09-19 条目
+
+### Fixed
+
+- **`/api/version` 500 → 前端显示 `vundefined`**：P1-1 拆分时 `routes/system.ts` 误用裸
+  `__dirname`（ESM 环境不存在）→ ReferenceError → 全局错误中间件返回 500 JSON，前端把
+  `{success,error}` 当版本对象渲染。改用注入的 `serverDir`（与 files/staticFiles 模块同一约定）
+- 冒烟测试新增 `/api/version` 校验（200 + version 非空），防同类回归
+- 「关于」面板文案更新：技术栈补 SQLite(better-sqlite3)/Electron；厂商列表补齐 11 家
+  （新增 Anthropic Claude、OpenAI 兼容）
+
+### 验证
+
+`/api/version` 200（v0.6.42 + codename + releaseDate + changelog）· 冒烟 4 项全过 ·
+server + frontend 416/416
+
+---
+
 ## [0.6.41] - 2026-09-18
 
 > **本版主题：P1 清单全部清零 + 性能治理** —— MCP 升级 2025-06-18 规范（P1-3）、
