@@ -246,6 +246,13 @@ export {
   BenchmarkRunner,
   loadBuiltinDataset,
   dryRunBenchmark,
+  buildOfflineStubSolution,
+  SolutionRunner,
+  parseCaseNames,
+  summarizeVitestReport,
+  resolveVitestEntry,
+  createBenchmarkMockAdapter,
+  BenchmarkMockAdapter,
 } from './benchmark/index.js';
 export type {
   SWEBenchProblem,

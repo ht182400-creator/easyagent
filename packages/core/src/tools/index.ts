@@ -6,6 +6,37 @@ export { ToolRegistry } from './ToolRegistry.js';
 export type { ITool } from './ToolRegistry.js';
 import type { ITool } from './ToolRegistry.js';
 
+/**
+ * 内置工具数组的**静态导入**（2026-09-19 修复）
+ *
+ * ⚠️ 为什么必须静态导入：
+ * `getAllBuiltinTools()` 原先用惰性 `require('./FileTools.js')` 取工具数组。
+ * 在 **dist 产物**里 esbuild 会把相对 require 内联掉，所以"看起来能用"；但在
+ * **vitest / 纯 ESM** 环境下 `require` 走真实 Node 解析 → 源码目录只有 `.ts`，
+ * 按字面找不到 `./FileTools.js` → 抛 `Cannot find module './FileTools.js'`。
+ * 后果：**任何在测试中触发 `getAllBuiltinTools()` 的代码路径都会失败**
+ * （评测的 Mock 适配器 / agentic 用例就是这样暴露的）。
+ * 改为静态导入后两种环境行为一致；这些模块本来就在本文件里 `export ... from` 再导出，
+ * 因此不新增任何依赖。
+ */
+import { FileTools } from './FileTools.js';
+import { FileExtraTools } from './FileExtraTools.js';
+import { SearchTools } from './SearchTools.js';
+import { ExecTools } from './ExecTools.js';
+import { CodeTools } from './CodeTools.js';
+import { QualityTools } from './QualityTools.js';
+import { ProjectTools } from './ProjectTools.js';
+import { MemoryTools } from './MemoryTools.js';
+import { PreviewTools } from './PreviewTools.js';
+import { MediaTools } from './MediaTools.js';
+import { DatabaseTools } from './DatabaseTools.js';
+import { KnowledgeTools } from './KnowledgeTools.js';
+import { SubAgentTools } from './SubAgentTools.js';
+import { SandboxTools } from './SandboxTools.js';
+import { GitAdvancedTools } from './GitAdvancedTools.js';
+import { SemanticTools } from './SemanticTools.js';
+import { BenchmarkTools } from './BenchmarkTools.js';
+
 // 文件操作工具 (5个)
 export {
   FileTools,
@@ -149,29 +180,29 @@ export {
  */
 export function getAllBuiltinTools() {
   return [
-    ...require('./FileTools.js').FileTools.map((t: ITool) => ({ ...t, group: 'file' })),
-    ...require('./FileExtraTools.js').FileExtraTools.map((t: ITool) => ({ ...t, group: 'file' })),
-    ...require('./SearchTools.js').SearchTools.map((t: ITool) => ({ ...t, group: 'search' })),
-    ...require('./ExecTools.js').ExecTools.map((t: ITool) => ({ ...t, group: 'exec' })),
-    ...require('./CodeTools.js').CodeTools.map((t: ITool) => ({ ...t, group: 'code' })),
-    ...require('./QualityTools.js').QualityTools.map((t: ITool) => ({ ...t, group: 'quality' })),
-    ...require('./ProjectTools.js').ProjectTools.map((t: ITool) => ({ ...t, group: 'project' })),
-    ...require('./MemoryTools.js').MemoryTools.map((t: ITool) => ({ ...t, group: 'memory' })),
-    ...require('./PreviewTools.js').PreviewTools.map((t: ITool) => ({ ...t, group: 'preview' })),
-    ...require('./MediaTools.js').MediaTools.map((t: ITool) => ({ ...t, group: 'media' })),
-    ...require('./DatabaseTools.js').DatabaseTools.map((t: ITool) => ({ ...t, group: 'database' })),
-    ...require('./KnowledgeTools.js').KnowledgeTools.map((t: ITool) => ({
+    ...FileTools.map((t: ITool) => ({ ...t, group: 'file' })),
+    ...FileExtraTools.map((t: ITool) => ({ ...t, group: 'file' })),
+    ...SearchTools.map((t: ITool) => ({ ...t, group: 'search' })),
+    ...ExecTools.map((t: ITool) => ({ ...t, group: 'exec' })),
+    ...CodeTools.map((t: ITool) => ({ ...t, group: 'code' })),
+    ...QualityTools.map((t: ITool) => ({ ...t, group: 'quality' })),
+    ...ProjectTools.map((t: ITool) => ({ ...t, group: 'project' })),
+    ...MemoryTools.map((t: ITool) => ({ ...t, group: 'memory' })),
+    ...PreviewTools.map((t: ITool) => ({ ...t, group: 'preview' })),
+    ...MediaTools.map((t: ITool) => ({ ...t, group: 'media' })),
+    ...DatabaseTools.map((t: ITool) => ({ ...t, group: 'database' })),
+    ...KnowledgeTools.map((t: ITool) => ({
       ...t,
       group: 'knowledge',
     })),
-    ...require('./SubAgentTools.js').SubAgentTools.map((t: ITool) => ({ ...t, group: 'subagent' })),
-    ...require('./SandboxTools.js').SandboxTools.map((t: ITool) => ({ ...t, group: 'exec' })),
-    ...require('./GitAdvancedTools.js').GitAdvancedTools.map((t: ITool) => ({
+    ...SubAgentTools.map((t: ITool) => ({ ...t, group: 'subagent' })),
+    ...SandboxTools.map((t: ITool) => ({ ...t, group: 'exec' })),
+    ...GitAdvancedTools.map((t: ITool) => ({
       ...t,
       group: 'exec',
     })),
-    ...require('./SemanticTools.js').SemanticTools.map((t: ITool) => ({ ...t, group: 'code' })),
-    ...require('./BenchmarkTools.js').BenchmarkTools.map((t: ITool) => ({
+    ...SemanticTools.map((t: ITool) => ({ ...t, group: 'code' })),
+    ...BenchmarkTools.map((t: ITool) => ({
       ...t,
       group: 'project',
     })),

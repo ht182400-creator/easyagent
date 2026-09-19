@@ -74,3 +74,6 @@ logs/runtime/
 packages/*/logs/
 # 构建/部署/启动等命令输出日志（logs/build-logs/），量级大，不入库
 logs/build-logs/
+# 评测产物（swebench_report_*.md + latest-summary.json；离线自测结果不代表模型能力，不入库。
+# 需要留档请把摘要摘录进 docs/77 或 README 的评测表）
+benchmark-results/

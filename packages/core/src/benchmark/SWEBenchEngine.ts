@@ -136,6 +136,16 @@ export class SWEBenchEngine {
 
   /**
    * 从单个文件加载
+   *
+   * ── 支持的格式（2026-09-19 修复）──
+   * 旧实现**只按行** `JSON.parse`，而本仓内置数据集 `benchmark-tasks.json` 是
+   * **pretty-printed 的 JSON 数组** → 每一行都解析失败、被 `catch` 静默跳过 →
+   * 10 道题 **全丢**、`problems.length === 0`，真评测第一步就报「未找到评测数据」。
+   * （更隐蔽的是：CLI 的 --dry-run 用自己的宽松解析器读同一个文件，显示「10 题」，
+   *   于是"环境检查通过"与"真跑 0 题"长期并存 —— 典型的假通过。）
+   *
+   * 现在：先整体解析（JSON 数组 / 单个对象），失败再回退 JSONL 逐行解析，
+   * 并显式记录被跳过的行号（禁止静默丢数据）。
    */
   private loadFromFile(filePath: string): void {
     if (!fs.existsSync(filePath)) {
@@ -144,40 +154,116 @@ export class SWEBenchEngine {
     }
 
     const content = fs.readFileSync(filePath, 'utf-8');
-    const lines = content.split('\n').filter((l) => l.trim());
+    const records: Record<string, unknown>[] = [];
 
-    for (const line of lines) {
-      try {
-        const data = JSON.parse(line);
-        this.problems.push({
-          id: data.instance_id || data.id || `swe_${this.problems.length}`,
-          repo: data.repo || '',
-          instance_id: data.instance_id || '',
-          base_commit: data.base_commit || '',
-          issue_title: data.issue_title || data.title || '',
-          issue_body: data.issue_body || data.body || '',
-          hint_text: data.hint_text,
-          patch: data.patch,
-          test_patch: data.test_patch,
-          fail_to_pass: data.FAIL_TO_PASS?.split('\n').filter(Boolean) || [],
-          pass_to_pass: data.PASS_TO_PASS?.split('\n').filter(Boolean) || [],
-          created_at: data.created_at || '',
-          version: data.version || '1.0',
-          difficulty: this.inferDifficulty(data),
-        });
-      } catch (err) {
-        // 跳过无效行
+    // ① 整体解析：JSON 数组，或单个 JSON 对象
+    let parsedWhole: unknown;
+    let wholeParseFailed = false;
+    try {
+      parsedWhole = JSON.parse(content);
+    } catch {
+      wholeParseFailed = true;
+    }
+
+    if (!wholeParseFailed) {
+      if (Array.isArray(parsedWhole)) {
+        records.push(...(parsedWhole as Record<string, unknown>[]));
+      } else if (parsedWhole && typeof parsedWhole === 'object') {
+        records.push(parsedWhole as Record<string, unknown>);
       }
+    } else {
+      // ② 回退：JSONL（每行一个 JSON 对象）
+      const skippedLines: number[] = [];
+      content.split('\n').forEach((line, idx) => {
+        if (!line.trim()) return;
+        try {
+          records.push(JSON.parse(line) as Record<string, unknown>);
+        } catch {
+          skippedLines.push(idx + 1);
+        }
+      });
+      if (skippedLines.length > 0) {
+        logger.warn(
+          {
+            filePath,
+            skippedCount: skippedLines.length,
+            firstSkippedLines: skippedLines.slice(0, 5),
+          },
+          'SWE-Bench 数据存在无法解析的行（已跳过）',
+        );
+      }
+    }
+
+    for (const data of records) {
+      this.problems.push(this.normalizeProblem(data));
     }
   }
 
   /**
-   * 推断问题难度
+   * 标准化单条题目记录（字段名兼容 + FAIL_TO_PASS/PASS_TO_PASS 数组或换行串）
+   */
+  private normalizeProblem(data: Record<string, unknown>): SWEBenchProblem {
+    const instanceId = this.asString(data.instance_id ?? data.id);
+    return {
+      id: instanceId || `swe_${this.problems.length}`,
+      repo: this.asString(data.repo),
+      instance_id: instanceId,
+      base_commit: this.asString(data.base_commit),
+      issue_title: this.asString(data.issue_title ?? data.title),
+      issue_body: this.asString(data.issue_body ?? data.body),
+      hint_text: data.hint_text === undefined ? undefined : this.asString(data.hint_text),
+      patch: data.patch === undefined ? undefined : this.asString(data.patch),
+      test_patch: data.test_patch === undefined ? undefined : this.asString(data.test_patch),
+      fail_to_pass: this.toStringArray(data.FAIL_TO_PASS ?? data.fail_to_pass),
+      pass_to_pass: this.toStringArray(data.PASS_TO_PASS ?? data.pass_to_pass),
+      created_at: this.asString(data.created_at),
+      version: this.asString(data.version) || '1.0',
+      difficulty: this.resolveDifficulty(data),
+    };
+  }
+
+  /** 安全字符串化（null/undefined → ''，数组投毒不会让整条记录被丢） */
+  private asString(value: unknown): string {
+    if (value === null || value === undefined) return '';
+    return typeof value === 'string' ? value : String(value);
+  }
+
+  /** FAIL_TO_PASS / PASS_TO_PASS 既可能是数组，也可能是换行分隔的字符串 */
+  private toStringArray(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value.map((v) => this.asString(v)).filter((v) => v.trim().length > 0);
+    }
+    if (typeof value === 'string') {
+      return value
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    return [];
+  }
+
+  /**
+   * 难度判定：**数据集显式声明优先**，缺失才用启发式推断
+   *
+   * 旧实现一律用启发式，会把数据集声明为 easy 的题算成 medium/hard，
+   * 导致「--difficulty 过滤」与「按难度统计」和数据集声明长期不一致
+   * （README 展示的 easy/medium/hard 分布也会对不上）。
+   */
+  private resolveDifficulty(data: Record<string, unknown>): 'easy' | 'medium' | 'hard' {
+    const declared = this.asString(data.difficulty).trim().toLowerCase();
+    if (declared === 'easy' || declared === 'medium' || declared === 'hard') {
+      return declared;
+    }
+    return this.inferDifficulty(data);
+  }
+
+  /**
+   * 推断问题难度（仅在数据集未声明 difficulty 时使用）
    */
   private inferDifficulty(data: Record<string, unknown>): 'easy' | 'medium' | 'hard' {
-    const body = (data.issue_body || data.body || '') as string;
+    const body = this.asString(data.issue_body ?? data.body);
     const length = body.length;
-    const tests = ((data.FAIL_TO_PASS || '') as string).split('\n').filter(Boolean).length;
+    const tests = this.toStringArray(data.FAIL_TO_PASS ?? data.fail_to_pass).length;
 
     if (length > 3000 || tests > 5) return 'hard';
     if (length > 1000 || tests > 2) return 'medium';
