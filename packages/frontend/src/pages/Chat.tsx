@@ -3,7 +3,7 @@
  * 支持: 工具调用展示、模型切换、附件上传、历史会话查看
  */
 import { useEffect, useCallback, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Trash2, Wifi, WifiOff, Loader2, ArrowLeft, Cpu } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useProviderStore } from '../stores/providerStore';
@@ -29,7 +29,10 @@ interface SessionMessage {
 
 export default function ChatPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const urlSessionId = searchParams.get('sessionId') || '';
+  /** 会话标题（来自 /api/sessions/:id 的 title，历史会话头部展示用） */
+  const [sessionTitle, setSessionTitle] = useState('');
   /** 实际的会话ID: URL参数优先，否则使用默认 */
   const sessionId = urlSessionId || 'web_default';
   /** 是否在查看历史会话 */
@@ -60,6 +63,8 @@ export default function ChatPage() {
         const res = await fetch(`${apiBase}/api/sessions/${urlSessionId}`);
         if (!res.ok || cancelled) return;
         const data = await res.json();
+        // 会话标题（服务端原始记录含 title；缺省回退到完整 ID，不做截断）
+        setSessionTitle(data?.title || data?.metadata?.title || '');
         const msgs: SessionMessage[] = data?.messages || [];
         // 先清空旧消息，再导入
         clearMessages(sessionId);
@@ -174,16 +179,17 @@ export default function ChatPage() {
         <div>
           <div className="flex items-center gap-2">
             {isHistory && (
-              <a
-                href="/sessions"
-                className="text-gray-500 hover:text-gray-300 transition-colors"
+              <button
+                onClick={() => navigate('/sessions')}
+                className="text-gray-500 hover:text-gray-300 transition-colors cursor-pointer"
                 title="返回会话列表"
               >
                 <ArrowLeft className="w-4 h-4" />
-              </a>
+              </button>
             )}
             <h1 className="text-xl font-bold">
-              {isHistory ? `历史会话: ${urlSessionId.slice(0, 8)}...` : 'AI 对话'}
+              {/* 不截断：旧写法 slice(0,8) 正好把 "session_" 截完，标题只剩 "session_..." */}
+              {isHistory ? `历史会话: ${sessionTitle || urlSessionId}` : 'AI 对话'}
             </h1>
           </div>
           <div className="flex items-center gap-2 mt-0.5">

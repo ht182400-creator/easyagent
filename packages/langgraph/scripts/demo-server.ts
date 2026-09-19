@@ -9,24 +9,33 @@
  * API 端点：
  *   GET  /api/graph         → 图结构 JSON（节点 + 边）
  *   GET  /api/scenarios     → 场景列表（元数据）
+ *   GET  /api/checkpoints   → 场景 5 文件库的 checkpoint 会话列表
  *   POST /api/run/:id       → 运行单个场景（1-6）
  *   POST /api/run-all       → 运行全部场景
  */
 
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { readFileSync, existsSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { HumanMessage } from '@langchain/core/messages';
-import type { ToolResult } from '../src/index';
+import type { CheckpointSummary, ToolResult } from '../src/index';
 import {
   createAgentGraph,
   LangGraphAgent,
   loadLogConfig,
   setGlobalLevelByName,
+  SqliteCheckpointer,
 } from '../src/index';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+/**
+ * 场景 5（Checkpoint + Resume）专用的**文件库**（其余场景仍用 :memory: 隔离）。
+ * 有了文件库，面板的"Checkpoint 会话"区才能通过 GET /api/checkpoints 读到真实数据；
+ * cleanOnInit: true 保证每次重跑场景 5 都从干净状态开始（演示可重复）。
+ */
+const DEMO_CHECKPOINT_DB = join(__dirname, '..', 'temp', 'langgraph-demo-checkpoints.db');
+mkdirSync(join(__dirname, '..', 'temp'), { recursive: true });
 /**
  * LangGraph Demo 专用端口
  * 可通过环境变量 LANGGRAPH_PORT 覆盖，默认 3455（避免与 EasyAgent 主后端 3456 冲突）
@@ -97,6 +106,8 @@ interface ScenarioResult {
   /** 实际遍历路径（节点 ID 序列），用于更新卡片流转图 */
   actualPath?: string[];
   error?: string;
+  /** 场景 5 专用：运行后文件库里真实的 checkpoint 会话列表（面板渲染用） */
+  checkpointSessions?: CheckpointSummary[];
 }
 
 // ==================== 图结构数据 ====================
@@ -560,10 +571,11 @@ async function runScenario5(): Promise<ScenarioResult> {
     { c: '第二轮回答: 根据上下文，你之前提到喜欢蓝色。还需要我做什么？', fr: 'stop' },
   ]);
   const exec = mockExec();
+  // 文件库（不再是 :memory:）：跑完后面板可通过 GET /api/checkpoints 读到真实会话
   const agent = new LangGraphAgent({
     think: { chat, getToolDefinitions: () => [], systemPrompt: '你是测试助手，记住用户偏好' },
     act: { toolExecutor: exec },
-    checkpointerConfig: { dbPath: ':memory:', cleanOnInit: true },
+    checkpointerConfig: { dbPath: DEMO_CHECKPOINT_DB, cleanOnInit: true },
     maxTurns: 5,
   });
 
@@ -608,15 +620,23 @@ async function runScenario5(): Promise<ScenarioResult> {
     message: `getState("s1") 非空: ${state !== null ? '是 ✅' : '否 ❌'}`,
   });
 
-  agent.clearHistory('s1');
-  const afterClear = await agent.getState('s1');
+  // 保留 checkpoint（不再 clearHistory 销毁）：面板"Checkpoint 会话"区要展示它
+  agent.close();
+  logs.push({
+    node: 'checkpoint',
+    type: 'info',
+    message: `checkpoint 已保留在文件库 → 面板可见（temp/langgraph-demo-checkpoints.db）`,
+  });
+
+  // 用独立的只读 checkpointer 读出会话列表（agent 已 close，不锁库）
+  const reader = new SqliteCheckpointer({ dbPath: DEMO_CHECKPOINT_DB });
+  const checkpointSessions = reader.listThreads();
+  reader.close();
   logs.push({
     node: 'verify',
     type: 'info',
-    message: `clearHistory 后为 null: ${afterClear === null ? '是 ✅' : '否 ❌'}`,
+    message: `listThreads(): ${checkpointSessions.length} 个会话 ${checkpointSessions.length > 0 ? '✅' : '❌'}`,
   });
-
-  agent.close();
 
   return {
     id: 5,
@@ -627,6 +647,7 @@ async function runScenario5(): Promise<ScenarioResult> {
     logs,
     actualPath: ['START', 'think', 'route', 'END', 'START', 'think', 'route', 'END'],
     duration: `${Date.now() - t0}ms`,
+    checkpointSessions,
   };
 }
 
@@ -970,6 +991,18 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
 
   if (url === '/api/scenarios') {
     return sendJSON(res, SCENARIOS);
+  }
+
+  // 场景 5 的文件库 checkpoint 会话列表（跑过场景 5 后非空；库不存在时返回空列表）
+  if (url === '/api/checkpoints') {
+    try {
+      const reader = new SqliteCheckpointer({ dbPath: DEMO_CHECKPOINT_DB });
+      const sessions = reader.listThreads();
+      reader.close();
+      return sendJSON(res, { sessions, total: sessions.length, dbPath: DEMO_CHECKPOINT_DB });
+    } catch (error) {
+      return sendJSON(res, { sessions: [], total: 0, error: (error as Error).message });
+    }
   }
 
   if (url === '/api/run-all' && method === 'POST') {

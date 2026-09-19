@@ -120,12 +120,6 @@ importers:
       atomic-sleep:
         specifier: ^1.0.0
         version: 1.0.0
-      better-sqlite3:
-        specifier: ^12.11.1
-        version: 12.11.1
-      bindings:
-        specifier: ^1.5.0
-        version: 1.5.0
       body-parser:
         specifier: ^1.20.2
         version: 1.20.5
@@ -147,9 +141,6 @@ importers:
       fast-redact:
         specifier: ^3.1.1
         version: 3.5.0
-      file-uri-to-path:
-        specifier: ^2.0.0
-        version: 2.0.0
       fs-extra:
         specifier: ^10.1.0
         version: 10.1.0
@@ -269,8 +260,8 @@ importers:
         specifier: ^8.2.0
         version: 8.2.0
       electron:
-        specifier: 30.0.0
-        version: 30.0.0
+        specifier: 35.7.5
+        version: 35.7.5
       electron-builder:
         specifier: 23.6.0
         version: 23.6.0
@@ -1973,8 +1964,8 @@ packages:
   '@types/node@18.11.18':
     resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
 
-  '@types/node@20.19.43':
-    resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
+  '@types/node@22.20.3':
+    resolution: {integrity: sha512-DZmzkmwHzXrLPAXPyKNDzlIwMMUZCVacoD25ywdy5YTKGbOx/2ld+Q38Im2zJ0vBuZP5Prd3VZutKZyXwkOS8A==}
 
   '@types/node@25.9.3':
     resolution: {integrity: sha512-603BddQMv3pUcr4U2dhujk83N2tTDVr/34wII2B6bJy6g+8WD6yUb11jszNs0gdi4PesVWl7ABt8nYMVpnLUcg==}
@@ -2889,8 +2880,8 @@ packages:
   electron-updater@6.8.9:
     resolution: {integrity: sha512-ZhVxM9iGONUpZGI1FxdMRgJjUFXi7AYGVa5PwKlO1tV1/4zDxQmfKpXOHVztKrd6L9rLcFjERvi1Mf2vxyTkig==}
 
-  electron@30.0.0:
-    resolution: {integrity: sha512-GRwKphq/TUhSlb44OwSckXKl50f5OR/pm9MvF3rBLyqcxwfu7L11xejrZ0hDea1eKyCkzGd4B+cIqaQiDguPEA==}
+  electron@35.7.5:
+    resolution: {integrity: sha512-dnL+JvLraKZl7iusXTVTGYs10TKfzUi30uEDTqsmTm0guN9V2tbOjTzyIZbh9n3ygUjgEYyo+igAwMRXIi3IPw==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -3128,10 +3119,6 @@ packages:
 
   file-uri-to-path@1.0.0:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
-
-  file-uri-to-path@2.0.0:
-    resolution: {integrity: sha512-hjPFI8oE/2iQPVe4gbrJ73Pp+Xfub2+WI2LlXDbsaJBwT5wuMh35WNWVYYTpnz895shtwfyutMFLFywpQAFdLg==}
-    engines: {node: '>= 6'}
 
   filelist@1.0.6:
     resolution: {integrity: sha512-5giy2PkLYY1cP39p17Ech+2xlpTRL9HLspOfEgm0L6CwBXBTgsK5ou0JtzYuepxkaQ/tvhCFIJ5uXo0OrM2DxA==}
@@ -4491,11 +4478,6 @@ packages:
 
   semver@7.8.4:
     resolution: {integrity: sha512-rUCObTnP32Q08R2uuIrt7r9PlEonuTmtuXYcW6s5kjdlj3xbnwe+21yXptAUYcMAABLkYYTtnmzb3w3EDZfueA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
-  semver@7.8.5:
-    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -6383,7 +6365,7 @@ snapshots:
 
   '@types/node@18.11.18': {}
 
-  '@types/node@20.19.43':
+  '@types/node@22.20.3':
     dependencies:
       undici-types: 6.21.0
 
@@ -7459,10 +7441,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@30.0.0:
+  electron@35.7.5:
     dependencies:
       '@electron/get': 2.0.0
-      '@types/node': 20.19.43
+      '@types/node': 22.20.3
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -7820,8 +7802,6 @@ snapshots:
       flat-cache: 4.0.0
 
   file-uri-to-path@1.0.0: {}
-
-  file-uri-to-path@2.0.0: {}
 
   filelist@1.0.6:
     dependencies:
@@ -8613,7 +8593,7 @@ snapshots:
 
   node-abi@3.92.0:
     dependencies:
-      semver: 7.8.5
+      semver: 7.7.4
 
   node-abi@4.31.0:
     dependencies:
@@ -9247,8 +9227,6 @@ snapshots:
   semver@7.7.4: {}
 
   semver@7.8.4: {}
-
-  semver@7.8.5: {}
 
   send@0.19.2:
     dependencies:

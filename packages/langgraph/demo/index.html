@@ -1797,7 +1797,28 @@ function renderScenarioResult(id, data) {
     </div>
   ` : '';
 
-  inner.innerHTML = summaryHTML + outputHTML + logsHTML;
+  // Checkpoint 会话（场景 5 专用：服务端返回文件库里的真实会话列表）
+  const checkpointHTML = Array.isArray(data.checkpointSessions) ? `
+    <div class="terminal-output">
+      <div class="terminal-header">
+        <span class="terminal-dot terminal-dot--r"></span>
+        <span class="terminal-dot terminal-dot--y"></span>
+        <span class="terminal-dot terminal-dot--g"></span>
+        <span class="terminal-title">💾 Checkpoint 会话 · ${data.checkpointSessions.length} 条（temp/langgraph-demo-checkpoints.db）</span>
+      </div>
+      <div class="terminal-body">
+        ${data.checkpointSessions.length === 0
+          ? '<div class="log-line"><span class="log-msg" style="color:var(--text-muted)">（库为空 —— 请先运行本场景）</span></div>'
+          : data.checkpointSessions.map(s => `
+            <div class="log-line">
+              <span class="log-node">[${escapeHtml(s.threadId)}]</span>
+              <span class="log-msg log-success">checkpoint ${escapeHtml(s.checkpointId)} · 轮次 ${escapeHtml(String(s.turnCount ?? '?'))} · ${escapeHtml(String(s.createdAt ?? ''))}</span>
+            </div>`).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  inner.innerHTML = summaryHTML + outputHTML + logsHTML + checkpointHTML;
 }
 
 function renderLogLine(log) {

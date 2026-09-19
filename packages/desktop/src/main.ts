@@ -48,6 +48,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let agent: AgentEngine | null = null;
+/** 当前桌面聊天的会话 ID（AgentEngine 生命周期内稳定；见 agent-chat 处理器内注释） */
+let currentChatSessionId: string | null = null;
 let configManager: ConfigManager;
 let toolRegistry: ToolRegistry;
 let sessionManager: SessionManager;
@@ -805,6 +807,10 @@ ipcMain.handle('agent-chat', async (_event, message: string) => {
   if (!agent) return { error: 'Agent未初始化，请在设置中配置模型' };
   try {
     const response = await agent.run(message, {
+      // ⚠️ 必须传稳定 sessionId：不传时 AgentEngine.run 会兜底 `session_${Date.now()}`，
+      // 导致**每条消息都新建一个会话**（历史会话页被 session_<时间戳> 刷屏，2026-09-19 用户实测 121 条）。
+      // 一个 AgentEngine 生命周期 = 一个会话；换模型/重启应用才开新会话。
+      sessionId: currentChatSessionId ?? (currentChatSessionId = `session_${Date.now()}`),
       onPartialResponse: (text) => {
         mainWindow?.webContents.send('chat-chunk', text);
       },
