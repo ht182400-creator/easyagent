@@ -8,16 +8,17 @@
  *      迁移抛错时整体回滚 → 版本号不推进 → 下次启动从断点续跑（不会半迁移）；
  *   3. **fail-fast**：迁移失败向上抛出，由调用方决定降级或退出 ——
  *      宁可起不来，也不能带着未知 schema 继续写数据；
- *   4. **环境探测**：better-sqlite3 的内存测试 mock 对 pragma 无感知
- *      （`pragma()` 是空操作），此时读到的版本为 `null` → 跳过迁移并记 debug
- *      （测试 mock 环境无真实 schema 版本可言，硬跑反而破坏既有单测）；
+ *   4. **环境探测（防御性保留）**：若底层驱动查不到 `user_version`（返回 `null`），
+ *      跳过迁移并记 debug —— 不做"猜版本"的硬跑。
+ *      （2026-09-19 起测试不再使用 better-sqlite3 的内存 mock，测试中跑的是真库，
+ *      该分支仅作为降级/异常环境的防御路径保留。）
  *   5. **只前进不回滚**：本机制不含 down 迁移（本地应用场景下回滚脚本
  *      是伪安全 —— 旧代码读到新字段同样会出错），回滚 = 恢复备份文件。
  *
  * @module db/DatabaseMigrator
  */
 
-import type Database from 'better-sqlite3';
+import type { SqliteDatabase } from './sqlite.js';
 import { logger } from '../utils/logger.js';
 
 /** 单个迁移定义 */
@@ -32,7 +33,7 @@ export interface Migration {
    * ⚠️ 基线迁移（v1）必须对「旧代码创建的、user_version=0 的存量库」幂等 ——
    * 用 CREATE TABLE IF NOT EXISTS / addColumnIfMissing，禁止裸 CREATE/ALTER。
    */
-  up: (db: Database.Database) => void;
+  up: (db: SqliteDatabase) => void;
 }
 
 /** migrate() 的返回结果 */
@@ -52,7 +53,7 @@ export interface MigrationResult {
  *
  * @returns 当前 user_version；环境不支持版本查询（如测试 mock）时返回 null
  */
-export function getUserVersion(db: Database.Database): number | null {
+export function getUserVersion(db: SqliteDatabase): number | null {
   try {
     const v = db.pragma('user_version', { simple: true }) as unknown;
     return typeof v === 'number' ? v : null;
@@ -66,7 +67,7 @@ export function getUserVersion(db: Database.Database): number | null {
  *
  * @param name - 表名
  */
-export function tableExists(db: Database.Database, name: string): boolean {
+export function tableExists(db: SqliteDatabase, name: string): boolean {
   const row = db
     .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = ?")
     .get(name) as { name: string } | undefined;
@@ -79,7 +80,7 @@ export function tableExists(db: Database.Database, name: string): boolean {
  * @param table - 表名
  * @param column - 列名
  */
-export function columnExists(db: Database.Database, table: string, column: string): boolean {
+export function columnExists(db: SqliteDatabase, table: string, column: string): boolean {
   const cols = db.prepare(`PRAGMA table_info('${table}')`).all() as Array<{ name: string }>;
   return cols.some((c) => c.name === column);
 }
@@ -92,7 +93,7 @@ export function columnExists(db: Database.Database, table: string, column: strin
  * @param columnDdl - 列定义（如 "TEXT DEFAULT ''"，不含列名本身）
  */
 export function addColumnIfMissing(
-  db: Database.Database,
+  db: SqliteDatabase,
   table: string,
   column: string,
   columnDdl: string,
@@ -119,7 +120,7 @@ export class DatabaseMigrator {
    * @param opts.migrations - 迁移清单（版本必须从 ≥1 开始严格递增，构造时校验）
    */
   constructor(
-    private readonly db: Database.Database,
+    private readonly db: SqliteDatabase,
     private readonly opts: { name: string; migrations: Migration[] },
   ) {
     // 迁移清单静态校验：版本号乱序/重复会导致"断点续跑"语义失效，直接拒绝

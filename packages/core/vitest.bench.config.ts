@@ -3,7 +3,6 @@
  * 运行方式: pnpm bench 或 npx vitest bench --config vitest.bench.config.ts
  */
 import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
 
 export default defineConfig({
   test: {
@@ -17,10 +16,5 @@ export default defineConfig({
     // 性能基准通常比单元测试耗时更长
     testTimeout: 60000,
     hookTimeout: 30000,
-  },
-  resolve: {
-    alias: {
-      'better-sqlite3': resolve(__dirname, 'src/__mocks__/better-sqlite3.ts'),
-    },
   },
 });

@@ -11,13 +11,12 @@
  *   checkpoints: thread_id, checkpoint_id, parent_id, checkpoint(JSON), metadata(JSON), created_at
  *   writes:      thread_id, checkpoint_id, task_id, idx, channel, value(JSON)
  */
-import Database from 'better-sqlite3';
 import { BaseCheckpointSaver } from '@langchain/langgraph';
 import type { Checkpoint, CheckpointTuple, CheckpointMetadata } from '@langchain/langgraph';
 import type { RunnableConfig } from '@langchain/core/runnables';
 import path from 'path';
 import fs from 'fs';
-import { DatabaseMigrator } from '@easyagent/core';
+import { DatabaseMigrator, openDatabase, type SqliteDatabase } from '@easyagent/core';
 import { Logger } from '../logger/Logger';
 import { CHECKPOINTER_MIGRATIONS } from './checkpointerMigrations';
 
@@ -59,7 +58,7 @@ export interface CheckpointerConfig {
  * 同时提供业务层查询接口 (listThreads, getLatestState)。
  */
 export class SqliteCheckpointer extends BaseCheckpointSaver {
-  private db: Database.Database;
+  private db: SqliteDatabase;
   private dbPath: string;
 
   constructor(config: CheckpointerConfig = {}) {
@@ -80,7 +79,7 @@ export class SqliteCheckpointer extends BaseCheckpointSaver {
 
     // 初始化数据库连接
     const dbTimer = log.startTimer('数据库连接');
-    this.db = new Database(this.dbPath);
+    this.db = openDatabase(this.dbPath);
     dbTimer();
 
     // 启用 WAL 模式以提升并发性能

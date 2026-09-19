@@ -103,6 +103,16 @@ export {
 export type { Migration, MigrationResult } from './db/DatabaseMigrator.js';
 export { SESSION_MIGRATIONS } from './db/sessionMigrations.js';
 
+// SQLite 驱动适配层 🆕（默认 better-sqlite3；设 EASYAGENT_SQLITE_DRIVER=node 可用内置 node:sqlite）
+export { openDatabase, resolveSqliteDriver, SQLITE_DRIVER_ENV } from './db/sqlite.js';
+export type {
+  SqliteDatabase,
+  SqliteStatement,
+  SqliteRunResult,
+  SqliteDriverName,
+  OpenSqliteOptions,
+} from './db/sqlite.js';
+
 // 配置管理
 export { ConfigManager, getConfigManager } from './config/ConfigManager.js';
 export { PROVIDER_PRESETS } from './config/ProviderPresets.js';

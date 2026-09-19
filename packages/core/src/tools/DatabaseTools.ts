@@ -8,6 +8,7 @@ import { resolve, relative } from 'node:path';
 import type { ITool } from './ToolRegistry.js';
 import type { ToolResult, ToolContext } from '../types/index.js';
 import { logger } from '../utils/logger.js';
+import { openDatabase, type SqliteDatabase } from '../db/sqlite.js';
 
 /**
  * 检测项目中可用的数据库连接信息
@@ -138,33 +139,37 @@ export const QueryDBTool: ITool = {
       }
 
       if (dbType === 'sqlite' && connection && existsSync(connection)) {
-        // 使用 better-sqlite3 (Node.js 原生模块) 或回退到内置模块
+        // 统一走 db/sqlite 驱动适配层（默认 better-sqlite3；EASYAGENT_SQLITE_DRIVER=node 可切内置）
+        // ⚠️ 旧写法 `db.readonly = true` 是给 better-sqlite3 的**只读 getter** 赋值 → 会抛 TypeError
+        //    （2026-09-19 复核），现改为打开时传 readOnly（两个驱动行为一致）。
         try {
-          let Database: any;
+          let db: SqliteDatabase;
           try {
-            Database = require('better-sqlite3');
+            db = openDatabase(connection, { readOnly: true });
           } catch (err) {
-            // 回退：使用简单的JSON文件存储模拟
+            // 回退：驱动不可用（未装 better-sqlite3，且当前 Node 也没有内置 node:sqlite）
             return {
               success: true,
               content: [
                 `📊 SQLite 数据库: ${relative(workspace, connection)}`,
                 `查询: ${query}`,
                 ``,
-                `⚠ better-sqlite3 未安装。安装后可直接查询SQLite数据库，当前显示:`,
+                `⚠ SQLite 驱动不可用（better-sqlite3 未安装，且当前 Node 无内置 node:sqlite）。装好后可直接查询，当前显示:`,
                 `  数据库文件: ${connection}`,
                 `  文件大小: ${(existsSync(connection) ? require('node:fs').statSync(connection).size : 0) / 1024}KB`,
                 ``,
-                `安装方法: npm install better-sqlite3`,
+                `安装方法: pnpm install（提供 better-sqlite3）；或 Node ≥22.5 + EASYAGENT_SQLITE_DRIVER=node`,
               ].join('\n'),
               metadata: { dbType, dbFile: connection },
             };
           }
 
-          const db = new Database(connection);
-          db.readonly = true;
-          const rows = db.prepare(query).all();
-          db.close();
+          let rows: Array<Record<string, unknown>>;
+          try {
+            rows = db.prepare(query).all() as Array<Record<string, unknown>>;
+          } finally {
+            db.close();
+          }
 
           if (rows.length === 0) {
             return { success: true, content: '(查询结果为空)', metadata: { rowCount: 0 } };
@@ -291,33 +296,36 @@ export const DBSchemaTool: ITool = {
 
       if (detected?.type === 'sqlite' && detected.path && existsSync(detected.path)) {
         try {
-          let Database: any;
+          let db: SqliteDatabase;
           try {
-            Database = require('better-sqlite3');
+            db = openDatabase(detected.path, { readOnly: true });
           } catch (err) {
             return {
               success: true,
               content: [
                 `📊 SQLite 数据库: ${relative(workspace, detected.path)}`,
                 ``,
-                `⚠ better-sqlite3 未安装，无法读取Schema。`,
+                `⚠ SQLite 驱动不可用（better-sqlite3 未安装，且当前 Node 无内置 node:sqlite），无法读取 Schema。`,
                 `数据库文件: ${detected.path}`,
                 `大小: ${(require('node:fs').statSync(detected.path).size / 1024).toFixed(1)}KB`,
                 ``,
-                `安装方法: npm install better-sqlite3`,
+                `安装方法: pnpm install（提供 better-sqlite3）；或 Node ≥22.5 + EASYAGENT_SQLITE_DRIVER=node`,
               ].join('\n'),
               metadata: { dbType: 'sqlite', dbFile: detected.path },
             };
           }
 
-          const db = new Database(detected.path);
-          db.readonly = true;
-
           if (table) {
             // 查看特定表的详细信息
-            const columns = db.prepare(`PRAGMA table_info('${table}')`).all();
-            const indexes = db.prepare(`PRAGMA index_list('${table}')`).all();
-            const fkeys = db.prepare(`PRAGMA foreign_key_list('${table}')`).all();
+            const columns = db.prepare(`PRAGMA table_info('${table}')`).all() as Array<
+              Record<string, any>
+            >;
+            const indexes = db.prepare(`PRAGMA index_list('${table}')`).all() as Array<
+              Record<string, any>
+            >;
+            const fkeys = db.prepare(`PRAGMA foreign_key_list('${table}')`).all() as Array<
+              Record<string, any>
+            >;
 
             if (columns.length === 0) {
               db.close();
@@ -361,10 +369,10 @@ export const DBSchemaTool: ITool = {
             .prepare(
               "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
             )
-            .all();
+            .all() as Array<Record<string, any>>;
           const views = db
             .prepare("SELECT name FROM sqlite_master WHERE type='view' ORDER BY name")
-            .all();
+            .all() as Array<Record<string, any>>;
 
           let result = `📊 SQLite 数据库: ${relative(workspace, detected.path)}\n\n`;
 

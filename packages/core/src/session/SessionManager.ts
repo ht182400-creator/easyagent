@@ -3,7 +3,6 @@
  * 管理对话会话的创建、存储、恢复和持久化
  * 使用SQLite进行本地持久化存储
  */
-import Database from 'better-sqlite3';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
@@ -11,12 +10,13 @@ import type { Message, Session, SessionMetadata, TokenUsage } from '../types/ind
 import { logger } from '../utils/logger.js';
 import { DatabaseMigrator } from '../db/DatabaseMigrator.js';
 import { SESSION_MIGRATIONS } from '../db/sessionMigrations.js';
+import { openDatabase, type SqliteDatabase } from '../db/sqlite.js';
 
 /** 默认数据目录 */
 const DATA_DIR = join(homedir(), '.easyagent', 'data');
 
 export class SessionManager {
-  private db: Database.Database;
+  private db: SqliteDatabase;
   private sessions: Map<string, Session> = new Map();
 
   constructor(dataDir?: string) {
@@ -26,14 +26,14 @@ export class SessionManager {
     }
 
     const dbPath = join(dir, 'sessions.db');
-    this.db = new Database(dbPath);
+    // 统一走驱动适配层（默认 better-sqlite3；EASYAGENT_SQLITE_DRIVER=node 可切内置 node:sqlite）
+    this.db = openDatabase(dbPath);
 
     // 启用WAL模式提高性能
     this.db.pragma('journal_mode = WAL');
 
     // schema 迁移（P1-5）：建表/补列/索引统一走迁移机制（PRAGMA user_version 版本戳）。
     // ⚠️ 迁移失败会向上抛出 —— 宁可会话功能不可用，也不能带着未知 schema 继续写库。
-    // 测试 mock 环境（pragma 无感知）会自动跳过迁移，行为与旧版一致。
     new DatabaseMigrator(this.db, { name: 'sessions', migrations: SESSION_MIGRATIONS }).migrate();
 
     this.loadSessions();
