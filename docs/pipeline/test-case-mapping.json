@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "generatedAt": "2026-09-19T10:38:04.856Z",
+    "generatedAt": "2026-09-19T11:25:29.587Z",
     "totalTestFiles": 49,
-    "totalTestCases": 1833,
-    "unmappedCases": 577,
+    "totalTestCases": 1847,
+    "unmappedCases": 591,
     "projectRoot": "D:\\Work_Area\\AI\\Claude Code  CN",
     "source": "module-registry.mjs (统一注册表)"
   },
@@ -482,11 +482,11 @@
     },
     "_utils": {
       "moduleId": "_utils",
-      "totalCases": 577,
+      "totalCases": 591,
       "subModules": {
         "通用工具": {
           "name": "通用工具（未分类）",
-          "cases": 577,
+          "cases": 591,
           "files": [
             {
               "path": "packages/core/src/__tests__/anthropic-adapter.test.ts",
@@ -522,6 +522,10 @@
             },
             {
               "path": "packages/core/src/__tests__/provider-presets.test.ts",
+              "cases": 14
+            },
+            {
+              "path": "packages/core/src/__tests__/sqlite-driver.test.ts",
               "cases": 14
             },
             {

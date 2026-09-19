@@ -2,7 +2,7 @@
 
 > 📖 **新手导航**：`docs/README.md` → `docs/00_新手上手指南.md`
 > 🔎 **精简版 v3.0（2026-09-19 重写：合并重复、修正失效状态、陷阱表外置以控制体积）**
-> 📚 附录：`关键陷阱清单.md`（57 条代码/打包陷阱 + 15 条环境陷阱 + bat 铁律）· 详表 `docs/修复汇总.md`（按日期倒序）· 管线 `docs/pipeline/ARCHITECTURE.md` · 审核 `docs/62`
+> 📚 附录：`关键陷阱清单.md`（62 条代码/打包陷阱 + 15 条环境陷阱 + bat 铁律）· 详表 `docs/修复汇总.md`（按日期倒序）· 管线 `docs/pipeline/ARCHITECTURE.md` · 审核 `docs/62`
 > ⚠️ **涉及构建 / 打包 / 环境 / 桌面端 / 测试隔离的问题，动手前先读 `关键陷阱清单.md`**（该表最易踩且症状与根因常常无关）。
 
 ## 目录
@@ -22,7 +22,7 @@
 | 版本 | **v0.6.43**（唯一版本源 `version.json`；改后跑 `node scripts/sync-version.mjs` 同步 7 个 package.json + server 硬编码兜底） |
 | 本版主题 | 语义扫描性能治理（**11.0s → 0.26s，累计 43×**）+ 截断可见化 + 沙箱不经 shell + 端口治理 |
 | 双通道 | GitHub ✅ / Forgejo ✅（`main = 713e095`、tag `v0.6.43`、Release id=82）→ §3 |
-| 测试权威数字 | 定义用例 **1833**（真源 `docs/pipeline/test-case-mapping.json`，CI 门禁校验）/ Vitest 执行 **1844 全通过**（core 1144 · server 278 · frontend 149 · desktop 215 · langgraph 57 · web 2）。**任何历史数字（1822/1833/1798/1809 及更早）都已过期，禁止引用** |
+| 测试权威数字 | 定义用例 **1847**（真源 `docs/pipeline/test-case-mapping.json`，CI 门禁校验）/ Vitest 执行 **1868 全通过**（core 1144 · server 278 · frontend 149 · desktop 215 · langgraph 57 · web 2）。**任何历史数字（1822/1847/1798/1809 及更早）都已过期，禁止引用** |
 | 已登记遗留 | ① 语义解析 ~150ms 剩余空间（`docs/44` #19，做前先补解析基准）② ~~Forgejo 缺 v0.6.40~42 的 Release~~ → 已于 2026-09-19 补建（id=79/80/81）③ **评测接真实测试执行**（`docs/44` #20：现在只做结构化启发式，**不跑测试** → 不得声称 SWE-bench Verified） |
 | 版本历史 | v0.6.42 = 修「关于」面板 vundefined（ESM 裸 `__dirname` 致 `/api/version` 500）· v0.6.41 = P1 全清 + 轻量压测 · 更早见 `CHANGELOG.md` |
 
@@ -93,6 +93,8 @@ start-backend.bat      # 后端 localhost:3456        start-frontend.bat   # Web
 pnpm build             # core → cli → server → desktop tsup    pnpm build:web  # web 生产构建
 pnpm test:all          # core → server → langgraph → desktop → frontend → web → cli
 pnpm test:core:fast    # core 并行快跑（-62%）；结果仅"可重跑"场景采信，不写管线 JSON
+EASYAGENT_SQLITE_DRIVER=node pnpm test   # 用 Node 内置 node:sqlite（Node ≥22.5，免原生编译；PS 下写 $env:EASYAGENT_SQLITE_DRIVER='node'）
+cd packages/core && npx tsup   # 改 core 公开导出后必须先重建 dist，否则 langgraph/server 报 "xxx is not a function"（陷阱 #61）
 node scripts/unified-sync.mjs   # 统一同步管线数据（唯一入口）
 ```
 
@@ -151,6 +153,7 @@ node scripts/unified-sync.mjs   # 统一同步管线数据（唯一入口）
 - **架构**: 单 Node 进程，Server 用 `express.static(packages/web/dist)` 托管页面 + `/api/*` + `/ws`；前端同源（`apiBase:''`/`wsBase:'/ws'`），无 CORS
 - **构建链**: `core → langgraph → server → web`（Vite 直打包 `@easyagent/frontend` 源码）；启动 `node packages/server/dist/index.js`；生产 `PORT=80 HOST=0.0.0.0`
 - **Node**: 必须 18/20/22 LTS（`preinstall` 拦截 ≥24）；启动前 `node scripts/sqlite3-loader.mjs system`
+- **SQLite 驱动约束（2026-09-19 核实）**: **已加适配层** `packages/core/src/db/sqlite.ts`（统一入口 `openDatabase`，默认 better-sqlite3，`EASYAGENT_SQLITE_DRIVER=node` 切内置 `node:sqlite`；测试已**不再用假库 mock**，两个驱动由参数化测试守护）· 默认 `better-sqlite3@^12.11.1`（Node 18/20/22 有预编译；**Node 24 本地编译后实测可用**，ABI 137）· `node:sqlite` 需 **Node ≥22.5** 且官方仍是 **Stability 1.2 RC**（v22.5 加入，v25.7 升 RC，从未 Stable）· **Electron 30 = Node 20.11.1** → 桌面端用不了 `node:sqlite`（**分界：Electron 35 = Node 22.14.0 起才有**；Electron 34 = Node 20.18.1 仍无）· better-sqlite3 **13.x 的 engines 是 `node >= 22`**（升它会把下限抬到 22 并连带要求 Electron ≥35）· 桌面若升 Electron 还需连带升级 `electron-builder`（现为 23.6.0，太老）并复验打包链路
 - **持久化**: SSH 会话启动的 node 会随注销被杀 → `schtasks /create /tn ea_server /tr C:\easyagent\start.bat /sc onstart /ru SYSTEM /rl highest /f`；重启 = `Stop-Process -Name node -Force` + `schtasks /end` + `/run`
 - **部署流程**: `pnpm run build:server` → `scp packages/server/dist/* Administrator@82.156.71.231:C:/easyagent/packages/server/dist/` → 重启
 - **CORS 致命坑（已修）**: 公网 IP 不在白名单 → 子资源 500（首页正常）。修法：前置同源预判定中间件（Origin 的 host:port 与 Host 一致即摘 Origin 让 `cors` 按同源放行）+ `CORS_ORIGIN` 白名单；**不要整包删除 cors**（`docs/60` §4.4）

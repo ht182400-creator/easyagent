@@ -1,0 +1,42 @@
+[2026-09-19 19:08:24.294] [INFO ] [test-runner] ==============================================================================
+[2026-09-19 19:08:24.297] [INFO ] [test-runner] EasyAgent 回归测试开始 — 范围: 驱动适配层验证（server, langgraph）
+[2026-09-19 19:08:24.300] [INFO ] [test-runner] 时间: 2026-09-19 19:08:24.300  提交: ab58fb8  Node: v24.13.0
+[2026-09-19 19:08:24.302] [INFO ] [test-runner] 日志目录: D:\Work_Area\AI\Claude Code  CN\logs\test-logs\2026-09-19_190824_驱动适配层验证
+[2026-09-19 19:08:24.305] [INFO ] [test-runner] ==============================================================================
+[2026-09-19 19:08:24.308] [INFO ] [test-runner] ▶ 开始测试 [server] 服务端 — 工作目录 packages/server
+[2026-09-19 19:08:24.313] [DEBUG] [test-runner] 执行命令: node D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\vitest@1.6.0_@types+node@25_16e6c28375c72e10af39b251bb2bad7a\node_modules\vitest\vitest.mjs run  (timeout=1200000ms)
+[2026-09-19 19:08:24.918] [DEBUG] [test-runner] [server] exit=1 耗时=0.6s 用例=278 通过=278 失败=0 跳过=0
+[2026-09-19 19:08:24.918] [INFO ] [test-runner] ❌ 结束测试 [server] 耗时 0.6s — 278/278 通过
+[2026-09-19 19:08:24.919] [INFO ] [test-runner] ▶ 开始测试 [langgraph] LangGraph 引擎 — 工作目录 packages/langgraph
+[2026-09-19 19:08:24.921] [DEBUG] [test-runner] 执行命令: node D:\Work_Area\AI\Claude Code  CN\node_modules\.pnpm\vitest@2.0.0_@types+node@26_1e647e700f001b8e3e30d3205a58a7d1\node_modules\vitest\vitest.mjs run  (timeout=1200000ms)
+[2026-09-19 19:08:28.367] [DEBUG] [test-runner] [langgraph] exit=1 耗时=3.4s 用例=57 通过=35 失败=22 跳过=0
+[2026-09-19 19:08:28.367] [ERROR] [test-runner] [langgraph] 存在 22 个失败用例：
+[2026-09-19 19:08:28.370] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent.run() 应该返回 response、messages 和 sessionId
+[2026-09-19 19:08:28.372] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent.run() 应该支持自定义 sessionId
+[2026-09-19 19:08:28.374] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent.run() 每次 stop 类型的响应仅产生 1 轮
+[2026-09-19 19:08:28.376] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent.stream() 应该产出一系列事件并以 done 结束
+[2026-09-19 19:08:28.378] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent.resume() 不存在的会话应该抛错
+[2026-09-19 19:08:28.379] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent.resume() run 后 resume 同一会话应该恢复到之前状态
+[2026-09-19 19:08:28.379] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent.abort() 取消操作不应导致未捕获的异常
+[2026-09-19 19:08:28.379] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent 状态查询 run 后可以通过 getState 获取非空状态
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent 状态查询 listSessions 应该返回已保存的会话
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/agent-class.test.ts :: LangGraphAgent 状态查询 clearHistory 应该清除会话数据
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/demo-run.test.ts :: LangGraph 有向图 运行 Demo 运行: 保存 checkpoint 后，用 Resume 恢复继续对话
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/integration.test.ts :: createLangGraphAgent 应该通过工厂函数创建可用的 LangGraphAgent
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/integration.test.ts :: createLangGraphAgent 应该支持工具调用场景
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/integration.test.ts :: createLangGraphAgent 应该在传入 ProviderConfig 时通过 AdapterFactory 创建适配器
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/integration.test.ts :: 端到端集成 应该完成 纯文本对话（无工具）
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/integration.test.ts :: 端到端集成 应该完成 工具调用 → 观察 → 最终回答 全路径
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/persistence.test.ts :: SqliteCheckpointer 应该保存和读取 checkpoint
+[2026-09-19 19:08:28.380] [ERROR] [test-runner]   ✗ __tests__/persistence.test.ts :: SqliteCheckpointer 应该返回最新的 checkpoint
+[2026-09-19 19:08:28.381] [ERROR] [test-runner]   ✗ __tests__/persistence.test.ts :: SqliteCheckpointer 应该隔离不同 thread 的数据
+[2026-09-19 19:08:28.381] [ERROR] [test-runner]   ✗ __tests__/persistence.test.ts :: SqliteCheckpointer 应该列出所有 threads
+[2026-09-19 19:08:28.381] [ERROR] [test-runner]   ✗ __tests__/persistence.test.ts :: SqliteCheckpointer 应该删除 thread
+[2026-09-19 19:08:28.381] [ERROR] [test-runner]   ✗ __tests__/persistence.test.ts :: SqliteCheckpointer 非存在的 thread 应返回 undefined
+[2026-09-19 19:08:28.381] [INFO ] [test-runner] ❌ 结束测试 [langgraph] 耗时 3.4s — 35/57 通过，22 失败
+[2026-09-19 19:08:28.381] [INFO ] [test-runner] ------------------------------------------------------------------------------
+[2026-09-19 19:08:28.381] [INFO ] [test-runner] 汇总: 335 用例 / 313 通过 / 22 失败 / 0 跳过 / 耗时 4.1s
+[2026-09-19 19:08:28.381] [ERROR] [test-runner] server     ❌ 失败  278/278
+[2026-09-19 19:08:28.382] [ERROR] [test-runner] langgraph  ❌ 失败  35/57
+[2026-09-19 19:08:28.382] [INFO ] [test-runner] ❌ 结论: 存在失败，请查看下方明细与 HTML 报告
+[2026-09-19 19:08:28.382] [INFO ] [test-runner] ------------------------------------------------------------------------------

@@ -4053,6 +4053,13 @@
           "problem": "[F39:性能] core 测试提速：先补基准再动手（串行 61.7s→53.6s；并行 -62% 但只做开关）（17:00）",
           "solution": "core:fast` 0.0s 失败）。已统一改为 **`process.execPath` + `vitest.mjs`**（脚本内 `createRequire` 解析入口，不经 shell、不碰 .cmd），官方运行器与快速模式同源；验证: 快速模式 43/43 全绿**且管线 JSON 未变**（mtime 15:43:30）；官方运行器 `--only core` 通过并刷新 `docs/pipeline/_vitest-core.json`；陷阱: 新增 **#55**（只在并行下失败）· **#56**（先补基准）；连带把\"spawn .cmd 必须 shell:true\"写进 `run-tests-log.mjs` 注释",
           "status": "resolved"
+        },
+        {
+          "date": "2026-09-19",
+          "title": "[F42:数据库] 第一步落地：SQLite 驱动适配层 + 清掉假库 mock（19:20）",
+          "problem": "[F42:数据库] 第一步落地：SQLite 驱动适配层 + 清掉假库 mock（19:20）",
+          "solution": "1. **原生模块在 vitest 线程池下偶发崩溃**: 去掉 mock 后 core 全量 **3 次崩 1 次**，`exitCode=3221225477`（Windows `0xC0000005`），症状是**只跑完第一个文件就退出**；同代码另两次 1167/1167 → 原生 addo 2. **运行器\"假通过\"**: 那次崩溃时官方运行器显示 **\"1167/1167 通过\"却标 ❌**（把**上一轮遗留的 JSON 报告**当本轮结果）。已修 `run-tests-log.mjs`：报告加**新鲜度校验**（mtime 早于本轮开始 → 不采信）+ 进程异常退出时明确告警\"数字；计数口径: 新测试实际跑 24 条（10 参数化 × 2 驱动 + 4 驱动选择），静态扫描器只认字面量 `it(` → 计 **14** 条 → 定义用例 **1847** / 已执行 **1868**（差异已在 `docs/03` 标注，属口径不同不是漏测）",
+          "status": "resolved"
         }
       ]
     },
@@ -6865,8 +6872,8 @@
       "issues": []
     }
   },
-  "_totalIssues": 956,
-  "_generatedAt": "2026-09-19T10:38:05.117Z",
+  "_totalIssues": 957,
+  "_generatedAt": "2026-09-19T11:25:29.878Z",
   "_sourceFiles": [
     "2026-06-18.md",
     "2026-06-19.md",
@@ -6899,6 +6906,6 @@
   },
   "meta": {
     "exports": "unified-sync 自动导出",
-    "exportedAt": "2026-09-19T10:38:05.145Z"
+    "exportedAt": "2026-09-19T11:25:29.899Z"
   }
 }

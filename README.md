@@ -14,26 +14,26 @@
 > 提示词目前仍把 `test_patch` 作为"参考"给模型（**开卷**），分数天然偏乐观。
 > 详见 [`docs/77`](docs/77_SWE-bench评测现状与离线自测方案.md)。
 
-| 模型 | 通过率（真实执行） | 解决率 | Easy | Medium | Hard | 评测日期 |
-|------|:------:|:------:|:----:|:------:|:----:|:--------:|
-| **DeepSeek V4** | *(待运行)* | - | - | - | - | - |
-| **通义千问 Qwen3 Max** | *(待运行)* | - | - | - | - | - |
-| **智谱 GLM-5** | *(待运行)* | - | - | - | - | - |
+| 模型                   | 通过率（真实执行） | 解决率 | Easy | Medium | Hard | 评测日期 |
+| ---------------------- | :----------------: | :----: | :--: | :----: | :--: | :------: |
+| **DeepSeek V4**        |     _(待运行)_     |   -    |  -   |   -    |  -   |    -     |
+| **通义千问 Qwen3 Max** |     _(待运行)_     |   -    |  -   |   -    |  -   |    -     |
+| **智谱 GLM-5**         |     _(待运行)_     |   -    |  -   |   -    |  -   |    -     |
 
 > 表格留空是**如实状态**：仓库尚未产出过真实模型的评测结果（`benchmark-results/` 长期为空）。
 > 要填满它请配置 API Key 后跑真实评测；无 Key 时可用下表 4 种"零成本"方式验证链路本身。
 
 **运行姿态 × 判定档**（完整矩阵见 [`docs/77`](docs/77_SWE-bench评测现状与离线自测方案.md) §六）
 
-| 姿态           | 命令                                                          | 花钱 | 验证什么                                              |
-| -------------- | ------------------------------------------------------------- | :--: | ----------------------------------------------------- |
-| 环境检查       | `pnpm benchmark:dry`                                          |  否  | 核心包 / 数据集 / 难度分布是否就绪                    |
-| 离线自测       | `pnpm benchmark --offline`                                    |  否  | 评测流程 + 聚合口径（启发式判定，约 7/10）            |
-| 负向对照       | `pnpm benchmark --offline --real-tests`                       |  否  | **预期 0 通过** —— 证明判定真的在跑测试               |
-| Agent 轨迹自测 | `pnpm benchmark --mock-agent --allow-tools`                   |  否  | 工具注册 → 执行 → 回灌 → 多轮 → 上下文压缩            |
-| 真实评测       | `pnpm build:core && pnpm benchmark --provider X --model Y`    | **是** | 端到端能力（默认走真实执行）                          |
-| 本地零成本     | `pnpm benchmark --provider ollama --model <模型>`             |  否  | 同上，但需先 `ollama serve` + `ollama pull`           |
-| agentic 评测   | 真实评测再加 `--allow-tools --max-turns 10`                   | **是** | 允许工具与多轮（更接近真实使用）                      |
+| 姿态           | 命令                                                       |  花钱  | 验证什么                                    |
+| -------------- | ---------------------------------------------------------- | :----: | ------------------------------------------- |
+| 环境检查       | `pnpm benchmark:dry`                                       |   否   | 核心包 / 数据集 / 难度分布是否就绪          |
+| 离线自测       | `pnpm benchmark --offline`                                 |   否   | 评测流程 + 聚合口径（启发式判定，约 7/10）  |
+| 负向对照       | `pnpm benchmark --offline --real-tests`                    |   否   | **预期 0 通过** —— 证明判定真的在跑测试     |
+| Agent 轨迹自测 | `pnpm benchmark --mock-agent --allow-tools`                |   否   | 工具注册 → 执行 → 回灌 → 多轮 → 上下文压缩  |
+| 真实评测       | `pnpm build:core && pnpm benchmark --provider X --model Y` | **是** | 端到端能力（默认走真实执行）                |
+| 本地零成本     | `pnpm benchmark --provider ollama --model <模型>`          |   否   | 同上，但需先 `ollama serve` + `ollama pull` |
+| agentic 评测   | 真实评测再加 `--allow-tools --max-turns 10`                | **是** | 允许工具与多轮（更接近真实使用）            |
 
 > 💡 **Key 是按厂商的**：13 家预设各一个 `apiKeyEnv`，**一个 Key 覆盖该厂商全部模型** → 跑 3 家 = 3 个 Key，
 > 且跑谁配谁。花费量级：10 题 × k=1 ＝ **10 次调用/模型**（建议先 `--max-problems 1 --difficulty easy` 试水）。
@@ -42,17 +42,16 @@
 
 ### 评测维度
 
-| 类别 | 题目数 | 示例题型 |
-|------|:------:|----------|
-| **字符串/文件处理** | 3 | 文件名清洗、CSV 解析、目录大小计算 |
-| **数据结构** | 3 | LRU Cache、加权随机选择器、Semver 解析 |
-| **系统设计** | 4 | EventEmitter、JSON Schema 验证、DeepMerge、重试机制 |
-
-
+| 类别                | 题目数 | 示例题型                                            |
+| ------------------- | :----: | --------------------------------------------------- |
+| **字符串/文件处理** |   3    | 文件名清洗、CSV 解析、目录大小计算                  |
+| **数据结构**        |   3    | LRU Cache、加权随机选择器、Semver 解析              |
+| **系统设计**        |   4    | EventEmitter、JSON Schema 验证、DeepMerge、重试机制 |
 
 ## ✨ 核心特性
 
 ### 🤖 多模型支持 (10家提供商，动态更新)
+
 - **DeepSeek** (V4, V4 Flash, V3, R1) - 高性价比代码生成
 - **智谱GLM** (GLM-5, GLM-5 Flash, GLM-4 Plus/Flash/Air) - 国内领先大模型
 - **通义千问** (Qwen3 Max/Plus/Turbo/Coder Plus) - 阿里云大模型
@@ -67,28 +66,31 @@
 > 📡 **动态更新**: 启动时自动从 GitHub/CDN 下载最新 `models-catalog.json`，缓存24h。三级降级：远程目录 > 提供商API > 内置预设，确保始终获取最新模型信息。
 
 ### 🛠️ Agent能力 (70个内置工具，17大分组)
-| 分组 | 工具数 | 核心工具 |
-|------|--------|----------|
-| **文件工具** | 9 | read_file, write_file, edit_file, delete_file, list_dir, file_info, create_dir, move_file, batch_edit |
-| **搜索工具** | 4 | grep, glob, web_search, web_fetch |
-| **执行与Git** | 7 | exec, git_status, git_diff, git_log, git_branch, git_blame, git_commit |
-| **代码分析** | 4 | code_stats, run_tests, find_imports, find_definitions |
-| **代码质量** | 4 | lint_code, format_code, read_lints, type_check |
-| **项目管理** | 4 | read_config, package_run, env_info, project_overview |
-| **记忆工具** | 3 | remember, recall, forget |
-| **预览与交互** | 4 | start_server, preview_url, diff_files, ask_user |
-| **媒体操作** | 3 | read_image, generate_image, screenshot |
-| **数据库** | 2 | query_db, db_schema |
-| **知识库** | 5 | knowledge_add, knowledge_search, knowledge_get, knowledge_list, knowledge_remove |
-| **子Agent** | 3 | delegate_task, list_subagents, install_runtime |
+
+| 分组           | 工具数 | 核心工具                                                                                              |
+| -------------- | ------ | ----------------------------------------------------------------------------------------------------- |
+| **文件工具**   | 9      | read_file, write_file, edit_file, delete_file, list_dir, file_info, create_dir, move_file, batch_edit |
+| **搜索工具**   | 4      | grep, glob, web_search, web_fetch                                                                     |
+| **执行与Git**  | 7      | exec, git_status, git_diff, git_log, git_branch, git_blame, git_commit                                |
+| **代码分析**   | 4      | code_stats, run_tests, find_imports, find_definitions                                                 |
+| **代码质量**   | 4      | lint_code, format_code, read_lints, type_check                                                        |
+| **项目管理**   | 4      | read_config, package_run, env_info, project_overview                                                  |
+| **记忆工具**   | 3      | remember, recall, forget                                                                              |
+| **预览与交互** | 4      | start_server, preview_url, diff_files, ask_user                                                       |
+| **媒体操作**   | 3      | read_image, generate_image, screenshot                                                                |
+| **数据库**     | 2      | query_db, db_schema                                                                                   |
+| **知识库**     | 5      | knowledge_add, knowledge_search, knowledge_get, knowledge_list, knowledge_remove                      |
+| **子Agent**    | 3      | delegate_task, list_subagents, install_runtime                                                        |
 
 ### 📊 四模式操作
+
 - **Ink CLI**: React Terminal UI，7组件化架构 (Banner/MessageList/HelpPanel/StatusBar/InputBox/App) + 10命令
 - **Web Dashboard v4**: WorkBuddy 深色主题 UI (品牌渐变/快捷入口/智能模板/分组导航) + Zustand 10个Store + WebSocket流式 + 虚拟滚动(react-window) + 设计系统v4 + 版本检查
 - **桌面应用**: Electron 原生桌面版，AppShell/Sidebar/TabBar/ChatView/StatusBar/ContentRouter 组件 + 自动更新(electron-updater)
 - **IM 接入**: Telegram/飞书/企业微信 Bot 适配器，长轮询/Webhook 双模式
 
 ### 🔧 高级架构特性
+
 - **版本控制系统**: 单一版本源(version.json) + CHANGELOG + 版本检查 API(/api/version, /api/version/check) + Web/Desktop 端升级提示 + 发布脚本(release.mjs) + 一键发布(release-publish.bat) + 构建时版本注入
 - **模型目录动态更新**: 启动时后台下载最新模型目录，24h缓存，三级降级保证可用性
 - **Skills/Plugins 系统**: 插件生命周期管理 + 6 内置技能 (code-review/test/debug/refactor/explain/doc)
@@ -107,22 +109,25 @@
 ## 🚀 快速开始
 
 ### 环境要求
+
 - Node.js >= 18 且 < 24 (⚠️ Node.js 24.x 暂不支持，详见下方说明)
 - pnpm >= 9
-- （可选）C++ 编译工具链 — 用于编译 better-sqlite3 原生模块（详见下方说明）
+- （可选）C++ 编译工具链 — **仅默认数据库驱动** better-sqlite3 需要；改用内置驱动（`EASYAGENT_SQLITE_DRIVER=node`，Node ≥ 22.5）可完全免编译
 
 ### ⚠️ Node.js 版本要求
 
-**EasyAgent 当前不支持 Node.js 24.x** — better-sqlite3 核心依赖在 Node 24 上无预编译二进制，必须从源码编译 C++ 扩展，成功率仅约 60%。安装时将自动拦截。
+**默认驱动 `better-sqlite3` 是 C++ 原生模块**：Node 18/20/22 有预编译二进制，开箱即用；**Node 24 需要在本地编译一次**（`preinstall` 会拦截并给出方案，编译产物已实测可用）。
+若不想依赖任何原生模块，可在**服务端 / CLI / 开发 / 测试**改用 **Node 内置的 `node:sqlite`**（要求 Node ≥ 22.5，见下方「数据库驱动说明」）。
 
-| Node.js 版本 | 状态 | 说明 |
-|-------------|:----:|------|
-| 18.x / 20.x LTS | ✅ 推荐 | 完全支持，开箱即用 |
-| 22.x LTS | ✅ 支持 | 完全支持 |
-| **24.x** | ❌ 拦截 | better-sqlite3 无预编译二进制 |
-| < 18 | ❌ 拦截 | 不支持 ES2022+ 特性 |
+| Node.js 版本    | 默认驱动（better-sqlite3）  | 内置驱动（`EASYAGENT_SQLITE_DRIVER=node`） |
+| --------------- | --------------------------- | ------------------------------------------ |
+| 18.x / 20.x LTS | ✅ 推荐（有预编译）         | ❌ 不可用（需 ≥ 22.5）                     |
+| 22.x LTS        | ✅ 支持（有预编译）         | ✅ 可用                                    |
+| **24.x**        | ⚠️ 需编译一次（见下方命令） | ✅ 可用（零原生依赖）                      |
+| < 18            | ❌ 拦截                     | ❌ 不可用                                  |
 
-> 💡 如果你确实需要在 Node 24 上使用 (自担风险): `set EASYAGENT_SKIP_NODE_CHECK=1 && pnpm install`
+> 💡 Node 24 上强制安装默认驱动（自担风险）: `set EASYAGENT_SKIP_NODE_CHECK=1 && pnpm install`
+> 桌面端（Electron 30 = Node 20）**始终**使用 `better-sqlite3` —— 这是 Electron 生态的主流做法。
 
 ### 安装
 
@@ -185,25 +190,34 @@ pnpm benchmark --offline        # 评测链路全流程自测（离线桩，结�
 pnpm verify:all
 
 # 各包测试（2026-09-19 实测）
-cd packages/core && npx vitest run        # core      1143/1143
+cd packages/core && npx vitest run        # core      1167/1167
 cd packages/server && npx vitest run      # server     278/278（含 LangGraph 引擎适配）
 cd packages/langgraph && npx vitest run   # langgraph   57/57
 cd packages/desktop && npx vitest run     # desktop    215/215
 cd packages/frontend && npx vitest run    # frontend   149/149
 cd packages/web && npx vitest run         # web          2/2
 
-# 全量测试（合计 1844 全通过）
+# 全量测试（合计 1868 全通过）
 pnpm test:all
 ```
 
-### ⚠️ better-sqlite3 编译说明
+### 🗄️ 数据库驱动说明
 
-`better-sqlite3` 是 C++ 原生模块，EasyAgent 通过 `preinstall` 脚本自动拦截不兼容的 Node.js 版本：
-- **Node.js 18/20/22 用户**：有预编译二进制，`pnpm install` 开箱即用
-- **Node.js 24.x 用户**：安装时自动拦截并提示降级方案
-  - 如需强制安装: `set EASYAGENT_SKIP_NODE_CHECK=1 && pnpm install`
-  - 然后手动编译: `cd packages/core && pnpm rebuild better-sqlite3`
-- **测试环境**：vitest 已通过 alias mock 绕过原生模块依赖，测试始终可运行
+SQLite 访问统一走驱动适配层（`packages/core/src/db/sqlite.ts`），**默认 `better-sqlite3`**，可用环境变量切换为 Node 内置的 `node:sqlite`：
+
+| 驱动                     | 适用场景                                                         | 需要原生编译 |
+| ------------------------ | ---------------------------------------------------------------- | :----------: |
+| `better-sqlite3`（默认） | 全部场景，**含 Electron 桌面端**（内置 Node 20，只能用原生模块） |      是      |
+| `node`（内置）           | 服务端 / CLI / 开发 / 测试（**Node ≥ 22.5**）                    |    **否**    |
+
+```bash
+# 用内置驱动跑测试：不需要编译任何原生模块
+EASYAGENT_SQLITE_DRIVER=node pnpm test
+```
+
+- 桌面端必须用 `better-sqlite3`（`node:sqlite` 需 Node ≥ 22.5，而 Electron 30 内置的是 Node 20.11）
+- `node:sqlite` 官方仍为 **RC（Stability 1.2）**，因此**刻意不做默认值**——两个驱动的语义由同一套参数化测试保证一致
+- **测试不再依赖内存 mock**：vitest 直接使用真实数据库文件（旧 mock 的 `pragma()` 是空操作，会让迁移在测试中被静默跳过，真 SQL 语义从未被验证）
 
 ## 📁 项目结构
 
@@ -249,25 +263,26 @@ easyagent/
 
 ## 🎯 CLI命令
 
-| 命令 | 说明 |
-|------|------|
-| `/help` | 显示帮助 |
-| `/model` | 查看当前模型 |
-| `/models` | 列出所有可用模型 |
-| `/providers` | 显示已配置的提供商 |
-| `/switch <provider> <model>` | 切换模型 |
-| `/status` | 查看系统状态 |
-| `/sessions` | 会话列表 |
-| `/clear` | 清除当前会话 |
-| `/tools` | 列出可用工具 |
-| `/token-key <provider> <key>` | 设置API密钥 |
-| `/exit` | 退出 |
+| 命令                          | 说明               |
+| ----------------------------- | ------------------ |
+| `/help`                       | 显示帮助           |
+| `/model`                      | 查看当前模型       |
+| `/models`                     | 列出所有可用模型   |
+| `/providers`                  | 显示已配置的提供商 |
+| `/switch <provider> <model>`  | 切换模型           |
+| `/status`                     | 查看系统状态       |
+| `/sessions`                   | 会话列表           |
+| `/clear`                      | 清除当前会话       |
+| `/tools`                      | 列出可用工具       |
+| `/token-key <provider> <key>` | 设置API密钥        |
+| `/exit`                       | 退出               |
 
 ## 🔌 API接口
 
 ### REST API
 
 #### 核心 API
+
 ```
 GET  /api/health              - 健康检查
 GET  /api/status              - 系统状态
@@ -293,6 +308,7 @@ GET  /api/tools               - 工具列表
 ```
 
 #### LangGraph 引擎 API 🆕
+
 ```
 GET  /api/langgraph/sessions          - Checkpoint 会话列表
 GET  /api/langgraph/sessions/:id      - 会话状态
@@ -300,6 +316,7 @@ POST /api/langgraph/sessions/:id/resume - 从 Checkpoint 恢复
 ```
 
 #### Plugins & Skills API
+
 ```
 GET    /api/plugins           - 插件列表
 POST   /api/plugins/load      - 加载插件
@@ -309,6 +326,7 @@ GET    /api/skills            - 技能列表
 ```
 
 #### IM 适配器 API
+
 ```
 GET    /api/im/status         - IM 平台状态
 GET    /api/im/config         - IM 配置列表（脱敏）
@@ -362,48 +380,48 @@ cd packages/langgraph && npx vitest run
 
 ## 🏗️ 技术栈
 
-| 层级 | 技术 | 备注 |
-|------|------|------|
-| 语言 | TypeScript 5.x | 严格模式 |
-| 运行时 | Node.js 18-22 (LTS 推荐) | ⚠️ 24.x 被 preinstall 拦截 |
-| 包管理 | pnpm 11+ | monorepo workspace |
-| 包管理 | pnpm 11+ | monorepo workspace |
-| CLI框架 | Ink (React for Terminal) | Banner/ChatView/StatusBar |
-| Web前端 | React 18 + Vite + Tailwind CSS v3 | WorkBuddy 深色主题 + 虚拟滚动(react-window) + 分组导航 |
-| 状态管理 | Zustand v4 | 10个Store + 持久化 |
-| Web后端 | Express + WebSocket (ws) | REST + 8事件类型 |
-| 桌面 | Electron 30 + React/Vite/Tailwind | 四件套布局 |
-| 数据库 | **better-sqlite3** (SQLite) | ⚠️ Node 24 需从源码编译 |
-| 加密 | AES-256-GCM | 密钥本地加密存储 |
-| 构建 | tsup + Vite | ESM 输出 |
-| 测试 | Vitest | Core 629 + Server 160 + Desktop 127 + LangGraph 57 + Frontend/Web/管线 396 = 1469 通过 |
-| 插件系统 | IPlugin/ISkill/PluginManager | 生命周期 + 钩子 |
-| IM适配器 | 原生 fetch (零外部依赖) | Telegram/飞书/企业微信 |
+| 层级     | 技术                                                    | 备注                                                                                   |
+| -------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 语言     | TypeScript 5.x                                          | 严格模式                                                                               |
+| 运行时   | Node.js 18-22 (LTS 推荐)                                | ⚠️ 24.x 被 preinstall 拦截                                                             |
+| 包管理   | pnpm 11+                                                | monorepo workspace                                                                     |
+| 包管理   | pnpm 11+                                                | monorepo workspace                                                                     |
+| CLI框架  | Ink (React for Terminal)                                | Banner/ChatView/StatusBar                                                              |
+| Web前端  | React 18 + Vite + Tailwind CSS v3                       | WorkBuddy 深色主题 + 虚拟滚动(react-window) + 分组导航                                 |
+| 状态管理 | Zustand v4                                              | 10个Store + 持久化                                                                     |
+| Web后端  | Express + WebSocket (ws)                                | REST + 8事件类型                                                                       |
+| 桌面     | Electron 30 + React/Vite/Tailwind                       | 四件套布局                                                                             |
+| 数据库   | **better-sqlite3**（默认）/ **node:sqlite**（可选内置） | 统一走 `db/sqlite.ts` 适配层；`EASYAGENT_SQLITE_DRIVER=node` 免原生编译                |
+| 加密     | AES-256-GCM                                             | 密钥本地加密存储                                                                       |
+| 构建     | tsup + Vite                                             | ESM 输出                                                                               |
+| 测试     | Vitest                                                  | Core 629 + Server 160 + Desktop 127 + LangGraph 57 + Frontend/Web/管线 396 = 1469 通过 |
+| 插件系统 | IPlugin/ISkill/PluginManager                            | 生命周期 + 钩子                                                                        |
+| IM适配器 | 原生 fetch (零外部依赖)                                 | Telegram/飞书/企业微信                                                                 |
 
 ## 📊 与竞品对比
 
-| 功能 | Claude Code | CodeBuddy CN | **EasyAgent** |
-|------|------------|-------------|-----------|
-| 中国大模型 | ❌ | DeepSeek+混元 | ✅ **10家国产大模型** |
-| CLI界面 | ✅ | IDE插件 | ✅ **Ink React Terminal** |
-| Web Dashboard | ❌ | ❌ | ✅ **WorkBuddy 风格 + WS 流式** |
-| 桌面应用 | ❌ | ❌ | ✅ **Electron 原生** |
-| IM 接入 | ❌ | ❌ | ✅ **Telegram/飞书/微信** |
-| 开源 | ❌ | ❌ | ✅ **MIT** |
-| 会话持久化 | 有限 | ✅ | ✅ **SQLite + WAL** |
-| 多会话管理 | ✅ | ✅ | ✅ |
-| Token统计 | ✅ | ✅ | ✅ |
-| 流式输出 | ✅ | ✅ | ✅ **WS + SSE 双模式** |
-| 自定义模型 | 有限 | ❌ | ✅ **完整支持** |
-| API密钥加密 | - | - | ✅ **AES-256-GCM** |
-| 模型动态更新 | ❌ | ❌ | ✅ **GitHub/CDN + 24h缓存** |
-| MCP协议 | ✅ | ❌ | ✅ **JSON-RPC stdio** |
-| 插件系统 | ❌ | ❌ | ✅ **PluginManager + 6技能** |
-| 工具数量 | 59 | ~30 | 70 |
-| 虚拟滚动 | ✅ | ❌ | ✅ **react-window** |
-| i18n | ✅ | ✅ | ✅ **zh-CN/en-US** |
-| 自动化任务 | ❌ | ✅ | ✅ 已完成 |
-| 版本控制 | ❌ | ❌ | ✅ version.json + CHANGELOG + 升级提示 |
+| 功能          | Claude Code | CodeBuddy CN  | **EasyAgent**                          |
+| ------------- | ----------- | ------------- | -------------------------------------- |
+| 中国大模型    | ❌          | DeepSeek+混元 | ✅ **10家国产大模型**                  |
+| CLI界面       | ✅          | IDE插件       | ✅ **Ink React Terminal**              |
+| Web Dashboard | ❌          | ❌            | ✅ **WorkBuddy 风格 + WS 流式**        |
+| 桌面应用      | ❌          | ❌            | ✅ **Electron 原生**                   |
+| IM 接入       | ❌          | ❌            | ✅ **Telegram/飞书/微信**              |
+| 开源          | ❌          | ❌            | ✅ **MIT**                             |
+| 会话持久化    | 有限        | ✅            | ✅ **SQLite + WAL**                    |
+| 多会话管理    | ✅          | ✅            | ✅                                     |
+| Token统计     | ✅          | ✅            | ✅                                     |
+| 流式输出      | ✅          | ✅            | ✅ **WS + SSE 双模式**                 |
+| 自定义模型    | 有限        | ❌            | ✅ **完整支持**                        |
+| API密钥加密   | -           | -             | ✅ **AES-256-GCM**                     |
+| 模型动态更新  | ❌          | ❌            | ✅ **GitHub/CDN + 24h缓存**            |
+| MCP协议       | ✅          | ❌            | ✅ **JSON-RPC stdio**                  |
+| 插件系统      | ❌          | ❌            | ✅ **PluginManager + 6技能**           |
+| 工具数量      | 59          | ~30           | 70                                     |
+| 虚拟滚动      | ✅          | ❌            | ✅ **react-window**                    |
+| i18n          | ✅          | ✅            | ✅ **zh-CN/en-US**                     |
+| 自动化任务    | ❌          | ✅            | ✅ 已完成                              |
+| 版本控制      | ❌          | ❌            | ✅ version.json + CHANGELOG + 升级提示 |
 
 ## 🎨 图标资源
 

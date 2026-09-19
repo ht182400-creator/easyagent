@@ -241,7 +241,7 @@ pnpm benchmark --heuristic                                     # 强制启发式
 相关测试：`packages/core/src/__tests__/benchmark-runner.test.ts` —— **35 条用例**（数据格式兼容、难度声明、
 pass@k 聚合、失败分支、异常路径、报告落盘、**真实执行正/负对照**、Mock 适配器轨迹），已登记进
 `module-registry.mjs` 的 **b2a「SWE-bench 评测体系」**（该模块此前标 done 却 `testFiles: []`）。
-实测：core **1143/1143**；项目定义用例 **1833**、vitest 执行 **1844**（2026-09-19，全量日志见 `logs/test-logs/`）。
+实测：core **1167/1167**；项目定义用例 **1847**、vitest 执行 **1868**（2026-09-19，全量日志见 `logs/test-logs/`）。
 
 ---
 
