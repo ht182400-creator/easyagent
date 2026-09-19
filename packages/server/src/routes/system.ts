@@ -76,8 +76,10 @@ export function registerSystemRoutes(app: Express, deps: SystemRoutesDeps): void
 
   /** 获取版本信息 + 更新日志 */
   app.get('/api/version', (_req, res) => {
+    // ⚠️ ESM 环境没有 __dirname —— 路径基准必须用注入的 serverDir
+    //    （P1-1 拆分时误用裸 __dirname 导致本接口 500，前端显示 vundefined）
     // 读取 CHANGELOG.md 获取最近版本的更新内容
-    const changelogPath = join(dirname(__dirname), '..', '..', '..', 'CHANGELOG.md');
+    const changelogPath = join(serverDir, '..', '..', '..', 'CHANGELOG.md');
     let changelog = '';
     try {
       if (existsSync(changelogPath)) {
@@ -105,7 +107,7 @@ export function registerSystemRoutes(app: Express, deps: SystemRoutesDeps): void
     let codename = process.env.EASYAGENT_CODENAME || '';
     let releaseDate = process.env.EASYAGENT_RELEASE_DATE || '';
     try {
-      const versionPath = join(__dirname, '..', '..', '..', 'version.json');
+      const versionPath = join(serverDir, '..', '..', '..', 'version.json');
       if (existsSync(versionPath)) {
         const versionData = JSON.parse(readFileSync(versionPath, 'utf-8'));
         if (versionData.codename) codename = versionData.codename;

@@ -131,6 +131,17 @@ async function main() {
     await sessionsRes.json();
     log.info('✅ /api/sessions → 200 application/json');
 
+    // /api/version：曾因 P1-1 拆分误用 ESM 不存在的 __dirname 而 500，
+    // 前端渲染成 "vundefined"（用户报障）—— 纳入冒烟防同类回归
+    const versionRes = await fetchWithTimeout(`${baseUrl}/api/version`, 5000);
+    const versionBody = await versionRes.json().catch(() => ({}));
+    if (!versionRes.ok || !versionBody.version) {
+      throw new Error(
+        `/api/version → ${versionRes.status}（version=${versionBody.version}，预期 200 且 version 非空）`,
+      );
+    }
+    log.info(`✅ /api/version → 200（v${versionBody.version}）`);
+
     log.info('✅ 冒烟测试通过');
   } catch (err) {
     log.error(`❌ 冒烟测试失败: ${err.message}`);
