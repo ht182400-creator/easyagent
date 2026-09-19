@@ -309,7 +309,7 @@ pnpm log --label 构建web --cwd packages/web -- npm run build   # 命令输出�
 
 | 文件 | 内容 |
 |------|------|
-| `.codebuddy/memory/关键陷阱清单.md` | **52 条代码/打包陷阱**（Desktop/Web/通用）+ **15 条环境陷阱**（pnpm 安装拦截、DOMPurify/happy-dom、vitest 别名、静默 0、端口、沙箱、闩锁缓存、WS 信封覆盖、HITL、tsc 门禁、测试数据重定向…）+ **Windows bat 三条禁令** |
+| `.codebuddy/memory/关键陷阱清单.md` | **62 条代码/打包陷阱**（Desktop/Web/通用）+ **15 条环境陷阱**（pnpm 安装拦截、DOMPurify/happy-dom、vitest 别名、静默 0、端口、沙箱、闩锁缓存、WS 信封覆盖、HITL、tsc 门禁、测试数据重定向…）+ **Windows bat 三条禁令** |
 | `docs/修复汇总.md` | 全部修复详表（新→旧），每个问题含现象/根因/修复/验证 |
 | `docs/pipeline/ARCHITECTURE.md` | 管线系统架构 |
 | `docs/62` / `docs/63` | 专家团审核结论 / P0 优化实施方案与回归记录 |

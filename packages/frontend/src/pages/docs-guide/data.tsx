@@ -299,7 +299,7 @@ export const roleGuides: RoleGuide[] = [
       {
         id: 'mem',
         file: 'MEMORY.md (.codebuddy/memory/)',
-        title: '陷阱清单 37 条',
+        title: '陷阱清单 62 条',
         desc: '高频问题速查',
         icon: 'AlertTriangle',
         level: 'required',
@@ -308,7 +308,7 @@ export const roleGuides: RoleGuide[] = [
         id: '35',
         file: '35_MODULE_VERSION问题分析与根治方案.md',
         title: 'MODULE_VERSION 问题',
-        desc: 'better-sqlite3 必读',
+        desc: '服务端 better-sqlite3 必读（桌面已内置驱动）',
         icon: 'Bug',
         level: 'required',
       },
