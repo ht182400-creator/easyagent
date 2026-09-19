@@ -1,23 +1,30 @@
 import { defineConfig } from 'tsup';
+
 export default defineConfig({
-    entry: {
-        main: 'src/main.ts',
-        preload: 'src/preload.ts',
-    },
-    format: ['esm'],
-    dts: false,
-    sourcemap: true,
-    clean: false, // 不清理 dist，避免删除 Vite 输出的 renderer
-    splitting: false,
-    treeshake: true,
-    outDir: 'dist',
-    // electron 必须 external（Electron 运行时提供）
-    // better-sqlite3 必须 external（原生模块，不可 bundle）
-    // pino / pino-pretty 必须 external（内部使用 CJS require，ESM bundle 会炸）
-    external: ['electron', 'better-sqlite3', 'pino', 'pino-pretty'],
-    // 将 @easyagent/core 打包进 main.js，避免 pnpm workspace symlink 在 asar 中失效
-    // 注意: core 中 import 的 pino 等外部依赖会在 tsup 处理 core 时被标记为 external，
-    // desktop 打包时需要 pino 在 node_modules 中可用
-    noExternal: ['@easyagent/core'],
+  entry: {
+    main: 'src/main.ts',
+    // preload 已拆分到 tsup.preload.config.ts（CJS），因为 Electron 的 preload 不支持 ESM
+  },
+  format: ['esm'],
+  dts: false,
+  sourcemap: true,
+  clean: false, // 不清理 dist，避免删除 Vite 输出的 renderer
+  splitting: false,
+  treeshake: true,
+  outDir: 'dist',
+  // electron 必须 external（Electron 运行时提供）
+  // pino / pino-pretty 必须 external（内部使用 CJS require，ESM bundle 会炸）
+  // 注：better-sqlite3 已不再需要 —— 桌面端改用 Node 内置 node:sqlite（见 src/main.ts）
+  external: ['electron', 'pino', 'pino-pretty', 'electron-updater', 'electron-store'],
+  // 将 @easyagent/core 和 @easyagent/server 打包进 main.js
+  // 避免 pnpm workspace symlink 在 asar 中失效
+  // express/cors/ws/multer 也内联 → 消除 Desktop 对 server 运行时依赖的"代理声明"
+  noExternal: ['@easyagent/core', '@easyagent/server', 'express', 'cors', 'ws', 'multer'],
+  // esbuild 选项
+  esbuildOptions(options) {
+    // 设置平台为 node，支持 Node.js 内置模块
+    options.platform = 'node';
+    // 支持顶层 await（Electron ≥35 内置 Node 22）
+    options.target = 'node22';
+  },
 });
-//# sourceMappingURL=tsup.config.js.map

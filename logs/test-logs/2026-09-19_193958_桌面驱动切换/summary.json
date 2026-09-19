@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "timestamp": "2026-09-19 19:40:04.116",
+    "scope": "桌面驱动切换",
+    "packages": [
+      "desktop"
+    ],
+    "elapsedMs": 5948,
+    "nodeVersion": "v24.13.0",
+    "gitCommit": "9403483",
+    "totals": {
+      "tests": 215,
+      "passed": 215,
+      "failed": 0,
+      "skipped": 0
+    },
+    "allOk": true
+  },
+  "results": [
+    {
+      "pkg": "desktop",
+      "label": "桌面端",
+      "status": "pass",
+      "exitCode": 0,
+      "elapsedMs": 5839,
+      "degraded": false,
+      "tests": 215,
+      "passed": 215,
+      "failed": 0,
+      "skipped": 0,
+      "failures": [],
+      "consoleTail": "\n RUN  v1.6.0 D:/Work_Area/AI/Claude Code  CN/packages/desktop\n\n ✓ src/__tests__/ipc/preload.test.ts  (13 tests) 9ms\n ✓ src/__tests__/main/auto-updater-state.test.ts  (60 tests) 15ms\n ✓ src/__tests__/main/version.test.ts  (13 tests) 13ms\n ✓ src/__tests__/stores/uiStore.test.ts  (24 tests) 24ms\n ✓ src/__tests__/stores/sessionStore.test.ts  (20 tests) 80ms\n ✓ src/__tests__/stores/chatStore.test.ts  (31 tests) 26ms\n ✓ src/__tests__/components/StatusBar.test.tsx  (9 tests) 137ms\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 基础渲染 > 应渲染\"检查更新\"按钮\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\n ✓ src/__tests__/components/TabBar.test.tsx  (8 tests) 141ms\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 基础渲染 > 应显示当前版本号\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 状态辅助函数 - getStatusCardStyle > downloading 状态应显示蓝色卡片+进度条\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"downloading\",\"lastUpdateInfo\":{\"version\":\"0.5.21\",\"percent\":45}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 状态辅助函数 - getStatusCardStyle > error 状态应显示黄色卡片+重试按钮\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"error\",\"lastUpdateInfo\":{\"version\":\"0.5.21\",\"error\":\"ETIMEDOUT\"}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 状态辅助函数 - getStatusCardStyle > checking 状态应显示蓝色卡片\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"checking\",\"lastUpdateInfo\":{}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 状态辅助函数 - getStatusCardStyle > installing 状态应显示紫色卡片\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"installing\",\"lastUpdateInfo\":{\"version\":\"0.5.21\"}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 按钮行为 > 点击\"立即重启安装\"应调用 installUpdate\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"downloaded\",\"lastUpdateInfo\":{\"version\":\"0.5.21\"}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 按钮行为 > 点击\"立即重启安装\"应调用 installUpdate\n[Settings] 用户确认安装更新...\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 按钮行为 > 点击\"重试\"应调用 checkForUpdates\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"error\",\"lastUpdateInfo\":{\"error\":\"ETIMEDOUT\"}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 按钮行为 > 点击\"重试\"应调用 checkForUpdates\n[Settings] 检查更新... 环境: Desktop\n[Settings] 后台更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"error\",\"lastUpdateInfo\":{\"error\":\"ETIMEDOUT\"}}\n[Settings] Server API 返回: {\"version\":\"0.5.20\",\"codename\":\"Test\",\"releaseDate\":\"2026-06-26\",\"changelog\":\"Test changelog\"}\n[Settings] 已是最新版本，清除更新状态\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 事件监听 > 应注册 onUpdateStatus 监听器\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 事件监听 > 组件卸载时应清理监听器\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 非桌面环境 > 没有 easyAgent 时不应崩溃\n[Settings] Web 环境，跳过 Desktop 更新监听\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 非桌面环境 > 没有 easyAgent 时仍显示检查更新按钮\n[Settings] Web 环境，跳过 Desktop 更新监听\n\nstdout | src/__tests__/components/Settings-update.test.tsx > Settings 页面 - 自动更新 UI > 状态卡片条件渲染 > idle 状态且无 updateInfo 时不显示状态卡片\n[Settings] 初始更新状态: {\"isUpdateSupported\":true,\"currentVersion\":\"0.5.20\",\"lastUpdateStatus\":\"idle\",\"lastUpdateInfo\":{}}\n\n ✓ src/__tests__/components/Settings-update.test.tsx  (37 tests) 643ms\n\n Test Files  9 passed (9)\n      Tests  215 passed (215)\n   Start at  19:39:58\n   Duration  5.02s (transform 1.28s, setup 7.98s, collect 2.31s, tests 1.09s, environment 13.74s, prepare 3.10s)\n\nJSON report written to D:/Work_Area/AI/Claude Code  CN/docs/pipeline/_vitest-desktop.json\n"
+    }
+  ]
+}

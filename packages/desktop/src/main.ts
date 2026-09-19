@@ -28,6 +28,17 @@ import {
   getModelRegistry,
 } from '@easyagent/core';
 
+/**
+ * 数据库驱动：桌面端使用 **Node 内置 `node:sqlite`**（Electron ≥35 = Node 22.16 已内置），
+ * 从而**不再依赖 better-sqlite3 原生模块** —— 无需按 Electron ABI 重建、无需解包进 asar、
+ * 也不再需要 `scripts/postinstall.cjs` 那套"双版本 .node"管理。
+ *
+ * ⚠️ 必须在**任何数据库连接被创建之前**设置：此处位于模块体最前（import 只做声明、不开库），
+ *    后续 `SessionManager` / Checkpointer 才在 app ready 后按需建连。
+ * `?? ` 保留显式覆盖能力（排障时可临时用 `EASYAGENT_SQLITE_DRIVER=better-sqlite3` 回退）。
+ */
+process.env.EASYAGENT_SQLITE_DRIVER = process.env.EASYAGENT_SQLITE_DRIVER ?? 'node';
+
 /** CJS require 桥接 — 用于加载 electron-updater 等 CJS 模块（ESM 动态 import 在 ASAR 内可能失败） */
 const _require = createRequire(import.meta.url);
 

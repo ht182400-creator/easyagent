@@ -127,7 +127,8 @@
 | < 18            | ❌ 拦截                     | ❌ 不可用                                  |
 
 > 💡 Node 24 上强制安装默认驱动（自担风险）: `set EASYAGENT_SKIP_NODE_CHECK=1 && pnpm install`
-> 桌面端（Electron 30 = Node 20）**始终**使用 `better-sqlite3` —— 这是 Electron 生态的主流做法。
+> 桌面端自 **Electron 35** 起改用内置 `node:sqlite`（见 `packages/desktop/src/main.ts`），
+> 因此**不再打包任何原生模块**（无需 electron-rebuild、无需解包 asar）；Electron 30 时代才需要 `better-sqlite3`。
 
 ### 安装
 
@@ -205,17 +206,17 @@ pnpm test:all
 
 SQLite 访问统一走驱动适配层（`packages/core/src/db/sqlite.ts`），**默认 `better-sqlite3`**，可用环境变量切换为 Node 内置的 `node:sqlite`：
 
-| 驱动                     | 适用场景                                                         | 需要原生编译 |
-| ------------------------ | ---------------------------------------------------------------- | :----------: |
-| `better-sqlite3`（默认） | 全部场景，**含 Electron 桌面端**（内置 Node 20，只能用原生模块） |      是      |
-| `node`（内置）           | 服务端 / CLI / 开发 / 测试（**Node ≥ 22.5**）                    |    **否**    |
+| 驱动                            | 适用场景                                                                     | 需要原生编译 |
+| ------------------------------- | ---------------------------------------------------------------------------- | :----------: |
+| `better-sqlite3`（Node 侧默认） | 服务端 / CLI / 开发 / 测试的默认驱动；**Electron ≤ 34 的桌面端**也必须用它   |      是      |
+| `node`（Node 内置）             | **桌面端（Electron ≥ 35 = Node 22.16）**，以及服务端/CLI/测试（Node ≥ 22.5） |    **否**    |
 
 ```bash
 # 用内置驱动跑测试：不需要编译任何原生模块
 EASYAGENT_SQLITE_DRIVER=node pnpm test
 ```
 
-- 桌面端必须用 `better-sqlite3`（`node:sqlite` 需 Node ≥ 22.5，而 Electron 30 内置的是 Node 20.11）
+- 桌面端要用内置驱动需要 **Electron ≥ 35**（内置 Node ≥ 22.5）；Electron 30（Node 20.11）只能走 `better-sqlite3`
 - `node:sqlite` 官方仍为 **RC（Stability 1.2）**，因此**刻意不做默认值**——两个驱动的语义由同一套参数化测试保证一致
 - **测试不再依赖内存 mock**：vitest 直接使用真实数据库文件（旧 mock 的 `pragma()` 是空操作，会让迁移在测试中被静默跳过，真 SQL 语义从未被验证）
 

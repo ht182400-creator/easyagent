@@ -13,11 +13,10 @@ export default defineConfig({
   treeshake: true,
   outDir: 'dist',
   // electron 必须 external（Electron 运行时提供）
-  // better-sqlite3 必须 external（原生模块，不可 bundle）
   // pino / pino-pretty 必须 external（内部使用 CJS require，ESM bundle 会炸）
+  // 注：better-sqlite3 已不再需要 —— 桌面端改用 Node 内置 node:sqlite（见 src/main.ts）
   external: [
     'electron',
-    'better-sqlite3',
     'pino',
     'pino-pretty',
     // electron 相关包保持 external
@@ -32,7 +31,7 @@ export default defineConfig({
   esbuildOptions(options) {
     // 设置平台为 node，支持 Node.js 内置模块
     options.platform = 'node';
-    // 支持顶层 await (Electron 30+ Node.js 20)
-    options.target = 'node20';
+    // 支持顶层 await（Electron ≥35 内置 Node 22）
+    options.target = 'node22';
   },
 });

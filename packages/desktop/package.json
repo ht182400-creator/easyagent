@@ -15,7 +15,6 @@
     "start": "electron dist/main.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "postinstall": "node scripts/postinstall.cjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -50,18 +49,10 @@
       "!node_modules/**/CHANGELOG*",
       "!node_modules/**/README*",
       "!node_modules/**/*.md",
-      "!node_modules/**/*.markdown",
-      "!node_modules/better-sqlite3/src/**",
-      "!node_modules/better-sqlite3/deps/**",
-      "!node_modules/better-sqlite3/build/Release/obj/**"
+      "!node_modules/**/*.markdown"
     ],
     "asar": true,
-    "asarUnpack": [
-      "node_modules/electron-updater/**",
-      "node_modules/better-sqlite3/**",
-      "node_modules/bindings/**",
-      "node_modules/file-uri-to-path/**"
-    ],
+    "asarUnpack": ["node_modules/electron-updater/**"],
     "extraMetadata": {
       "main": "./dist/main.js"
     },
@@ -138,8 +129,6 @@
     "@easyagent/frontend": "workspace:*",
     "@easyagent/server": "workspace:*",
     "atomic-sleep": "^1.0.0",
-    "better-sqlite3": "^12.11.1",
-    "bindings": "^1.5.0",
     "body-parser": "^1.20.2",
     "builder-util-runtime": "9.7.0",
     "cors": "^2.8.0",
@@ -147,7 +136,6 @@
     "electron-updater": "^6.1.0",
     "express": "^4.19.0",
     "fast-redact": "^3.1.1",
-    "file-uri-to-path": "^2.0.0",
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
     "jsonfile": "^6.1.0",
@@ -188,7 +176,7 @@
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.0",
     "concurrently": "^8.2.0",
-    "electron": "30.0.0",
+    "electron": "35.7.5",
     "electron-builder": "23.6.0",
     "jsdom": "^24.0.0",
     "postcss": "^8.4.0",

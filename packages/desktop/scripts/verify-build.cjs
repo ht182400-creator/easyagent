@@ -1,7 +1,7 @@
 /**
  * EasyAgent Desktop - 构建前验证脚本
  * 在每次打包前自动检查已知问题，避免重复踩坑
- * 
+ *
  * 用法: node scripts/verify-build.cjs
  * 返回: 0=通过, 1=有错误需修复, 2=有警告
  */
@@ -16,11 +16,23 @@ let warnings = 0;
 // 调试开关: set EASYAGENT_DEBUG=1 启用详细日志
 const IS_DEBUG = process.env.EASYAGENT_DEBUG === '1' || process.env.EASYAGENT_DEBUG === 'true';
 
-function fail(msg) { console.error(`\x1b[31m  [FAIL]\x1b[0m ${msg}`); errors++; }
-function warn(msg) { console.warn(`\x1b[33m  [WARN]\x1b[0m ${msg}`); warnings++; }
-function ok(msg)   { console.log(`\x1b[32m  [OK]\x1b[0m   ${msg}`); }
-function debug(msg) { if (IS_DEBUG) console.log(`\x1b[36m  [DEBUG]\x1b[0m ${msg}`); }
-function title(msg) { console.log(`\n${msg}`); }
+function fail(msg) {
+  console.error(`\x1b[31m  [FAIL]\x1b[0m ${msg}`);
+  errors++;
+}
+function warn(msg) {
+  console.warn(`\x1b[33m  [WARN]\x1b[0m ${msg}`);
+  warnings++;
+}
+function ok(msg) {
+  console.log(`\x1b[32m  [OK]\x1b[0m   ${msg}`);
+}
+function debug(msg) {
+  if (IS_DEBUG) console.log(`\x1b[36m  [DEBUG]\x1b[0m ${msg}`);
+}
+function title(msg) {
+  console.log(`\n${msg}`);
+}
 
 // ============================================================
 // 1. 关键文件存在性检查
@@ -57,15 +69,24 @@ if (eb === '23.6.0') {
   fail(`electron-builder is "${eb}" - MUST be exact "23.6.0" (no ^ or ~)`);
 }
 
+// Electron 也必须精确锁定（同一条黄金法则：关键构建工具禁用 ^/~）
+// 2026-06-20 的 v24.0.0 alpha 事故（NSIS Plugin not found → EXE 仅 0.3MB）就是这么来的
+const el = pkg.devDependencies?.['electron'];
+if (typeof el === 'string' && /^[0-9]+\.[0-9]+\.[0-9]+$/.test(el)) {
+  ok(`electron locked at ${el}（精确版本）`);
+} else {
+  fail(`electron is "${el}" - MUST be an exact version (no ^ or ~)`);
+}
+
 // Check for v24.0.0 residues (check both desktop and root .pnpm)
 const pnpmDirs = [
   path.join(ROOT, 'node_modules', '.pnpm'),
-  path.join(ROOT, '..', '..', 'node_modules', '.pnpm'),  // workspace root
+  path.join(ROOT, '..', '..', 'node_modules', '.pnpm'), // workspace root
 ];
 let v24Found = false;
 for (const pnpmDir of pnpmDirs) {
   if (fs.existsSync(pnpmDir)) {
-    const v24Dirs = fs.readdirSync(pnpmDir).filter(d => d.startsWith('electron-builder@24.'));
+    const v24Dirs = fs.readdirSync(pnpmDir).filter((d) => d.startsWith('electron-builder@24.'));
     if (v24Dirs.length > 0) {
       fail(`electron-builder v24.0.0 found in ${pnpmDir}: ${v24Dirs.join(', ')}. Delete them!`);
       v24Found = true;
@@ -74,11 +95,11 @@ for (const pnpmDir of pnpmDirs) {
 }
 if (!v24Found) ok('No electron-builder v24.0.0 residue');
 
-// npmRebuild check
+// npmRebuild check（桌面端已无原生模块：Electron ≥35 内置 node:sqlite）
 if (pkg.build?.npmRebuild === false) {
-  ok('npmRebuild: false (skip native rebuild)');
+  ok('npmRebuild: false (no native modules to rebuild)');
 } else {
-  warn('npmRebuild should be false for better-sqlite3 prebuilt');
+  warn('npmRebuild should be false (desktop no longer has native modules)');
 }
 
 // tsup config: noExternal must include workspace packages
@@ -100,7 +121,7 @@ const vsCodeSettingsPath = path.join(ROOT, '..', '..', '.vscode', 'settings.json
 if (fs.existsSync(vsCodeSettingsPath)) {
   const vsSettings = JSON.parse(fs.readFileSync(vsCodeSettingsPath, 'utf8'));
   const watcher = vsSettings['files.watcherExclude'] || {};
-  const releaseExcluded = Object.keys(watcher).some(k => k.includes('desktop/release'));
+  const releaseExcluded = Object.keys(watcher).some((k) => k.includes('desktop/release'));
   if (releaseExcluded) {
     ok('VS Code watcherExclude covers desktop/release');
   } else {
@@ -143,9 +164,11 @@ if (html.includes('127.0.0.1:3456')) {
 title('--- Checking source for localhost:3456 ---');
 const srcDir = path.join(ROOT, 'src', 'renderer');
 const srcFiles = [
-  'api.ts', 'App.tsx',
+  'api.ts',
+  'App.tsx',
   'stores/chatStore.ts',
-  'pages/Automation.tsx', 'pages/Dashboard.tsx',
+  'pages/Automation.tsx',
+  'pages/Dashboard.tsx',
 ];
 
 let foundLocalhost = false;
@@ -154,7 +177,7 @@ for (const f of srcFiles) {
   if (!fs.existsSync(fp)) continue;
   const content = fs.readFileSync(fp, 'utf8');
   // Only check non-comment lines
-  const lines = content.split('\n').filter(l => {
+  const lines = content.split('\n').filter((l) => {
     const trimmed = l.trim();
     return !trimmed.startsWith('//') && !trimmed.startsWith('*') && !trimmed.startsWith('/*');
   });
@@ -241,7 +264,7 @@ if (!foundOldVersion) {
 // 7. 依赖完整性基础检查
 // ============================================================
 title('--- Checking critical dependencies ---');
-const criticalDeps = ['better-sqlite3', 'express', 'ws', 'cors', 'multer', 'pino', 'body-parser', 'mime', 'send'];
+const criticalDeps = ['express', 'ws', 'cors', 'multer', 'pino', 'body-parser', 'mime', 'send'];
 for (const dep of criticalDeps) {
   if (pkg.dependencies?.[dep]) {
     ok(`dep declared: ${dep}`);
@@ -259,9 +282,10 @@ if (fs.existsSync(cssPath)) {
   const css = fs.readFileSync(cssPath, 'utf8');
   // 正确处理多行块注释：移除所有 /* ... */ 块后再检查
   const strippedCss = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  const firstNonComment = strippedCss.split('\n')
-    .map(l => l.trim())
-    .filter(l => l && !l.startsWith('//'));
+  const firstNonComment = strippedCss
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('//'));
   if (firstNonComment.length > 0 && firstNonComment[0].startsWith('@import')) {
     ok('CSS @import is first non-comment rule');
   } else if (firstNonComment.length > 0 && css.includes('@import')) {
@@ -308,73 +332,48 @@ if (!foundCatchBinding) {
 }
 
 // ============================================================
-// 10. better-sqlite3 NODE_MODULE_VERSION 一致性检查
-// 确保 .node 文件是为 Electron 30 (Node v20, MODULE_VERSION=123) 编译的
-// 而不是为系统 Node.js 编译的（开发模式 pnpm install 可能用系统 Node）
+// 10. 原生模块与数据库驱动检查
+// 2026-09-19 起：Electron ≥35 内置 node:sqlite → 桌面端**不应再有原生模块**
+// （旧检查是"better-sqlite3 的 NODE_MODULE_VERSION 是否按 Electron 30=123 编译"，
+//  硬编码版本号且路径写错 → 已整体替换）
 // ============================================================
-title('--- Checking better-sqlite3 MODULE_VERSION ---');
-let moduleVersionOk = true;
-const EXPECTED_ELECTRON_VERSION = 123; // Electron 30 = Node v20
-
-try {
-  // 检查 desktop 包的 better-sqlite3（Electron 运行时加载的就是这个）
-  const betterSqlite3Node = path.join(ROOT, 'packages', 'desktop', 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node');
-
-  // 如果 desktop 路径不存在（pnpm symlink），尝试 pnpm store 实际路径
-  let binaryPath = betterSqlite3Node;
-  if (fs.existsSync(betterSqlite3Node)) {
-    try {
-      binaryPath = require('fs').realpathSync(betterSqlite3Node);
-    } catch (e) { /* 使用原路径 */ }
+title('--- Checking native modules / sqlite driver ---');
+const nativeDeps = ['better-sqlite3', 'bindings', 'file-uri-to-path'];
+for (const dep of nativeDeps) {
+  if (pkg.dependencies?.[dep]) {
+    fail(`dep should no longer be declared: ${dep} (桌面端改用内置 node:sqlite)`);
   } else {
-    warn(`better_sqlite3.node not found at ${betterSqlite3Node}`);
-    // 尝试 pnpm store 中的路径
-    const altPath = path.join(ROOT, 'node_modules', '.pnpm', 'better-sqlite3@12.11.1', 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node');
-    if (fs.existsSync(altPath)) {
-      binaryPath = altPath;
-    } else {
-      warn('better_sqlite3.node not found in pnpm store either - run pnpm install in packages/desktop');
-    }
+    ok(`no native dep: ${dep}`);
   }
+}
 
-  if (fs.existsSync(binaryPath)) {
-    // 读取实际 binary 检查 MODULE_VERSION
-    const buf = fs.readFileSync(binaryPath);
-    const binaryModTime = fs.statSync(binaryPath).mtime.toISOString();
+const asarUnpack = pkg.build?.asarUnpack ?? [];
+if (asarUnpack.some((p) => /better-sqlite3|bindings|file-uri-to-path/.test(p))) {
+  fail('asarUnpack still references native modules (better-sqlite3/bindings/file-uri-to-path)');
+} else {
+  ok('asarUnpack has no native module entries');
+}
 
-    // 通过检查 binary 特征判断是否为 Electron 编译：
-    // Electron 30 headers 编译的 binary 应引用 NODE_MODULE_VERSION 123
-    // 用 node 直接加载 .node 来检查版本会崩溃，改用文件时间戳+已知状态判断
-    const systemNodeVersion = process.versions.modules;
-
-    if (systemNodeVersion === String(EXPECTED_ELECTRON_VERSION)) {
-      ok(`better-sqlite3 MODULE_VERSION = ${systemNodeVersion} (matches Electron 30)`);
-    } else {
-      // 系统 Node 版本不匹配（如 v24 = MODULE 137），但 binary 可能已为 Electron 编译
-      // 检查：如果 binary 修改时间比 pnpm-lock 更新，说明 postinstall 已执行过 rebuild
-      // 更可靠的检查：读取 binary 文件大小（Electron 编译的 typically 略小）
-      const binarySize = buf.length;
-
-      // 如果 binary 文件大小 != 1913344（原始 Node v24 编译版本），说明已被替换
-      const ORIGINAL_NODE24_SIZE = 1913344;
-      if (binarySize !== ORIGINAL_NODE24_SIZE) {
-        // binary 已不是原始版本，认为已为 Electron 编译
-        warn(`better-sqlite3 MODULE_VERSION check: system Node=${systemNodeVersion} (v24), ` +
-             `but binary appears rebuilt for Electron ${EXPECTED_ELECTRON_VERSION} ` +
-             `(size=${binarySize}, mod=${binaryModTime}). OK for packaging.`);
-        moduleVersionOk = true;
-      } else {
-        // 仍是原始版本，需要 rebuild
-        warn(`better-sqlite3 NOT rebuilt for Electron: binary still matches system Node v24 (MODULE ${systemNodeVersion}, ` +
-             `size=${binarySize}). This WILL cause runtime failure!`);
-        warn(`  Fix: cd packages/desktop && npx --yes node-gyp rebuild --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers --release --cwd node_modules/better-sqlite3`);
-      }
-    }
+// main.ts 必须显式选用内置驱动：better-sqlite3 已不在依赖里，退回默认会直接报"驱动不可用"
+const mainEntry = path.join(ROOT, 'src', 'main.ts');
+try {
+  const mainSrc = fs.readFileSync(mainEntry, 'utf8');
+  if (mainSrc.includes('EASYAGENT_SQLITE_DRIVER') && mainSrc.includes("'node'")) {
+    ok('main.ts sets EASYAGENT_SQLITE_DRIVER=node');
   } else {
-    warn('better_sqlite3.node not found - run pnpm install in packages/desktop');
+    fail('main.ts must set EASYAGENT_SQLITE_DRIVER=node（否则会退回已移除的 better-sqlite3）');
   }
 } catch (e) {
-  warn(`Could not check better-sqlite3 MODULE_VERSION: ${e.message}`);
+  fail(`cannot read ${mainEntry}: ${e.message}`);
+}
+
+// Electron 版本需 ≥35（内置 Node ≥22.5 才有 node:sqlite）
+const electronVer = (pkg.devDependencies?.electron || '').replace(/[^\d.]/g, '');
+const electronMajor = Number(electronVer.split('.')[0] || 0);
+if (electronMajor >= 35) {
+  ok(`electron ${electronVer} (≥35 → has node:sqlite)`);
+} else {
+  fail(`electron ${electronVer} is too old: node:sqlite needs Electron ≥35 (Node ≥22.5)`);
 }
 
 // ============================================================
@@ -386,7 +385,7 @@ title('--- Checking mime version (send/Express dependency) ---');
 try {
   const mimeTopLevel = path.join(ROOT, 'node_modules', 'mime');
   const mimeSendLevel = path.join(ROOT, 'node_modules', 'send', 'node_modules', 'mime');
-  
+
   // 检查 send 是否有自己的 mime 副本（嵌套依赖）
   let sendHasOwnMime = false;
   if (fs.existsSync(mimeSendLevel)) {
@@ -405,8 +404,10 @@ try {
           ok(`mime@${mimePkg.version} (v2) at top level, but send has its own mime copy - OK`);
           mimeTopOk = true;
         } else {
-          fail(`mime@${mimePkg.version} (v2) found at top level - send needs mime@1.6.x! ` +
-               `Add "mime": "^1.6.0" to desktop/package.json dependencies.`);
+          fail(
+            `mime@${mimePkg.version} (v2) found at top level - send needs mime@1.6.x! ` +
+              `Add "mime": "^1.6.0" to desktop/package.json dependencies.`,
+          );
         }
       } else {
         ok(`mime@${mimePkg.version} (v1) at top level - OK for Express/send`);
@@ -417,9 +418,11 @@ try {
     ok('No top-level mime, but send has its own mime copy - OK');
     mimeTopOk = true;
   } else {
-    fail('mime@1.6.x NOT FOUND at top level AND send has no copy! ' +
-         'Add "mime": "^1.6.0" to desktop/package.json dependencies. ' +
-         'Without this, Express res.json() will get "Cannot find module mime" in Release build.');
+    fail(
+      'mime@1.6.x NOT FOUND at top level AND send has no copy! ' +
+        'Add "mime": "^1.6.0" to desktop/package.json dependencies. ' +
+        'Without this, Express res.json() will get "Cannot find module mime" in Release build.',
+    );
   }
 
   // 检查 desktop/package.json 的 mime 依赖声明
@@ -429,15 +432,19 @@ try {
     if (depMajor === '1') {
       ok(`desktop/package.json has mime "${mimeDep}" (v1) - correct for send/Express`);
     } else {
-      fail(`desktop/package.json has mime "${mimeDep}" (v${depMajor}) - MUST be ^1.6.0 for send compatibility!`);
+      fail(
+        `desktop/package.json has mime "${mimeDep}" (v${depMajor}) - MUST be ^1.6.0 for send compatibility!`,
+      );
     }
   } else if (!mimeTopOk) {
     fail('desktop/package.json is MISSING mime dependency - add "mime": "^1.6.0"');
   } else if (sendHasOwnMime) {
     ok('No direct mime dependency (send has own copy) - OK');
   } else {
-    warn('desktop/package.json missing mime dependency but top-level mime exists (might be hoisted from elsewhere). ' +
-         'Consider adding "mime": "^1.6.0" for explicit dependency.');
+    warn(
+      'desktop/package.json missing mime dependency but top-level mime exists (might be hoisted from elsewhere). ' +
+        'Consider adding "mime": "^1.6.0" for explicit dependency.',
+    );
   }
 } catch (e) {
   warn(`Could not check mime version: ${e.message}`);
@@ -459,7 +466,7 @@ try {
     'lodash.isequal': '^4.5.0',
     'tiny-typed-emitter': '^2.1.0',
     'builder-util-runtime': '9.7.0',
-    'semver': '~7.7.3',
+    semver: '~7.7.3',
   };
 
   if (fs.existsSync(updaterPkgPath)) {
@@ -468,19 +475,23 @@ try {
       const topDep = path.join(ROOT, 'node_modules', dep);
       const nestedDep = path.join(ROOT, 'node_modules', 'electron-updater', 'node_modules', dep);
       const found = fs.existsSync(topDep) || fs.existsSync(nestedDep);
-      
+
       if (found) {
         // 检查 desktop/package.json 是否声明了此依赖
         if (pkg.dependencies?.[dep]) {
           ok(`electron-updater dep: ${dep} (declared in package.json)`);
         } else {
-          warn(`electron-updater dep: ${dep} found but NOT in package.json - ` +
-               `may come from pnpm hoisting. Add "${dep}": "${version}" to desktop deps.`);
+          warn(
+            `electron-updater dep: ${dep} found but NOT in package.json - ` +
+              `may come from pnpm hoisting. Add "${dep}": "${version}" to desktop deps.`,
+          );
         }
       } else {
-        fail(`electron-updater dep MISSING: ${dep} (needed by electron-updater). ` +
-             `Add "${dep}": "${version}" to desktop/package.json dependencies! ` +
-             `Without this, electron-updater will fail with "Cannot find module '${dep}'" in Release.`);
+        fail(
+          `electron-updater dep MISSING: ${dep} (needed by electron-updater). ` +
+            `Add "${dep}": "${version}" to desktop/package.json dependencies! ` +
+            `Without this, electron-updater will fail with "Cannot find module '${dep}'" in Release.`,
+        );
         allFound = false;
       }
     }
@@ -514,14 +525,20 @@ try {
       const installed = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
       const installedMajor = parseInt(installed.version.split('.')[0]);
       const neededMajor = parseInt(check.needed.replace(/[\^~>=<\s]/g, '').split('.')[0]);
-      const neededMinDigits = parseInt(check.needed.replace(/[\^~>=<\s]/g, '').split('.')[1] || '0');
-      
+      const neededMinDigits = parseInt(
+        check.needed.replace(/[\^~>=<\s]/g, '').split('.')[1] || '0',
+      );
+
       if (installedMajor !== neededMajor) {
-        warn(`${check.pkg}@${installed.version} (declared ${check.current}) ` +
-             `but ${check.consumer} needs ${check.needed}. ` +
-             `May cause subtle issues in Release. Consider adding "${check.pkg}": "${check.needed}" instead.`);
+        warn(
+          `${check.pkg}@${installed.version} (declared ${check.current}) ` +
+            `but ${check.consumer} needs ${check.needed}. ` +
+            `May cause subtle issues in Release. Consider adding "${check.pkg}": "${check.needed}" instead.`,
+        );
       } else {
-        ok(`${check.pkg}@${installed.version} - major version matches ${check.consumer} requirements`);
+        ok(
+          `${check.pkg}@${installed.version} - major version matches ${check.consumer} requirements`,
+        );
       }
     }
   }
@@ -543,7 +560,9 @@ for (const pkgDir of subPackages) {
     // 检测常见乱码特征：UTF-8 中文被 ANSI 重新编码后的 mojibake 模式
     if (/榛|鎵|鍣|鏂|椤|娣诲姞|宸叉坊|鍒犻櫎|鏂囨。/.test(content)) {
       const relPath = path.relative(ROOT, fp);
-      fail(`${relPath}: encoding corrupted - restore from git, then redo changes with Node.js (not PowerShell Set-Content)`);
+      fail(
+        `${relPath}: encoding corrupted - restore from git, then redo changes with Node.js (not PowerShell Set-Content)`,
+      );
       foundEncodingCorruption = true;
     }
   }
@@ -561,8 +580,10 @@ try {
   const tsupPreloadConfig = path.join(ROOT, 'tsup.preload.config.ts');
 
   if (!fs.existsSync(tsupPreloadConfig)) {
-    fail('tsup.preload.config.ts MISSING - preload must be compiled as CJS, not ESM. ' +
-         'See F36 (v0.5.27 preload ESM crash).');
+    fail(
+      'tsup.preload.config.ts MISSING - preload must be compiled as CJS, not ESM. ' +
+        'See F36 (v0.5.27 preload ESM crash).',
+    );
   } else {
     const preloadCfg = fs.readFileSync(tsupPreloadConfig, 'utf8');
     const hasCjsFormat = preloadCfg.includes("'cjs'") || preloadCfg.includes('"cjs"');
@@ -577,8 +598,10 @@ try {
     const preloadContent = fs.readFileSync(preloadPath, 'utf8');
     // CJS 特征: module.exports 或 require()
     // ESM 特征: import/export 关键字
-    const hasEsmSyntax = /\bimport\b.*\bfrom\b/.test(preloadContent) || /\bexport\b/.test(preloadContent);
-    const hasCjsSyntax = /require\s*\(/.test(preloadContent) || /module\.exports/.test(preloadContent);
+    const hasEsmSyntax =
+      /\bimport\b.*\bfrom\b/.test(preloadContent) || /\bexport\b/.test(preloadContent);
+    const hasCjsSyntax =
+      /require\s*\(/.test(preloadContent) || /module\.exports/.test(preloadContent);
 
     if (hasEsmSyntax && !hasCjsSyntax) {
       fail('dist/preload.cjs contains ESM syntax (import/export) - must be CJS!');
@@ -647,11 +670,11 @@ try {
   const RENDERER_SRC = path.join(ROOT, 'src', 'renderer');
   const tsxFiles = walkDir(RENDERER_SRC, /\.tsx$/);
   let foundBadHref = false;
-  
+
   for (const fp of tsxFiles) {
     const content = fs.readFileSync(fp, 'utf8');
     const relPath = path.relative(ROOT, fp);
-    
+
     // 查找 <a href="/xxx"> 模式（内部路由），排除外部 URL (<a href="http...">) 和 target="_blank"
     const lines = content.split('\n');
     for (let i = 0; i < lines.length; i++) {
@@ -660,14 +683,24 @@ try {
       const match = line.match(/<a\s+href="\/([^"]+)"/);
       if (match) {
         // 排除 markdown 渲染中的 href (属于字符串拼接，不是 JSX)
-        if (line.includes("'<a href=") || line.includes('"<a href=') || line.includes("`<a href=")) {
+        if (
+          line.includes("'<a href=") ||
+          line.includes('"<a href=') ||
+          line.includes('`<a href=')
+        ) {
           continue;
         }
         // 排除注释
-        if (line.trim().startsWith('//') || line.trim().startsWith('*') || line.trim().startsWith('/*')) {
+        if (
+          line.trim().startsWith('//') ||
+          line.trim().startsWith('*') ||
+          line.trim().startsWith('/*')
+        ) {
           continue;
         }
-        fail(`${relPath}:${i + 1}: <a href="/${match[1]}"> should use <Link to="/${match[1]}"> or navigate("/${match[1]}") in HashRouter`);
+        fail(
+          `${relPath}:${i + 1}: <a href="/${match[1]}"> should use <Link to="/${match[1]}"> or navigate("/${match[1]}") in HashRouter`,
+        );
         foundBadHref = true;
       }
     }

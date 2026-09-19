@@ -9,7 +9,6 @@
     "cors": "跨域中间件及其子依赖",
     "side-channel": "qs 查询字符串解析的子依赖链",
     "electron": "Electron 相关包（electron-store, electron-updater）",
-    "better-sqlite3": "原生 SQLite 模块",
     "frontend": "React 前端（已通过 Vite bundle，理论上不需单独声明）",
     "ws": "WebSocket 库"
   },
@@ -125,7 +124,6 @@
     "accepts",
     "array-flatten",
     "atomic-sleep",
-    "better-sqlite3",
     "body-parser",
     "bytes",
     "call-bind-apply-helpers",
