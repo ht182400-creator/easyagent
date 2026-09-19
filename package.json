@@ -19,6 +19,7 @@
     "build:langgraph": "cd packages/langgraph && npx tsup",
     "test": "pnpm --filter @easyagent/core exec vitest run",
     "test:core": "pnpm --filter @easyagent/core exec vitest run",
+    "test:core:fast": "node scripts/test-core-parallel.mjs",
     "test:server": "pnpm --filter @easyagent/server exec vitest run",
     "test:desktop": "pnpm --filter @easyagent/desktop exec vitest run",
     "test:frontend": "pnpm --filter @easyagent/frontend exec vitest run",

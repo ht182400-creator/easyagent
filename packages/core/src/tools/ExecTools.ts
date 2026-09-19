@@ -30,8 +30,13 @@ const DANGEROUS_PATTERNS = [
 
 /**
  * 检查是否为危险命令
+ *
+ * **纯函数**（无 IO、无进程）：便于测试直接覆盖模式表，无需真的把命令跑起来。
+ *
+ * @param command 待检查的命令行
+ * @returns 命中任一危险模式则为 true
  */
-function isDangerous(command: string): boolean {
+export function isDangerousCommand(command: string): boolean {
   for (const pattern of DANGEROUS_PATTERNS) {
     if (pattern.test(command)) {
       return true;
@@ -70,7 +75,7 @@ export const ExecTool: ITool = {
       const timeout = (params.timeout as number) || 30000;
 
       // 危险命令检查
-      if (isDangerous(command)) {
+      if (isDangerousCommand(command)) {
         return {
           success: false,
           content: `⚠️ 命令包含潜在危险操作，已被阻止。如确实需要，请手动在终端执行。\n命令: ${command}`,

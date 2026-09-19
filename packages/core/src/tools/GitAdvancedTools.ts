@@ -54,8 +54,18 @@ function getCurrentBranch(workspace: string): string {
 
 /**
  * 生成仓库结构地图
+ *
+ * @param workspace 仓库根目录
+ * @param maxDepth 最大目录深度
+ * @param maxFiles 最大显示文件数
+ * @param knownIsRepo 调用方已判定过的"是否 Git 仓库"（避免重复 spawn `git rev-parse`；不传则内部自行判定）
  */
-function generateRepoMap(workspace: string, maxDepth = 4, maxFiles = 200): string {
+function generateRepoMap(
+  workspace: string,
+  maxDepth = 4,
+  maxFiles = 200,
+  knownIsRepo?: boolean,
+): string {
   const ignorePatterns = [
     'node_modules',
     '.git',
@@ -156,8 +166,8 @@ function generateRepoMap(workspace: string, maxDepth = 4, maxFiles = 200): strin
   lines.push(`文件数: ${fileCount}`);
   lines.push(`深度: ${maxDepth}`);
 
-  // Git 信息
-  if (isGitRepo(workspace)) {
+  // Git 信息（`isGitRepo` 会 spawn 一次 git；调用方传入已判定结果时不再重复）
+  if (knownIsRepo ?? isGitRepo(workspace)) {
     const branch = getCurrentBranch(workspace);
     lines.push(`分支: ${branch}`);
   }
@@ -388,8 +398,12 @@ export const GitRepoMapTool: ITool = {
         }
       }
 
+      // 是否 Git 仓库：**判定一次、三处复用**（内容分支 / generateRepoMap / metadata）
+      // —— 旧实现在一次调用里连 spawn 三次 `git rev-parse`，是 RepoMap 单次耗时的大头（2026-09-19 复核）
+      const isRepo = isGitRepo(repoPath);
+
       // Git 信息
-      if (includeGitInfo && isGitRepo(repoPath)) {
+      if (includeGitInfo && isRepo) {
         const branch = getCurrentBranch(repoPath);
         lines.push(`🌿 Git 信息:`);
         lines.push(`   分支: ${branch}`);
@@ -409,7 +423,7 @@ export const GitRepoMapTool: ITool = {
       }
 
       // 文件树
-      const map = generateRepoMap(repoPath, maxDepth, maxFiles);
+      const map = generateRepoMap(repoPath, maxDepth, maxFiles, isRepo);
       lines.push(`📂 目录结构:`);
       lines.push(map);
 
@@ -420,7 +434,7 @@ export const GitRepoMapTool: ITool = {
           repoPath,
           maxDepth,
           maxFiles,
-          isGitRepo: isGitRepo(repoPath),
+          isGitRepo: isRepo,
         },
       };
     } catch (error) {

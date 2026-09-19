@@ -1,6 +1,14 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
 
+/**
+ * 是否以"并行跑 core 测试"的**快速模式**运行
+ *
+ * 由 `pnpm test:core:fast` 设置（见下方 `fileParallelism` 说明）。
+ * 快速模式下同时**不产出 JSON 报告**，避免把"可重跑的临时结果"写进管线权威数据。
+ */
+const isParallelRun = process.env.EASYAGENT_CORE_PARALLEL === '1';
+
 export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
@@ -10,32 +18,42 @@ export default defineConfig({
     hookTimeout: 15_000,
 
     /**
-     * 串行执行测试文件（不并发）
+     * 测试文件并行执行：**默认关闭**，用环境变量按需开启（2026-09-19 复核）
      *
-     * ── 为什么 ──
+     * ── 为什么默认关闭 ──
      * 2026-09-18 全量回归时，`plugin-sandbox.test.ts` / `plugin-manager.test.ts`
      * 出现 **11 条间歇性失败**（失败项集中在"重复加载同一沙箱插件应先关闭旧沙箱"
-     * 这类**依赖全局插件/沙箱状态**的用例），而单独运行这两个文件时 96/96 全过，
-     * 紧接的全量重跑也 1689/1689 全过。
+     * 这类**依赖全局插件/沙箱状态**的用例），而单独运行这两个文件时全过。
+     * 当时用串行换取确定性：core **约 15s → 35.9s**。
+     * 原则：**测试结果不可信比跑得慢更糟**。
      *
-     * 判据：**只在全量并行的负载下失败，单独跑必过** —— 典型的跨文件状态干扰。
-     * 插件管理系统持有进程级单例（PluginManager / PluginSandbox / ToolRegistry），
-     * 多个测试文件并发时会互相覆盖彼此的前置状态。
+     * ── 2026-09-19 复核（先补基准，再决定，不凭直觉）──
+     * · 基准：core 43 文件串行**墙上 61.7s**（其中 tests 35.94s）；并行后 **13~26s
+     *   （均值 ≈21s，省 60%+）**。文件级耗时 Top：`exec-tools-security` 7.6s ·
+     *   `benchmark-runner` 6.46s · `git-advanced-tools` 3.64s（前 3 名占 55%）。
+     * · 排查：本仓 `pool` 默认 threads 且 `isolate` 默认 true ⇒ **跨文件不共享模块单例**，
+     *   故历史失败更像是并发**资源争用**（插件沙箱 RPC / exec / 嵌套 vitest 在满载下变慢），
+     *   而不是"单例串味"；`src/plugins/**` 也未发现固定临时路径。
+     * · 实验：默认 worker 数并行跑 **17 轮 → 16 轮 43/43 全绿、1 轮 1 个文件失败（≈6%）**。
+     *   该次失败的完整日志未留存，未能定位到具体文件与用例。
+     * · 横向：`desktop` / `server` / `frontend` / `langgraph` 一直默认并行，未见此类问题。
      *
-     * ⚠️ 这是一处**预防性**修复：由于问题是间歇性的，无法稳定复现，
-     *    因此用时间代价换取确定性 —— 测试结果不可信比跑得慢更糟。
+     * ── 结论 ──
+     * 6% 的间歇失败率**不足以**作为默认值放开（与上面那条原则直接冲突），但它在
+     * **本地快速迭代**（要秒级反馈、失败可重跑）场景很有价值，故做成显式开关：
      *
-     * **实测代价**（2026-09-18）：core 包 **约 15s → 35.9s（约 +140%）**，
-     *    全量回归 **约 60s → 90s**。这是真实成本，不是可以忽略的开销。
+     * ```powershell
+     * pnpm test:core:fast     # = EASYAGENT_CORE_PARALLEL=1 + vitest run（不写管线 JSON）
+     * ```
      *
-     * 若日后想收回这部分时间，正确做法是**定位并修掉真正的跨文件状态干扰**
-     * （让插件测试各自使用独立的临时目录与隔离的 PluginManager 实例），
-     * 而不是把本开关关掉 —— 关掉会让间歇性假失败回来。
+     * ⚠️ 想让并行成为默认，正确路径仍然是**先定位那 6% 的真实原因**：
+     * 反复 `pnpm test:core:fast`，失败时把该轮完整日志留下来（`--reporter=default`
+     * 会打印失败文件与用例名），判断是"共享资源冲突"还是"超时过紧"，修掉后再翻默认值。
      */
-    fileParallelism: false,
+    fileParallelism: isParallelRun,
 
-    // 输出 JSON 报告供管线自动采集
-    reporters: ['default', 'json'],
+    // 输出 JSON 报告供管线自动采集（快速模式不产出，避免污染权威数据）
+    reporters: isParallelRun ? ['default'] : ['default', 'json'],
     outputFile: {
       json: '../../docs/pipeline/_vitest-core.json',
     },

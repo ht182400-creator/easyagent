@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { isDangerousCommand } from '../tools/ExecTools.js';
 
 /** 创建安全测试工作区（避免在真实仓库执行Git命令） */
 function createSafeWorkspace(): string {
@@ -23,27 +24,26 @@ function cleanupWorkspace(dir: string) {
 }
 
 // ================================================================
-// 套件 1: DANGEROUS_PATTERNS 完整覆盖 (通过 ExecTool 间接测试)
+// 套件 1: DANGEROUS_PATTERNS 完整覆盖（直视模式表）
 // ================================================================
 describe('ExecTool — 危险命令检测 (isDangerous)', () => {
-  let ws: string;
-  beforeEach(() => {
-    ws = createSafeWorkspace();
-  });
-
-  /** 辅助：执行命令并验证被阻止 */
-  async function expectBlocked(command: string) {
-    const { ExecTool } = await import('../tools/ExecTools.js');
-    const result = await ExecTool.execute({ command }, { workspace: ws, sessionId: 'test' });
-    expect(result.success).toBe(false);
-    expect(result.error).toBe('DANGEROUS_COMMAND');
+  /**
+   * 辅助：断言命令被危险模式拦截
+   *
+   * ── 为何改用纯函数而非真的执行 ──
+   * 本套件覆盖的是 **DANGEROUS_PATTERNS 模式表**（16 条拦截 + 7 条放行）。
+   * 旧实现连"放行"用例都真的 spawn 出进程（`npm install lodash`、`git push origin main`
+   * 都会真跑），使本文件成为 core 最慢（7.6s），并引入网络与环境依赖。
+   * 模式判定本身是纯函数，直接断言即可；"ExecTool 确实接了这道闸"由本文件
+   * **套件 2 的真实执行用例**（正常命令输出 / 不存在的命令 / 两条注入）覆盖。
+   */
+  function expectBlocked(command: string) {
+    expect(isDangerousCommand(command)).toBe(true);
   }
 
-  /** 辅助：执行命令并验证通过（非危险命令） */
-  async function expectAllowed(command: string) {
-    const { ExecTool } = await import('../tools/ExecTools.js');
-    const result = await ExecTool.execute({ command }, { workspace: ws, sessionId: 'test' });
-    expect(result.error).not.toBe('DANGEROUS_COMMAND');
+  /** 辅助：断言命令未被危险模式拦截（同上，纯函数判定） */
+  function expectAllowed(command: string) {
+    expect(isDangerousCommand(command)).toBe(false);
   }
 
   // ---- 已覆盖的模式 ----

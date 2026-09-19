@@ -36,6 +36,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { createLogger } from './lib/logger.mjs';
 
 // ===================== 常量（禁止在业务逻辑中裸写） =====================
@@ -253,6 +254,36 @@ function parseStatsFromText(text) {
 // ===================== 主流程 =====================
 
 /**
+ * 解析某个包目录下的 vitest **JS 入口**（用于不经 shell 启动）
+ *
+ * ── 为什么不用 `npx` ──
+ * ① Node 20+/24（CVE-2024-27980 修复）起，`spawn` 一个 `.cmd/.bat` **必须** `shell: true`，
+ *    否则直接 `EINVAL`（2026-09-19 实测踩到：`spawnSync('npx.cmd', …, {shell:false})` 失败）；
+ * ② 而 `shell: true` + argv 又会触发 DEP0190（参数不转义）。
+ * 两条路都不好，于是统一改为 **node + `vitest.mjs`**：argv 逐项传递即可，不依赖 shell 与 .cmd 语义。
+ *
+ * @param {string} cwd 包目录（pnpm 隔离布局下 vitest 可能只装在某个包内）
+ * @returns {{ok: boolean, entry: string, reason?: string}}
+ */
+function resolveVitestEntry(cwd) {
+  for (const base of [cwd, PROJECT_ROOT]) {
+    try {
+      const require = createRequire(join(base, 'noop.js'));
+      const pkgPath = require.resolve('vitest/package.json');
+      const entry = join(dirname(pkgPath), 'vitest.mjs');
+      if (existsSync(entry)) return { ok: true, entry };
+    } catch {
+      // 换下一个候选目录
+    }
+  }
+  return {
+    ok: false,
+    entry: '',
+    reason: `无法从 ${cwd} 或仓库根解析 vitest（devDependencies 是否已安装？）`,
+  };
+}
+
+/**
  * 运行单个包的测试，返回归一化结果
  * @param {{name:string,dir:string,label:string}} pkg
  * @param {ReturnType<createTeeLogger>} log
@@ -264,13 +295,20 @@ function runPackage(pkg, log, runDir) {
   const startedAt = Date.now();
 
   log.info(`▶ 开始测试 [${pkg.name}] ${pkg.label} — 工作目录 ${pkg.dir}`);
-  log.debug(`执行命令: npx vitest run  (timeout=${PACKAGE_TIMEOUT_MS}ms)`);
+
+  // 用 node 直接启动 vitest —— **不经 shell，也不 spawn `.cmd`**
+  const vitest = resolveVitestEntry(cwd);
+  if (!vitest.ok) {
+    log.error(`[${pkg.name}] ${vitest.reason}`);
+    return { pkg: pkg.name, label: pkg.label, status: 'crash', error: vitest.reason };
+  }
+  log.debug(`执行命令: node ${vitest.entry} run  (timeout=${PACKAGE_TIMEOUT_MS}ms)`);
 
   let result;
   try {
-    result = spawnSync('npx', ['vitest', 'run'], {
+    result = spawnSync(process.execPath, [vitest.entry, 'run'], {
       cwd,
-      shell: true,
+      shell: false,
       encoding: 'utf8',
       maxBuffer: MAX_BUFFER_BYTES,
       timeout: PACKAGE_TIMEOUT_MS,
